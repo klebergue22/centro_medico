@@ -8,9 +8,9 @@ package ec.gob.igm.rrhh.consultorio.web.servlet;
  *
  * @author GUERRA_KLEBER
  */
- 
 
-
+import ec.gob.igm.rrhh.consultorio.web.pdf.PdfSessionStore;
+import jakarta.enterprise.inject.spi.CDI;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -20,12 +20,23 @@ import jakarta.servlet.http.HttpSession;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.Map;
 
 @WebServlet("/pdf")
 public class PdfServlet extends HttpServlet {
 
     private static final long serialVersionUID = 1L;
+
+    private transient PdfSessionStore pdfSessionStore;
+
+    @Override
+    public void init() throws ServletException {
+        super.init();
+        try {
+            pdfSessionStore = CDI.current().select(PdfSessionStore.class).get();
+        } catch (Exception ex) {
+            throw new ServletException("No se pudo inicializar PdfSessionStore", ex);
+        }
+    }
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
@@ -43,7 +54,7 @@ public class PdfServlet extends HttpServlet {
             return;
         }
 
-        byte[] bytes = getBytesFromSession(session, token);
+        byte[] bytes = pdfSessionStore.find(session, token);
 
         if (bytes == null || bytes.length == 0) {
             resp.sendError(HttpServletResponse.SC_NOT_FOUND, "PDF no disponible");
@@ -59,11 +70,11 @@ public class PdfServlet extends HttpServlet {
         resp.setContentLength(bytes.length);
 
         final boolean download = "1".equals(req.getParameter("download"))
-                              || "true".equalsIgnoreCase(req.getParameter("download"));
+                || "true".equalsIgnoreCase(req.getParameter("download"));
 
         final String filename = token.startsWith("FICHA_") ? "Ficha.pdf"
-                             : token.startsWith("CERT_")  ? "Certificado.pdf"
-                             : "Documento.pdf";
+                : token.startsWith("CERT_") ? "Certificado.pdf"
+                : "Documento.pdf";
 
         final String disposition = download ? "attachment" : "inline";
         resp.setHeader("Content-Disposition", disposition + "; filename=\"" + filename + "\"");
@@ -75,23 +86,5 @@ public class PdfServlet extends HttpServlet {
 
         // Si quieres token “de un solo uso”, descomenta:
         // session.removeAttribute(token);
-    }
-
-    private byte[] getBytesFromSession(HttpSession session, String token) {
-        // 1) Forma directa: session.setAttribute(token, bytes)
-        Object obj = session.getAttribute(token);
-        if (obj instanceof byte[]) {
-            return (byte[]) obj;
-        }
-
-        // 2) Forma Map: session.setAttribute("PDF_STORE", map)
-        Object storeObj = session.getAttribute("PDF_STORE");
-        if (storeObj instanceof Map) {
-            @SuppressWarnings("unchecked")
-            Map<String, byte[]> store = (Map<String, byte[]>) storeObj;
-            return store.get(token);
-        }
-
-        return null;
     }
 }
