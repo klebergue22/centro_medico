@@ -1,0 +1,238 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+  <title>Certificado - Evaluación Médica Ocupacional</title>
+  <style type="text/css">
+    * { margin:0; padding:0; box-sizing: border-box; }
+
+    /* —— Página A4, márgenes reducidos —— */
+    @page {
+      size: A4;
+      margin: 12mm 12mm 12mm 12mm;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      font-size: 11px;        /* -1 para comprimir */
+      line-height: 1.25;      /* más compacto */
+      color: #333;
+    }
+
+    /* Evitar saltos de página dentro de tablas y bloques clave */
+    table, tr, td, th, .bloque, .header-logos {
+      page-break-inside: avoid;
+    }
+
+    /* Tablas generales */
+    table { width: 100%; border-collapse: collapse; margin-bottom: 6px; }
+    th, td { border: 1px solid #7fa87e; padding: 5px; text-align: left; }
+    th { background: #d9f2d9; font-weight: bold; color: #333; }
+    .sec { background: #cfd8ff; font-weight: bold; color: #1a1a4d; font-size: 12.5px; }
+
+    /* Cabecera y título */
+    .header-logos { width:100%; border:0; margin-bottom: 6px; }
+    .header-logos td { border:0; vertical-align: middle; }
+    .logo { width: 85px; height: auto; display: inline-block; } /* ligeramente menor */
+    .titulo {
+      font-weight: bold;
+      font-size: 15px; /* -1 para caber */
+      text-align: center;
+      margin: 6px 0 0 0;
+      color: #1a1a4d;
+      border-bottom: 2px solid #7fa87e;
+      padding-bottom: 4px;
+    }
+
+    /* Utilitarios */
+    .caja {
+      height: 18px; width: 28px; text-align: center;
+      vertical-align: middle; border: 1px solid #333;
+    }
+    .center { text-align: center; }
+    .observaciones { min-height: 48px; vertical-align: top; }   /* -altura */
+    .firma-area { min-height: 42px; text-align: center; vertical-align: bottom; }
+
+    .footer {
+      margin-top: 8px; text-align: center; font-size: 10px;
+      color: #666; border-top: 1px solid #999; padding-top: 6px;
+    }
+
+    /* Ajustes muy concretos para que quepa todo */
+    .td-tight th, .td-tight td { padding: 4px; }
+    .nota p { margin: 0 0 4px 0; }
+
+  </style>
+</head>
+<body>
+
+  <!-- CABECERA CON LOGOS Y TÍTULO -->
+<table style="width:100%; border:0; border-collapse:collapse; margin-bottom:8px;">
+  <tr>
+    <td style="text-align:left; width:25%; border:0;">
+          <img src="{{LOGO_IGM_DATAURI}}" alt="IGM" style="max-width:50px; height:50px;" />
+    </td>
+    <td style="text-align:center; width:50%; border:0;">
+      <div style="font-weight:bold; font-size:16px; color:#1a1a4d; border-bottom:2px solid #7fa87e; padding-bottom:4px;">
+        CERTIFICADO - EVALUACIÓN MÉDICA OCUPACIONAL
+      </div>
+    </td>
+    <td style="text-align:right; width:25%; border:0;">
+         <img src="{{LOGO_MIDENA_DATAURI}}" alt="MIDENA" style="max-width:50px; height:50px;" />
+ 
+    </td>
+  </tr>
+</table>
+
+
+  <!-- SECCIÓN A -->
+  <table class="td-tight">
+    <tr>
+      <th colspan="8" class="sec">A. DATOS DEL ESTABLECIMIENTO - DATOS DEL USUARIO</th>
+    </tr>
+    <tr>
+      <td>INSTITUCIÓN DEL SISTEMA</td>
+      <td colspan="3">{{institucion}}</td>
+      <td>RUC</td>
+      <td colspan="3">{{ruc}}</td>
+    </tr>
+    <tr>
+      <td>ESTABLECIMIENTO / CENTRO DE TRABAJO</td>
+      <td colspan="3">{{centroTrabajo}}</td>
+      <td>NÚMERO DE FORMULARIO</td>
+      <td colspan="3">{{num_formulario}}</td>
+    </tr>
+    <tr>
+      <td>PRIMER APELLIDO</td>
+      <td>{{apellido1}}</td>
+      <td>SEGUNDO APELLIDO</td>
+      <td>{{apellido2}}</td>
+      <td>PRIMER NOMBRE</td>
+      <td>{{nombre1}}</td>
+      <td>SEGUNDO NOMBRE</td>
+      <td>{{nombre2}}</td>
+    </tr>
+    <tr>
+      <td>SEXO</td>
+      <td>{{sexo}}</td>
+      <td colspan="2">PUESTO DE TRABAJO (CIUO)</td>
+      <td colspan="4">{{ciiu}}</td>
+    </tr>
+  </table>
+
+  <!-- SECCIÓN B -->
+  <table class="td-tight">
+    <tr>
+      <th colspan="12" class="sec">B. DATOS GENERALES</th>
+    </tr>
+    <tr>
+      <td>FECHA DE EMISIÓN:</td>
+      <td class="center caja">{{fecha_yyyy}}</td>
+      <td class="center caja">{{fecha_MM}}</td>
+      <td class="center caja">{{fecha_dd}}</td>
+      <td colspan="8"></td>
+    </tr>
+    <tr>
+      <td></td>
+      <td style="font-size:9px; text-align:center; border:1px solid #7fa87e; padding:2px;">yyyy</td>
+      <td style="font-size:9px; text-align:center; border:1px solid #7fa87e; padding:2px;">mm</td>
+      <td style="font-size:9px; text-align:center; border:1px solid #7fa87e; padding:2px;">dd</td>
+      <td colspan="8"></td>
+    </tr>
+    <tr>
+      <td>EVALUACIÓN:</td>
+      <td class="center">INGRESO</td>
+      <td class="center caja">{{chk_ingreso}}</td>
+      <td class="center">PERIÓDICO</td>
+      <td class="center caja">{{chk_periodico}}</td>
+      <td class="center">REINTEGRO</td>
+      <td class="center caja">{{chk_reintegro}}</td>
+      <td class="center">RETIRO</td>
+      <td class="center caja">{{chk_retiro}}</td>
+      <td colspan="3"></td>
+    </tr>
+  </table>
+
+  <!-- SECCIÓN C -->
+  <table class="td-tight">
+    <tr>
+      <th colspan="8" class="sec">C. APTITUD MÉDICA PARA EL TRABAJO</th>
+    </tr>
+    <tr>
+      <td class="center">APTO</td>
+      <td class="center caja">{{chk_apto}}</td>
+      <td class="center">APTO EN OBSERVACIÓN</td>
+      <td class="center caja">{{chk_obs}}</td>
+      <td class="center">APTO CON LIMITACIONES</td>
+      <td class="center caja">{{chk_lim}}</td>
+      <td class="center">NO APTO</td>
+      <td class="center caja">{{chk_noapto}}</td>
+    </tr>
+    <tr>
+      <td colspan="8" class="observaciones">
+        <strong>DETALLE DE OBSERVACIONES:</strong><br />
+        {{detalleObservaciones}}
+      </td>
+    </tr>
+  </table>
+
+  <!-- SECCIÓN D -->
+  <table class="td-tight">
+    <tr>
+      <th colspan="10" class="sec">D. RECOMENDACIONES/OBSERVACIONES</th>
+    </tr>
+    <tr>
+      <td colspan="10">
+        <strong>Descripción:</strong><br />
+        <strong>Observación:</strong>
+      </td>
+    </tr>
+    <tr>
+      <td colspan="10" style="text-align: center; font-weight: bold;">{{recomendaciones}}</td>
+    </tr>
+    <tr>
+      <td colspan="10" style="height: 44px; border: 1px solid #333; vertical-align: top; padding: 5px;"></td>
+    </tr>
+    <tr>
+      <td colspan="10" class="nota" style="font-size: 10.5px; padding: 6px; background-color: #f9f9f9;">
+        <p><strong>Con este documento certifico que el trabajador se ha sometido a la evaluación médica requerida para (el ingreso / la ejecución / el reingreso y retiro) al puesto laboral y se le ha informado sobre los riesgos relacionados con el trabajo, emitiendo recomendaciones relacionadas con su estado de salud.</strong></p>
+        <p><strong>La presente certificación se expide con base en el formulario de Evaluación Ocupacional, el cual tiene carácter de confidencial.</strong></p>
+      </td>
+    </tr>
+  </table>
+
+  <!-- SECCIÓN E -->
+  <table class="td-tight">
+    <tr>
+      <th colspan="10" class="sec">E. DATOS DEL PROFESIONAL</th>
+    </tr>
+    <tr>
+      <td>NOMBRE Y APELLIDO</td>
+      <td>{{medicoNombre}}</td>
+      <td>CÓDIGO MÉDICO</td>
+      <td>{{medicoCodigo}}</td>
+      <td colspan="6"
+          style="border:1px solid #333; height:70px; vertical-align:top; text-align:center; padding:4px;">
+        <div style="font-weight:bold; margin-top:2px;">FIRMA Y SELLO</div>
+        <div style="margin-top:28px; border-top:1px solid #333; width:70%; margin-left:auto; margin-right:auto;"></div>
+      </td>
+    </tr>
+  </table>
+
+  <!-- SECCIÓN F -->
+  <table class="td-tight">
+    <tr>
+      <th colspan="10" class="sec">F. FIRMA DEL USUARIO</th>
+    </tr>
+    <tr>
+      <td colspan="10" style="height: 50px; border: 1px solid #333;"></td>
+    </tr>
+  </table>
+
+  <div class="footer">
+    Documento generado automáticamente - {{fecha_yyyy}}-{{fecha_MM}}-{{fecha_dd}}
+  </div>
+</body>
+</html>

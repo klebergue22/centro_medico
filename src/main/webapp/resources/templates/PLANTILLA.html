@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <style>
+    table{width:100%;border-collapse:collapse;font-family:Arial,sans-serif;font-size:12px}
+    th,td{border:1px solid #7fa87e;padding:6px}
+    th{background:#d9f2d9;text-align:left}
+    .sec{background:#cfd8ff;font-weight:bold}
+    .titulo{font-weight:bold;font-size:16px;text-align:center;margin:8px 0}
+    .caja{height:20px} .center{text-align:center}
+  </style>
+</head>
+<body>
+  <div class="titulo">CERTIFICADO - EVALUACIÓN MÉDICA OCUPACIONAL</div>
+
+  <table>
+    <tr><th colspan="8" class="sec">A. DATOS DEL ESTABLECIMIENTO - DATOS DEL USUARIO</th></tr>
+    <tr><td>INSTITUCIÓN DEL SISTEMA</td><td colspan="3">{{institucion}}</td>
+        <td>RUC</td><td colspan="3">{{ruc}}</td></tr>
+    <tr><td>ESTABLECIMIENTO / CENTRO DE TRABAJO</td><td colspan="3">{{establecimiento}}</td>
+        <td>NÚMERO DE FORMULARIO</td><td colspan="3">{{num_formulario}}</td></tr>
+    <tr><td>PRIMER APELLIDO</td><td>{{apellido1}}</td>
+        <td>SEGUNDO APELLIDO</td><td>{{apellido2}}</td>
+        <td>PRIMER NOMBRE</td><td>{{nombre1}}</td>
+        <td>SEGUNDO NOMBRE</td><td>{{nombre2}}</td></tr>
+    <tr><td>SEXO</td><td>{{sexo}}</td>
+        <td colspan="2">PUESTO DE TRABAJO (CIUO)</td><td colspan="4">{{puesto}}</td></tr>
+  </table>
+  <br/>
+
+  <table>
+    <tr><th colspan="8" class="sec">B. DATOS GENERALES</th></tr>
+    <tr><td>FECHA DE EMISIÓN</td><td class="center">{{fecha_yyyy}}-{{fecha_MM}}-{{fecha_dd}}</td>
+        <td>EVALUACIÓN</td><td>{{tipo_eval}}</td>
+        <td colspan="4"></td></tr>
+  </table>
+  <br/>
+
+  <table>
+    <tr><th colspan="8" class="sec">C. APTITUD MÉDICA PARA EL TRABAJO</th></tr>
+    <tr><td class="center">APTO</td><td class="center caja">{{chk_apto}}</td>
+        <td class="center">APTO EN OBSERVACIÓN</td><td class="center caja">{{chk_obs}}</td>
+        <td class="center">APTO CON LIMITACIONES</td><td class="center caja">{{chk_lim}}</td>
+        <td class="center">NO APTO</td><td class="center caja">{{chk_noapto}}</td></tr>
+    <tr><td colspan="8">DETALLE DE OBSERVACIONES:<br/>{{obs_detalle}}</td></tr>
+  </table>
+  <br/>
+
+  <table>
+    <tr><th colspan="8" class="sec">D. RECOMENDACIONES/OBSERVACIONES</th></tr>
+    <tr><td colspan="8">{{recomendaciones}}</td></tr>
+  </table>
+  <br/>
+
+  <table>
+    <tr><th colspan="8" class="sec">E. DATOS DEL PROFESIONAL</th></tr>
+    <tr><td>NOMBRE Y APELLIDO</td><td colspan="3">{{medico_nombre}}</td>
+        <td>CÓDIGO MÉDICO</td><td>{{medico_codigo}}</td>
+        <td colspan="2" class="center">FIRMA Y SELLO</td></tr>
+  </table>
+</body>
+</html>
+

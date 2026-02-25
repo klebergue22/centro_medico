@@ -1,0 +1,564 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+
+    <!-- ===================== -->
+    <!-- STEP 1: H -->
+    <!-- ===================== -->
+
+    <!-- H -->
+    <p:fieldset legend="H. Actividad laboral / incidentes / accidentes / enfermedades ocupacionales"
+                toggleable="true" collapsed="false" styleClass="hx-fieldset">
+
+        <div class="hx-scroll">
+            <table class="hx-grid">
+                <colgroup>
+                    <col class="hx-col-ct"/>
+                    <col class="hx-col-acts"/>
+                    <col class="hx-col-chk"/><col class="hx-col-chk"/><col class="hx-col-tiempo"/>
+                    <col class="hx-col-chk"/><col class="hx-col-chk"/><col class="hx-col-chk"/>
+                    <col class="hx-col-chk"/><col class="hx-col-chk"/><col class="hx-col-fecha"/>
+                    <col class="hx-col-espec"/>
+                    <col class="hx-col-obsv"/>
+                </colgroup>
+
+                <thead>
+                    <tr>
+                        <th rowspan="2">CENTRO DE TRABAJO</th>
+                        <th rowspan="2">ACTIVIDADES QUE DESEMPEÑABA</th>
+                        <th colspan="3">TRABAJO</th>
+                        <th colspan="3">De los Accidentes de Trabajo y las Enfermedades Profesionales</th>
+                        <th colspan="4">CALIFICADO POR INSTITUTO ECUATORIANO DE SEGURIDAD SOCIAL</th>
+                        <th rowspan="2">OBSERVACIONES</th>
+                    </tr>
+                    <tr>
+                        <th>ANTERIOR</th>
+                        <th>ACTUAL</th>
+                        <th>TIEMPO DE TRABAJO</th>
+
+                        <th>INCIDENTE</th>
+                        <th>ACCIDENTE</th>
+                        <th>ENFERMEDAD<br/>PROFESIONAL</th>
+
+                        <th>SI</th>
+                        <th>NO</th>
+                        <th>FECHA <span class="hx-note">aaaa/mm/dd</span></th>
+                        <th>ESPECIFICAR</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    <ui:repeat value="#{centroMedicoCtrl.actLabRows}" var="row" varStatus="st">
+                        <tr>
+                            <td>
+                                <p:inputText id="centro_#{st.index}"
+                                             value="#{centroMedicoCtrl.actLabCentroTrabajo[st.index]}"
+                                             styleClass="hx-cell-input"
+                                             placeholder="Centro #{st.index+1}"/>
+                            </td>
+
+                            <td>
+                                <p:inputText id="act_#{st.index}"
+                                             value="#{centroMedicoCtrl.actLabActividad[st.index]}"
+                                             styleClass="hx-cell-input"
+                                             placeholder="Actividad #{st.index+1}"/>
+                            </td>
+
+                            <td style="text-align:center">
+                                <p:selectBooleanCheckbox id="trab_ant_#{st.index}"
+                                                         value="#{centroMedicoCtrl.actLabTrabajoAnterior[st.index]}"/>
+                            </td>
+                            <td style="text-align:center">
+                                <p:selectBooleanCheckbox id="trab_act_#{st.index}"
+                                                         value="#{centroMedicoCtrl.actLabTrabajoActual[st.index]}"/>
+                            </td>
+                            <td>
+                                <p:inputText id="trab_tiempo_#{st.index}"
+                                             value="#{centroMedicoCtrl.actLabTiempo[st.index]}"
+                                             styleClass="hx-cell-input"
+                                             placeholder="Tiempo"/>
+                            </td>
+
+                            <td style="text-align:center">
+                                <p:selectBooleanCheckbox id="incidente_#{st.index}"
+                                                         value="#{centroMedicoCtrl.actLabIncidenteChk[st.index]}"/>
+                            </td>
+                            <td style="text-align:center">
+                                <p:selectBooleanCheckbox id="accidente_#{st.index}"
+                                                         value="#{centroMedicoCtrl.actLabAccidenteChk[st.index]}"/>
+                            </td>
+                            <td style="text-align:center">
+                                <p:selectBooleanCheckbox id="enfermedad_#{st.index}"
+                                                         value="#{centroMedicoCtrl.actLabEnfermedadChk[st.index]}"/>
+                            </td>
+
+                            <td style="text-align:center">
+                                <p:selectBooleanCheckbox id="iess_si_#{st.index}"
+                                                         value="#{centroMedicoCtrl.iessSi[st.index]}"/>
+                            </td>
+                            <td style="text-align:center">
+                                <p:selectBooleanCheckbox id="iess_no_#{st.index}"
+                                                         value="#{centroMedicoCtrl.iessNo[st.index]}"/>
+                            </td>
+
+                            <td class="hx-date">
+                                <p:datePicker id="iess_fecha_#{st.index}"
+                                            value="#{centroMedicoCtrl.iessFecha[st.index]}"
+                                            pattern="dd/MM/yyyy"
+                                            monthNavigator="true"
+                                            yearNavigator="true"
+                                            showIcon="true"
+                                            styleClass="hx-date-picker"
+                                            inputStyle="width:100%"/>
+                            </td>
+
+                            <td>
+                                <p:inputTextarea id="iess_especificar_#{st.index}"
+                                                 value="#{centroMedicoCtrl.iessEspecificar[st.index]}"
+                                                 rows="2"
+                                                 autoResize="true"
+                                                 styleClass="hx-cell-textarea"
+                                                 placeholder="Detalle"/>
+                            </td>
+
+                            <td>
+                                <p:inputTextarea id="obs_#{st.index}"
+                                                 value="#{centroMedicoCtrl.actLabObservaciones[st.index]}"
+                                                 rows="2"
+                                                 autoResize="true"
+                                                 styleClass="hx-cell-textarea"
+                                                 placeholder="Observaciones"/>
+                            </td>
+                        </tr>
+                    </ui:repeat>
+                </tbody>
+            </table>
+        </div>
+    </p:fieldset>
+
+
+
+
+    <!-- I -->
+    <p:fieldset legend="I. Actividades extralaborales"
+                toggleable="true" collapsed="true">
+
+        <h:panelGroup layout="block" styleClass="ui-fluid panel-scroll">
+
+            <ui:param name="actividades" value="#{['1','2','3']}" />
+
+            <table class="i-grid">
+                <colgroup>
+                    <col class="i-col-type"/>
+                    <col class="i-col-date"/>
+                    <col class="i-col-desc"/>
+                </colgroup>
+
+                <thead>
+                    <tr class="i-header">
+                        <th>TIPO DE ACTIVIDAD</th>
+                        <th>FECHA (aaaa/mm/dd)</th>
+                        <th>DESCRIPCIÓN</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    <ui:repeat value="#{actividades}" var="a" varStatus="st">
+                        <tr>
+                            <td>
+                                <p:inputText id="tipoAct"
+                                             value="#{centroMedicoCtrl.tipoAct[st.index]}"
+                                             styleClass="cell-input"
+                                             placeholder="Tipo #{st.index+1}"/>
+                            </td>
+
+                            <td class="i-date">
+                                <p:datePicker id="fechaAct"
+                                            value="#{centroMedicoCtrl.fechaAct[st.index]}"
+                                            pattern="dd/MM/yyyy"
+                                            monthNavigator="true"
+                                            yearNavigator="true"
+                                            showIcon="true"
+                                            styleClass="hx-date-picker"
+                                            inputStyle="width:100%"/>
+                            </td>
+
+                            <td>
+                                <p:inputTextarea id="descAct"
+                                                 value="#{centroMedicoCtrl.descAct[st.index]}"
+                                                 rows="2"
+                                                 autoResize="true"
+                                                 styleClass="cell-textarea"
+                                                 placeholder="Descripción #{st.index+1}"/>
+                            </td>
+                        </tr>
+                    </ui:repeat>
+                </tbody>
+            </table>
+
+        </h:panelGroup>
+    </p:fieldset>
+
+
+    <!--J -->
+    <p:fieldset legend="J. Resultados de exámenes generales y específicos según riesgo/puesto"
+                toggleable="true" collapsed="true">
+        <h:panelGroup layout="block" styleClass="ui-fluid panel-scroll">
+
+            <ui:param name="rowsJ" value="#{['1','2','3','4','5']}" />
+
+            <table class="j-grid">
+                <colgroup>
+                    <col class="j-col-exam"/>
+                    <col class="j-col-date"/>
+                    <col class="j-col-res"/>
+                </colgroup>
+
+                <thead>
+                    <tr class="j-header">
+                        <th>NOMBRE DEL EXAMEN</th>
+                        <th>FECHA (aaaa/mm/dd)</th>
+                        <th>RESULTADOS</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    <ui:repeat value="#{rowsJ}" var="r" varStatus="st">
+                        <tr>
+                            <td>
+                                <p:inputText id="examNombre"
+                                             value="#{centroMedicoCtrl.examNombre[st.index]}"
+                                             styleClass="cell-input"
+                                             placeholder="Examen #{st.index+1}"/>
+                            </td>
+
+                            <td class="j-date">
+                                <p:datePicker id="examFecha"
+                                            value="#{centroMedicoCtrl.examFecha[st.index]}"
+                                            pattern="dd/MM/yyyy"
+                                            monthNavigator="true"
+                                            yearNavigator="true"
+                                            showIcon="true"
+                                            styleClass="hx-date-picker"
+                                            inputStyle="width:100%"/>
+                            </td>
+
+                            <td>
+                                <p:inputText id="examResultado"
+                                             value="#{centroMedicoCtrl.examResultado[st.index]}"
+                                             styleClass="cell-input"
+                                             placeholder="Resultado #{st.index+1}"/>
+                            </td>
+                        </tr>
+                    </ui:repeat>
+                </tbody>
+            </table>
+
+            <h:panelGrid columns="1" style="margin-top:10px; width:100%;" styleClass="ui-fluid">
+                <h:outputLabel for="obsJtxt"
+                               value="OBSERVACIONES:"
+                               style="font-weight:bold; display:block; margin-bottom:4px;"/>
+                <p:inputTextarea id="obsJtxt"
+                                 value="#{centroMedicoCtrl.obsJ}"
+                                 rows="4"
+                                 autoResize="true"
+                                 styleClass="cell-textarea j-observacion"
+                                 placeholder="Observaciones generales de los exámenes"/>
+            </h:panelGrid>
+
+        </h:panelGroup>
+    </p:fieldset>
+
+    <!--      K    -->
+    <p:fieldset legend="K. Diagnóstico — PRE: Presuntivo  DEF: Definitivo"
+                toggleable="true" collapsed="true"
+                styleClass="k-fieldset">
+
+        <h:panelGroup layout="block" styleClass="ui-fluid panel-scroll">
+
+            <p:outputPanel id="kPanel" layout="block">
+
+                <table class="k-grid">
+                    <colgroup>
+                        <col class="k-col-cie"/>
+                        <col class="k-col-desc"/>
+                        <col class="k-col-pre"/>
+                        <col class="k-col-def"/>
+                    </colgroup>
+
+                    <thead>
+                        <tr class="k-head">
+                            <th colspan="4">
+                                K. DIAGNÓSTICO
+                                <span style="font-weight:400"> PRE: PRESUNTIVO  DEF: DEFINITIVO</span>
+                            </th>
+                        </tr>
+                        <tr class="k-sub">
+                            <th>CIE-10</th>
+                            <th>Descripción</th>
+                            <th>PRE</th>
+                            <th>DEF</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        <ui:repeat id="kRep"
+                                   value="#{centroMedicoCtrl.listaDiag}"
+                                   var="d"
+                                   varStatus="st">
+
+                            <tr>
+                                <!-- CIE-10 -->
+                                <td>
+                                <p:autoComplete id="kCie"
+                value="#{d.codigo}"
+                completeMethod="#{centroMedicoCtrl.completarCie10FilaPorCodigo}"
+                dropdown="true"
+                dropdownMode="current"
+                cache="false"
+                minQueryLength="1"
+                queryDelay="200"
+                forceSelection="false"
+                appendTo="@(body)"
+                panelStyleClass="k-ac-panel"
+                styleClass="cell-input"
+                var="it"
+                itemLabel="#{it}"
+                itemValue="#{it}">
+
+                                        <f:attribute name="idx" value="#{st.index}"/>
+
+                                        <p:ajax event="itemSelect"
+                                                global="false"
+                                                listener="#{centroMedicoCtrl.onKCieCodigoSelect}"
+                                                process="@this"
+                                                update="@([id$=kPanel])"/>
+
+                                        <p:ajax event="blur"
+                                                global="false"
+                                                listener="#{centroMedicoCtrl.onKCieCodigoBlur}"
+                                                process="@this"
+                                                update="@([id$=kPanel])"/>
+
+
+                                    </p:autoComplete>
+                                </td>
+
+                                <!-- DESCRIPCIÓN -->
+                                <td>
+                       <p:autoComplete id="kDesc"
+                value="#{d.descripcion}"
+                completeMethod="#{centroMedicoCtrl.completarCie10FilaPorDescripcion}"
+                dropdown="true"
+                dropdownMode="current"
+                cache="false"
+                minQueryLength="2"
+                queryDelay="200"
+                forceSelection="false"
+                appendTo="@(body)"
+                panelStyleClass="k-ac-panel"
+                styleClass="cell-input"
+                var="it"
+                itemLabel="#{it}"
+                itemValue="#{it}">
+
+                                        <f:attribute name="idx" value="#{st.index}"/>
+
+                                        <p:ajax event="itemSelect"
+                                                global="false"
+                                                listener="#{centroMedicoCtrl.onKDescSelect}"
+                                                process="@this"
+                                                update="@([id$=kPanel])"/>
+
+                                        <p:ajax event="blur"
+                                                global="false"
+                                                listener="#{centroMedicoCtrl.onKDescBlur}"
+                                                process="@this"
+                                                update="@([id$=kPanel])"/>
+
+
+                                    </p:autoComplete>
+                                </td>
+
+                                <!-- PRE / DEF -->
+                                <td class="txt-c">
+                                    <p:selectOneRadio id="kTipo" value="#{d.tipoDiag}" layout="custom">
+                                        <f:selectItem itemLabel="PRE" itemValue="P"/>
+                                        <f:selectItem itemLabel="DEF" itemValue="D"/>
+                                        <p:ajax event="change" process="@this" update="kPanel"/>
+                                    </p:selectOneRadio>
+                                    <p:radioButton for="kTipo" itemIndex="0"/>
+                                </td>
+
+                                <td class="txt-c">
+                                    <p:radioButton for="kTipo" itemIndex="1"/>
+                                </td>
+                            </tr>
+                        </ui:repeat>
+                    </tbody>
+                </table>
+
+            </p:outputPanel>
+
+        </h:panelGroup>
+
+    </p:fieldset>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <!--  L  -->
+    <p:fieldset legend="L. APTITUD MÉDICA PARA EL TRABAJO" toggleable="true">
+        <h:panelGroup layout="block" styleClass="ui-fluid">
+
+            <!-- Radio REAL (oculto) -->
+            <p:selectOneRadio id="aptitud" layout="custom"
+                              value="#{centroMedicoCtrl.aptitudSel}">
+                <f:selectItem itemLabel="APTO" itemValue="APTO"/>
+                <f:selectItem itemLabel="APTO_EN_OBS" itemValue="APTO_EN_OBS"/>
+                <f:selectItem itemLabel="APTO_LIMIT" itemValue="APTO_LIMIT"/>
+                <f:selectItem itemLabel="NO_APTO" itemValue="NO_APTO"/>
+            </p:selectOneRadio>
+
+            <table class="l-grid">
+                <colgroup>
+                    <col class="l-col-opt"/>
+                    <col class="l-col-opt"/>
+                    <col class="l-col-opt"/>
+                    <col class="l-col-opt"/>
+                </colgroup>
+
+                <thead>
+                    <tr class="l-head">
+                        <th>APTO</th>
+                        <th>APTO EN OBSERVACIÓN</th>
+                        <th>APTO CON LIMITACIONES</th>
+                        <th>NO APTO</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    <tr>
+                        <td class="l-cell-radio">
+                            <p:radioButton for="aptitud" itemIndex="0"/>
+                        </td>
+                        <td class="l-cell-radio">
+                            <p:radioButton for="aptitud" itemIndex="1"/>
+                        </td>
+                        <td class="l-cell-radio">
+                            <p:radioButton for="aptitud" itemIndex="2"/>
+                        </td>
+                        <td class="l-cell-radio">
+                            <p:radioButton for="aptitud" itemIndex="3"/>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h:panelGrid columns="1" style="width:100%; margin-top:8px;">
+                <h:outputLabel for="l_obs" value="OBSERVACIONES:"
+                               style="font-weight:bold; margin-bottom:4px;"/>
+                <p:inputTextarea id="l_obs"
+                                 value="#{centroMedicoCtrl.detalleObservaciones}"
+                                 rows="4"
+                                 autoResize="true"
+                                 styleClass="l-observaciones"
+                                 placeholder="Observaciones generales sobre la aptitud"/>
+            </h:panelGrid>
+
+        </h:panelGroup>
+    </p:fieldset>
+
+    <!--  M  -->
+    <p:fieldset legend="M. Recomendaciones y/o tratamiento" toggleable="true" collapsed="true">
+        <p:inputTextarea id="i_rec" rows="3" style="width:100%" value="#{centroMedicoCtrl.recomendaciones}"/>
+    </p:fieldset>
+
+    <!-- N -->
+    <p:fieldset legend="N. RETIRO (evaluación)" toggleable="true">
+        <h:panelGroup layout="block" styleClass="ui-fluid">
+
+            <!-- Radio 1: SE REALIZA LA EVALUACIÓN -->
+            <p:selectOneRadio id="n_realiza_eval" layout="custom"
+                              value="#{centroMedicoCtrl.NRealizaEvaluacion}">
+                <f:selectItem itemLabel="SI" itemValue="S"/>
+                <f:selectItem itemLabel="NO" itemValue="N"/>
+            </p:selectOneRadio>
+
+            <!-- Radio 2: RELACIONADA CON EL TRABAJO -->
+            <p:selectOneRadio id="n_relacion_trabajo" layout="custom"
+                              value="#{centroMedicoCtrl.NRelacionTrabajo}">
+                <f:selectItem itemLabel="SI" itemValue="S"/>
+                <f:selectItem itemLabel="NO" itemValue="N"/>
+            </p:selectOneRadio>
+
+            <table class="n-grid">
+                <colgroup>
+                    <col class="n-col-label"/>
+                    <col class="n-col-si"/>
+                    <col class="n-col-no"/>
+                </colgroup>
+                <thead>
+                    <tr class="n-sub">
+                        <th></th><th>SI</th><th>NO</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>SE REALIZA LA EVALUACIÓN</td>
+                        <td class="n-center"><p:radioButton for="n_realiza_eval" itemIndex="0"/></td>
+                        <td class="n-center"><p:radioButton for="n_realiza_eval" itemIndex="1"/></td>
+                    </tr>
+                    <tr>
+                        <td>LA CONDICIÓN DE SALUD ESTÁ RELACIONADA CON EL TRABAJO</td>
+                        <td class="n-center"><p:radioButton for="n_relacion_trabajo" itemIndex="0"/></td>
+                        <td class="n-center"><p:radioButton for="n_relacion_trabajo" itemIndex="1"/></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h:panelGrid columns="1" style="width:100%; margin-top:8px;">
+                <h:outputLabel for="n_obs" value="Observación:"
+                               style="font-weight:bold; margin-bottom:4px;"/>
+                <p:inputTextarea id="n_obs"
+                                 value="#{centroMedicoCtrl.NObsRetiro}"
+                                 rows="3" autoResize="true"
+                                 styleClass="n-observacion"
+                                 placeholder="Detalle de la evaluación de retiro"/>
+            </h:panelGrid>
+
+        </h:panelGroup>
+    </p:fieldset>
+
+    <!-- O -->
+    <p:fieldset legend="O. Datos del profesional" toggleable="true" collapsed="true">
+        <h:panelGrid columns="4" styleClass="ui-fluid">
+
+            <h:outputText value="Nombre y apellido"/><p:inputText id="nombreMedico"  value="#{centroMedicoCtrl.medicoNombre}"/>
+            <h:outputText value="Código médico"/><p:inputText id="codigoMedico" value="#{centroMedicoCtrl.medicoCodigo}"/>
+        </h:panelGrid>
+    </p:fieldset>
+
+</ui:composition>

@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+<f:view locale="es">
+    <f:metadata>
+        <ui:insert name="metadata"/>
+    </f:metadata>
+
+    <h:head>
+        <title><ui:insert name="title">RRHH</ui:insert></title>
+        <h:outputStylesheet library="css" name="igm.css"/>
+
+        <link rel="icon" type="image/png"
+              href="#{request.contextPath}/resources/images/LOGO_IGM_FULL_COLOR.png" />
+        <ui:insert name="head"/>
+    </h:head>
+
+    <h:body>
+
+        <h:form id="layoutForm" prependId="false">
+
+            <!-- Dialog global de espera -->
+            <p:dialog modal="true" widgetVar="statusDialog"
+                      header="Por favor espere..."
+                      draggable="false" closable="false" resizable="false"
+                      appendTo="@(body)"
+                      styleClass="loading-dialog" width="350">
+                <div style="text-align:center; padding:20px;">
+                    <h:graphicImage library="images" name="loading.gif"
+                                    alt="Cargando..." style="display:block;margin:0 auto;"/>
+                    <h:outputText value="Procesando..." style="font-weight:bold;margin-top:8px;"/>
+                    <p>Procesando su solicitud...</p>
+                </div>
+            </p:dialog>
+
+            <p:growl id="growl" showDetail="true" life="4000" sticky="false"/>
+            <p:messages id="msgs" closable="true" showDetail="true"/>
+
+            <div class="topbar">
+                <p:menubar styleClass="navbar-militar">
+                    <p:menuitem value="Inicio" icon="pi pi-home" outcome="/index.xhtml"/>
+                    <p:submenu label="Módulos" icon="pi pi-sitemap">
+                        <p:menuitem value="Empleados" icon="pi pi-users" outcome="/pages/empleados.xhtml"/>
+                        <p:menuitem value="Contrataciones" icon="pi pi-briefcase" outcome="/pages/contrataciones.xhtml"/>
+                        <p:menuitem value="Salud" icon="pi pi-plus-circle" outcome="/pages/centroMedico.xhtml"/>
+                    </p:submenu>
+                </p:menubar>
+                <span class="brand">RRHH · Demo</span>
+            </div>
+
+            <div class="page-container">
+                <ui:insert name="content"/>
+            </div>
+
+            <p:separator/>
+            <footer class="footer-militar">© RRHH</footer>
+
+            <p:ajaxStatus
+                onstart="try{PF('statusDialog').show();}catch(e){}"
+                onsuccess="try{PF('statusDialog').hide();}catch(e){}"
+                onerror="try{PF('statusDialog').hide();}catch(e){}"/>
+
+            <ui:insert name="footer-scripts"/>
+        </h:form>
+
+        <!-- ✅ AQUÍ VAN LOS DIALOGS (FUERA DEL FORM PRINCIPAL) -->
+        <ui:insert name="dialogs"/>
+
+    </h:body>
+</f:view>
+</html>

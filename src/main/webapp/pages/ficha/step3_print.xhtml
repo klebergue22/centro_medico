@@ -1,0 +1,410 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+
+    <!-- ===================== -->
+    <!-- STEP 1: H -->
+    <!-- ===================== -->
+
+    <!-- H -->
+    <p:fieldset legend="H. Actividad laboral / incidentes / accidentes / enfermedades ocupacionales"
+                toggleable="true" collapsed="false" styleClass="hx-fieldset">
+
+        <div class="hx-scroll">
+            <table class="hx-grid">
+                <colgroup>
+                    <col class="hx-col-ct"/>
+                    <col class="hx-col-acts"/>
+                    <col class="hx-col-chk"/><col class="hx-col-chk"/><col class="hx-col-tiempo"/>
+                    <col class="hx-col-chk"/><col class="hx-col-chk"/><col class="hx-col-chk"/>
+                    <col class="hx-col-chk"/><col class="hx-col-chk"/><col class="hx-col-fecha"/>
+                    <col class="hx-col-espec"/>
+                    <col class="hx-col-obsv"/>
+                </colgroup>
+
+                <thead>
+                    <tr>
+                        <th rowspan="2">CENTRO DE TRABAJO</th>
+                        <th rowspan="2">ACTIVIDADES QUE DESEMPEÑABA</th>
+                        <th colspan="3">TRABAJO</th>
+                        <th colspan="3">De los Accidentes de Trabajo y las Enfermedades Profesionales</th>
+                        <th colspan="4">CALIFICADO POR INSTITUTO ECUATORIANO DE SEGURIDAD SOCIAL</th>
+                        <th rowspan="2">OBSERVACIONES</th>
+                    </tr>
+                    <tr>
+                        <th>ANTERIOR</th>
+                        <th>ACTUAL</th>
+                        <th>TIEMPO DE TRABAJO</th>
+
+                        <th>INCIDENTE</th>
+                        <th>ACCIDENTE</th>
+                        <th>ENFERMEDAD<br/>PROFESIONAL</th>
+
+                        <th>SI</th>
+                        <th>NO</th>
+                        <th>FECHA <span class="hx-note">aaaa/mm/dd</span></th>
+                        <th>ESPECIFICAR</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    <ui:repeat value="#{fichaPrintCtrl.cm.actLabRows}" var="row" varStatus="st">
+                        <tr>
+                            <td>
+                                <h:outputText value="#{fichaPrintCtrl.cm.actLabCentroTrabajo[st.index]}" />
+                            </td>
+
+                            <td>
+                                <h:outputText value="#{fichaPrintCtrl.cm.actLabActividad[st.index]}" />
+                            </td>
+
+                            <td style="text-align:center">
+                                <h:outputText value="#{fichaPrintCtrl.cm.actLabTrabajoAnterior[st.index] ? 'SI' : 'NO'}" />
+                            </td>
+                            <td style="text-align:center">
+                                <h:outputText value="#{fichaPrintCtrl.cm.actLabTrabajoActual[st.index] ? 'SI' : 'NO'}" />
+                            </td>
+                            <td>
+                                <h:outputText value="#{fichaPrintCtrl.cm.actLabTiempo[st.index]}" />
+                            </td>
+
+                            <td style="text-align:center">
+                                <h:outputText value="#{fichaPrintCtrl.cm.actLabIncidenteChk[st.index] ? 'SI' : 'NO'}" />
+                            </td>
+                            <td style="text-align:center">
+                                <h:outputText value="#{fichaPrintCtrl.cm.actLabAccidenteChk[st.index] ? 'SI' : 'NO'}" />
+                            </td>
+                            <td style="text-align:center">
+                                <h:outputText value="#{fichaPrintCtrl.cm.actLabEnfermedadChk[st.index] ? 'SI' : 'NO'}" />
+                            </td>
+
+                            <td style="text-align:center">
+                                <h:outputText value="#{fichaPrintCtrl.cm.iessSi[st.index] ? 'SI' : 'NO'}" />
+                            </td>
+                            <td style="text-align:center">
+                                <h:outputText value="#{fichaPrintCtrl.cm.iessNo[st.index] ? 'SI' : 'NO'}" />
+                            </td>
+
+                            <td class="hx-date">
+                                <h:outputText value="#{fichaPrintCtrl.cm.iessFecha[st.index]}" />
+                            </td>
+
+                            <td>
+                                <h:outputText value="#{fichaPrintCtrl.cm.iessEspecificar[st.index]}" />
+                            </td>
+
+                            <td>
+                                <h:outputText value="#{fichaPrintCtrl.cm.actLabObservaciones[st.index]}" />
+                            </td>
+                        </tr>
+                    </ui:repeat>
+                </tbody>
+            </table>
+        </div>
+    </p:fieldset>
+
+
+
+
+    <!-- I -->
+    <p:fieldset legend="I. Actividades extralaborales"
+                toggleable="true" collapsed="true">
+
+        <h:panelGroup layout="block" styleClass="ui-fluid panel-scroll">
+
+            <ui:param name="actividades" value="#{['1','2','3']}" />
+
+            <table class="i-grid">
+                <colgroup>
+                    <col class="i-col-type"/>
+                    <col class="i-col-date"/>
+                    <col class="i-col-desc"/>
+                </colgroup>
+
+                <thead>
+                    <tr class="i-header">
+                        <th>TIPO DE ACTIVIDAD</th>
+                        <th>FECHA (aaaa/mm/dd)</th>
+                        <th>DESCRIPCIÓN</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    <ui:repeat value="#{actividades}" var="a" varStatus="st">
+                        <tr>
+                            <td>
+                                <h:outputText value="#{fichaPrintCtrl.cm.tipoAct[st.index]}" />
+                            </td>
+
+                            <td class="i-date">
+                                <h:outputText value="#{fichaPrintCtrl.cm.fechaAct[st.index]}" />
+                            </td>
+
+                            <td>
+                                <h:outputText value="#{fichaPrintCtrl.cm.descAct[st.index]}" />
+                            </td>
+                        </tr>
+                    </ui:repeat>
+                </tbody>
+            </table>
+
+        </h:panelGroup>
+    </p:fieldset>
+
+
+    <!--J -->
+    <p:fieldset legend="J. Resultados de exámenes generales y específicos según riesgo/puesto"
+                toggleable="true" collapsed="true">
+        <h:panelGroup layout="block" styleClass="ui-fluid panel-scroll">
+
+            <ui:param name="rowsJ" value="#{['1','2','3','4','5']}" />
+
+            <table class="j-grid">
+                <colgroup>
+                    <col class="j-col-exam"/>
+                    <col class="j-col-date"/>
+                    <col class="j-col-res"/>
+                </colgroup>
+
+                <thead>
+                    <tr class="j-header">
+                        <th>NOMBRE DEL EXAMEN</th>
+                        <th>FECHA (aaaa/mm/dd)</th>
+                        <th>RESULTADOS</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    <ui:repeat value="#{rowsJ}" var="r" varStatus="st">
+                        <tr>
+                            <td>
+                                <h:outputText value="#{fichaPrintCtrl.cm.examNombre[st.index]}" />
+                            </td>
+
+                            <td class="j-date">
+                                <h:outputText value="#{fichaPrintCtrl.cm.examFecha[st.index]}" />
+                            </td>
+
+                            <td>
+                                <h:outputText value="#{fichaPrintCtrl.cm.examResultado[st.index]}" />
+                            </td>
+                        </tr>
+                    </ui:repeat>
+                </tbody>
+            </table>
+
+            <h:panelGrid columns="1" style="margin-top:10px; width:100%;" styleClass="ui-fluid">
+                <h:outputLabel for="obsJtxt"
+                               value="OBSERVACIONES:"
+                               style="font-weight:bold; display:block; margin-bottom:4px;"/>
+                <h:outputText value="#{fichaPrintCtrl.cm.obsJ}" />
+            </h:panelGrid>
+
+        </h:panelGroup>
+    </p:fieldset>
+
+    <!--      K    -->
+    <p:fieldset legend="K. Diagnóstico — PRE: Presuntivo  DEF: Definitivo"
+                toggleable="true" collapsed="true"
+                styleClass="k-fieldset">
+
+        <h:panelGroup layout="block" styleClass="ui-fluid panel-scroll">
+
+            <p:outputPanel id="kPanel" layout="block">
+
+                <table class="k-grid">
+                    <colgroup>
+                        <col class="k-col-cie"/>
+                        <col class="k-col-desc"/>
+                        <col class="k-col-pre"/>
+                        <col class="k-col-def"/>
+                    </colgroup>
+
+                    <thead>
+                        <tr class="k-head">
+                            <th colspan="4">
+                                K. DIAGNÓSTICO
+                                <span style="font-weight:400"> PRE: PRESUNTIVO  DEF: DEFINITIVO</span>
+                            </th>
+                        </tr>
+                        <tr class="k-sub">
+                            <th>CIE-10</th>
+                            <th>Descripción</th>
+                            <th>PRE</th>
+                            <th>DEF</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        <ui:repeat id="kRep"
+                                   value="#{fichaPrintCtrl.cm.listaDiag}"
+                                   var="d"
+                                   varStatus="st">
+
+                            <tr>
+                                <!-- CIE-10 -->
+                                <td>
+                                    <h:outputText value="#{d.codigo}" />
+                                </td>
+
+                                <!-- DESCRIPCIÓN -->
+                                <td>
+                                    <h:outputText value="#{d.descripcion}" />
+                                </td>
+
+                                <!-- PRE -->
+                                <td class="txt-c">
+                                    <h:outputText value="#{(d.tipoDiag eq 'PRE' or d.tipoDiag eq 'P') ? 'X' : ''}" />
+                                </td>
+
+                                <!-- DEF -->
+                                <td class="txt-c">
+                                    <h:outputText value="#{(d.tipoDiag eq 'DEF' or d.tipoDiag eq 'D') ? 'X' : ''}" />
+                                </td>
+                            </tr>
+
+                        </ui:repeat>
+                    </tbody>
+                </table>
+
+            </p:outputPanel>
+
+        </h:panelGroup>
+
+    </p:fieldset>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <!--  L  -->
+    <p:fieldset legend="L. APTITUD MÉDICA PARA EL TRABAJO" toggleable="true">
+        <h:panelGroup layout="block" styleClass="ui-fluid">
+
+            <!-- Radio REAL (oculto) -->
+            <h:outputText value="#{fichaPrintCtrl.cm.aptitudSel}" />
+
+            <table class="l-grid">
+                <colgroup>
+                    <col class="l-col-opt"/>
+                    <col class="l-col-opt"/>
+                    <col class="l-col-opt"/>
+                    <col class="l-col-opt"/>
+                </colgroup>
+
+                <thead>
+                    <tr class="l-head">
+                        <th>APTO</th>
+                        <th>APTO EN OBSERVACIÓN</th>
+                        <th>APTO CON LIMITACIONES</th>
+                        <th>NO APTO</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    <tr>
+                        <td class="l-cell-radio">
+                            <h:outputText value="#{fichaPrintCtrl.cm.aptitudSel eq 'APTO' ? 'X' : ''}" />
+                        </td>
+                        <td class="l-cell-radio">
+                            <h:outputText value="#{(centroMedicoCtrl.aptitudSel eq 'APTO EN OBSERVACIÓN' or centroMedicoCtrl.aptitudSel eq 'APTO EN OBSERVACION') ? 'X' : ''}" />
+                        </td>
+                        <td class="l-cell-radio">
+                            <h:outputText value="#{(centroMedicoCtrl.aptitudSel eq 'APTO CON LIMITACIONES') ? 'X' : ''}" />
+                        </td>
+                        <td class="l-cell-radio">
+                            <h:outputText value="#{fichaPrintCtrl.cm.aptitudSel eq 'NO APTO' ? 'X' : ''}" />
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h:panelGrid columns="1" style="width:100%; margin-top:8px;">
+                <h:outputLabel for="l_obs" value="OBSERVACIONES:"
+                               style="font-weight:bold; margin-bottom:4px;"/>
+                <h:outputText value="#{fichaPrintCtrl.cm.detalleObservaciones}" />
+            </h:panelGrid>
+
+        </h:panelGroup>
+    </p:fieldset>
+
+    <!--  M  -->
+    <p:fieldset legend="M. Recomendaciones y/o tratamiento" toggleable="true" collapsed="true">
+        <h:outputText value="#{fichaPrintCtrl.cm.recomendaciones}" />
+    </p:fieldset>
+
+    <!-- N -->
+    <p:fieldset legend="N. RETIRO (evaluación)" toggleable="true">
+        <h:panelGroup layout="block" styleClass="ui-fluid">
+
+            <!-- Radio 1: SE REALIZA LA EVALUACIÓN -->
+            <h:outputText value="#{fichaPrintCtrl.cm.NRealizaEvaluacion}" />
+
+            <!-- Radio 2: RELACIONADA CON EL TRABAJO -->
+            <h:outputText value="#{fichaPrintCtrl.cm.NRelacionTrabajo}" />
+
+            <table class="n-grid">
+                <colgroup>
+                    <col class="n-col-label"/>
+                    <col class="n-col-si"/>
+                    <col class="n-col-no"/>
+                </colgroup>
+                <thead>
+                    <tr class="n-sub">
+                        <th></th><th>SI</th><th>NO</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>SE REALIZA LA EVALUACIÓN</td>
+                        <td class="n-center"><h:outputText value="#{(centroMedicoCtrl.NRealizaEvaluacion eq 'SI' or centroMedicoCtrl.NRealizaEvaluacion eq 'SÍ' or centroMedicoCtrl.NRealizaEvaluacion eq 'S') ? 'X' : ''}" /></td>
+                        <td class="n-center"><h:outputText value="#{(centroMedicoCtrl.NRealizaEvaluacion eq 'NO' or centroMedicoCtrl.NRealizaEvaluacion eq 'N') ? 'X' : ''}" /></td>
+                    </tr>
+                    <tr>
+                        <td>LA CONDICIÓN DE SALUD ESTÁ RELACIONADA CON EL TRABAJO</td>
+                        <td class="n-center"><h:outputText value="#{(centroMedicoCtrl.NRelacionTrabajo eq 'SI' or centroMedicoCtrl.NRelacionTrabajo eq 'SÍ' or centroMedicoCtrl.NRelacionTrabajo eq 'S') ? 'X' : ''}" /></td>
+                        <td class="n-center"><h:outputText value="#{(centroMedicoCtrl.NRelacionTrabajo eq 'NO' or centroMedicoCtrl.NRelacionTrabajo eq 'N') ? 'X' : ''}" /></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h:panelGrid columns="1" style="width:100%; margin-top:8px;">
+                <h:outputLabel for="n_obs" value="Observación:"
+                               style="font-weight:bold; margin-bottom:4px;"/>
+                <h:outputText value="#{fichaPrintCtrl.cm.NObsRetiro}" />
+            </h:panelGrid>
+
+        </h:panelGroup>
+    </p:fieldset>
+
+    <!-- O -->
+    <p:fieldset legend="O. Datos del profesional" toggleable="true" collapsed="true">
+        <h:panelGrid columns="4" styleClass="ui-fluid">
+
+            <h:outputText value="Nombre y apellido"/><h:outputText value="#{fichaPrintCtrl.cm.medicoNombre}" />
+            <h:outputText value="Código médico"/><h:outputText value="#{fichaPrintCtrl.cm.medicoCodigo}" />
+        </h:panelGrid>
+    </p:fieldset>
+
+</ui:composition>

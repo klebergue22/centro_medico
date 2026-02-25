@@ -1,0 +1,867 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+
+    <!-- A. DATOS DEL ESTABLECIMIENTO / USUARIO -->
+    <p:fieldset legend="A. DATOS DEL ESTABLECIMIENTO / USUARIO" toggleable="true">
+
+        <p:panelGrid columns="4" layout="grid"
+                     columnClasses="col-label,col-field,col-label,col-field"
+                     styleClass="ui-fluid">
+
+            <h:outputLabel value="Institución del Sistema"/>
+            <h:panelGroup styleClass="field-wrap">
+                <p:inputText value="#{centroMedicoCtrl.ficha.instSistema}" />
+            </h:panelGroup>
+
+            <h:outputLabel value="RUC"/>
+            <h:panelGroup styleClass="field-wrap">
+                <p:inputText value="#{centroMedicoCtrl.ficha.rucEstablecimiento}" maxlength="20" readonly="true"/>
+            </h:panelGroup>
+
+            <h:outputLabel value=" Puesto de Trabajo CIUO"/>
+            <h:panelGroup styleClass="field-wrap">
+                <p:inputText value="#{centroMedicoCtrl.ficha.ciiu}" maxlength="20"/>
+            </h:panelGroup>
+
+            <h:outputLabel value="Centro de trabajo"/>
+            <h:panelGroup styleClass="field-wrap">
+                <p:inputText value="#{centroMedicoCtrl.ficha.establecimientoCt}" maxlength="250"/>
+            </h:panelGroup>
+
+            <h:outputLabel value="N° Historia clínica"/>
+            <h:panelGroup styleClass="field-wrap">
+                <p:inputText id="noHistoriaClinica" value="#{centroMedicoCtrl.ficha.noHistoriaClinica}" maxlength="30"/>
+            </h:panelGroup>
+
+            <h:outputLabel value="N° Archivo"/>
+            <h:panelGroup styleClass="field-wrap">
+                <p:inputText id="noArchivo" value="#{centroMedicoCtrl.ficha.noArchivo}" maxlength="30"/>
+            </h:panelGroup>
+
+            <h:outputLabel value="Primer apellido"/>
+            <h:panelGroup styleClass="field-wrap">
+                <p:inputText id="apellido1" value="#{centroMedicoCtrl.apellido1}"/>
+            </h:panelGroup>
+
+            <h:outputLabel value="Segundo apellido"/>
+            <h:panelGroup styleClass="field-wrap">
+                <p:inputText value="#{centroMedicoCtrl.apellido2}"/>
+            </h:panelGroup>
+
+            <h:outputLabel value="Primer nombre"/>
+            <h:panelGroup styleClass="field-wrap">
+                <p:inputText id="nombre1" value="#{centroMedicoCtrl.nombre1}"/>
+            </h:panelGroup>
+
+            <h:outputLabel value="Segundo nombre"/>
+            <h:panelGroup styleClass="field-wrap">
+                <p:inputText value="#{centroMedicoCtrl.nombre2}"/>
+            </h:panelGroup>
+
+        </p:panelGrid>
+
+        <!-- ATENCIÓN PRIORITARIA -->
+        <p:fieldset legend="ATENCIÓN PRIORITARIA" styleClass="ap-fieldset" style="margin-top:.5rem;">
+            <div class="ap-grid">
+                <div class="ap-item">
+                    <p:selectBooleanCheckbox value="#{centroMedicoCtrl.apEmbarazada}" />
+                    <h:outputText value="Embarazada" styleClass="ap-label"/>
+                </div>
+                <div class="ap-item">
+                    <p:selectBooleanCheckbox value="#{centroMedicoCtrl.apDiscapacidad}" />
+                    <h:outputText value="Discapacidad" styleClass="ap-label"/>
+                </div>
+                <div class="ap-item">
+                    <p:selectBooleanCheckbox value="#{centroMedicoCtrl.apCatastrofica}" />
+                    <h:outputText value="Enf. catastrófica" styleClass="ap-label"/>
+                </div>
+                <div class="ap-item">
+                    <p:selectBooleanCheckbox value="#{centroMedicoCtrl.apLactancia}" />
+                    <h:outputText value="Lactancia" styleClass="ap-label"/>
+                </div>
+                <div class="ap-item">
+                    <p:selectBooleanCheckbox value="#{centroMedicoCtrl.apAdultoMayor}" />
+                    <h:outputText value="Adulto mayor" styleClass="ap-label"/>
+                </div>
+            </div>
+        </p:fieldset>
+
+        <!-- BIO/IDENTIFICACIÓN -->
+        <h:panelGrid columns="4"
+                     columnClasses="w-15rem, w-35rem, w-15rem, w-35rem"
+                     styleClass="ui-fluid" style="margin-top:.5rem">
+
+            <h:outputLabel for="sexowd" value="Sexo"/>
+
+            <p:selectOneRadio id="sexowd" value="#{centroMedicoCtrl.sexo}">
+                <f:selectItem itemLabel="Hombre" itemValue="M"/>
+                <f:selectItem itemLabel="Mujer"  itemValue="F"/>
+
+                <p:ajax event="change"
+                        process="@form"
+                        update="sexoBlocks"/>
+            </p:selectOneRadio>
+
+
+
+            <h:outputLabel for="fecNac" value="Fecha de nacimiento"/>
+
+            <p:calendar id="fecNac"
+                        value="#{centroMedicoCtrl.fechaNacimiento}"
+                        pattern="dd/MM/yyyy"
+                        navigator="true"
+                        showOn="button"
+                        yearRange="1924:2007">
+
+                <p:ajax event="dateSelect"
+                        listener="#{centroMedicoCtrl.onFechaNacimientoSelect}"
+                        process="@this"
+                        update=":layoutForm:edad :layoutForm:msgs" />
+
+                <p:ajax event="change"
+                        listener="#{centroMedicoCtrl.onFechaNacimientoChange}"
+                        process="@this"
+                        update=":layoutForm:edad :layoutForm:msgs"/>
+
+            </p:calendar>
+
+            <h:outputLabel for="edad" value="Edad (años)"/>
+            <p:inputText id="edad" value="#{centroMedicoCtrl.edad}" readonly="true"/>
+
+
+
+            <h:outputLabel for="sangre" value="Grupo sanguíneo"/>
+            <p:selectOneMenu id="sangre" value="#{centroMedicoCtrl.grupoSanguineo}">
+                <f:selectItem itemLabel="Seleccione" itemValue=""/>
+                <f:selectItem itemLabel="O+" itemValue="O+"/>
+                <f:selectItem itemLabel="O-" itemValue="O-"/>
+                <f:selectItem itemLabel="A+" itemValue="A+"/>
+                <f:selectItem itemLabel="A-" itemValue="A-"/>
+                <f:selectItem itemLabel="B+" itemValue="B+"/>
+                <f:selectItem itemLabel="B-" itemValue="B-"/>
+                <f:selectItem itemLabel="AB+" itemValue="AB+"/>
+                <f:selectItem itemLabel="AB-" itemValue="AB-"/>
+            </p:selectOneMenu>
+
+            <h:outputLabel for="lateralidad" value="Lateralidad"/>
+            <p:selectOneMenu id="lateralidad" value="#{centroMedicoCtrl.lateralidad}">
+                <f:selectItem itemLabel="Seleccione" itemValue=""/>
+                <f:selectItem itemLabel="Diestro" itemValue="DIESTRO"/>
+                <f:selectItem itemLabel="Zurdo" itemValue="ZURDO"/>
+                <f:selectItem itemLabel="Ambidiestro" itemValue="AMBIDIESTRO"/>
+            </p:selectOneMenu>
+        </h:panelGrid>
+
+    </p:fieldset>
+
+    <!-- B. MOTIVO DE CONSULTA -->
+    <p:fieldset legend="B. MOTIVO DE CONSULTA" toggleable="true">
+        <h:panelGrid columns="4"
+                     columnClasses="w-15rem, w-35rem, w-15rem, w-35rem"
+                     styleClass="ui-fluid">
+
+            <h:outputLabel value="Puesto de trabajo (CIUO)"/>
+            <p:inputText placeholder="CIUO"/>
+
+            <h:outputLabel value="Fecha de atención"/>
+            <p:calendar value="#{centroMedicoCtrl.fechaAtencion}" 
+                        pattern="dd/MM/yyyy" 
+                        navigator="true" 
+                        showOn="button"/>
+
+            <!-- Selector de tipo de evaluación -->
+            <h:panelGrid  >
+                <h:outputLabel for="tipoEval" value="Tipo Evaluación"/>
+                <p:selectOneRadio id="tipoEval" value="#{centroMedicoCtrl.tipoEval}">
+                    <f:selectItem itemLabel="Ingreso" itemValue="INGRESO"/>
+                    <f:selectItem itemLabel="Periódico" itemValue="PERIODICO"/>
+                    <f:selectItem itemLabel="Reintegro" itemValue="REINTEGRO"/>
+                    <f:selectItem itemLabel="Retiro" itemValue="RETIRO"/>
+                    <!-- Re-renderiza el bloque de fechas al cambiar -->
+                    <p:ajax event="valueChange"
+                            listener="#{centroMedicoCtrl.syncTipoEvaluacion}"
+                            process="@form" update="fechasPanel"
+                            />
+                </p:selectOneRadio>
+            </h:panelGrid>
+
+            <!-- Bloque que se re-renderiza con las fechas -->
+            <h:panelGroup id="fechasPanel" layout="block">
+                <h:panelGrid >
+
+                    <!-- Fecha de ingreso -->
+                    <ui:fragment rendered="#{centroMedicoCtrl.tipoEval eq 'INGRESO' or centroMedicoCtrl.tipoEval eq 'PERIODICO'}">
+                        <h:outputLabel for="fecIngreso" value="Fecha de ingreso"/>
+                        <p:calendar id="fecIngreso"
+                                    value="#{centroMedicoCtrl.fecIngreso}"
+                                    pattern="dd/MM/yyyy"
+                                    showOn="button"/>
+                    </ui:fragment>
+
+                    <!-- Fecha de reintegro -->
+                    <ui:fragment rendered="#{centroMedicoCtrl.tipoEval eq 'REINTEGRO' or centroMedicoCtrl.tipoEval eq 'PERIODICO'}">
+                        <h:outputLabel for="fecReintegro" value="Fecha de reintegro"/>
+                        <p:calendar id="fecReintegro"
+                                    value="#{centroMedicoCtrl.fecReintegro}"
+                                    pattern="dd/MM/yyyy"
+                                    showOn="button"/>
+                    </ui:fragment>
+
+                    <!-- Último día laboral (retiro) -->
+                    <ui:fragment rendered="#{centroMedicoCtrl.tipoEval eq 'RETIRO' or centroMedicoCtrl.tipoEval eq 'PERIODICO'}">
+                        <h:outputLabel for="fecRetiro" value="Último día laboral"/>
+                        <p:calendar id="fecRetiro"
+                                    value="#{centroMedicoCtrl.fecRetiro}"
+                                    pattern="dd/MM/yyyy"
+                                    showOn="button"/>
+                    </ui:fragment>
+
+                </h:panelGrid>
+            </h:panelGroup>
+
+            <h:outputLabel value="Observación" />
+            <p:inputTextarea style="width:190%; min-width:400px;" rows="2" autoResize="true" placeholder="Observación"/>
+        </h:panelGrid>
+    </p:fieldset>
+
+    <!-- C. ANTECEDENTES PERSONALES -->
+    <p:fieldset legend="C. ANTECEDENTES PERSONALES" toggleable="true">
+        <h:panelGrid columns="2" columnClasses="w-20rem," styleClass="ui-fluid">
+            <h:outputLabel value="Antecedentes clínicos y quirúrgicos"/>
+            <p:inputTextarea style="width:140%; min-width:500px;" rows="3" autoResize="true" value="#{centroMedicoCtrl.antClinicoQuirurgico}"/>
+
+            <h:outputLabel value="Antecedentes familiares"/>
+            <p:inputTextarea rows="3" autoResize="true" value="#{centroMedicoCtrl.antFamiliares}"/>
+
+            <h:outputLabel value="Condición especial (urgencias / emergencia / tx)"/>
+            <p:inputTextarea rows="2" autoResize="true" value="#{centroMedicoCtrl.condicionEspecial}"/>
+
+            <h:outputLabel value="Autoriza transfusiones"/>
+            <p:selectOneRadio value="#{centroMedicoCtrl.autorizaTransfusion}">
+                <f:selectItem itemLabel="Sí" itemValue="S"/>
+                <f:selectItem itemLabel="No" itemValue="N"/>
+            </p:selectOneRadio>
+
+            <h:outputLabel value="Tratamiento hormonal"/>
+            <p:selectOneRadio value="#{centroMedicoCtrl.tratamientoHormonal}">
+                <f:selectItem itemLabel="Sí" itemValue="S"/>
+                <f:selectItem itemLabel="No" itemValue="N"/>
+            </p:selectOneRadio>
+
+            <h:outputLabel value="¿Cuál?"/>
+            <p:inputText value="#{centroMedicoCtrl.tratamientoHormonalCual}"/>
+        </h:panelGrid>
+        <p:outputPanel id="sexoBlocks" layout="block"  style="margin-top:8px">
+
+            <!-- Condicional: REPRODUCTIVOS MASCULINOS -->
+            <h:panelGroup id="panelReproMas"
+                          rendered="#{centroMedicoCtrl.sexo eq 'M'}"
+                          layout="block"
+                          style="margin-top:8px;">
+                <p:fieldset legend="ANTECEDENTES REPRODUCTIVOS MASCULINOS" toggleable="true" collapsed="false">
+                    <h:panelGrid columns="4" styleClass="ui-fluid"
+                                 columnClasses="w-20rem, w-30rem, w-10rem, w-30rem">
+                        <h:outputText value="Exámenes realizados (¿cuál?)"/>
+                        <p:inputTextarea rows="2" autoResize="true"
+                                         value="#{centroMedicoCtrl.examenReproMasculino}"/>
+
+                        <h:outputText value="Tiempo (años)"/>
+                        <p:inputNumber value="#{centroMedicoCtrl.tiempoReproMasculino}"
+                                       decimalPlaces="0" minValue="0"/>
+                    </h:panelGrid>
+                </p:fieldset>
+            </h:panelGroup>
+
+            <!-- Condicional: GINECO OBSTÉTRICOS (MUJER) -->
+            <h:panelGroup id="panelGineObst"
+                          rendered="#{centroMedicoCtrl.sexo eq 'F'}"
+                          layout="block"
+                          style="margin-top:8px;">
+
+                <p:fieldset legend="ANTECEDENTES GINECO OBSTÉTRICOS" toggleable="true">
+                    <h:panelGroup id="obstetricos">
+
+                        <table class="obst-grid">
+                            <thead>
+                                <tr>
+                                    <th colspan="2" class="w-20">FECHA DE LA ÚLTIMA MENSTRUACIÓN</th>
+                                    <th class="w-8">GESTAS</th>
+                                    <th class="w-8">CESÁREAS</th>
+                                    <th class="w-8">PARTOS</th>
+                                    <th class="w-8">ABORTOS</th>
+                                    <th colspan="4" class="w-24">MÉTODO DE PLANIFICACIÓN FAMILIAR</th>
+                                </tr>
+                                <tr>
+                                    <th colspan="2" class="txt-c">aaaa / mm / dd</th>
+                                    <th class="txt-c"></th><th class="txt-c"></th><th class="txt-c"></th><th class="txt-c"></th>
+                                    <th class="txt-c w-6">sí</th>
+                                    <th class="txt-c w-14">¿cuál?</th>
+                                    <th class="txt-c w-6">no</th>
+                                    <th class="txt-c w-8">no responde</th>
+                                </tr>
+                            </thead>
+
+                            <!-- Fila de captura -->
+                            <tr>
+                                <!-- FUM -->
+                                <td colspan="2">
+                                    <p:calendar value="#{centroMedicoCtrl.fum}"
+                                                pattern="dd/MM/yyyy"
+                                                showOn="button"
+                                                styleClass="obst-cal obst-fit"/>
+                                </td>
+
+                                <!-- Números -->
+                                <td class="txt-c">
+                                    <p:inputNumber value="#{centroMedicoCtrl.gestas}" decimalPlaces="0" minValue="0" styleClass="obst-fit"/>
+                                </td>
+                                <td class="txt-c">
+                                    <p:inputNumber value="#{centroMedicoCtrl.cesareas}" decimalPlaces="0" minValue="0" styleClass="obst-fit"/>
+                                </td>
+                                <td class="txt-c">
+                                    <p:inputNumber value="#{centroMedicoCtrl.partos}" decimalPlaces="0" minValue="0" styleClass="obst-fit"/>
+                                </td>
+                                <td class="txt-c">
+                                    <p:inputNumber value="#{centroMedicoCtrl.abortos}" decimalPlaces="0" minValue="0" styleClass="obst-fit"/>
+                                </td>
+
+                                <!-- MPF: usa planificacion String (SI/NO/NR) -->
+                                <td class="txt-c">
+                                    <p:selectOneRadio id="mpf"
+                                                      value="#{centroMedicoCtrl.planificacion}"
+                                                      layout="custom">
+                                        <f:selectItem itemLabel="SI" itemValue="SI"/>
+                                        <f:selectItem itemLabel="NO" itemValue="NO"/>
+                                        <f:selectItem itemLabel="NR" itemValue="NR"/>
+                                        <p:ajax process="@this" update="mpfCual"/>
+                                    </p:selectOneRadio>
+                                    <div class="obst-chk">
+                                        <p:radioButton for="mpf" itemIndex="0"/>
+                                    </div>
+                                </td>
+
+                                <td>
+                                    <p:inputText id="mpfCual"
+                                                 value="#{centroMedicoCtrl.planificacionCual}"
+                                                 placeholder="Nombre del método"
+                                                 styleClass="obst-fit"
+                                                 disabled="#{centroMedicoCtrl.planificacion ne 'SI'}"/>
+                                </td>
+
+                                <td class="txt-c">
+                                    <div class="obst-chk">
+                                        <p:radioButton for="mpf" itemIndex="1"/>
+                                    </div>
+                                </td>
+
+                                <td class="txt-c">
+                                    <div class="obst-chk">
+                                        <p:radioButton for="mpf" itemIndex="2"/>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            <!-- Cabecera Exámenes -->
+                            <tr>
+                                <th colspan="2">EXÁMENES REALIZADOS ¿CUÁL?</th>
+                                <th>TIEMPO<br/><span style="font-weight:400">(años)</span></th>
+                                <th colspan="7" class="txt-c">RESULTADO</th>
+                            </tr>
+                            <tr>
+                                <td colspan="3"></td>
+                                <td colspan="7" style="color:#2b4a4a;font-size:.86rem">
+                                    Registrar resultado únicamente si interfiere con la actividad laboral y previa autorización del titular
+                                </td>
+                            </tr>
+
+                            <!-- Fila 1 -->
+                            <tr>
+                                <td colspan="2">
+                                    <p:inputText value="#{centroMedicoCtrl.ginecoExamen1}" styleClass="obst-fit"/>
+                                </td>
+                                <td>
+                                    <p:inputText value="#{centroMedicoCtrl.ginecoTiempo1}" styleClass="obst-fit">
+                                        <p:keyFilter regEx="/[0-9]/"/>
+                                    </p:inputText>
+                                </td>
+                                <td colspan="7">
+                                    <p:inputTextarea value="#{centroMedicoCtrl.ginecoResultado1}"
+                                                     rows="2" autoResize="true" styleClass="obst-fit"/>
+                                </td>
+                            </tr>
+
+                            <!-- Fila 2 -->
+                            <tr>
+                                <td colspan="2">
+                                    <p:inputText value="#{centroMedicoCtrl.ginecoExamen2}" styleClass="obst-fit"/>
+                                </td>
+                                <td>
+                                    <p:inputText value="#{centroMedicoCtrl.ginecoTiempo2}" styleClass="obst-fit">
+                                        <p:keyFilter regEx="/[0-9]/"/>
+                                    </p:inputText>
+                                </td>
+                                <td colspan="7">
+                                    <p:inputTextarea value="#{centroMedicoCtrl.ginecoResultado2}"
+                                                     rows="2" autoResize="true" styleClass="obst-fit"/>
+                                </td>
+                            </tr>
+
+                            <!-- Observación -->
+                            <tr>
+                                <th colspan="3">Observación</th>
+                                <td colspan="7">
+                                    <p:inputTextarea value="#{centroMedicoCtrl.ginecoObservacion}"
+                                                     rows="3" autoResize="true" styleClass="obst-fit"/>
+                                </td>
+                            </tr>
+                        </table>
+
+                    </h:panelGroup>
+                </p:fieldset>
+
+            </h:panelGroup>
+
+
+
+        </p:outputPanel>
+
+        <p:fieldset legend="CONSUMO DE SUSTANCIAS" toggleable="true" collapsed="false">
+            <h:panelGroup id="consumoVidaCond" layout="block" styleClass="ui-fluid">
+
+                <table class="cons-grid">
+                    <colgroup>
+                        <col class="c-col-item"/>
+                        <col class="c-col-tiempo"/>
+                        <col class="c-col-chk"/>
+                        <col class="c-col-tiempo"/>
+                        <col class="c-col-chk"/>
+
+                        <col class="c-col-vida-title"/>
+                        <col class="c-col-vida-cual"/>
+                        <col class="c-col-vida-tiempo"/>
+
+                        <col class="c-col-cond-title"/>
+                        <col class="c-col-cond-cual"/>
+                        <col class="c-col-cond-cant"/>
+                    </colgroup>
+
+                    <thead>
+                        <tr>
+                            <th colspan="5" class="txt-c"><div class="th-wrap">CONSUMO DE SUSTANCIAS</div></th>
+                            <th colspan="3" class="txt-c"><div class="th-wrap">ESTILO DE VIDA</div></th>
+                            <th colspan="3" class="txt-c"><div class="th-wrap">CONDICIÓN PREEXISTENTE</div></th>
+                        </tr>
+                        <tr class="c-subhead">
+                            <th></th>
+                            <th><div class="th-wrap">TIEMPO DE CONSUMO<br/><span class="c-sub">(meses)</span></div></th>
+                            <th><div class="th-wrap">EX CONSUMIDOR</div></th>
+                            <th><div class="th-wrap">TIEMPO DE ABSTINENCIA<br/><span class="c-sub">(meses)</span></div></th>
+                            <th><div class="th-wrap">NO CONSUME</div></th>
+
+                            <th class="txt-c"><div class="th-wrap">ACTIVIDAD FÍSICA</div></th>
+                            <th><div class="th-wrap">¿CUÁL?</div></th>
+                            <th><div class="th-wrap">TIEMPO</div></th>
+
+                            <th class="txt-c"><div class="th-wrap">MEDICACIÓN HABITUAL</div></th>
+                            <th><div class="th-wrap">¿CUÁL?</div></th>
+                            <th><div class="th-wrap">CANTIDAD</div></th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        <!-- Fila 1 -->
+                        <tr>
+                            <!-- CONSUMO -->
+                            <td>TABACO</td>
+                            <td>
+                                <p:inputNumber value="#{centroMedicoCtrl.consTiempoConsumo[0]}"
+                                               decimalPlaces="0" minValue="0" styleClass="cons-fit"/>
+                            </td>
+                            <td class="txt-c">
+                                <p:selectBooleanCheckbox value="#{centroMedicoCtrl.consExConsumidor[0]}"/>
+                            </td>
+                            <td>
+                                <p:inputNumber value="#{centroMedicoCtrl.consTiempoAbstinencia[0]}"
+                                               decimalPlaces="0" minValue="0" styleClass="cons-fit"/>
+                            </td>
+                            <td class="txt-c">
+                                <p:selectBooleanCheckbox value="#{centroMedicoCtrl.consNoConsume[0]}"/>
+                            </td>
+
+                            <!-- ESTILO DE VIDA -->
+                            <td rowspan="3" class="txt-c">ACTIVIDAD FÍSICA</td>
+                            <td>
+                                <p:inputText id="af_cual_1" value="#{centroMedicoCtrl.afCual[0]}"
+                                             styleClass="cons-fit" placeholder="Ej.: gimnasio, trote, yoga"/>
+                            </td>
+                            <td>
+                                <p:inputText id="af_tiempo_1" value="#{centroMedicoCtrl.afTiempo[0]}"
+                                             styleClass="cons-fit" placeholder="Ej.: 1 h por día / 3 veces"/>
+                            </td>
+
+                            <!-- CONDICIÓN PREEXISTENTE -->
+                            <td rowspan="3" class="txt-c">MEDICACIÓN HABITUAL</td>
+                            <td>
+                                <p:inputText id="med_cual_1" value="#{centroMedicoCtrl.medCual[0]}"
+                                             styleClass="cons-fit" placeholder="Nombre del fármaco"/>
+                            </td>
+                            <td>
+                                <p:inputNumber id="med_cant_1" value="#{centroMedicoCtrl.medCant[0]}"
+                                               decimalPlaces="0" minValue="0" styleClass="cons-fit" placeholder="Unidades"/>
+                            </td>
+                        </tr>
+
+                        <!-- Fila 2 -->
+                        <tr>
+                            <!-- CONSUMO -->
+                            <td>ALCOHOL</td>
+                            <td>
+                                <p:inputNumber value="#{centroMedicoCtrl.consTiempoConsumo[1]}"
+                                               decimalPlaces="0" minValue="0" styleClass="cons-fit"/>
+                            </td>
+                            <td class="txt-c">
+                                <p:selectBooleanCheckbox value="#{centroMedicoCtrl.consExConsumidor[1]}"/>
+                            </td>
+                            <td>
+                                <p:inputNumber value="#{centroMedicoCtrl.consTiempoAbstinencia[1]}"
+                                               decimalPlaces="0" minValue="0" styleClass="cons-fit"/>
+                            </td>
+                            <td class="txt-c">
+                                <p:selectBooleanCheckbox value="#{centroMedicoCtrl.consNoConsume[1]}"/>
+                            </td>
+
+                            <!-- ESTILO DE VIDA -->
+                            <td>
+                                <p:inputText id="af_cual_2" value="#{centroMedicoCtrl.afCual[1]}"
+                                             styleClass="cons-fit" placeholder="Actividad"/>
+                            </td>
+                            <td>
+                                <p:inputText id="af_tiempo_2" value="#{centroMedicoCtrl.afTiempo[1]}"
+                                             styleClass="cons-fit" placeholder="Tiempo"/>
+                            </td>
+
+                            <!-- CONDICIÓN -->
+                            <td>
+                                <p:inputText id="med_cual_2" value="#{centroMedicoCtrl.medCual[1]}"
+                                             styleClass="cons-fit" placeholder="Fármaco"/>
+                            </td>
+                            <td>
+                                <p:inputNumber id="med_cant_2" value="#{centroMedicoCtrl.medCant[1]}"
+                                               decimalPlaces="0" minValue="0" styleClass="cons-fit" placeholder="Unidades"/>
+                            </td>
+                        </tr>
+
+                        <!-- Fila 3 -->
+                        <tr>
+                            <!-- CONSUMO -->
+                            <td>OTRAS: <span class="c-sub">¿cuál?</span></td>
+                            <td>
+                                <p:inputNumber value="#{centroMedicoCtrl.consTiempoConsumo[2]}"
+                                               decimalPlaces="0" minValue="0" styleClass="cons-fit"/>
+                            </td>
+                            <td class="txt-c">
+                                <p:selectBooleanCheckbox value="#{centroMedicoCtrl.consExConsumidor[2]}"/>
+                            </td>
+                            <td>
+                                <p:inputNumber value="#{centroMedicoCtrl.consTiempoAbstinencia[2]}"
+                                               decimalPlaces="0" minValue="0" styleClass="cons-fit"/>
+                            </td>
+                            <td class="txt-c">
+                                <p:selectBooleanCheckbox value="#{centroMedicoCtrl.consNoConsume[2]}"/>
+                            </td>
+
+                            <!-- ESTILO DE VIDA -->
+                            <td>
+                                <p:inputText id="af_cual_3" value="#{centroMedicoCtrl.afCual[2]}"
+                                             styleClass="cons-fit" placeholder="Actividad"/>
+                            </td>
+                            <td>
+                                <p:inputText id="af_tiempo_3" value="#{centroMedicoCtrl.afTiempo[2]}"
+                                             styleClass="cons-fit" placeholder="Tiempo"/>
+                            </td>
+
+                            <!-- CONDICIÓN -->
+                            <td>
+                                <p:inputText id="med_cual_3" value="#{centroMedicoCtrl.medCual[2]}"
+                                             styleClass="cons-fit" placeholder="Fármaco"/>
+                            </td>
+                            <td>
+                                <p:inputNumber id="med_cant_3" value="#{centroMedicoCtrl.medCant[2]}"
+                                               decimalPlaces="0" minValue="0" styleClass="cons-fit" placeholder="Unidades"/>
+                            </td>
+                        </tr>
+
+                        <!-- Observación -->
+                        <tr>
+                            <th colspan="2">Observación</th>
+                            <td colspan="9">
+                                <p:inputTextarea value="#{centroMedicoCtrl.consObservacion}"
+                                                 rows="3" autoResize="true" styleClass="cons-fit"
+                                                 placeholder="Observaciones adicionales"/>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+            </h:panelGroup>
+        </p:fieldset>
+
+    </p:fieldset>
+
+    <!-- D. ENFERMEDAD O PROBLEMA ACTUAL -->
+    <p:fieldset legend="D. ENFERMEDAD O PROBLEMA ACTUAL" toggleable="true">
+        <p:inputTextarea
+            value="#{centroMedicoCtrl.ficha.enfermedadProbActual}"
+            rows="5"
+            style="width:100%"
+            autoResize="true"
+            placeholder="Ficha médica actual"/>
+    </p:fieldset>
+
+    <!-- E. CONSTANTES VITALES Y ANTROPOMETRÍA -->
+    <p:fieldset legend="E. CONSTANTES VITALES Y ANTROPOMETRÍA" toggleable="true">
+        <h:panelGrid columns="10" styleClass="ui-fluid vit-grid">
+
+            <h:outputText value="Temp (°C)"/>
+            <p:inputNumber id="temp" value="#{centroMedicoCtrl.temp}" decimalPlaces="1"/>
+
+            <h:outputText value="PA (mmHg)"/>
+            <p:inputText id="pa" value="#{centroMedicoCtrl.paStr}" placeholder="120&#47;80"/>
+
+            <h:outputText value="FC"/>
+            <p:inputNumber id="fc" value="#{centroMedicoCtrl.fc}" decimalPlaces="0"/>
+
+            <h:outputText value="FR"/>
+            <p:inputNumber id="fr" value="#{centroMedicoCtrl.fr}" decimalPlaces="0"/>
+
+            <h:outputText value="Sat O&#8322; (&#37;)"/>
+            <p:inputNumber id="satO2" value="#{centroMedicoCtrl.satO2}" decimalPlaces="0"/>
+
+            <h:outputText value="Peso (kg)"/>
+            <p:inputNumber id="peso"
+                           widgetVar="wPeso"
+                           value="#{centroMedicoCtrl.peso}"
+                           decimalPlaces="2"
+                           decimalSeparator=","
+                           thousandSeparator=""
+                           onkeyup="calcIMC()" onchange="calcIMC()" oninput="calcIMC()"/>
+
+            <h:outputText value="Talla (cm)"/>
+            <p:inputNumber id="talla"
+                           widgetVar="wTalla"
+                           value="#{centroMedicoCtrl.tallaCm}"
+                           decimalPlaces="2"
+                           decimalSeparator=","
+                           thousandSeparator=""
+                           onkeyup="calcIMC()" onchange="calcIMC()" oninput="calcIMC()"/>
+
+            <h:outputText value="IMC"/>
+            <p:inputNumber id="imc"
+                           widgetVar="wImc"
+                           value="#{centroMedicoCtrl.imc}"
+                           decimalPlaces="2"
+                           decimalSeparator=","
+                           thousandSeparator=""
+                           readonly="true"/>
+
+
+            <h:outputText value="Perímetro abd (cm)"/>
+            <p:inputNumber id="perimetroAbd" value="#{centroMedicoCtrl.perimetroAbd}" decimalPlaces="1"/>
+        </h:panelGrid>
+
+        <h:outputScript target="body">
+            function q(s){return document.querySelector("input[id$='"+s+"']");}
+            function n(v){return parseFloat(String(v).replace(',','.'));}
+
+            function calcIMC(){
+            var peso=q("peso_input"), talla=q("talla_input"), imc=q("imc_input");
+            if(!peso||!talla||!imc)return;
+            var p=n(peso.value), t=n(talla.value);
+            if(!isNaN(p)&amp;&amp;!isNaN(t)&amp;&amp;t>0){
+            imc.value=(p/Math.pow(t/100,2)).toFixed(2);
+            }else imc.value="";
+            }
+            document.addEventListener('DOMContentLoaded',calcIMC);
+        </h:outputScript>
+
+    </p:fieldset>
+
+
+    <!-- "F. EXAMEN FÍSICO REGIONAL" -->
+    <p:fieldset legend="F. EXAMEN FÍSICO REGIONAL"
+                toggleable="true"
+                styleClass="fieldset-encaps">
+
+        <table class="f-grid4">
+            <tbody>
+
+                <!-- fila 1: 1..4 -->
+                <tr>
+                    <td>
+                        <div class="f-title">1. Piel</div>
+                        <div class="f-row">
+                            <span class="f-lbl">a. Cicatrices</span>
+                            <p:selectBooleanCheckbox value="#{centroMedicoCtrl.ficha.exfPielCicatricesBool}"/>
+                        </div>
+                    </td>
+
+                    <td>
+                        <div class="f-title">2. Ojos</div>
+                        <div class="f-row"><span class="f-lbl">a. Párpados</span>
+                            <p:selectBooleanCheckbox value="#{centroMedicoCtrl.ficha.exfOjosParpadosBool}"/></div>
+                        <div class="f-row"><span class="f-lbl">b. Conjuntivas</span>
+                            <p:selectBooleanCheckbox value="#{centroMedicoCtrl.ficha.exfOjosConjuntivasBool}"/></div>
+                        <div class="f-row"><span class="f-lbl">c. Pupilas</span>
+                            <p:selectBooleanCheckbox value="#{centroMedicoCtrl.ficha.exfOjosPupilasBool}"/></div>
+                        <div class="f-row"><span class="f-lbl">d. Córnea</span>
+                            <p:selectBooleanCheckbox value="#{centroMedicoCtrl.ficha.exfOjosCorneaBool}"/></div>
+                        <div class="f-row"><span class="f-lbl">e. Motilidad</span>
+                            <p:selectBooleanCheckbox value="#{centroMedicoCtrl.ficha.exfOjosMotilidadBool}"/></div>
+                    </td>
+
+                    <td>
+                        <div class="f-title">3. Oído</div>
+                        <div class="f-row"><span class="f-lbl">a. Conducto auditivo ext.</span>
+                            <p:selectBooleanCheckbox value="#{centroMedicoCtrl.ficha.exfOidoConductoBool}"/></div>
+                        <div class="f-row"><span class="f-lbl">b. Pabellón</span>
+                            <p:selectBooleanCheckbox value="#{centroMedicoCtrl.ficha.exfOidoPabellonBool}"/></div>
+                        <div class="f-row"><span class="f-lbl">c. Tímpanos</span>
+                            <p:selectBooleanCheckbox value="#{centroMedicoCtrl.ficha.exfOidoTimpanosBool}"/></div>
+                    </td>
+
+                    <td>
+                        <div class="f-title">4. Oro faringe</div>
+                        <div class="f-row"><span class="f-lbl">a. Labios</span>
+                            <p:selectBooleanCheckbox value="#{centroMedicoCtrl.ficha.exfOroLabiosBool}"/></div>
+                        <div class="f-row"><span class="f-lbl">b. Lengua</span>
+                            <p:selectBooleanCheckbox value="#{centroMedicoCtrl.ficha.exfOroLenguaBool}"/></div>
+                        <div class="f-row"><span class="f-lbl">c. Faringe</span>
+                            <p:selectBooleanCheckbox value="#{centroMedicoCtrl.ficha.exfOroFaringeBool}"/></div>
+                        <div class="f-row"><span class="f-lbl">d. Amígdalas</span>
+                            <p:selectBooleanCheckbox value="#{centroMedicoCtrl.ficha.exfOroAmigdalasBool}"/></div>
+                        <div class="f-row"><span class="f-lbl">e. Dentadura</span>
+                            <p:selectBooleanCheckbox value="#{centroMedicoCtrl.ficha.exfOroDentaduraBool}"/></div>
+                    </td>
+                </tr>
+
+                <!-- fila 2: 5..8 -->
+                <tr>
+                    <td>
+                        <div class="f-title">5. Nariz</div>
+                        <div class="f-row"><span class="f-lbl">a. Tabique</span>
+                            <p:selectBooleanCheckbox value="#{centroMedicoCtrl.ficha.exfNarizTabiqueBool}"/></div>
+                        <div class="f-row"><span class="f-lbl">b. Cornetes</span>
+                            <p:selectBooleanCheckbox value="#{centroMedicoCtrl.ficha.exfNarizCornetesBool}"/></div>
+                        <div class="f-row"><span class="f-lbl">c. Mucosas</span>
+                            <p:selectBooleanCheckbox value="#{centroMedicoCtrl.ficha.exfNarizMucosasBool}"/></div>
+                        <div class="f-row"><span class="f-lbl">d. Senos paranasales</span>
+                            <p:selectBooleanCheckbox value="#{centroMedicoCtrl.ficha.exfNarizSenosBool}"/></div>
+                    </td>
+
+                    <td>
+                        <div class="f-title">6. Cuello</div>
+                        <div class="f-row"><span class="f-lbl">a. Tiroides / masas</span>
+                            <p:selectBooleanCheckbox value="#{centroMedicoCtrl.ficha.exfCuelloTiroidesBool}"/></div>
+                        <div class="f-row"><span class="f-lbl">b. Movilidad</span>
+                            <p:selectBooleanCheckbox value="#{centroMedicoCtrl.ficha.exfCuelloMovilidadBool}"/></div>
+                    </td>
+
+                    <td>
+                        <div class="f-title">7. Tórax (mamas)</div>
+                        <div class="f-row"><span class="f-lbl">a. Mamas</span>
+                            <p:selectBooleanCheckbox value="#{centroMedicoCtrl.ficha.exfToraxMamasBool}"/></div>
+                    </td>
+
+                    <td>
+                        <div class="f-title">8. Tórax</div>
+                        <div class="f-row"><span class="f-lbl">a. Pulmones</span>
+                            <p:selectBooleanCheckbox value="#{centroMedicoCtrl.ficha.exfToraxPulmonesBool}"/></div>
+                        <div class="f-row"><span class="f-lbl">b. Corazón</span>
+                            <p:selectBooleanCheckbox value="#{centroMedicoCtrl.ficha.exfToraxCorazonBool}"/></div>
+                        <div class="f-row"><span class="f-lbl">c. Parrilla costal</span>
+                            <p:selectBooleanCheckbox value="#{centroMedicoCtrl.ficha.exfToraxParrillaBool}"/></div>
+                    </td>
+                </tr>
+
+                <!-- fila 3: 9..12 -->
+                <tr>
+                    <td>
+                        <div class="f-title">9. Abdomen</div>
+                        <div class="f-row"><span class="f-lbl">a. Vísceras</span>
+                            <p:selectBooleanCheckbox value="#{centroMedicoCtrl.ficha.exfAbdomenViscerasBool}"/></div>
+                        <div class="f-row"><span class="f-lbl">b. Pared abdominal</span>
+                            <p:selectBooleanCheckbox value="#{centroMedicoCtrl.ficha.exfAbdomenParedBool}"/></div>
+                    </td>
+
+                    <td>
+                        <div class="f-title">10. Columna</div>
+                        <div class="f-row"><span class="f-lbl">a. Flexibilidad</span>
+                            <p:selectBooleanCheckbox value="#{centroMedicoCtrl.ficha.exfColumnaFlexibilidadBool}"/></div>
+                        <div class="f-row"><span class="f-lbl">b. Desviación</span>
+                            <p:selectBooleanCheckbox value="#{centroMedicoCtrl.ficha.exfColumnaDesviacionBool}"/></div>
+                        <div class="f-row"><span class="f-lbl">c. Dolor</span>
+                            <p:selectBooleanCheckbox value="#{centroMedicoCtrl.ficha.exfColumnaDolorBool}"/></div>
+                    </td>
+
+                    <td>
+                        <div class="f-title">11. Pelvis</div>
+                        <div class="f-row"><span class="f-lbl">a. Pelvis</span>
+                            <p:selectBooleanCheckbox value="#{centroMedicoCtrl.ficha.exfPelvisPelvisBool}"/></div>
+                        <div class="f-row"><span class="f-lbl">b. Genitales</span>
+                            <p:selectBooleanCheckbox value="#{centroMedicoCtrl.ficha.exfPelvisGenitalesBool}"/></div>
+                    </td>
+
+                    <td>
+                        <div class="f-title">12. Extremidades</div>
+                        <div class="f-row"><span class="f-lbl">a. Vascular</span>
+                            <p:selectBooleanCheckbox value="#{centroMedicoCtrl.ficha.exfExtVascularBool}"/></div>
+                        <div class="f-row"><span class="f-lbl">b. Miembros superiores</span>
+                            <p:selectBooleanCheckbox value="#{centroMedicoCtrl.ficha.exfExtSupBool}"/></div>
+                        <div class="f-row"><span class="f-lbl">c. Miembros inferiores</span>
+                            <p:selectBooleanCheckbox value="#{centroMedicoCtrl.ficha.exfExtInfBool}"/></div>
+                    </td>
+                </tr>
+
+                <!-- fila 4: 13 + 3 vacíos -->
+                <tr>
+                    <td>
+                        <div class="f-title">13. Neurológico</div>
+                        <div class="f-row"><span class="f-lbl">a. Fuerza</span>
+                            <p:selectBooleanCheckbox value="#{centroMedicoCtrl.ficha.exfNeuroFuerzaBool}"/></div>
+                        <div class="f-row"><span class="f-lbl">b. Sensibilidad</span>
+                            <p:selectBooleanCheckbox value="#{centroMedicoCtrl.ficha.exfNeuroSensibilidadBool}"/></div>
+                        <div class="f-row"><span class="f-lbl">c. Marcha</span>
+                            <p:selectBooleanCheckbox value="#{centroMedicoCtrl.ficha.exfNeuroMarchaBool}"/></div>
+                        <div class="f-row"><span class="f-lbl">d. Reflejos</span>
+                            <p:selectBooleanCheckbox value="#{centroMedicoCtrl.ficha.exfNeuroReflejosBool}"/></div>
+                    </td>
+
+                    <td class="f-empty"></td>
+                    <td class="f-empty"></td>
+                    <td class="f-empty"></td>
+                </tr>
+
+            </tbody>
+        </table>
+
+        <div style="margin-top:10px">
+            <h:outputText value="Observación:"/><br/>
+            <p:inputTextarea rows="3" autoResize="true" style="width:100%"
+                             value="#{centroMedicoCtrl.ficha.obsExamenFisicoReg}"/>
+        </div>
+    </p:fieldset>
+
+
+
+
+
+
+
+
+
+
+
+</ui:composition>

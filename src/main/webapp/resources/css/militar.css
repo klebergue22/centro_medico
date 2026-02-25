@@ -1,0 +1,82 @@
+/* ===== Paleta militar IGM ===== */
+:root{
+  --olive-700:#436137; --olive-600:#5a7b49; --olive-500:#6f915c;
+  --insignia-gold:#d8c36a; --paper:#fff; --ink:#1f2a18; --ink-soft:#3a4b32;
+  --field-h:34px;
+}
+
+/* Título y botones del diálogo (estilo militar) */
+.ui-dialog .ui-dialog-titlebar{
+  background:linear-gradient(180deg,var(--olive-600),var(--olive-700)) !important;
+  color:#fff; border-bottom:2px solid var(--insignia-gold);
+}
+.ui-dialog .ui-dialog-content{ background:var(--paper); }
+.ui-dialog .ui-dialog-footer .ui-button{
+  background:linear-gradient(180deg,var(--olive-500),var(--olive-600));
+  border:1px solid var(--insignia-gold); color:#fff; font-weight:700; border-radius:8px;
+}
+.ui-dialog .ui-dialog-footer .ui-button:hover{ background:var(--insignia-gold); color:var(--ink); }
+
+/* ===== PanelGrid 6C (tabla real) ===== */
+.emp-form-6 .ui-panelgrid,
+.emp-form-6 .ui-panelgrid .ui-panelgrid-content{
+  display:table !important; width:100%; table-layout:fixed;
+}
+.emp-form-6 .ui-panelgrid tbody tr{ display:table-row !important; }
+.emp-form-6 .ui-panelgrid tbody tr>td{
+  display:table-cell !important; padding:8px 6px; vertical-align:middle;
+  border-top:1px solid rgba(50,60,40,.10);
+}
+.emp-form-6 .ui-panelgrid tbody tr:first-child>td{ border-top:0; }
+
+/* 1 y 4 = label; 2 y 5 = campo; 3 y 6 = mensaje */
+.emp-form-6 .ui-panelgrid tbody tr>td:nth-child(6n+1),
+.emp-form-6 .ui-panelgrid tbody tr>td:nth-child(6n+4){
+  width:220px; text-align:left; color:var(--ink-soft); white-space:nowrap; font-weight:600;
+}
+.emp-form-6 .ui-panelgrid tbody tr>td:nth-child(6n+2),
+.emp-form-6 .ui-panelgrid tbody tr>td:nth-child(6n+5){ width:100%; }
+.emp-form-6 .ui-panelgrid tbody tr>td:nth-child(6n+2) > *,
+.emp-form-6 .ui-panelgrid tbody tr>td:nth-child(6n+5) > *{
+  width:100% !important; box-sizing:border-box;
+}
+.emp-form-6 .ui-panelgrid tbody tr>td:nth-child(6n+3),
+.emp-form-6 .ui-panelgrid tbody tr>td:nth-child(6n+0){
+  width:28px; padding-left:2px;
+}
+.emp-form-6 .ui-message{ display:inline-flex; align-items:center; height:22px; }
+
+/* Inputs */
+.emp-form-6 input.ui-inputfield{
+  height:var(--field-h); line-height:calc(var(--field-h) - 2px);
+  background:#f2f5ec !important; border:1px solid var(--olive-500) !important;
+  border-radius:8px; color:var(--ink);
+}
+.emp-form-6 input.ui-inputfield:focus{
+  background:#fff !important; border-color:var(--insignia-gold) !important;
+  box-shadow:0 0 0 3px rgba(216,195,106,.25) !important;
+}
+
+/* SelectOneMenu */
+.emp-form-6 .ui-selectonemenu{ height:var(--field-h) !important; background:#f2f5ec !important; border:1px solid var(--olive-500) !important; border-radius:8px; }
+.emp-form-6 .ui-selectonemenu .ui-selectonemenu-label{ height:var(--field-h); line-height:var(--field-h); padding:0 10px; width:calc(100% - 36px); background:transparent !important; color:var(--ink); }
+.emp-form-6 .ui-selectonemenu .ui-selectonemenu-trigger{ width:36px; border-left:1px solid var(--olive-500) !important; background:var(--olive-600); color:#fff; }
+
+/* DatePicker trigger */
+.emp-form-6 .ui-datepicker-trigger{
+  height:var(--field-h); width:var(--field-h); margin-left:4px;
+  display:inline-flex; align-items:center; justify-content:center;
+  background:var(--olive-600) !important; color:#fff !important;
+  border:1px solid var(--insignia-gold) !important; border-radius:6px;
+}
+
+/* Responsive: una columna */
+@media (max-width:900px){
+  .emp-form-6 .ui-panelgrid,
+  .emp-form-6 .ui-panelgrid .ui-panelgrid-content{ display:block !important; }
+  .emp-form-6 .ui-panelgrid tbody tr>td{ display:block !important; width:100% !important; }
+  .emp-form-6 .ui-panelgrid tbody tr>td:nth-child(6n+1),
+  .emp-form-6 .ui-panelgrid tbody tr>td:nth-child(6n+4){ padding:6px 6px 2px 6px; }
+  .emp-form-6 .ui-panelgrid tbody tr>td:nth-child(6n+3),
+  .emp-form-6 .ui-panelgrid tbody tr>td:nth-child(6n+0){ height:24px; padding:2px 0 8px 0; }
+}

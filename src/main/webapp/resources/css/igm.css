@@ -1,0 +1,2072 @@
+/* ============================================================
+   IGM ECUADOR · Estilo Militar Moderno (global)
+   ============================================================ */
+
+/* ---------- PALETA ---------- */
+:root{
+  --olive-900:#1b3524;
+  --olive-800:#2f4325;
+  --olive-700:#436137;   /* encabezados / barra */
+  --olive-600:#5a7b49;   /* botones / triggers */
+  --olive-500:#6f915c;   /* bordes/acento suave */
+  --insignia-gold:#d8c36a;
+  --khaki-200:#ece7c9;
+  --khaki-100:#f6f6f0;
+  --paper:#ffffff;
+  --ink:#1f2a18;
+  --ink-soft:#3a4b32;
+
+  --shadow-1:0 2px 6px rgba(0,0,0,.10);
+  --shadow-2:0 8px 20px rgba(0,0,0,.18);
+
+  --font-ui:"Inter","Segoe UI",Roboto,Arial,sans-serif;
+}
+
+/* ---------- BASE ---------- */
+html,body{
+  background:var(--khaki-100);
+  color:var(--ink);
+  font-family:var(--font-ui);
+  line-height:1.45;
+  letter-spacing:.2px;
+}
+
+.page-container{
+  max-width: 1280px;      /* antes 1100px */
+  margin: 18px auto;
+  padding: 0 16px;        /* para que no se pegue en pantallas pequeñas */
+}
+
+
+/* ---------- MENÚ SUPERIOR ---------- */
+.navbar-militar{
+  background:linear-gradient(180deg,var(--olive-600),var(--olive-700));
+  border:1px solid var(--insignia-gold);
+  border-radius:12px;
+  box-shadow:var(--shadow-2);
+  padding:8px 10px;
+}
+.navbar-militar .ui-menuitem-link{
+  color:#fff !important; font-weight:600; border-radius:8px;
+  padding:6px 12px; text-shadow:0 1px 1px rgba(0,0,0,.35);
+  transition:all .18s ease;
+}
+.navbar-militar .ui-menuitem-link:hover,
+.navbar-militar .ui-menuitem-link.ui-state-hover{
+  background:var(--insignia-gold); color:var(--ink) !important; transform:translateY(-1px);
+}
+.navbar-militar .brand{ color:#fff; font-weight:700; }
+
+/* ---------- BOTONES ---------- */
+.ui-button{
+  background:linear-gradient(180deg,var(--olive-500),var(--olive-600));
+  border:1px solid var(--insignia-gold); color:#fff;
+  font-weight:700; letter-spacing:.5px; text-transform:uppercase;
+  border-radius:8px; box-shadow:var(--shadow-1); transition:all .18s ease;
+}
+.ui-button:hover{
+  background:var(--insignia-gold); color:var(--ink);
+  border-color:var(--olive-700); box-shadow:var(--shadow-2);
+}
+
+/* ---------- INPUTS / SELECT / DATEPICKER ---------- */
+.ui-outputlabel{ color:var(--ink-soft); font-weight:600; }
+
+input.ui-inputfield, textarea.ui-inputfield{
+  background:#f2f5ec !important;
+  border:1px solid var(--olive-500) !important;
+  border-radius:8px; color:var(--ink); transition:all .18s ease;
+}
+input.ui-inputfield:focus, textarea.ui-inputfield:focus{
+  background:#fff !important; border-color:var(--insignia-gold) !important;
+  box-shadow:0 0 0 3px rgba(216,195,106,.25) !important;
+}
+
+/* SelectOneMenu */
+.ui-selectonemenu{
+  width:100% !important;
+  background:#f2f5ec !important;
+  border:1px solid var(--olive-500) !important; border-radius:8px;
+}
+.ui-selectonemenu .ui-selectonemenu-label{
+  background:transparent !important; color:var(--ink);
+  height:36px; line-height:36px; padding:0 10px;
+}
+.ui-selectonemenu .ui-selectonemenu-trigger{
+  width:36px; border-left:1px solid var(--olive-500) !important;
+  background:var(--olive-600); color:#fff;
+}
+.ui-selectonemenu .ui-selectonemenu-trigger:hover{
+  background:var(--insignia-gold); color:var(--ink);
+}
+
+/* DatePicker trigger (botón calendario) */
+.ui-datepicker-trigger{
+  height:34px; width:34px; margin-left:4px;
+  display:inline-flex; align-items:center; justify-content:center;
+  background:var(--olive-600) !important; color:#fff !important;
+  border:1px solid var(--insignia-gold) !important; border-radius:6px;
+}
+.ui-datepicker-trigger:hover{ background:var(--insignia-gold) !important; color:var(--ink) !important; }
+
+/* ---------- TABLAS ---------- */
+.ui-datatable thead th{
+  background:linear-gradient(180deg,var(--olive-600),var(--olive-700)) !important;
+  color:#fff !important; border:1px solid var(--insignia-gold); text-align:center;
+}
+.ui-datatable tbody td{
+  border:1px solid #cfcfb9; background:var(--paper); color:var(--ink);
+}
+.ui-datatable tr.ui-state-highlight{
+  background:var(--insignia-gold) !important; color:var(--ink) !important;
+}
+
+/* ---------- DIÁLOGOS ---------- */
+.ui-dialog .ui-dialog-titlebar{
+  background:linear-gradient(180deg,var(--olive-600),var(--olive-700)) !important;
+  color:#fff; border-bottom:1px solid var(--insignia-gold);
+}
+.ui-dialog .ui-dialog-content{ background:var(--paper); }
+.ui-dialog .ui-dialog-footer{ background:#fafaf8; border-top:1px solid rgba(50,60,40,.12); }
+
+/* ---------- FOOTER ---------- */
+.footer-militar{ text-align:center; color:var(--ink-soft); padding:8px 0 18px; }
+
+/* ============================================================
+   FORMULARIOS PrimeFaces · Alineación con panelGrid
+   ============================================================ */
+
+/* ============ 3 columnas (Label | Field | Message) ============ */
+/* XHTML: <p:panelGrid columns="3" styleClass="emp-3col ui-fluid"
+          columnClasses="lab,fld,msg"> */
+.emp-3col .ui-panelgrid,
+.emp-3col .ui-panelgrid .ui-panelgrid-content{
+  width:100%; table-layout:fixed; display:table !important;
+}
+.emp-3col .ui-panelgrid tbody tr>td{
+  padding:6px 8px; vertical-align:middle; border-top:1px solid rgba(50,60,40,.08);
+}
+.emp-3col .ui-panelgrid-cell.lab,
+.emp-3col .ui-panelgrid tbody tr>td:nth-child(3n+1){
+  width:210px; text-align:left; color:var(--ink-soft); white-space:nowrap; font-weight:600;
+}
+.emp-3col .ui-panelgrid-cell.fld,
+.emp-3col .ui-panelgrid tbody tr>td:nth-child(3n+2){ width:100%; }
+.emp-3col .ui-panelgrid-cell.msg,
+.emp-3col .ui-panelgrid tbody tr>td:nth-child(3n+3){ width:30px; }
+.emp-3col .ui-panelgrid-cell.fld > *{ width:100% !important; box-sizing:border-box; }
+.emp-3col input.ui-inputfield,
+.emp-3col .ui-selectonemenu,
+.emp-3col .ui-selectonemenu-label{ height:34px !important; line-height:32px !important; }
+.emp-3col .ui-message{ display:inline-flex; align-items:center; height:22px; }
+
+/* Responsive: apilar en móvil */
+@media (max-width:900px){
+  .emp-3col .ui-panelgrid,
+  .emp-3col .ui-panelgrid .ui-panelgrid-content{ display:block !important; }
+  .emp-3col .ui-panelgrid tbody tr>td{ display:block !important; width:100% !important; }
+}
+
+/* ============ 6 columnas (L|F|M | L|F|M) ============ */
+/* XHTML: <p:panelGrid columns="6" styleClass="emp-6col ui-fluid"
+          columnClasses="lab,fld,msg,lab,fld,msg"> */
+.emp-6col .ui-panelgrid,
+.emp-6col .ui-panelgrid .ui-panelgrid-content{
+  width:100%; table-layout:fixed; display:table !important;
+}
+.emp-6col .ui-panelgrid tbody tr>td{
+  padding:6px 8px; vertical-align:middle; border-top:1px solid rgba(50,60,40,.08);
+}
+.emp-6col .ui-panelgrid-cell.lab{ width:210px; text-align:left; color:var(--ink-soft); white-space:nowrap; font-weight:600; }
+.emp-6col .ui-panelgrid-cell.fld{ width:100%; }
+.emp-6col .ui-panelgrid-cell.msg{ width:30px; }
+.emp-6col .ui-panelgrid-cell.fld > *{ width:100% !important; box-sizing:border-box; }
+.emp-6col input.ui-inputfield,
+.emp-6col .ui-selectonemenu,
+.emp-6col .ui-selectonemenu-label{ height:34px !important; line-height:32px !important; }
+.emp-6col .ui-message{ display:inline-flex; align-items:center; height:22px; }
+
+/* Responsive: apilar (mantiene orden L|F|M por bloque) */
+@media (max-width:980px){
+  .emp-6col .ui-panelgrid,
+  .emp-6col .ui-panelgrid .ui-panelgrid-content{ display:block !important; }
+  .emp-6col .ui-panelgrid tbody tr>td{ display:block !important; width:100% !important; }
+}
+
+/* (higiene) PanelGrid sin bordes extra de contenedor interno */
+.emp-3col .ui-panelgrid-content,
+.emp-6col .ui-panelgrid-content{
+  border:0 !important; padding:0 !important;
+}
+.topbar{
+  display:flex; align-items:center; gap:12px;
+}
+.topbar .navbar-militar{ flex:1 1 auto; }
+.topbar .brand{ color:#fff; font-weight:700; margin-left:8px; }
+
+/* ===================== SOLO DIALOGO EMPLEADO ===================== */
+/* Escapamos el ':' en el id renderizado por JSF: layoutForm:dlg */
+#layoutForm\\:dlg .ui-dialog-content{
+  padding: 10px 14px;
+}
+
+/* PanelGrid 3C: Label | Field | Msg (solo en el diálogo) */
+#layoutForm\\:dlg .emp-3col .ui-panelgrid,
+#layoutForm\\:dlg .emp-3col .ui-panelgrid .ui-panelgrid-content{
+  display: table !important;
+  width: 100%;
+  table-layout: fixed;   /* evita saltos y columnas raras */
+}
+
+#layoutForm\\:dlg .emp-3col .ui-panelgrid tbody tr>td{
+  padding: 6px 8px !important;
+  vertical-align: middle !important;
+  border-top: 1px solid rgba(50,60,40,.08);
+}
+
+/* Anchos por columna (sólo diálogo) */
+#layoutForm\\:dlg .emp-3col .ui-panelgrid tbody tr>td:nth-child(3n+1){ width: 230px; } /* Label */
+#layoutForm\\:dlg .emp-3col .ui-panelgrid tbody tr>td:nth-child(3n+2){ width: auto;  } /* Field */
+#layoutForm\\:dlg .emp-3col .ui-panelgrid tbody tr>td:nth-child(3n+3){ width: 28px;  } /* Msg */
+
+/* Campos 100% + altura uniforme */
+#layoutForm\\:dlg .emp-3col .ui-panelgrid-cell.fld > *{
+  width:100% !important; box-sizing: border-box;
+}
+#layoutForm\\:dlg .emp-3col input.ui-inputfield,
+#layoutForm\\:dlg .emp-3col .ui-selectonemenu,
+#layoutForm\\:dlg .emp-3col .ui-selectonemenu-label{
+  height:34px !important; line-height:32px !important;
+}
+
+/* SelectOneMenu trigger consistente */
+#layoutForm\\:dlg .emp-3col .ui-selectonemenu-trigger{
+  width:36px; border-left:1px solid var(--olive-500) !important;
+}
+
+/* DatePicker: icono alineado al campo (y sin romper columnas) */
+#layoutForm\\:dlg .emp-3col .ui-datepicker-trigger{
+  height:34px; width:34px; margin-left:6px;
+  display:inline-flex; align-items:center; justify-content:center;
+}
+
+/* Mensajes compactos */
+#layoutForm\\:dlg .emp-3col .ui-message{
+  display:inline-flex; align-items:center; height:22px;
+}
+
+/* Footer del diálogo (manteniendo tu paleta) */
+#layoutForm\\:dlg .ui-dialog-footer .ui-button{
+  text-transform: uppercase; font-weight:700; border-radius:8px;
+}
+
+/* Responsive sólo para el diálogo */
+@media (max-width:900px){
+  #layoutForm\\:dlg .emp-3col .ui-panelgrid,
+  #layoutForm\\:dlg .emp-3col .ui-panelgrid .ui-panelgrid-content{ display:block !important; }
+  #layoutForm\\:dlg .emp-3col .ui-panelgrid tbody tr>td{
+    display:block !important; width:100% !important; border-top:0;
+  }
+}
+
+/* === Colores globales === */
+:root {
+  --igm-verde: #d8f3d8;     /* fondo paneles (verde claro Excel) */
+  --igm-verde-oscuro: #0f3d0f; /* texto títulos */
+  --igm-boton: #406343;     /* botón principal */
+  --igm-boton-hover: #2e4b31; /* hover */
+}
+
+/* Paneles PrimeFaces */
+.ui-panel {
+  background: var(--igm-verde) !important;
+  border: 1px solid #b7d8b7 !important;
+}
+
+/* Títulos de panel */
+.ui-panel-titlebar {
+  background: var(--igm-verde-oscuro) !important;
+  color: white !important;
+  font-weight: bold !important;
+}
+
+/* Steps (Wizard Tabs) */
+.ui-wizard-step-title {
+  background: var(--igm-verde) !important;
+  color: var(--igm-verde-oscuro) !important;
+  font-weight: bold !important;
+}
+
+/* Botones */
+.ui-button, .ui-button-text-only {
+  background: var(--igm-boton) !important;
+  border: 1px solid var(--igm-boton-hover) !important;
+}
+
+.ui-button:hover {
+  background: var(--igm-boton-hover) !important;
+}
+
+/* Inputs en fondo claro pero legibles */
+.ui-inputfield {
+  background-color: #ffffff !important;
+  border: 1px solid #cccccc !important;
+}
+
+/* Etiquetas (labels) */
+.ui-panelgrid .ui-outputlabel {
+  color: #1a1a1a !important;
+  font-weight: 600;
+}
+
+/* ====== ✅ RADIO BUTTON (p:selectOneRadio) ====== */
+.ui-radiobutton .ui-radiobutton-box {
+    border: 2px solid #406343 !important; /* borde verde oscuro */
+    background: #ffffff !important;
+}
+
+.ui-radiobutton .ui-radiobutton-box.ui-state-active {
+    border-color: #0f3d0f !important; /* verde más intenso */
+    background: #0f3d0f !important;   /* color del círculo lleno */
+}
+
+.ui-radiobutton .ui-radiobutton-box .ui-radiobutton-icon {
+    background: white !important; /* centro del radio */
+    border-radius: 50%;
+}
+
+/* ====== ✅ CHECKBOX (p:selectBooleanCheckbox y selectManyCheckbox) ====== */
+.ui-chkbox .ui-chkbox-box {
+    border: 2px solid #406343 !important;
+    background: #ffffff !important;
+}
+
+.ui-chkbox .ui-chkbox-box.ui-state-active {
+    border-color: #0f3d0f !important;
+    background: #0f3d0f !important;
+}
+
+.ui-chkbox .ui-chkbox-box .ui-chkbox-icon {
+    color: #ffffff !important; /* tilde en blanco */
+}
+
+/* ====== ✅ COMBOBOX (p:selectOneMenu) ====== */
+.ui-selectonemenu {
+    border: 1px solid #406343 !important; /* borde verde */
+    background-color: #ffffff !important;
+}
+
+.ui-selectonemenu:hover {
+    border-color: #0f3d0f !important;
+}
+
+.ui-selectonemenu .ui-selectonemenu-trigger {
+    background: #406343 !important;
+    color: white !important;
+    border-left: 1px solid #0f3d0f !important;
+}
+
+.ui-selectonemenu-panel {
+    background: #ffffff !important;
+    border: 1px solid #406343 !important;
+}
+
+.ui-selectonemenu-items .ui-selectonemenu-item:hover {
+    background: #d8f3d8 !important; /* verde claro hover */
+    color: #0f3d0f !important;
+}
+
+
+/* === Utilidades de ancho para columnClasses === */
+.w-10rem{width:10rem}.w-12rem{width:12rem}.w-15rem{width:15rem}
+.w-20rem{width:20rem}.w-25rem{width:25rem}.w-30rem{width:30rem}
+.w-35rem{width:35rem}.w-40rem{width:40rem}
+
+/* Panel con scroll horizontal cuando el contenido es ancho (tablas grandes) */
+.panel-scroll > .ui-panel-content {
+  overflow-x: auto;
+  padding-bottom: 8px; /* evita que la barra tape contenido */
+}
+
+/* Tablas anchas (Riesgos y Sección H) */
+.fit-table {
+  table-layout: fixed;
+  width: 100%;
+  min-width: 1100px; /* ajusta si necesitas */
+  border-collapse: collapse;
+  font-size: 13px;
+  margin: 0 auto;
+}
+.fit-table th, .fit-table td {
+  border: 1px solid #ccc;
+  padding: 6px 4px;
+  vertical-align: middle;
+  word-wrap: break-word;
+  white-space: normal;
+}
+.fit-header { background:#eaeaea; font-weight:600; text-align:center; }
+
+/* Matriz de riesgos (G) */
+.risk-label { width: 22rem; }
+.risk-cols { text-align: center; width: 8rem; }
+.cell-input { width: 100%; }
+.cell-textarea { width: 100%; resize: vertical; }
+
+/* Sección H – columnas */
+.h-col-ct{width:14rem}.h-col-acts{width:16rem}
+.h-col-chk{width:4rem; text-align:center}
+.h-col-tiempo{width:8rem}.h-col-fecha{width:8rem}
+.h-col-espec{width:12rem}.h-col-obsv{width:14rem}
+.h-note{color:#666; font-size:11px}
+
+/* Columnas fijas para todas las tablas del Step 2 */
+.risk-col-label { width: 22rem; }     /* primera columna: texto del riesgo */
+.risk-col       { width: 10rem; }     /* 7 columnas numéricas iguales */
+
+/* La tabla se expande si hace falta pero respeta las columnas fijas */
+.fit-table{
+  table-layout: fixed;
+  width: 100%;
+  min-width: calc(22rem + 7 * 10rem); /* 22rem + 70rem */
+  border-collapse: collapse;
+  font-size: 13px;
+  margin: 0 auto;
+}
+.fit-table th, .fit-table td{
+  border: 1px solid #ccc;
+  padding: 6px 4px;
+  vertical-align: middle;
+  word-wrap: break-word;
+  white-space: normal;
+}
+.fit-header{ background:#eaeaea; font-weight:600; text-align:center }
+
+/* (Opcional) inputs ajustados a celda */
+.cell-input{ width:100% }
+
+
+/* ====== Sección I (Actividades extralaborales) ====== */
+.i-grid{
+  table-layout: fixed;
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  margin: 0 auto;
+}
+.i-grid th, .i-grid td{
+  border: 1px solid #ccc;
+  padding: 6px 4px;
+  vertical-align: middle;
+  word-wrap: break-word;
+  white-space: normal;
+}
+.i-header{ background:#eaeaea; font-weight:600; text-align:center }
+
+/* Columnas en porcentaje para que NO se desborde */
+.i-col-type{ width: 25%; }
+.i-col-date{ width: 15%; text-align: center; }
+.i-col-desc{ width: 60%; }
+
+/* Asegura scroll horizontal si algo excede */
+.panel-scroll > .ui-panel-content{
+  overflow-x: auto;
+  padding-bottom: 8px;
+}
+.cell-input{ width:100% }
+.cell-textarea{ width:100%; resize:vertical }
+
+/* ===== Sección I: calendario bien encuadrado ===== */
+.i-grid{
+  table-layout: fixed;
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  margin: 0 auto;
+}
+.i-grid th, .i-grid td{
+  border: 1px solid #ccc;
+  padding: 6px 8px;           /* un poco más para el botón */
+  vertical-align: middle;
+  word-wrap: break-word;
+  white-space: normal;
+}
+.i-header{ background:#eaeaea; font-weight:600; text-align:center }
+
+/* Columnas */
+.i-col-type{ width: 25%; }
+.i-col-date{ width: 15%; }
+.i-col-desc{ width: 60%; }
+
+/* Celda de fecha: alineación perfecta del calendario */
+.i-date .ui-calendar{
+  display: flex;              /* input + botón en fila */
+  align-items: center;
+  width: 100%;
+}
+.i-date .ui-calendar input.ui-inputfield{
+  flex: 1 1 auto;             /* el input ocupa todo el ancho posible */
+  min-width: 0;               /* evita overflow con flex */
+  box-sizing: border-box;
+}
+.i-date .ui-calendar .ui-button{
+  flex: 0 0 auto;
+  margin-left: 6px;           /* separa botón del input */
+}
+
+/* Asegura que siempre quepa dentro del panel */
+.panel-scroll > .ui-panel-content{
+  overflow-x: auto;
+  padding-bottom: 8px;
+}
+
+/* Inputs genéricos usados aquí */
+.cell-input{ width:100% }
+.cell-textarea{ width:100%; resize:vertical }
+
+
+/* ===== Sección J (Resultados de exámenes) ===== */
+.j-grid{
+  table-layout: fixed;
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  margin: 0 auto;
+}
+.j-grid th, .j-grid td{
+  border: 1px solid #ccc;
+  padding: 6px 8px;
+  vertical-align: middle;
+  word-wrap: break-word;
+  white-space: normal;
+}
+.j-header{ background:#eaeaea; font-weight:600; text-align:center }
+
+/* Columnas en porcentaje para encuadre dentro del panel */
+.j-col-exam{ width:35% }
+.j-col-date{ width:15% }
+.j-col-res { width:50% }
+
+/* Alineación del calendar dentro de la celda */
+.j-date .ui-calendar{
+  display:flex;            /* input + botón en fila */
+  align-items:center;
+  width:100%;
+}
+.j-date .ui-calendar input.ui-inputfield{
+  flex:1 1 auto;
+  min-width:0;
+  box-sizing:border-box;
+}
+.j-date .ui-calendar .ui-button{
+  flex:0 0 auto;
+  margin-left:6px;
+}
+
+/* Inputs utilitarios ya usados en otras secciones */
+.cell-input{ width:100% }
+.cell-textarea{ width:100%; resize:vertical }
+
+/* Asegura que el contenido no se salga del panel */
+.panel-scroll > .ui-panel-content{
+  overflow-x:auto;
+  padding-bottom:8px;
+}
+/* ===== Sección K (Diagnóstico) ===== */
+.k-grid {
+  table-layout: fixed;
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  margin: 0 auto;
+}
+.k-grid th, .k-grid td {
+  border: 1px solid #ccc;
+  padding: 6px 8px;
+  vertical-align: middle;
+  word-wrap: break-word;
+  white-space: normal;
+}
+.k-head {
+  background: #eaeaea;
+  font-weight: 600;
+  text-align: center;
+}
+.k-sub {
+  background: #eaf7e8;
+  font-weight: 600;
+  text-align: center;
+}
+.k-col-cie { width: 20%; }
+.k-col-desc { width: 60%; }
+.k-col-pre, .k-col-def { width: 10%; text-align: center; }
+
+/* ===== Sección L: Aptitud médica ===== */
+.l-grid{ table-layout:fixed; width:100%; border-collapse:collapse; font-size:13px; }
+.l-grid th,.l-grid td{ border:1px solid #ccc; padding:6px; vertical-align:middle; }
+.l-head{ background:#eaf7e8; text-align:center; font-weight:600; }
+.l-col-opt{ width:25%; }
+.l-cell-radio{ text-align:center; }
+
+/* Observaciones anchas y con estilo institucional */
+.l-observaciones{
+  width:98% !important;
+  min-height:90px !important;
+  background:#f6f8f2;
+  border:1px solid #98b38d;
+  border-radius:6px;
+  box-sizing:border-box;
+  padding:8px;
+}
+
+/* ===== Sección N: Retiro (evaluación) ===== */
+.n-grid{
+  table-layout: fixed;
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.n-grid th, .n-grid td{
+  border: 1px solid #ccc;
+  padding: 6px 8px;
+  vertical-align: middle;
+}
+.n-sub{
+  background: #eaf7e8;   /* verde suave de encabezado SI/NO */
+  text-align: center;
+  font-weight: 600;
+}
+.n-col-label{ width: 70%; }
+.n-col-si, .n-col-no{ width: 15%; text-align: center; }
+.n-center{ text-align: center; }
+
+/* Observación amplia con estilo IGM */
+.n-observacion{
+  width: 98% !important;
+  min-height: 80px !important;
+  background: #f6f8f2;
+  border: 1px solid #98b38d;
+  border-radius: 6px;
+  box-sizing: border-box;
+  padding: 8px;
+}
+
+/* Uniformar altura y alineado de todos los campos */
+.ui-inputfield,
+.ui-selectonemenu,
+.ui-selectonemenu-label,
+.ui-calendar input.ui-inputfield {
+  height: 36px;
+  line-height: 34px; /* alineación vertical del texto */
+  box-sizing: border-box;
+}
+
+/* Botón/trigger del calendar y flecha del select: que no estiren fila */
+.ui-datepicker-trigger,
+.ui-selectonemenu-trigger {
+  height: 36px;
+  box-sizing: border-box;
+}
+
+/* Radio + label alineados */
+.ui-radiobutton, .ui-radiobutton label, .ui-radiobutton .ui-radiobutton-box {
+  vertical-align: middle;
+}
+
+/* Evitar que los selects crezcan más que el input */
+.ui-selectonemenu, .ui-selectonemenu .ui-selectonemenu-label {
+  display: inline-block;
+  width: 100%;
+}
+
+/* Inputs “responsive” dentro de celdas */
+.form-field-100 > .ui-inputfield,
+.form-field-100 > .ui-selectonemenu,
+.form-field-100 > .ui-calendar {
+  width: 100%;
+}
+
+/* Ajusta a tu gusto (porcentajes suman 100) */
+.col-label { width: 18%; }
+.col-field { width: 32%; }
+
+/* Que las celdas no colapsen por tipografías/padding */
+.ui-panelgrid .ui-grid-responsive .ui-panelgrid-cell,
+.ui-panelgrid .ui-panelgrid-cell {
+  vertical-align: middle;
+}
+
+/* Anchos de columnas del panelGrid */
+.col-label { width: 18%; vertical-align: middle; }
+.col-field { width: 32%; }
+
+/* Contenedor de un campo + su mensaje en la misma celda */
+.field-wrap { display: block; }
+.field-wrap > .ui-message { display: block; margin-top: .25rem; }
+
+/* Alturas uniformes */
+.ui-inputfield,
+.ui-selectonemenu,
+.ui-selectonemenu-label,
+.ui-calendar input.ui-inputfield,
+.ui-selectbooleancheckbox {
+  height: 36px;
+  line-height: 34px;
+  box-sizing: border-box;
+}
+.ui-selectonemenu-trigger,
+.ui-datepicker-trigger { height: 36px; }
+
+/* Radios alineados */
+.ui-radiobutton, .ui-radiobutton .ui-radiobutton-box { vertical-align: middle; }
+
+
+
+/* 2 columnas: 20% label, 30% campo, repetido (total 100%) */
+.c-label { width: 20%; vertical-align: middle; }
+.c-field { width: 30%; }
+
+/* Campo + mensaje en la misma celda (no rompe filas) */
+.field-wrap { display: block; }
+.field-wrap > .ui-message { display: block; margin-top: .25rem; }
+
+/* Que los componentes ocupen el ancho de su celda */
+.w-100,
+.w-100 .ui-inputfield,
+.w-100 .ui-selectonemenu-label { width: 100% !important; }
+
+/* Altura uniforme de 36px */
+.ui-inputfield,
+.ui-selectonemenu,
+.ui-selectonemenu-label,
+.ui-calendar input.ui-inputfield { height: 36px; line-height: 34px; box-sizing: border-box; }
+.ui-selectonemenu-trigger,
+.ui-datepicker-trigger { height: 36px; }
+
+/* Radio buttons alineados */
+.ui-radiobutton, .ui-radiobutton .ui-radiobutton-box { vertical-align: middle; }
+
+/* Columnas estables: 20% etiqueta / 30% campo (x2) */
+.fixgrid .col-label { width: 20%; vertical-align: middle; padding-right: 8px; }
+.fixgrid .col-field { width: 30%; }
+
+/* Que el contenido del campo ocupe el 100% de su celda */
+.fixgrid .col-field > * { display: block; width: 100%; }
+
+/* Inputs/menus a 100% de ancho */
+.fixgrid .col-field .ui-inputfield,
+.fixgrid .col-field .ui-selectonemenu,
+.fixgrid .col-field .ui-selectonemenu-label,
+.fixgrid .col-field .ui-calendar input.ui-inputfield { width: 100% !important; box-sizing: border-box; }
+
+/* Altura uniforme y triggers alineados */
+.fixgrid .ui-inputfield,
+.fixgrid .ui-selectonemenu,
+.fixgrid .ui-selectonemenu-label,
+.fixgrid .ui-calendar input.ui-inputfield { height: 36px; line-height: 34px; }
+.fixgrid .ui-selectonemenu-trigger,
+.fixgrid .ui-datepicker-trigger { height: 36px; }
+
+/* Radios centrados verticalmente */
+.fixgrid .ui-radiobutton, 
+.fixgrid .ui-radiobutton .ui-radiobutton-box { vertical-align: middle; }
+
+/* Evitar que mensajes empujen la grilla (los puedes mostrar como tooltip si quieres) */
+.fixgrid .ui-message { display:none; }
+
+/* Anchos y alineación consistentes en todas las filas */
+.label-col { width: 15rem; vertical-align: middle; }
+.field-col { width: auto;  }
+
+/* Opcional: que los radios no “salten” de línea */
+#layoutForm\\:tipoEval td { padding-right: 1rem; }
+
+/* Anchos consistentes */
+.lbl  { width: 14rem; vertical-align: middle; }
+.fld  { width: auto; }
+
+/* Radio en una sola línea y con respiración */
+#layoutForm\\:tipoEval td { padding-right: .75rem; }
+
+ /* Contenedor y respiración */
+.mc-fieldset .mc-row { margin-top: .5rem; }
+
+/* Etiquetas alineadas a la derecha en pantallas medianas+ */
+@media (min-width: 768px) {
+  .mc-label { text-align: right; padding-right: 1rem; }
+}
+
+/* Subpanel de fechas con borde discreto */
+.mc-subpanel .ui-panel-content { padding-top: .75rem !important; }
+.mc-subpanel .ui-panel-titlebar { padding: .4rem .8rem; }
+
+/* Radios en una línea con espacio */
+#layoutForm\\:tipoEval td { padding-right: .9rem; }
+
+/* Calendarios: que el input ocupe todo el ancho del contenedor */
+.ui-calendar, .ui-calendar input { width: 100%; }
+
+/* Hace más ancha solo el textarea de Observación */
+#layoutForm\\:obs, 
+#layoutForm\\:obs_input, 
+#layoutForm\\:obs textarea {
+    width: 100% !important;  /* ocupa todo el ancho disponible */
+    min-width: 400px;        /* puedes ajustar el valor mínimo */
+}
+
+/* Ancho completo utilitario */
+.w-full { width: 100%; }
+
+/* Encabezados celeste tipo planilla */
+.gx-header > td,
+.gx-header > .ui-panelgrid-cell {
+  background: #DFF7FB;        /* celeste suave */
+  color: #1b3a2d;              /* verde oscuro corporativo */
+  font-weight: 600;
+  border: 1px solid #cfe9ec;
+  padding: .6rem .8rem !important;
+}
+
+/* Celdas normales con borde sutil para efecto “tabla” */
+.ui-panelgrid-blank td.ui-panelgrid-cell {
+  border: 1px solid #e0e6df;
+  padding: .5rem .6rem;
+}
+
+/* Nota intermedia */
+.gx-note {
+  background: #eef9ee;
+  border: 1px dashed #b9d7b9;
+  color: #355e35;
+  font-size: .85rem;
+  padding: .5rem .8rem;
+  margin: .5rem 0 1rem 0;
+}
+
+/* ======= GINECO-OBSTÉTRICOS ======= *//* ===== Obstétricos (tabla tipo planilla) ===== */
+/* === Tabla Gineco: que NADA se salga de su celda === */
+.obst-grid{ width:100%; border-collapse:collapse; table-layout:fixed; font-size:13px }
+.obst-grid th,.obst-grid td{ border:1px solid #cfe8e8; padding:.35rem .5rem; vertical-align:middle }
+.obst-grid thead th{ background:#dff7f7!important; text-align:center; font-weight:600; color:#1b3a2d }
+.obst-grid .txt-c{ text-align:center }
+
+/* Que todos los campos ocupen su celda y no la rompan */
+.obst-fit,
+.obst-fit .ui-inputfield,
+.obst-fit .ui-selectonemenu,
+.obst-fit .ui-selectonemenu-label,
+.obst-fit textarea.ui-inputtextarea{
+  width:100% !important;
+  box-sizing:border-box !important;
+}
+
+/* Calendario: input + botón en la MISMA fila dentro de la celda */
+.ui-calendar.obst-cal{
+  display:flex; align-items:center; width:100%;
+}
+.ui-calendar.obst-cal input.ui-inputfield{
+  flex:1 1 auto; min-width:0; box-sizing:border-box;
+}
+.ui-calendar.obst-cal .ui-datepicker-trigger,
+.ui-calendar.obst-cal .ui-button{
+  flex:0 0 auto; margin-left:6px; height:34px;
+}
+
+/* Altura uniforme para inputs/combos */
+.obst-grid .ui-inputfield,
+.obst-grid .ui-selectonemenu,
+.obst-grid .ui-selectonemenu-label{ height:34px; line-height:32px; }
+
+/* Centrar checkboxes de MPF dentro de su celda */
+.obst-chk{ display:flex; justify-content:center; }
+
+/* ===== Reproductivos Masculinos - alineación uniforme ===== */
+.rep-grid {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.rep-grid th, .rep-grid td {
+  border: 1px solid #cfe8e8;
+  padding: .45rem .6rem;
+  vertical-align: middle;
+}
+
+.rep-grid thead th {
+  background: #dff7f7;
+  text-align: center;
+  font-weight: 600;
+}
+
+.rep-note {
+  color: #2b4a4a;
+  font-weight: 500;
+  text-align: center;
+}
+
+.rep-fit {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.txt-c {
+  text-align: center;
+}
+
+.rep-sub {
+  font-weight: 400;
+}
+
+/* 🔧 CORRECCIÓN DE DESCUADRE en InputNumber */
+.ui-inputnumber,
+.ui-inputnumber .ui-inputfield {
+  width: 100% !important;
+  box-sizing: border-box !important;
+  display: block;
+}
+
+/* Mantener misma altura que los inputText */
+.ui-inputnumber .ui-inputfield {
+  height: 2.3em;
+  line-height: 2.3em;
+}
+
+/* Quitar márgenes residuales */
+.ui-inputnumber {
+  margin: 0;
+  padding: 0;
+}
+
+/* ======= Consumo / Estilo de vida / Condición ======= */
+.cons-grid{
+  width:100%;
+  border-collapse:collapse;
+  table-layout:fixed;
+  margin-top:.25rem;
+}
+.cons-grid th,.cons-grid td{
+  border:1px solid #cfe8e8;
+  padding:.45rem .6rem;
+  vertical-align:middle;
+}
+.cons-grid thead th{
+  background:#dff7f7;
+  font-weight:600;
+  text-align:center;
+}
+.c-subhead th{background:#e8f7f7;}
+.c-sub{font-weight:400;color:#2b4a4a;}
+
+.txt-c{text-align:center;}
+.cons-fit{width:100%;box-sizing:border-box;}
+
+/* Cabeceras: evitar superposición y forzar salto */
+.th-wrap{
+  display:block;
+  white-space:normal;
+  word-wrap:break-word;
+  line-height:1.15;
+}
+
+/* Column widths para un encuadre limpio */
+.c-col-item{width:16%;}
+.c-col-tiempo{width:11%;}
+.c-col-chk{width:8%;}
+.c-col-vida-title{width:10%;}
+.c-col-vida-cual{width:16%;}
+.c-col-vida-tiempo{width:12%;}
+.c-col-cond-title{width:12%;}
+.c-col-cond-cual{width:16%;}
+.c-col-cond-cant{width:10%;}
+
+/* Uniformar p:inputNumber con p:inputText */
+.ui-inputnumber{width:100%!important;box-sizing:border-box!important;}
+.ui-inputnumber .ui-inputfield{
+  width:100%!important;
+  height:2.6em!important;
+  line-height:2.6em!important;
+  padding:0 .6em!important;
+  box-sizing:border-box!important;
+  font-size:1rem;
+}
+
+.vit-grid {
+  width: 100%;
+  border-collapse: collapse;
+}
+.vit-grid .ui-inputfield,
+.vit-grid .ui-inputtext,
+.vit-grid .ui-inputnumber {
+  width: 95%;
+  box-sizing: border-box;
+}
+.vit-grid td, .vit-grid th {
+  vertical-align: middle;
+  padding: 0.2rem 0.4rem;
+}
+ 
+/* ==================== F. EXAMEN FÍSICO REGIONAL – BEAUTY PACK ==================== */
+/* Contenedor de la sección */
+.fxr { --fxr-border:#cfe9ec; --fxr-head:#dff7fb; --fxr-ink:#163b2c; }
+
+/* Encabezados tipo planilla, más compactos */
+.fxr .fit-table{ width:100%; border:1px solid var(--fxr-border); border-radius:10px;
+  border-collapse:separate; border-spacing:0; background:#fff; overflow:hidden }
+.fxr .fit-header th{
+  background:var(--fxr-head); color:var(--fxr-ink); font-weight:700; letter-spacing:.2px;
+  padding:.55rem .6rem; text-align:center; border-right:1px solid var(--fxr-border)
+}
+.fxr .fit-header th:last-child{ border-right:0 }
+
+/* Tabla interna de cada columna: look minimalista y filas respirando */
+.fxr .vit-grid{ width:100%; border-collapse:separate; border-spacing:0; table-layout:fixed; }
+.fxr .vit-grid tr{ height:38px; }                         /* altura uniforme */
+.fxr .vit-grid td{
+  padding:.25rem .55rem; vertical-align:middle; background:#fff;
+  border-top:1px solid #eef6f7;                           /* línea suave entre filas */
+}
+.fxr .vit-grid tr:first-child td{ border-top:0; }
+
+/* Primera celda (texto del ítem) más legible y sin cortes raros */
+.fxr .vit-grid td:first-child{
+  color:#2a483a; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+
+/* Celda de controles: checkbox centrado + numeral a la derecha */
+.fxr .chk-num{ display:flex; align-items:center; justify-content:space-between; gap:.5rem; }
+.fxr .chk-num .ui-chkbox{ transform:scale(1.05); }
+
+/* “Numeral” bonito, pill y centrado (3–4 caracteres) */
+.fxr .num{
+  width:6.5ch !important; min-width:6.5ch !important; text-align:center;
+  border-radius:999px; background:#f5fbf8 !important; border:1px solid #bfe0cf !important;
+  height:30px !important; line-height:28px !important; padding:0 .4rem !important;
+  font-weight:600; color:#244d3d;
+}
+
+/* Micro-zebra muy ligera para mejorar lectura */
+.fxr .vit-grid tr:nth-child(odd) td{ background:#fcfefe; }
+
+/* Bordes verticales entre grandes columnas (suaves) */
+.fxr .col{ border-right:1px solid var(--fxr-border); }
+.fxr .col:last-child{ border-right:0; }
+
+/* Nota y observación con look institucional */
+.fxr .gx-note{
+  background:#eef9ee; border:1px dashed #b9d7b9; color:#355e35;
+  font-size:.86rem; padding:.55rem .8rem; border-radius:8px; margin:.65rem 0 .8rem;
+}
+.fxr .obs{
+  width:100% !important; min-height:90px !important; background:#f6f8f2;
+  border:1px solid #98b38d; border-radius:8px; padding:.6rem .7rem; box-sizing:border-box;
+}
+
+/* Ajustes PrimeFaces para que nada se “salga” ni se estire raro */
+.fxr .ui-inputfield, .fxr .ui-selectonemenu, .fxr .ui-selectonemenu-label{
+  height:34px; line-height:32px;
+}
+.fxr .ui-chkbox .ui-chkbox-box{ border:2px solid #406343 !important; }
+.fxr .ui-chkbox .ui-chkbox-box.ui-state-active{ background:#0f3d0f !important; border-color:#0f3d0f !important; }
+.fxr .ui-chkbox .ui-chkbox-icon{ color:#fff !important; }
+
+/* ====== F. EXAMEN FÍSICO REGIONAL – que se lean los rótulos ====== */
+.fxr .panel-scroll{
+  overflow-x:auto;             /* barras de desplazamiento */
+  overflow-y:auto;
+  max-height:520px;            /* ajusta si necesitas más alto */
+  border:1px solid #cfe9ec; border-radius:10px;
+}
+
+/* NADA de ellipsis: que el texto se parta en varias líneas */
+.fxr .fit-table th,
+.fxr .fit-table td{
+  white-space: normal !important;     /* permite saltos */
+  word-break: normal !important;
+  overflow: visible !important;
+  text-overflow: clip !important;     /* sin “…” */
+  line-height: 1.2;
+}
+
+/* Encabezado fijo al hacer scroll (opcional y útil) */
+.fxr .fit-table thead th{
+  position: sticky; top: 0; z-index: 2;
+  background: #dff7fb;
+  box-shadow: 0 2px 3px rgba(0,0,0,.05);
+}
+
+/* Primera columna fija (REGIONES: Piel, Ojos, etc.) */
+.fxr .fit-table th:first-child,
+.fxr .fit-table td:first-child{
+  position: sticky; left: 0; z-index: 1;
+  background: #ffffff;
+  box-shadow: 2px 0 3px rgba(0,0,0,.05);
+}
+
+/* Anchos base para que el rótulo respire y los campos no tapen texto */
+.fxr .col-label { min-width: 12rem; }  /* rótulo (ej. “a. Conjuntivas”) */
+.fxr .col-chk   { width: 3.2rem;  text-align: center; }  /* checkbox */
+.fxr .col-num   { width: 6.5rem; }  /* “Numeral” */
+
+/* Que los inputs no “crezcan” más de su celda */
+.fxr .fit-table .ui-inputfield,
+.fxr .fit-table .ui-inputnumber,
+.fxr .fit-table .ui-selectonemenu{
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* Alinear checkbox + input dentro de la celda cuando los uses juntos */
+.fxr .cell{
+  display: flex; align-items: center; gap: .5rem;
+}
+
+
+  .panel-scroll{
+    max-width:100%;
+    overflow-x:auto;
+    margin-top:10px;
+  }
+  .fit-table{
+    border-collapse:collapse;
+    width:100%;
+    table-layout:fixed;
+  }
+  .fit-table th{
+    background:#f4f6f7;
+    border:1px solid #ccc;
+    text-align:center;
+    font-weight:700;
+    padding:8px;
+    white-space:nowrap;
+  }
+  .fit-table td{
+    border:1px solid #ccc;
+    vertical-align:top;
+    padding:2px 4px;
+    min-width:150px; /* 🔹 más ancho base */
+  }
+
+  /* columnas más amplias en general */
+  .fit-table td:nth-child(1){min-width:130px}
+  .fit-table td:nth-child(2){min-width:160px}
+  .fit-table td:nth-child(3){min-width:160px}
+  .fit-table td:nth-child(4){min-width:170px}
+  .fit-table td:nth-child(5){min-width:160px}
+  .fit-table td:nth-child(6){min-width:160px}
+  .fit-table td:nth-child(7){min-width:140px}
+  .fit-table td:nth-child(8){min-width:160px}
+  .fit-table td:nth-child(9){min-width:160px}
+  .fit-table td:nth-child(10){min-width:150px}
+  .fit-table td:nth-child(11){min-width:160px}
+  .fit-table td:nth-child(12){min-width:190px}
+  .fit-table td:nth-child(13){min-width:170px}
+
+  /* 🔹 Fila limpia: texto izquierda, checkbox derecha */
+  .row-line{
+    display:grid;
+    grid-template-columns: 1fr 30px;
+    align-items:center;
+    padding:6px 8px;
+    column-gap:10px;
+    box-sizing:border-box;
+  }
+
+  /* 🔹 checkbox siempre alineado a la derecha y con margen */
+  .chk{
+    justify-self:end;
+    margin-right:4px;
+  }
+
+  /* 🔹 mismo tamaño para todos los checks */
+  .ui-chkbox, .ui-chkbox-box{
+    width:18px;
+    height:18px;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+  }
+
+  /* 🔹 Bloque vertical uniforme */
+  .col-block{
+    display:flex;
+    flex-direction:column;
+    gap:2px;
+  }
+
+  /* 🔹 Cabeceras y bordes suaves estilo institucional */
+  .fit-table th{
+    background:#e8f7e8;
+    color:#203020;
+    border-color:#bcd2bc;
+  }
+  .fit-table td{
+    border-color:#d0e0d0;
+  }
+  /* === EXAMEN FÍSICO REGIONAL === */
+
+/* Fieldset con scroll horizontal interno */
+.fieldset-scroll {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-bottom: 10px;
+}
+
+/* Tabla general */
+.f-grid {
+  border-collapse: collapse;
+  width: 100%;
+  table-layout: fixed;
+  min-width: 2400px; /* asegura scroll horizontal sin desbordarse del template */
+}
+
+/* Encabezados */
+.f-grid th {
+  background: #e8f7e8;
+  color: #203020;
+  border: 1px solid #bcd2bc;
+  text-align: center;
+  font-weight: 700;
+  padding: 8px 10px;
+  white-space: nowrap; /* evita cortes de línea */
+}
+
+/* Celdas */
+.f-grid td {
+  border: 1px solid #d0e0d0;
+  vertical-align: top;
+  padding: 4px 6px;
+}
+
+/* Anchos personalizados por columna */
+.f-grid td:nth-child(1) { min-width: 160px; }
+.f-grid td:nth-child(2) { min-width: 200px; }
+.f-grid td:nth-child(3) { min-width: 200px; }
+.f-grid td:nth-child(4) { min-width: 200px; }
+.f-grid td:nth-child(5) { min-width: 200px; }
+.f-grid td:nth-child(6) { min-width: 180px; }
+.f-grid td:nth-child(7) { min-width: 160px; }
+.f-grid td:nth-child(8) { min-width: 180px; }
+.f-grid td:nth-child(9) { min-width: 180px; }
+.f-grid td:nth-child(10) { min-width: 180px; }
+.f-grid td:nth-child(11) { min-width: 180px; }
+.f-grid td:nth-child(12) { min-width: 210px; } /* Extremidades */
+.f-grid td:nth-child(13) { min-width: 210px; } /* Neurológico */
+
+/* Filas: etiqueta izquierda, checkbox derecha */
+.f-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 4px;
+  min-height: 28px;
+}
+
+.f-lbl {
+  text-align: left;
+  flex: 1;
+  line-height: 1.2;
+  word-break: keep-all;
+  white-space: normal;
+  hyphens: auto;
+}
+
+/* Checkbox PrimeFaces: centrado y compacto */
+.f-row .ui-chkbox {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  margin-left: 8px;
+}
+.f-row .ui-chkbox-box {
+  width: 18px;
+  height: 18px;
+  margin: 0 !important;
+}
+
+/* Scrollbar personalizado (para IGM, tono oliva) */
+.fieldset-scroll::-webkit-scrollbar {
+  height: 8px;
+}
+.fieldset-scroll::-webkit-scrollbar-thumb {
+  background-color: #8a9a7b;
+  border-radius: 4px;
+}
+.fieldset-scroll::-webkit-scrollbar-track {
+  background-color: #e8f0e8;
+}
+
+/* --- Fieldset: evita que se salga del template --- */
+.ui-fieldset.fieldset-encaps {
+  display: block;
+  max-width: 100%;
+  overflow: hidden;          /* importante: el fieldset no crece con el contenido */
+  box-sizing: border-box;
+}
+
+/* Contenedor con scroll horizontal interno */
+.fs-scroll {
+  width: 100%;
+  overflow-x: auto;          /* aquí aparece la barra horizontal */
+  overflow-y: hidden;
+  padding-bottom: 6px;       /* respiración para la barra */
+  box-sizing: border-box;
+}
+
+/* Tabla interna: ancho mínimo para obligar al scroll, pero sin romper layout */
+.f-grid {
+  border-collapse: collapse;
+  table-layout: fixed;
+  width: auto;               /* no 100% para que no fuerce crecimiento del padre */
+  min-width: 1600px;         /* ajusta a gusto (1200–2200) */
+}
+
+/* Encabezados */
+.f-grid th {
+  background: #e8f7e8;
+  color: #203020;
+  border: 1px solid #bcd2bc;
+  text-align: center;
+  font-weight: 700;
+  padding: 8px 10px;
+  white-space: nowrap;       /* títulos en una línea */
+}
+
+/* Celdas */
+.f-grid td {
+  border: 1px solid #d0e0d0;
+  vertical-align: top;
+  padding: 4px 6px;
+}
+
+/* Anchos por columna (ajusta si quieres más aire) */
+.f-grid td:nth-child(1)  { min-width: 160px; }  /* Piel            */
+.f-grid td:nth-child(2)  { min-width: 200px; }  /* Ojos            */
+.f-grid td:nth-child(3)  { min-width: 200px; }  /* Oído            */
+.f-grid td:nth-child(4)  { min-width: 200px; }  /* Oro faringe     */
+.f-grid td:nth-child(5)  { min-width: 180px; }  /* Nariz           */
+.f-grid td:nth-child(6)  { min-width: 170px; }  /* Cuello          */
+.f-grid td:nth-child(7)  { min-width: 160px; }  /* Tórax (mamas)   */
+.f-grid td:nth-child(8)  { min-width: 180px; }  /* Tórax           */
+.f-grid td:nth-child(9)  { min-width: 180px; }  /* Abdomen         */
+.f-grid td:nth-child(10) { min-width: 180px; }  /* Columna         */
+.f-grid td:nth-child(11) { min-width: 170px; }  /* Pelvis          */
+.f-grid td:nth-child(12) { min-width: 210px; }  /* Extremidades    */
+.f-grid td:nth-child(13) { min-width: 210px; }  /* Neurológico     */
+
+/* Fila: etiqueta a la izquierda, checkbox a la derecha */
+.f-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 2px;
+  min-height: 28px;
+}
+
+.f-lbl {
+  flex: 1 1 auto;
+  text-align: left;
+  line-height: 1.2;
+  white-space: normal;
+}
+
+/* Ajustes visuales del checkbox de PrimeFaces */
+.f-row .ui-chkbox { display:inline-flex; align-items:center; justify-content:center; }
+.f-row .ui-chkbox-box { width:18px; height:18px; margin:0 !important; }
+
+/* Scrollbar (opcional) */
+.fs-scroll::-webkit-scrollbar { height: 8px; }
+.fs-scroll::-webkit-scrollbar-thumb { background:#8a9a7b; border-radius:4px; }
+.fs-scroll::-webkit-scrollbar-track { background:#e8f0e8; }
+
+/* ===== ATENCIÓN PRIORITARIA UNA SOLA LÍNEA ===== */
+.ap-grid {
+  display: flex !important;
+  align-items: center !important;
+  flex-wrap: nowrap !important; /* no se parte */
+  gap: 1.5rem !important;       /* espacio entre cada par */
+  overflow-x: auto !important;  /* scroll si no cabe */
+  padding: 0.5rem 0.8rem !important;
+}
+
+.ap-item {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: .5rem !important;
+  flex: 0 0 auto !important; /* no se ajustan ni se rompen */
+}
+
+.ap-item .ui-chkbox-box {
+  width: 18px !important;
+  height: 18px !important;
+  border-radius: 4px !important;
+  border: 2px solid #2f4325 !important; /* verde IGM */
+  background: #fff !important;
+  box-shadow: none !important;
+}
+
+.ap-item .ui-chkbox-box.ui-state-active {
+  background: #2f4325 !important;
+  border-color: #2f4325 !important;
+}
+
+.ap-item .ui-chkbox-icon {
+  color: #fff !important;
+  font-size: 12px !important;
+}
+
+.ap-item .ap-label {
+  font-size: .95rem !important;
+  color: #1b3524 !important;
+  font-weight: 500;
+  white-space: nowrap !important;
+}
+
+
+/* ================== H · Actividad laboral – GRID ENCAPSULADO ================== */
+.hx-fieldset.ui-fieldset {        /* el fieldset nunca se desborda */
+  display:block; max-width:100%; overflow:hidden; box-sizing:border-box;
+}
+
+.hx-scroll {                      /* scrollbar horizontal interno del fieldset */
+  width:100%; overflow-x:auto; overflow-y:hidden; padding-bottom:8px;
+  box-sizing:border-box;
+}
+
+/* Tabla principal (solo H) */
+.hx-grid{
+  border-collapse:collapse; table-layout:fixed; width:auto;   /* no fuerza 100% */
+  min-width: 1600px;                 /* obliga scroll si hace falta */
+  font-size:13px;
+}
+.hx-grid th{
+  background:#e8f7e8; color:#203020; border:1px solid #bcd2bc;
+  text-align:center; font-weight:700; padding:8px 10px;
+  white-space:normal;               /* permite salto de línea (no se montan) */
+  line-height:1.2;
+}
+.hx-grid td{
+  border:1px solid #d0e0d0; vertical-align:middle; padding:6px 8px;
+  background:#fff;
+}
+
+/* Anchos por columna — ajusta a gusto, ya no se colapsan los rótulos */
+.hx-col-ct     { min-width: 200px; }  /* Centro de trabajo                    */
+.hx-col-acts   { min-width: 260px; }  /* Actividades                          */
+.hx-col-chk    { width:  60px;  text-align:center; } /* checks (anterior/actual/si/no) */
+.hx-col-tiempo { min-width: 120px; }  /* tiempo de trabajo                    */
+.hx-col-fecha  { min-width: 140px; }  /* fecha                                */
+.hx-col-espec  { min-width: 220px; }  /* especificar                          */
+.hx-col-obsv   { min-width: 260px; }  /* observaciones                        */
+
+/* Nota bajo “FECHA” (aaaa/mm/dd) más legible */
+.hx-note{ display:block; color:#666; font-size:11px; margin-top:2px }
+
+/* Calendario: input + botón en línea y sin romper celdas */
+.hx-date .ui-calendar{ display:flex; align-items:center; width:100%; }
+.hx-date .ui-calendar input.ui-inputfield{ flex:1 1 auto; min-width:0; }
+.hx-date .ui-calendar .ui-button,
+.hx-date .ui-datepicker-trigger{ flex:0 0 auto; margin-left:6px; height:34px; }
+
+/* Textareas e inputs ocupan la celda completa (sin empujar nada) */
+.hx-cell-input    { width:100% !important; box-sizing:border-box !important; }
+.hx-cell-textarea { width:100% !important; resize:vertical; box-sizing:border-box; }
+
+/* Encabezado superior “grande” con colspan: respiración extra */
+.hx-grid thead tr:first-child th{ padding:10px 10px; }
+
+/* (Opcional) encabezado pegajoso al hacer scroll */
+.hx-grid thead th{ position:sticky; top:0; z-index:1; box-shadow:0 2px 3px rgba(0,0,0,.05); }
+
+.manual-info{
+  background:#fff3cd;
+  border:1px solid #ffeeba;
+  color:#856404;
+  padding:.6rem .8rem;
+  margin: .6rem 0 1rem 0;
+  border-radius:6px;
+  font-weight:600;
+}
+
+.manual-grid .manual-label{
+  text-align:left;
+  font-weight:600;
+  padding-top:.45rem;
+}
+
+.manual-grid .manual-field{
+  padding-left:.5rem;
+}
+
+.manual-grid .ui-inputfield,
+.manual-grid .ui-selectonemenu,
+.manual-grid .ui-calendar{
+  width:100% !important;
+}
+
+.manual-btn-guardar{
+  width:100%;
+  font-weight:700;
+}
+
+ /* contenedor solo para la matriz (ponle una clase al panel que la envuelve) */
+.riesgos-matriz {
+  overflow-x: auto;
+  padding-bottom: .5rem;
+}
+
+/* que los selectOneMenu tengan un ancho mínimo consistente */
+.riesgos-matriz .ui-selectonemenu {
+  min-width: 140px;
+}
+
+/* ============================= */
+/* HOJA A4 – PANTALLA + PRINT   */
+/* ============================= */
+.sheet-a4 {
+    width: 210mm;
+    min-height: 297mm;
+    margin: 10mm auto;
+    padding: 12mm;
+    background: #fff;
+    box-sizing: border-box;
+}
+
+/* Evita que algo se salga */
+.sheet-a4 * {
+    box-sizing: border-box;
+}
+
+/* Grid estándar para formularios */
+.form-grid {
+    display: grid;
+    grid-template-columns: 180px 1fr 180px 1fr;
+    gap: 10px 12px;
+    align-items: center;
+}
+
+/* Inputs, dropdowns, calendar */
+.p-inputtext,
+.p-selectonemenu,
+.p-calendar .p-inputtext {
+    height: 36px;
+    line-height: 36px;
+}
+
+/* Botón del calendar */
+.p-calendar button {
+    height: 36px !important;
+}
+
+
+.p-selectonemenu {
+    width: 100% !important;
+}
+
+.p-selectonemenu-label {
+    padding-right: 28px;
+}
+
+@media print {
+    body {
+        background: none;
+    }
+
+    .sheet-a4 {
+        margin: 0;
+        padding: 10mm;
+        box-shadow: none;
+    }
+
+    /* Evitar cortes */
+    .no-break {
+        page-break-inside: avoid;
+    }
+}
+/* =========================================================
+   ✅ FIX GLOBAL: centrar el visto dentro del checkbox (PF 14)
+   Aplica a p:selectBooleanCheckbox y selectManyCheckbox
+   ========================================================= */
+
+/* El contenedor del checkbox */
+.ui-chkbox {
+    display: inline-flex;
+    align-items: center;
+    vertical-align: middle;
+}
+
+/* La cajita */
+.ui-chkbox .ui-chkbox-box,
+.ui-selectmanycheckbox .ui-chkbox-box {
+    width: 22px;              /* ajusta si quieres 20/24 */
+    height: 22px;
+    box-sizing: border-box;
+    padding: 0 !important;
+    margin: 0 !important;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    line-height: 1 !important;     /* clave */
+}
+
+/* El icono (tilde) */
+.ui-chkbox .ui-chkbox-box .ui-chkbox-icon,
+.ui-selectmanycheckbox .ui-chkbox-box .ui-chkbox-icon {
+    position: static !important;   /* evita desplazamientos por theme */
+    margin: 0 !important;
+    line-height: 1 !important;
+    font-size: 14px;              /* ajusta si quieres */
+}
+
+/* Si el theme usa PrimeIcons internamente */
+.ui-chkbox .ui-chkbox-box .pi,
+.ui-selectmanycheckbox .ui-chkbox-box .pi {
+    line-height: 1 !important;
+}
+
+
+/* ================================
+   PRIMEFACES: SELECTONEMENU ALIGN
+   (global)
+================================ */
+
+:root{
+  --pf-input-h: 36px; /* ajusta a tu gusto: 34/36/38 */
+}
+
+/* Contenedor del select */
+.ui-selectonemenu{
+  height: var(--pf-input-h) !important;
+  box-sizing: border-box !important;
+}
+
+/* Label (texto) centrado vertical */
+.ui-selectonemenu .ui-selectonemenu-label{
+  height: var(--pf-input-h) !important;
+  line-height: var(--pf-input-h) !important; /* esto suele ser lo que faltaba */
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+
+  display: block !important;
+  box-sizing: border-box !important;
+}
+
+/* Trigger (botón flecha) mismo alto y centrado */
+.ui-selectonemenu .ui-selectonemenu-trigger{
+  height: var(--pf-input-h) !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+/* Icono flecha centrado */
+.ui-selectonemenu .ui-selectonemenu-trigger .ui-icon{
+  margin: 0 !important;
+  position: static !important;
+}
+
+@media print{
+  html, body{ background:#fff !important; }
+  .page-container{
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+}
+
+/* Grilla fija de 6 columnas */
+.f-grid-6 {
+  width: 100%;
+  table-layout: fixed;
+}
+
+/* Asegura que cada celda se alinee arriba */
+.f-grid-6 td {
+  vertical-align: top;
+}
+
+/* Título dentro de cada celda */
+.f-cell-title {
+  font-weight: 700;
+  text-align: center;
+  padding: 8px 6px;
+  margin: -8px -8px 8px -8px;  /* “pega” el header al borde de la celda */
+  border-bottom: 1px solid #c8d9c8;
+  background: #eaf7ea;         /* mismo look de tu tabla */
+}
+
+/* Celdas vacías (relleno) */
+.f-empty {
+  background: #fff;
+}
+/* ===== F. EXAMEN FÍSICO REGIONAL (4 columnas, sin desbordarse) ===== */
+.f-grid4{
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;      /* clave para que no crezca */
+}
+
+.f-grid4 td{
+  border: 1px solid #d0e0d0;
+  vertical-align: top;
+  padding: 8px 10px;
+  width: 25%;               /* 4 columnas exactas */
+  box-sizing: border-box;
+}
+
+.f-grid4 .f-title{
+  background: #e8f7e8;
+  border-bottom: 1px solid #bcd2bc;
+  font-weight: 700;
+  padding: 6px 8px;
+  margin: -8px -10px 8px -10px; /* pega el header al borde */
+}
+
+.f-grid4 .f-empty{
+  background: #fff;
+}
+
+/* ================================
+   FIX: Fieldset H no se salga del template
+   (sobrescribe anchos fijos/min-width)
+==================================*/
+.hx-fieldset,
+.hx-fieldset .ui-fieldset-content{
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.hx-scroll{
+  max-width: 100%;
+  overflow-x: auto;      /* si en pantallas pequeñas necesita scroll, que sea interno */
+  overflow-y: hidden;
+  box-sizing: border-box;
+}
+
+/* La clave: eliminar min-width y usar tabla "fija" para que respete el 100% */
+.hx-grid{
+  width: 100%;
+  max-width: 100%;
+  min-width: 0 !important;
+  table-layout: fixed;   /* respeta el colgroup por % */
+}
+
+/* Que el contenido no empuje el ancho */
+.hx-grid th, .hx-grid td{
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  box-sizing: border-box;
+}
+
+/* Reemplaza los widths fijos por % (suman 100%) */
+.hx-col-ct    { width: 12% !important; min-width: 0 !important; }
+.hx-col-acts  { width: 15% !important; min-width: 0 !important; }
+.hx-col-chk   { width:  3% !important; min-width: 0 !important; } /* 7 cols = 21% */
+.hx-col-tiempo{ width:  7% !important; min-width: 0 !important; }
+.hx-col-fecha { width:  9% !important; min-width: 0 !important; }
+.hx-col-espec { width: 18% !important; min-width: 0 !important; }
+.hx-col-obsv  { width: 18% !important; min-width: 0 !important; }
+
+/* Inputs/textarea/calendar que NO expandan la celda */
+.hx-cell-input,
+.hx-cell-textarea{
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  box-sizing: border-box;
+}
+
+.hx-date .ui-calendar,
+.hx-date .ui-inputfield{
+  width: 100% !important;
+  box-sizing: border-box;
+}
+
+/**** cCAMBIO DE LINEAS ******/
+ /* ====== VERSIÓN CON PORCENTAJES PARA MEJOR RESPONSIVIDAD ====== */
+
+/* Sobrescribimos las clases existentes con porcentajes */
+.hx-col-ct     { width: 13% !important; min-width: 130px !important; }
+.hx-col-acts   { width: 15% !important; min-width: 140px !important; }
+.hx-col-chk    { width: 4% !important; min-width: 40px !important; text-align: center; }
+.hx-col-tiempo { width: 8% !important; min-width: 80px !important; }
+.hx-col-fecha  { width: 12% !important; min-width: 160px !important; } /* Más ancho */
+.hx-col-espec  { width: 16% !important; min-width: 150px !important; } /* Reducido */
+.hx-col-obsv   { width: 16% !important; min-width: 150px !important; } /* Reducido */
+
+/* La suma de porcentajes: 13+15+(4*7)+8+12+16+16 = 13+15+28+8+12+16+16 = 108% */
+/* Ajusta los porcentajes según sea necesario para sumar 100% */
+
+/* Ajustamos la tabla completa */
+.hx-grid {
+    min-width: 0 !important; /* Eliminamos el mínimo fijo */
+    width: 100%;
+}
+
+/* Calendario con mejor uso del espacio */
+.hx-date {
+    width: 100%;
+}
+
+.hx-date .ui-calendar input.ui-inputfield {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box;
+}
+
+/* ====== SOLUCIÓN FOCALIZADA EN EL CALENDARIO ====== */
+
+/* Damos más espacio específico a la columna de fecha */
+.hx-col-fecha {
+    min-width: 170px !important; /* Aún más ancho */
+    max-width: 180px;
+}
+
+/* Calendario optimizado */
+.hx-date .ui-calendar {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    width: 100%;
+}
+
+/* Input de fecha más ancho */
+.hx-date .ui-calendar input.ui-inputfield {
+    width: 120px !important; /* Ancho fijo suficiente para fecha */
+    min-width: 120px;
+    flex: 1;
+}
+
+/* Botón más compacto */
+.hx-date .ui-calendar .ui-button {
+    width: 32px;
+    min-width: 32px;
+    flex-shrink: 0;
+}
+
+/* Reducimos otros elementos para compensar */
+.hx-col-espec {
+    min-width: 160px !important; /* Reducido */
+}
+
+.hx-col-obsv {
+    min-width: 170px !important; /* Reducido */
+}
+
+.hx-col-ct {
+    min-width: 150px !important; /* Reducido */
+}
+
+/* =========================
+   STEP 3 - FECHAS ALINEADAS
+   (H / I / J)
+   ========================= */
+
+/* asegura layout estable en las tablas */
+.hx-grid, .i-grid, .j-grid{
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: collapse;
+}
+
+/* dale aire real a las columnas de fecha */
+.hx-col-fecha{ width: 160px; }
+.i-col-date{  width: 170px; }
+.j-col-date{  width: 170px; }
+
+/* el TD de fecha: evita que el botón se monte */
+td.hx-date, td.i-date, td.j-date{
+  vertical-align: middle;
+  padding: 6px 8px;
+  overflow: visible;
+}
+
+/* el calendar (input + botón) en una sola línea y bien alineado */
+td.hx-date .ui-calendar,
+td.i-date  .ui-calendar,
+td.j-date  .ui-calendar{
+  display: flex !important;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+}
+
+/* el input ocupa el ancho disponible */
+td.hx-date .ui-calendar > input,
+td.i-date  .ui-calendar > input,
+td.j-date  .ui-calendar > input{
+  flex: 1 1 auto;
+  min-width: 0;           /* CLAVE para que no empuje a los demás */
+  width: 100% !important;
+  box-sizing: border-box;
+}
+
+/* botón fijo, no invade otras columnas */
+td.hx-date .ui-datepicker-trigger,
+td.i-date  .ui-datepicker-trigger,
+td.j-date  .ui-datepicker-trigger{
+  flex: 0 0 34px;
+  margin-left: 0 !important;
+}
+/* ==========================
+   FIX FECHAS (H / I / J)
+   Evita que el botón se monte
+   ========================== */
+
+/* Las celdas de fecha no deben permitir overflow hacia la celda vecina */
+.hx-grid td.hx-date,
+.i-grid td.i-date,
+.j-grid td.j-date{
+  overflow: hidden !important;
+  padding: 4px 6px !important;
+  vertical-align: middle !important;
+}
+
+/* El contenedor del calendario como fila (input + botón) */
+.hx-grid td.hx-date .ui-calendar,
+.i-grid td.i-date .ui-calendar,
+.j-grid td.j-date .ui-calendar{
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* El input ocupa todo lo posible sin empujar a otras columnas */
+.hx-grid td.hx-date .ui-calendar input,
+.i-grid td.i-date .ui-calendar input,
+.j-grid td.j-date .ui-calendar input{
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* El botón NO debe salir del TD */
+.hx-grid td.hx-date .ui-calendar button,
+.i-grid td.i-date .ui-calendar button,
+.j-grid td.j-date .ui-calendar button{
+  flex: 0 0 auto !important;
+  margin: 0 !important;
+}
+
+/* Asegura un ancho real para la columna FECHA del bloque H */
+.hx-col-fecha{
+  width: 150px !important;
+  min-width: 150px !important;
+  max-width: 150px !important;
+}
+
+/* Anchos para I y J (columna fecha) */
+.i-col-date,
+.j-col-date{
+  width: 160px !important;
+  min-width: 160px !important;
+  max-width: 160px !important;
+}
+
+.hx-date .ui-calendar { width: 100%; display: flex; align-items: center; }
+.hx-date .ui-inputfield { width: 100% !important; box-sizing: border-box; }
+.hx-date .ui-datepicker-trigger { flex: 0 0 auto; }
+
+/* Ancho real para fecha en I y J */
+.i-col-date { width: 170px; }
+.j-col-date { width: 170px; }
+
+/* Hacer que el calendar entre bien en la celda */
+.i-date .ui-calendar,
+.j-date .ui-calendar {
+  width: 100%;
+  display: flex;
+  align-items: center;
+}
+
+.i-date .ui-inputfield,
+.j-date .ui-inputfield {
+  width: 100% !important;
+  box-sizing: border-box;
+}
+
+/* que el botón no se aplaste */
+.i-date .ui-datepicker-trigger,
+.j-date .ui-datepicker-trigger {
+  flex: 0 0 auto;
+}
+
+.i-col-date { width: 190px; }
+.j-col-date { width: 190px; }
+
+.i-date .ui-calendar,
+.j-date .ui-calendar {
+  width: 100%;
+  display: flex;
+  align-items: center;
+}
+
+.i-date .ui-inputfield,
+.j-date .ui-inputfield {
+  width: 100% !important;
+  box-sizing: border-box;
+}
+
+.i-date .ui-datepicker-trigger,
+.j-date .ui-datepicker-trigger {
+  flex: 0 0 auto;
+}
+
+/* Dale ancho real a la columna FECHA en I y J */
+.i-col-date { width: 190px; }
+.j-col-date { width: 190px; }
+
+/* Que el calendar (input + botón) entre en la celda */
+.i-date .ui-calendar,
+.j-date .ui-calendar {
+  width: 100%;
+  display: flex;
+  align-items: center;
+}
+
+.i-date .ui-inputfield,
+.j-date .ui-inputfield {
+  width: 100% !important;
+  box-sizing: border-box;
+}
+
+.i-date .ui-datepicker-trigger,
+.j-date .ui-datepicker-trigger {
+  flex: 0 0 auto;
+}
+.i-col-date { width: 190px; }
+.j-col-date { width: 190px; }
+
+/* Forzar que el datePicker respete el 100% y no se aplaste */
+.dp-100 .ui-datepicker { width: 100%; }
+/* datePicker: input 100% */
+.dp-100 input { width: 100% !important; box-sizing: border-box; }
+/* ===== Fix PrimeFaces AutoComplete (panel de sugerencias) ===== */
+
+/* 1) que el panel siempre se vea por encima */
+.ui-autocomplete-panel,
+.k-ac-panel{
+  z-index: 999999 !important;
+}
+
+/* 2) evita que los contenedores del step lo recorten */
+.k-fieldset,
+.k-fieldset .ui-fieldset-content,
+.k-fieldset .panel-scroll{
+  overflow: visible !important;
+}
+.panel-scroll{
+  overflow-x: auto;
+  overflow-y: visible !important;
+}
+

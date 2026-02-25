@@ -1,0 +1,711 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+
+    <!-- A. DATOS DEL ESTABLECIMIENTO / USUARIO -->
+    <p:fieldset legend="A. DATOS DEL ESTABLECIMIENTO / USUARIO" toggleable="true">
+
+        <p:panelGrid columns="4" layout="grid"
+                     columnClasses="col-label,col-field,col-label,col-field"
+                     styleClass="ui-fluid">
+
+            <h:outputLabel value="Institución del Sistema"/>
+            <h:panelGroup styleClass="field-wrap">
+                <h:outputText value="#{fichaPrintCtrl.cm.ficha.instSistema}" />
+            </h:panelGroup>
+
+            <h:outputLabel value="RUC"/>
+            <h:panelGroup styleClass="field-wrap">
+                <h:outputText value="#{fichaPrintCtrl.cm.ficha.rucEstablecimiento}" />
+            </h:panelGroup>
+
+            <h:outputLabel value=" Puesto de Trabajo CIUO"/>
+            <h:panelGroup styleClass="field-wrap">
+                <h:outputText value="#{fichaPrintCtrl.cm.ficha.ciiu}" />
+            </h:panelGroup>
+
+            <h:outputLabel value="Centro de trabajo"/>
+            <h:panelGroup styleClass="field-wrap">
+                <h:outputText value="#{fichaPrintCtrl.cm.ficha.establecimientoCt}" />
+            </h:panelGroup>
+
+            <h:outputLabel value="N° Historia clínica"/>
+            <h:panelGroup styleClass="field-wrap">
+                <h:outputText value="#{fichaPrintCtrl.cm.ficha.noHistoriaClinica}" />
+            </h:panelGroup>
+
+            <h:outputLabel value="N° Archivo"/>
+            <h:panelGroup styleClass="field-wrap">
+                <h:outputText value="#{fichaPrintCtrl.cm.ficha.noArchivo}" />
+            </h:panelGroup>
+
+            <h:outputLabel value="Primer apellido"/>
+            <h:panelGroup styleClass="field-wrap">
+                <h:outputText value="#{fichaPrintCtrl.cm.apellido1}" />
+            </h:panelGroup>
+
+            <h:outputLabel value="Segundo apellido"/>
+            <h:panelGroup styleClass="field-wrap">
+                <h:outputText value="#{fichaPrintCtrl.cm.apellido2}" />
+            </h:panelGroup>
+
+            <h:outputLabel value="Primer nombre"/>
+            <h:panelGroup styleClass="field-wrap">
+                <h:outputText value="#{fichaPrintCtrl.cm.nombre1}" />
+            </h:panelGroup>
+
+            <h:outputLabel value="Segundo nombre"/>
+            <h:panelGroup styleClass="field-wrap">
+                <h:outputText value="#{fichaPrintCtrl.cm.nombre2}" />
+            </h:panelGroup>
+
+        </p:panelGrid>
+
+        <!-- ATENCIÓN PRIORITARIA -->
+        <p:fieldset legend="ATENCIÓN PRIORITARIA" styleClass="ap-fieldset" style="margin-top:.5rem;">
+            <div class="ap-grid">
+                <div class="ap-item">
+                    <h:outputText value="#{fichaPrintCtrl.cm.apEmbarazada ? 'SI' : 'NO'}" />
+                    <h:outputText value="Embarazada" styleClass="ap-label"/>
+                </div>
+                <div class="ap-item">
+                    <h:outputText value="#{fichaPrintCtrl.cm.apDiscapacidad ? 'SI' : 'NO'}" />
+                    <h:outputText value="Discapacidad" styleClass="ap-label"/>
+                </div>
+                <div class="ap-item">
+                    <h:outputText value="#{fichaPrintCtrl.cm.apCatastrofica ? 'SI' : 'NO'}" />
+                    <h:outputText value="Enf. catastrófica" styleClass="ap-label"/>
+                </div>
+                <div class="ap-item">
+                    <h:outputText value="#{fichaPrintCtrl.cm.apLactancia ? 'SI' : 'NO'}" />
+                    <h:outputText value="Lactancia" styleClass="ap-label"/>
+                </div>
+                <div class="ap-item">
+                    <h:outputText value="#{fichaPrintCtrl.cm.apAdultoMayor ? 'SI' : 'NO'}" />
+                    <h:outputText value="Adulto mayor" styleClass="ap-label"/>
+                </div>
+            </div>
+        </p:fieldset>
+
+        <!-- BIO/IDENTIFICACIÓN -->
+        <h:panelGrid columns="4"
+                     columnClasses="w-15rem, w-35rem, w-15rem, w-35rem"
+                     styleClass="ui-fluid" style="margin-top:.5rem">
+
+            <h:outputLabel for="sexowd" value="Sexo"/>
+
+            <h:outputText value="#{fichaPrintCtrl.cm.sexo}" />
+
+
+
+            <h:outputLabel for="fecNac" value="Fecha de nacimiento"/>
+
+            <p:calendar id="fecNac"
+                        value="#{fichaPrintCtrl.cm.fechaNacimiento}"
+                        pattern="dd/MM/yyyy"
+                        navigator="true"
+                        showOn="button"
+                        yearRange="1924:2007">
+
+                
+
+                
+
+            </p:calendar>
+
+            <h:outputLabel for="edad" value="Edad (años)"/>
+            <h:outputText value="#{fichaPrintCtrl.cm.edad}" />
+
+
+
+            <h:outputLabel for="sangre" value="Grupo sanguíneo"/>
+            <h:outputText value="#{fichaPrintCtrl.cm.grupoSanguineo}" />
+
+            <h:outputLabel for="lateralidad" value="Lateralidad"/>
+            <h:outputText value="#{fichaPrintCtrl.cm.lateralidad}" />
+        </h:panelGrid>
+
+    </p:fieldset>
+
+    <!-- B. MOTIVO DE CONSULTA -->
+    <p:fieldset legend="B. MOTIVO DE CONSULTA" toggleable="true">
+        <h:panelGrid columns="4"
+                     columnClasses="w-15rem, w-35rem, w-15rem, w-35rem"
+                     styleClass="ui-fluid">
+
+            <h:outputLabel value="Puesto de trabajo (CIUO)"/>
+            <h:outputText value=""/>
+
+            <h:outputLabel value="Fecha de atención"/>
+            <h:outputText value="#{fichaPrintCtrl.cm.fechaAtencion}" />
+
+            <!-- Selector de tipo de evaluación -->
+            <h:panelGrid  >
+                <h:outputLabel for="tipoEval" value="Tipo Evaluación"/>
+                <h:outputText value="#{fichaPrintCtrl.cm.tipoEval}" />
+            </h:panelGrid>
+
+            <!-- Bloque que se re-renderiza con las fechas -->
+            <h:panelGroup id="fechasPanel" layout="block">
+                <h:panelGrid >
+
+                    <!-- Fecha de ingreso -->
+                    <ui:fragment rendered="#{fichaPrintCtrl.cm.tipoEval eq 'INGRESO' or centroMedicoCtrl.tipoEval eq 'PERIODICO'}">
+                        <h:outputLabel for="fecIngreso" value="Fecha de ingreso"/>
+                        <h:outputText value="#{fichaPrintCtrl.cm.fecIngreso}" />
+                    </ui:fragment>
+
+                    <!-- Fecha de reintegro -->
+                    <ui:fragment rendered="#{fichaPrintCtrl.cm.tipoEval eq 'REINTEGRO' or centroMedicoCtrl.tipoEval eq 'PERIODICO'}">
+                        <h:outputLabel for="fecReintegro" value="Fecha de reintegro"/>
+                        <h:outputText value="#{fichaPrintCtrl.cm.fecReintegro}" />
+                    </ui:fragment>
+
+                    <!-- Último día laboral (retiro) -->
+                    <ui:fragment rendered="#{fichaPrintCtrl.cm.tipoEval eq 'RETIRO' or centroMedicoCtrl.tipoEval eq 'PERIODICO'}">
+                        <h:outputLabel for="fecRetiro" value="Último día laboral"/>
+                        <h:outputText value="#{fichaPrintCtrl.cm.fecRetiro}" />
+                    </ui:fragment>
+
+                </h:panelGrid>
+            </h:panelGroup>
+
+            <h:outputLabel value="Observación" />
+            <h:outputText value=""/>
+        </h:panelGrid>
+    </p:fieldset>
+
+    <!-- C. ANTECEDENTES PERSONALES -->
+    <p:fieldset legend="C. ANTECEDENTES PERSONALES" toggleable="true">
+        <h:panelGrid columns="2" columnClasses="w-20rem," styleClass="ui-fluid">
+            <h:outputLabel value="Antecedentes clínicos y quirúrgicos"/>
+            <h:outputText value="#{fichaPrintCtrl.cm.antClinicoQuirurgico}" />
+
+            <h:outputLabel value="Antecedentes familiares"/>
+            <h:outputText value="#{fichaPrintCtrl.cm.antFamiliares}" />
+
+            <h:outputLabel value="Condición especial (urgencias / emergencia / tx)"/>
+            <h:outputText value="#{fichaPrintCtrl.cm.condicionEspecial}" />
+
+            <h:outputLabel value="Autoriza transfusiones"/>
+            <h:outputText value="#{fichaPrintCtrl.cm.autorizaTransfusion}" />
+
+            <h:outputLabel value="Tratamiento hormonal"/>
+            <h:outputText value="#{fichaPrintCtrl.cm.tratamientoHormonal}" />
+
+            <h:outputLabel value="¿Cuál?"/>
+            <h:outputText value="#{fichaPrintCtrl.cm.tratamientoHormonalCual}" />
+        </h:panelGrid>
+        <p:outputPanel id="sexoBlocks" layout="block"  style="margin-top:8px">
+
+            <!-- Condicional: REPRODUCTIVOS MASCULINOS -->
+            <h:panelGroup id="panelReproMas" rendered="#{fichaPrintCtrl.cm.sexo eq 'M'}" layout="block" style="margin-top:8px;">
+                <p:fieldset legend="ANTECEDENTES REPRODUCTIVOS MASCULINOS" toggleable="true" collapsed="false">
+                    <h:panelGrid columns="4" styleClass="ui-fluid"
+                                 columnClasses="w-20rem, w-30rem, w-10rem, w-30rem">
+                        <h:outputText value="Exámenes realizados (¿cuál?)"/>
+                        <h:outputText value="#{fichaPrintCtrl.cm.examenReproMasculino}" />
+                        <h:outputText value="Tiempo (años)"/>
+                        <h:outputText value="#{fichaPrintCtrl.cm.tiempoReproMasculino}" />
+                    </h:panelGrid>
+                </p:fieldset>
+            </h:panelGroup>
+
+            <!-- Condicional: GINECO OBSTÉTRICOS (MUJER) -->
+            <h:panelGroup id="panelGineObst" rendered="#{fichaPrintCtrl.cm.sexo eq 'F'}" layout="block" style="margin-top:8px;">
+                <!-- C. ANTECEDENTES GINECO OBSTÉTRICOS -->
+                <p:fieldset legend="ANTECEDENTES GINECO OBSTÉTRICOS" toggleable="true">
+                    <h:panelGroup id="obstetricos">
+                        <table class="obst-grid">
+                            <thead>
+                                <tr>
+                                    <th colspan="2" class="w-20">FECHA DE LA ÚLTIMA MENSTRUACIÓN</th>
+                                    <th class="w-8">GESTAS</th>
+                                    <th class="w-8">CESÁREAS</th>
+                                    <th class="w-8">PARTOS</th>
+                                    <th class="w-8">ABORTOS</th>
+                                    <th colspan="4" class="w-24">MÉTODO DE PLANIFICACIÓN FAMILIAR</th>
+                                </tr>
+                                <tr>
+                                    <th colspan="2" class="txt-c">aaaa / mm / dd</th>
+                                    <th class="txt-c"></th><th class="txt-c"></th><th class="txt-c"></th><th class="txt-c"></th>
+                                    <th class="txt-c w-6">sí</th>
+                                    <th class="txt-c w-14">¿cuál?</th>
+                                    <th class="txt-c w-6">no</th>
+                                    <th class="txt-c w-8">no responde</th>
+                                </tr>
+                            </thead>
+
+                            <!-- Fila de captura -->
+                            <tr>
+                                <!-- FUM -->
+                                <td colspan="2">
+                                    <h:outputText value=""/>
+                                </td>
+
+                                <!-- Números: TODOS con obst-fit -->
+                                <td class="txt-c">
+                                    <h:outputText value="#{fichaPrintCtrl.cm.gestas}" />
+                                </td>
+                                <td class="txt-c">
+                                    <h:outputText value="#{fichaPrintCtrl.cm.cesareas}" />
+                                </td>
+                                <td class="txt-c">
+                                    <h:outputText value="#{fichaPrintCtrl.cm.partos}" />
+                                </td>
+                                <td class="txt-c">
+                                    <h:outputText value="#{fichaPrintCtrl.cm.abortos}" />
+                                </td>
+
+                                <!-- MPF: checks centrados + campo "¿cuál?" a 100% -->
+                                <td><div class="obst-chk"><h:outputText value=""/></div></td>
+                                <td><h:outputText value=""/></td>
+                                <td><div class="obst-chk"><h:outputText value=""/></div></td>
+                                <td><div class="obst-chk"><h:outputText value=""/></div></td>
+                            </tr>
+
+                            <!-- Cabecera Exámenes -->
+                            <tr>
+                                <th colspan="2">EXÁMENES REALIZADOS ¿CUÁL?</th>
+                                <th>TIEMPO<br/><span style="font-weight:400">(años)</span></th>
+                                <th colspan="7" class="txt-c">RESULTADO</th>
+                            </tr>
+                            <tr>
+                                <td colspan="3"></td>
+                                <td colspan="7" style="color:#2b4a4a;font-size:.86rem">
+                                    Registrar resultado únicamente si interfiere con la actividad laboral y previa autorización del titular
+                                </td>
+                            </tr>
+
+                            <!-- Fila 1 -->
+                            <tr>
+                                <td colspan="2"><h:outputText value=""/></td>
+                                <td><h:outputText value=""/></td>
+                                <td colspan="7"><h:outputText value=""/></td>
+                            </tr>
+                            <!-- Fila 2 -->
+                            <tr>
+                                <td colspan="2"><h:outputText value=""/></td>
+                                <td><h:outputText value=""/></td>
+                                <td colspan="7"><h:outputText value=""/></td>
+                            </tr>
+
+                            <!-- Observación -->
+                            <tr>
+                                <th colspan="3">Observación</th>
+                                <td colspan="7"><h:outputText value=""/></td>
+                            </tr>
+                        </table>
+
+                        <h:outputScript target="body">
+                            function byId(id){var el=document.getElementById(id);return el||document.getElementById(id+'_input');}
+                            function mpfToggle(sel){
+                            var si=PF('wMpfSi'), no=PF('wMpfNo'), nr=PF('wMpfNr');
+                            if(sel==='si'){no.uncheck();nr.uncheck();}
+                            if(sel==='no'){si.uncheck();nr.uncheck();}
+                            if(sel==='nr'){si.uncheck();no.uncheck();}
+                            var cual=document.querySelector("input[id$='mpfCual']"); if(cual){cual.disabled=!si.isChecked();}
+                            }
+                            document.addEventListener('DOMContentLoaded',function(){ mpfToggle('nr'); });
+                        </h:outputScript>
+                    </h:panelGroup>
+
+                </p:fieldset>
+
+            </h:panelGroup>
+        </p:outputPanel>
+
+        <p:fieldset legend="CONSUMO DE SUSTANCIAS" toggleable="true" collapsed="false">
+            <h:panelGroup id="consumoVidaCond" layout="block" styleClass="ui-fluid">
+
+                <table class="cons-grid">
+                    <colgroup>
+                        <col class="c-col-item"/>
+                        <col class="c-col-tiempo"/>
+                        <col class="c-col-chk"/>
+                        <col class="c-col-tiempo"/>
+                        <col class="c-col-chk"/>
+
+                        <col class="c-col-vida-title"/>
+                        <col class="c-col-vida-cual"/>
+                        <col class="c-col-vida-tiempo"/>
+
+                        <col class="c-col-cond-title"/>
+                        <col class="c-col-cond-cual"/>
+                        <col class="c-col-cond-cant"/>
+                    </colgroup>
+
+                    <thead>
+                        <tr>
+                            <th colspan="5" class="txt-c"><div class="th-wrap">CONSUMO DE SUSTANCIAS</div></th>
+                            <th colspan="3" class="txt-c"><div class="th-wrap">ESTILO DE VIDA</div></th>
+                            <th colspan="3" class="txt-c"><div class="th-wrap">CONDICIÓN PREEXISTENTE</div></th>
+                        </tr>
+                        <tr class="c-subhead">
+                            <th></th>
+                            <th><div class="th-wrap">TIEMPO DE CONSUMO<br/><span class="c-sub">(meses)</span></div></th>
+                            <th><div class="th-wrap">EX CONSUMIDOR</div></th>
+                            <th><div class="th-wrap">TIEMPO DE ABSTINENCIA<br/><span class="c-sub">(meses)</span></div></th>
+                            <th><div class="th-wrap">NO CONSUME</div></th>
+
+                            <th class="txt-c"><div class="th-wrap">ACTIVIDAD FÍSICA</div></th>
+                            <th><div class="th-wrap">¿CUÁL?</div></th>
+                            <th><div class="th-wrap">TIEMPO</div></th>
+
+                            <th class="txt-c"><div class="th-wrap">MEDICACIÓN HABITUAL</div></th>
+                            <th><div class="th-wrap">¿CUÁL?</div></th>
+                            <th><div class="th-wrap">CANTIDAD</div></th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        <!-- Fila 1 -->
+                        <tr>
+                            <!-- CONSUMO -->
+                            <td>TABACO</td>
+                            <td>
+                                <h:outputText value="#{fichaPrintCtrl.cm.consTiempoConsumo[0]}" />
+                            </td>
+                            <td class="txt-c">
+                                <h:outputText value="#{fichaPrintCtrl.cm.consExConsumidor[0] ? 'SI' : 'NO'}" />
+                            </td>
+                            <td>
+                                <h:outputText value="#{fichaPrintCtrl.cm.consTiempoAbstinencia[0]}" />
+                            </td>
+                            <td class="txt-c">
+                                <h:outputText value="#{fichaPrintCtrl.cm.consNoConsume[0] ? 'SI' : 'NO'}" />
+                            </td>
+
+                            <!-- ESTILO DE VIDA -->
+                            <td rowspan="3" class="txt-c">ACTIVIDAD FÍSICA</td>
+                            <td>
+                                <h:outputText value="#{fichaPrintCtrl.cm.afCual[0]}" />
+                            </td>
+                            <td>
+                                <h:outputText value="#{fichaPrintCtrl.cm.afTiempo[0]}" />
+                            </td>
+
+                            <!-- CONDICIÓN PREEXISTENTE -->
+                            <td rowspan="3" class="txt-c">MEDICACIÓN HABITUAL</td>
+                            <td>
+                                <h:outputText value="#{fichaPrintCtrl.cm.medCual[0]}" />
+                            </td>
+                            <td>
+                                <h:outputText value="#{fichaPrintCtrl.cm.medCant[0]}" />
+                            </td>
+                        </tr>
+
+                        <!-- Fila 2 -->
+                        <tr>
+                            <!-- CONSUMO -->
+                            <td>ALCOHOL</td>
+                            <td>
+                                <h:outputText value="#{fichaPrintCtrl.cm.consTiempoConsumo[1]}" />
+                            </td>
+                            <td class="txt-c">
+                                <h:outputText value="#{fichaPrintCtrl.cm.consExConsumidor[1] ? 'SI' : 'NO'}" />
+                            </td>
+                            <td>
+                                <h:outputText value="#{fichaPrintCtrl.cm.consTiempoAbstinencia[1]}" />
+                            </td>
+                            <td class="txt-c">
+                                <h:outputText value="#{fichaPrintCtrl.cm.consNoConsume[1] ? 'SI' : 'NO'}" />
+                            </td>
+
+                            <!-- ESTILO DE VIDA -->
+                            <td>
+                                <h:outputText value="#{fichaPrintCtrl.cm.afCual[1]}" />
+                            </td>
+                            <td>
+                                <h:outputText value="#{fichaPrintCtrl.cm.afTiempo[1]}" />
+                            </td>
+
+                            <!-- CONDICIÓN -->
+                            <td>
+                                <h:outputText value="#{fichaPrintCtrl.cm.medCual[1]}" />
+                            </td>
+                            <td>
+                                <h:outputText value="#{fichaPrintCtrl.cm.medCant[1]}" />
+                            </td>
+                        </tr>
+
+                        <!-- Fila 3 -->
+                        <tr>
+                            <!-- CONSUMO -->
+                            <td>OTRAS: <span class="c-sub">¿cuál?</span></td>
+                            <td>
+                                <h:outputText value="#{fichaPrintCtrl.cm.consTiempoConsumo[2]}" />
+                            </td>
+                            <td class="txt-c">
+                                <h:outputText value="#{fichaPrintCtrl.cm.consExConsumidor[2] ? 'SI' : 'NO'}" />
+                            </td>
+                            <td>
+                                <h:outputText value="#{fichaPrintCtrl.cm.consTiempoAbstinencia[2]}" />
+                            </td>
+                            <td class="txt-c">
+                                <h:outputText value="#{fichaPrintCtrl.cm.consNoConsume[2] ? 'SI' : 'NO'}" />
+                            </td>
+
+                            <!-- ESTILO DE VIDA -->
+                            <td>
+                                <h:outputText value="#{fichaPrintCtrl.cm.afCual[2]}" />
+                            </td>
+                            <td>
+                                <h:outputText value="#{fichaPrintCtrl.cm.afTiempo[2]}" />
+                            </td>
+
+                            <!-- CONDICIÓN -->
+                            <td>
+                                <h:outputText value="#{fichaPrintCtrl.cm.medCual[2]}" />
+                            </td>
+                            <td>
+                                <h:outputText value="#{fichaPrintCtrl.cm.medCant[2]}" />
+                            </td>
+                        </tr>
+
+                        <!-- Observación -->
+                        <tr>
+                            <th colspan="2">Observación</th>
+                            <td colspan="9">
+                                <h:outputText value="#{fichaPrintCtrl.cm.consObservacion}" />
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+            </h:panelGroup>
+        </p:fieldset>
+
+    </p:fieldset>
+
+    <!-- D. ENFERMEDAD O PROBLEMA ACTUAL -->
+    <p:fieldset legend="D. ENFERMEDAD O PROBLEMA ACTUAL" toggleable="true">
+        <h:outputText value="#{fichaPrintCtrl.cm.ficha.enfermedadProbActual}" />
+    </p:fieldset>
+
+    <!-- E. CONSTANTES VITALES Y ANTROPOMETRÍA -->
+    <p:fieldset legend="E. CONSTANTES VITALES Y ANTROPOMETRÍA" toggleable="true">
+        <h:panelGrid columns="10" styleClass="ui-fluid vit-grid">
+
+            <h:outputText value="Temp (°C)"/>
+            <h:outputText value="#{fichaPrintCtrl.cm.temp}" />
+
+            <h:outputText value="PA (mmHg)"/>
+            <h:outputText value="#{fichaPrintCtrl.cm.paStr}" />
+
+            <h:outputText value="FC"/>
+            <h:outputText value="#{fichaPrintCtrl.cm.fc}" />
+
+            <h:outputText value="FR"/>
+            <h:outputText value="#{fichaPrintCtrl.cm.fr}" />
+
+            <h:outputText value="Sat O&#8322; (&#37;)"/>
+            <h:outputText value="#{fichaPrintCtrl.cm.satO2}" />
+
+            <h:outputText value="Peso (kg)"/>
+            <h:outputText value="#{fichaPrintCtrl.cm.peso}" />
+
+            <h:outputText value="Talla (cm)"/>
+            <h:outputText value="#{fichaPrintCtrl.cm.tallaCm}" />
+
+            <h:outputText value="IMC"/>
+            <h:outputText value="#{fichaPrintCtrl.cm.imc}" />
+
+            <h:outputText value="Perímetro abd (cm)"/>
+            <h:outputText value="#{fichaPrintCtrl.cm.perimetroAbd}" />
+        </h:panelGrid>
+
+        <h:outputScript target="body">
+            function q(s){return document.querySelector("input[id$='"+s+"']");}
+            function n(v){return parseFloat(String(v).replace(',','.'));}
+
+            function calcIMC(){
+            var peso=q("peso_input"), talla=q("talla_input"), imc=q("imc_input");
+            if(!peso||!talla||!imc)return;
+            var p=n(peso.value), t=n(talla.value);
+            if(!isNaN(p)&amp;&amp;!isNaN(t)&amp;&amp;t>0){
+            imc.value=(p/Math.pow(t/100,2)).toFixed(2);
+            }else imc.value="";
+            }
+            document.addEventListener('DOMContentLoaded',calcIMC);
+        </h:outputScript>
+
+    </p:fieldset>
+
+
+<!-- "F. EXAMEN FÍSICO REGIONAL" -->
+<p:fieldset legend="F. EXAMEN FÍSICO REGIONAL"
+            toggleable="true"
+            styleClass="fieldset-encaps">
+
+    <table class="f-grid4">
+        <tbody>
+
+            <!-- fila 1: 1..4 -->
+            <tr>
+                <td>
+                    <div class="f-title">1. Piel</div>
+                    <div class="f-row">
+                        <span class="f-lbl">a. Cicatrices</span>
+                        <h:outputText value="#{fichaPrintCtrl.cm.ficha.exfPielCicatricesBool ? 'SI' : 'NO'}" />
+                    </div>
+                </td>
+
+                <td>
+                    <div class="f-title">2. Ojos</div>
+                    <div class="f-row"><span class="f-lbl">a. Párpados</span>
+                        <h:outputText value="#{fichaPrintCtrl.cm.ficha.exfOjosParpadosBool ? 'SI' : 'NO'}" /></div>
+                    <div class="f-row"><span class="f-lbl">b. Conjuntivas</span>
+                        <h:outputText value="#{fichaPrintCtrl.cm.ficha.exfOjosConjuntivasBool ? 'SI' : 'NO'}" /></div>
+                    <div class="f-row"><span class="f-lbl">c. Pupilas</span>
+                        <h:outputText value="#{fichaPrintCtrl.cm.ficha.exfOjosPupilasBool ? 'SI' : 'NO'}" /></div>
+                    <div class="f-row"><span class="f-lbl">d. Córnea</span>
+                        <h:outputText value="#{fichaPrintCtrl.cm.ficha.exfOjosCorneaBool ? 'SI' : 'NO'}" /></div>
+                    <div class="f-row"><span class="f-lbl">e. Motilidad</span>
+                        <h:outputText value="#{fichaPrintCtrl.cm.ficha.exfOjosMotilidadBool ? 'SI' : 'NO'}" /></div>
+                </td>
+
+                <td>
+                    <div class="f-title">3. Oído</div>
+                    <div class="f-row"><span class="f-lbl">a. Conducto auditivo ext.</span>
+                        <h:outputText value="#{fichaPrintCtrl.cm.ficha.exfOidoConductoBool ? 'SI' : 'NO'}" /></div>
+                    <div class="f-row"><span class="f-lbl">b. Pabellón</span>
+                        <h:outputText value="#{fichaPrintCtrl.cm.ficha.exfOidoPabellonBool ? 'SI' : 'NO'}" /></div>
+                    <div class="f-row"><span class="f-lbl">c. Tímpanos</span>
+                        <h:outputText value="#{fichaPrintCtrl.cm.ficha.exfOidoTimpanosBool ? 'SI' : 'NO'}" /></div>
+                </td>
+
+                <td>
+                    <div class="f-title">4. Oro faringe</div>
+                    <div class="f-row"><span class="f-lbl">a. Labios</span>
+                        <h:outputText value="#{fichaPrintCtrl.cm.ficha.exfOroLabiosBool ? 'SI' : 'NO'}" /></div>
+                    <div class="f-row"><span class="f-lbl">b. Lengua</span>
+                        <h:outputText value="#{fichaPrintCtrl.cm.ficha.exfOroLenguaBool ? 'SI' : 'NO'}" /></div>
+                    <div class="f-row"><span class="f-lbl">c. Faringe</span>
+                        <h:outputText value="#{fichaPrintCtrl.cm.ficha.exfOroFaringeBool ? 'SI' : 'NO'}" /></div>
+                    <div class="f-row"><span class="f-lbl">d. Amígdalas</span>
+                        <h:outputText value="#{fichaPrintCtrl.cm.ficha.exfOroAmigdalasBool ? 'SI' : 'NO'}" /></div>
+                    <div class="f-row"><span class="f-lbl">e. Dentadura</span>
+                        <h:outputText value="#{fichaPrintCtrl.cm.ficha.exfOroDentaduraBool ? 'SI' : 'NO'}" /></div>
+                </td>
+            </tr>
+
+            <!-- fila 2: 5..8 -->
+            <tr>
+                <td>
+                    <div class="f-title">5. Nariz</div>
+                    <div class="f-row"><span class="f-lbl">a. Tabique</span>
+                        <h:outputText value="#{fichaPrintCtrl.cm.ficha.exfNarizTabiqueBool ? 'SI' : 'NO'}" /></div>
+                    <div class="f-row"><span class="f-lbl">b. Cornetes</span>
+                        <h:outputText value="#{fichaPrintCtrl.cm.ficha.exfNarizCornetesBool ? 'SI' : 'NO'}" /></div>
+                    <div class="f-row"><span class="f-lbl">c. Mucosas</span>
+                        <h:outputText value="#{fichaPrintCtrl.cm.ficha.exfNarizMucosasBool ? 'SI' : 'NO'}" /></div>
+                    <div class="f-row"><span class="f-lbl">d. Senos paranasales</span>
+                        <h:outputText value="#{fichaPrintCtrl.cm.ficha.exfNarizSenosBool ? 'SI' : 'NO'}" /></div>
+                </td>
+
+                <td>
+                    <div class="f-title">6. Cuello</div>
+                    <div class="f-row"><span class="f-lbl">a. Tiroides / masas</span>
+                        <h:outputText value="#{fichaPrintCtrl.cm.ficha.exfCuelloTiroidesBool ? 'SI' : 'NO'}" /></div>
+                    <div class="f-row"><span class="f-lbl">b. Movilidad</span>
+                        <h:outputText value="#{fichaPrintCtrl.cm.ficha.exfCuelloMovilidadBool ? 'SI' : 'NO'}" /></div>
+                </td>
+
+                <td>
+                    <div class="f-title">7. Tórax (mamas)</div>
+                    <div class="f-row"><span class="f-lbl">a. Mamas</span>
+                        <h:outputText value="#{fichaPrintCtrl.cm.ficha.exfToraxMamasBool ? 'SI' : 'NO'}" /></div>
+                </td>
+
+                <td>
+                    <div class="f-title">8. Tórax</div>
+                    <div class="f-row"><span class="f-lbl">a. Pulmones</span>
+                        <h:outputText value="#{fichaPrintCtrl.cm.ficha.exfToraxPulmonesBool ? 'SI' : 'NO'}" /></div>
+                    <div class="f-row"><span class="f-lbl">b. Corazón</span>
+                        <h:outputText value="#{fichaPrintCtrl.cm.ficha.exfToraxCorazonBool ? 'SI' : 'NO'}" /></div>
+                    <div class="f-row"><span class="f-lbl">c. Parrilla costal</span>
+                        <h:outputText value="#{fichaPrintCtrl.cm.ficha.exfToraxParrillaBool ? 'SI' : 'NO'}" /></div>
+                </td>
+            </tr>
+
+            <!-- fila 3: 9..12 -->
+            <tr>
+                <td>
+                    <div class="f-title">9. Abdomen</div>
+                    <div class="f-row"><span class="f-lbl">a. Vísceras</span>
+                        <h:outputText value="#{fichaPrintCtrl.cm.ficha.exfAbdomenViscerasBool ? 'SI' : 'NO'}" /></div>
+                    <div class="f-row"><span class="f-lbl">b. Pared abdominal</span>
+                        <h:outputText value="#{fichaPrintCtrl.cm.ficha.exfAbdomenParedBool ? 'SI' : 'NO'}" /></div>
+                </td>
+
+                <td>
+                    <div class="f-title">10. Columna</div>
+                    <div class="f-row"><span class="f-lbl">a. Flexibilidad</span>
+                        <h:outputText value="#{fichaPrintCtrl.cm.ficha.exfColumnaFlexibilidadBool ? 'SI' : 'NO'}" /></div>
+                    <div class="f-row"><span class="f-lbl">b. Desviación</span>
+                        <h:outputText value="#{fichaPrintCtrl.cm.ficha.exfColumnaDesviacionBool ? 'SI' : 'NO'}" /></div>
+                    <div class="f-row"><span class="f-lbl">c. Dolor</span>
+                        <h:outputText value="#{fichaPrintCtrl.cm.ficha.exfColumnaDolorBool ? 'SI' : 'NO'}" /></div>
+                </td>
+
+                <td>
+                    <div class="f-title">11. Pelvis</div>
+                    <div class="f-row"><span class="f-lbl">a. Pelvis</span>
+                        <h:outputText value="#{fichaPrintCtrl.cm.ficha.exfPelvisPelvisBool ? 'SI' : 'NO'}" /></div>
+                    <div class="f-row"><span class="f-lbl">b. Genitales</span>
+                        <h:outputText value="#{fichaPrintCtrl.cm.ficha.exfPelvisGenitalesBool ? 'SI' : 'NO'}" /></div>
+                </td>
+
+                <td>
+                    <div class="f-title">12. Extremidades</div>
+                    <div class="f-row"><span class="f-lbl">a. Vascular</span>
+                        <h:outputText value="#{fichaPrintCtrl.cm.ficha.exfExtVascularBool ? 'SI' : 'NO'}" /></div>
+                    <div class="f-row"><span class="f-lbl">b. Miembros superiores</span>
+                        <h:outputText value="#{fichaPrintCtrl.cm.ficha.exfExtSupBool ? 'SI' : 'NO'}" /></div>
+                    <div class="f-row"><span class="f-lbl">c. Miembros inferiores</span>
+                        <h:outputText value="#{fichaPrintCtrl.cm.ficha.exfExtInfBool ? 'SI' : 'NO'}" /></div>
+                </td>
+            </tr>
+
+            <!-- fila 4: 13 + 3 vacíos -->
+            <tr>
+                <td>
+                    <div class="f-title">13. Neurológico</div>
+                    <div class="f-row"><span class="f-lbl">a. Fuerza</span>
+                        <h:outputText value="#{fichaPrintCtrl.cm.ficha.exfNeuroFuerzaBool ? 'SI' : 'NO'}" /></div>
+                    <div class="f-row"><span class="f-lbl">b. Sensibilidad</span>
+                        <h:outputText value="#{fichaPrintCtrl.cm.ficha.exfNeuroSensibilidadBool ? 'SI' : 'NO'}" /></div>
+                    <div class="f-row"><span class="f-lbl">c. Marcha</span>
+                        <h:outputText value="#{fichaPrintCtrl.cm.ficha.exfNeuroMarchaBool ? 'SI' : 'NO'}" /></div>
+                    <div class="f-row"><span class="f-lbl">d. Reflejos</span>
+                        <h:outputText value="#{fichaPrintCtrl.cm.ficha.exfNeuroReflejosBool ? 'SI' : 'NO'}" /></div>
+                </td>
+
+                <td class="f-empty"></td>
+                <td class="f-empty"></td>
+                <td class="f-empty"></td>
+            </tr>
+
+        </tbody>
+    </table>
+
+    <div style="margin-top:10px">
+        <h:outputText value="Observación:"/><br/>
+        <h:outputText value="#{fichaPrintCtrl.cm.ficha.obsExamenFisicoReg}" />
+    </div>
+</p:fieldset>
+
+
+
+
+
+
+
+
+
+
+
+</ui:composition>

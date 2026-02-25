@@ -1,0 +1,256 @@
+<ui:composition template="/templates/template.xhtml"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+
+    <!-- ============================================ -->
+    <!-- TÍTULO DE LA PÁGINA                         -->
+    <!-- ============================================ -->
+    <ui:define name="title">Contrataciones</ui:define>
+
+    <!-- ============================================ -->
+    <!-- CONTENIDO PRINCIPAL                         -->
+    <!-- ============================================ -->
+    <ui:define name="content">
+
+        <!-- MENSAJES -->
+        <p:messages id="msgsPage" closable="true" showIcon="true" showSummary="true"/>
+
+        <!-- ============================================ -->
+        <!-- BARRA DE HERRAMIENTAS                       -->
+        <!-- ============================================ -->
+        <p:toolbar class="p-mb-2">
+            <p:toolbarGroup>
+                <p:outputLabel for="filtroNoPersona" value="No Persona:" style="margin-right:6px"/>
+
+                <p:inputNumber id="filtroNoPersona"
+                               value="#{contratacionController.filtroNoPersona}"
+                               decimalPlaces="0"
+                               thousandSeparator=""
+                               minValue="1"
+                               placeholder="Ej: 3014"
+                               style="width:180px"/>
+
+                <p:commandButton id="btnBuscar"
+                                 value="Buscar"
+                                 icon="pi pi-search"
+                                 action="#{contratacionController.buscar}"
+                                 process="@this filtroNoPersona"
+                                 update="msgsPage tbl"
+                                 style="margin-left:8px"/>
+            </p:toolbarGroup>
+
+            <p:toolbarGroup align="right">
+                <p:commandButton value="Nuevo"
+                                 icon="pi pi-plus"
+                                 actionListener="#{contratacionController.nuevoDesdeBoton}"
+                                 process="@this filtroNoPersona"
+                                 update="dlg dlgBody dlgMsgs msgsPage"
+                                 oncomplete="if (!args.validationFailed) PF('dlgCont').show();"/>
+
+
+            </p:toolbarGroup>
+        </p:toolbar>
+
+        <!-- ============================================ -->
+        <!-- TABLA DE CONTRATACIONES                     -->
+        <!-- ============================================ -->
+        <p:dataTable id="tbl"
+                     value="#{contratacionController.lista}"
+                     var="c"
+                     widgetVar="tblContWV"
+                     paginator="true"
+                     rows="20"
+                     rowsPerPageTemplate="10,20,50,100"
+                     emptyMessage="Sin resultados - Haga clic en Buscar"
+                     style="margin-top:10px;">
+
+            <p:column headerText="No Persona" sortBy="#{c.id.noPersona}">
+                <h:outputText value="#{c.id.noPersona}"/>
+            </p:column>
+
+            <p:column headerText="No Cont" sortBy="#{c.id.noCont}">
+                <h:outputText value="#{c.id.noCont}"/>
+            </p:column>
+
+            <p:column headerText="Estado" sortBy="#{c.estado}">
+                <h:outputText value="#{c.estado.descripcion}"/>
+            </p:column>
+
+            <p:column headerText="F. Contrato" sortBy="#{c.feContrato}">
+                <h:outputText value="#{c.feContrato}">
+                    <f:convertDateTime pattern="dd/MM/yyyy" timeZone="America/Guayaquil"/>
+                </h:outputText>
+            </p:column>
+
+            <p:column headerText="F. Salida" sortBy="#{c.feSalida}">
+                <h:outputText rendered="#{not empty c.feSalida}" value="#{c.feSalida}">
+                    <f:convertDateTime pattern="dd/MM/yyyy" timeZone="America/Guayaquil"/>
+                </h:outputText>
+            </p:column>
+            <p:column headerText="Observaciones" sortBy="#{c.obs}">
+                <h:outputText rendered="#{not empty c.obs}" value="#{c.obs}">
+                </h:outputText>
+            </p:column>
+
+            <p:column headerText="Acciones" style="width:160px" exportable="false" filterable="false">
+                <p:commandButton value="Editar"
+                                 icon="pi pi-pencil"
+                                 process="@this"
+                                 actionListener="#{contratacionController.prepararEdicion(c)}"
+                                 update="dlg dlgBody dlgMsgs msgsPage"
+                                 oncomplete="PF('dlgCont').show();"/>
+
+
+            </p:column>
+        </p:dataTable>
+
+        <!-- ============================================ -->
+        <!-- DIÁLOGO DE EDICIÓN / NUEVO                  -->
+        <!-- ============================================ -->
+        <p:dialog id="dlg"
+                  widgetVar="dlgCont"
+                  header="Contratación"
+                  modal="true"
+
+                  width="900"
+                  resizable="true"
+                  closeOnEscape="false">
+
+            <p:messages id="dlgMsgs" showIcon="true" showDetail="true" closable="true"/>
+
+
+            <p:outputPanel id="dlgBody" rendered="#{contratacionController.seleccionado ne null}">
+                <h:panelGrid columns="3" columnClasses="lab,fld,msg" style="width:100%">
+
+                    <p:outputLabel for="estado" value="Estado *"/>
+                    <p:selectOneMenu id="estado"
+                                     value="#{contratacionController.seleccionado.estado}"
+                                     required="true"
+                                     requiredMessage="Estado es obligatorio"
+                                     style="width:100%">
+                        <f:selectItem itemLabel="-- Seleccione --" itemValue="#{null}" noSelectionOption="true"/>
+                        <f:selectItems value="#{contratacionController.estadosEnum}"
+                                       var="e"
+                                       itemLabel="#{e.descripcion}"
+                                       itemValue="#{e}"/>
+                    </p:selectOneMenu>
+                    <p:message for="estado"/>
+
+
+                    <p:outputLabel for="tipoContrato" value="Tipo Contrato *"/>
+                    <p:selectOneMenu id="tipoContrato"
+                                     value="#{contratacionController.seleccionado.tipoContrato}"
+                                     required="true"
+                                     requiredMessage="Tipo Contrato es obligatorio"
+                                     style="width:100%">
+                        <f:selectItem itemLabel="-- Seleccione --" itemValue="#{null}" noSelectionOption="true"/>
+                        <f:selectItems value="#{contratacionController.tiposContratoEnum}"
+                                       var="t"
+                                       itemLabel="#{t.descripcion}"
+                                       itemValue="#{t}"/>
+                    </p:selectOneMenu>
+                    <p:message for="tipoContrato"/>
+
+                    <p:outputLabel for="feContrato" value="Fecha Contrato *"/>
+                    <p:calendar id="feContrato"
+                                value="#{contratacionController.seleccionado.feContrato}"
+                                pattern="dd/MM/yyyy"
+                                required="true"
+                                requiredMessage="Fecha Contrato es obligatoria"
+                                style="width:100%"/>
+                    <p:message for="feContrato"/>
+
+                    <p:outputLabel for="feSalida" value="Fecha Salida"/>
+                    <p:calendar id="feSalida"
+                                value="#{contratacionController.seleccionado.feSalida}"
+                                pattern="dd/MM/yyyy"
+                                style="width:100%"/>
+                    <p:message for="feSalida"/>
+
+                    <p:outputLabel for="noDoc" value="No Documento"/>
+                    <p:inputText id="noDoc"
+                                 value="#{contratacionController.seleccionado.noDoc}"
+                                 maxlength="10"
+                                 style="width:100%"/>
+                    <p:message for="noDoc"/>
+
+                    <p:outputLabel for="responsable" value="Responsable"/>
+                    <p:inputText id="responsable"
+                                 value="#{contratacionController.seleccionado.responsable}"
+                                 maxlength="50"
+                                 style="width:100%"/>
+                    <p:message for="responsable"/>
+
+                    <p:outputLabel for="nivel" value="Nivel"/>
+                    <p:inputText id="nivel"
+                                 value="#{contratacionController.seleccionado.nivel}"
+                                 maxlength="2"
+                                 style="width:100%"/>
+                    <p:message for="nivel"/>
+
+                    <p:outputLabel for="categoria" value="Categoría"/>
+                    <p:inputText id="categoria"
+                                 value="#{contratacionController.seleccionado.categoria}"
+                                 maxlength="2"
+                                 style="width:100%"/>
+                    <p:message for="categoria"/>
+
+                    <p:outputLabel for="obs" value="Observaciones"/>
+                    <p:inputTextarea id="obs"
+                                     value="#{contratacionController.seleccionado.obs}"
+                                     rows="3"
+                                     maxlength="250"
+                                     style="width:100%"/>
+                    <p:message for="obs"/>
+                </h:panelGrid>
+            </p:outputPanel>
+
+            <f:facet name="footer">
+                <p:commandButton value="Guardar"
+                                 icon="pi pi-check"
+                                 actionListener="#{contratacionController.guardar}"
+                                 process="dlg"
+                                 update="msgsPage tbl dlgBody dlgMsgs"
+                                 oncomplete="if (args &amp;&amp; args.validationFailed) PF('dlgCont').show(); else PF('dlgCont').hide();"/>
+
+
+                <p:commandButton type="button"
+                                 value="Cancelar"
+                                 icon="pi pi-times"
+                                 onclick="PF('dlgCont').hide()"
+                                 styleClass="ui-button-secondary"/>
+            </f:facet>
+
+        </p:dialog>
+
+        <!-- ============================================ -->
+        <!-- DIÁLOGO DE CREACIÓN (CUANDO NO HAY REGISTROS) -->
+        <!-- ============================================ -->
+        <p:dialog id="dlgCrear"
+                  widgetVar="dlgCrear"
+                  header="Sin contratos"
+                  modal="true"
+                  width="400">
+            <h:outputText value="No se encontraron contratos para: #{contratacionController.nombreEmpleado}"/>
+            <br/><br/>
+            <h:outputText value="¿Desea crear uno nuevo?"/>
+
+            <f:facet name="footer">
+                <p:commandButton value="Sí, crear"
+                                 icon="pi pi-check"
+                                 actionListener="#{contratacionController.crearNuevoDesdeDialogo}"
+                                 update="dlg dlgBody dlgMsgs"
+                                 oncomplete="PF('dlgCont').show(); PF('dlgCrear').hide();"/>
+
+                <p:commandButton value="No"
+                                 icon="pi pi-times"
+                                 onclick="PF('dlgCrear').hide(); return false;"
+                                 styleClass="ui-button-secondary"/>
+            </f:facet>
+        </p:dialog>
+
+    </ui:define>
+</ui:composition>
