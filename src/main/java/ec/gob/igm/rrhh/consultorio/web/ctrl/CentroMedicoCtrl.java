@@ -5721,7 +5721,7 @@ private void tryLoadCargoFromVista(FacesContext ctx) {
         String clientId;
         try {
             clientId = comp.getClientId(FacesContext.getCurrentInstance());
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             clientId = String.valueOf(comp.getId());
         }
 
@@ -5767,7 +5767,7 @@ private void tryLoadCargoFromVista(FacesContext ctx) {
         String clientId;
         try {
             clientId = comp.getClientId(FacesContext.getCurrentInstance());
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             clientId = String.valueOf(comp.getId());
         }
 
@@ -5780,8 +5780,8 @@ private void tryLoadCargoFromVista(FacesContext ctx) {
         }
         try {
             return Integer.parseInt(idxObj.toString());
-        } catch (Exception e) {
-            LOG.info("... [IDX] extraerIdx parse ERROR idxAttr=" + idxObj + " ex=" + e);
+        } catch (NumberFormatException e) {
+            LOG.info("... [IDX] extraerIdx parse ERROR idxAttr={} ex={}", idxObj, e.toString());
             return null;
         }
     }
@@ -5846,10 +5846,7 @@ private void tryLoadCargoFromVista(FacesContext ctx) {
 
         String codigo = typed != null ? typed.trim() : "";
         if (codigo.isEmpty()) {
-
-            row.setCodigo(null);
-            row.setDescripcion(null);
-            row.setCie10(null);
+            clearDiagnosticoRow(row);
             LOG.info("<<< [AC-K-COD] blur empty => cleared row");
             return;
         }
@@ -5857,9 +5854,7 @@ private void tryLoadCargoFromVista(FacesContext ctx) {
         String codigoUp = codigo.toUpperCase();
 
         if (codigoUp.length() < 3) {
-            row.setCodigo(codigoUp);
-            row.setCie10(null);
-
+            setCodigoSinMatch(row, codigoUp);
             LOG.info("<<< [AC-K-COD] blur partial [" + codigoUp + "] => keep, no exact lookup");
             return;
         }
@@ -5869,21 +5864,11 @@ private void tryLoadCargoFromVista(FacesContext ctx) {
         LOG.debug("... [AC-K-COD] buscarPorCodigo(" + codigoUp + ") => "
                 + (cie != null ? (cie.getCodigo() + " | " + cie.getDescripcion()) : "null"));
 
-        if (cie != null) {
-            row.setCodigo(cie.getCodigo());
-            row.setDescripcion(cie.getDescripcion());
-            row.setCie10(cie);
-            LOG.info("<<< [AC-K-COD] blur AFTER MATCH codigo=[" + row.getCodigo() + "] desc=[" + row.getDescripcion() + "]");
-        } else {
-
-            row.setCodigo(codigoUp);
-            row.setCie10(null);
-            LOG.info("<<< [AC-K-COD] blur AFTER NO-MATCH keep codigo=[" + row.getCodigo() + "]");
-        }
+        applyCodigoLookupResult(row, codigoUp, cie);
     }
 
-    public void onKDescSelect(SelectEvent event) {
-        String descripcion = (String) event.getObject();
+    public void onKDescSelect(SelectEvent<String> event) {
+        String descripcion = event.getObject();
         UIComponent comp = event.getComponent();
         Integer idx = extraerIdx(comp);
 
@@ -5945,11 +5930,7 @@ private void tryLoadCargoFromVista(FacesContext ctx) {
             return;
         }
 
-        Cie10 cie = null;
-        try {
-
-            List<Cie10> candidatos = cie10Service.buscarPorDescripcionLike(desc, 20);
-            LOG.info("... [AC-K-DESC] candidatos.size=" + (candidatos == null ? "null" : candidatos.size()));
+        Cie10 cie = buscarMejorCie10PorDescripcion(desc);
 
             if (candidatos != null && !candidatos.isEmpty()) {
                 cie = pickBestByDescripcion(candidatos, desc);
@@ -6021,8 +6002,8 @@ private void tryLoadCargoFromVista(FacesContext ctx) {
                     + " (tried _input, base, _hinput, _query)");
             return null;
 
-        } catch (Exception e) {
-            LOG.info("!!! [REQ] getAutoCompleteTypedRobusto ERROR: " + e.getMessage());
+        } catch (RuntimeException e) {
+            LOG.error("!!! [REQ] getAutoCompleteTypedRobusto ERROR: {}", e.getMessage(), e);
             return null;
         }
     }
@@ -6031,7 +6012,7 @@ private void tryLoadCargoFromVista(FacesContext ctx) {
         try {
             FacesContext fc = FacesContext.getCurrentInstance();
             return (fc != null && comp != null) ? comp.getClientId(fc) : "null";
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             return "err:" + e.getMessage();
         }
     }
