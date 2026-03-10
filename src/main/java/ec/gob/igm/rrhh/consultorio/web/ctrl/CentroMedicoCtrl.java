@@ -5901,9 +5901,8 @@ private void tryLoadCargoFromVista(FacesContext ctx) {
     }
 
     public void onKDescBlur(AjaxBehaviorEvent event) {
-        UIComponent comp = event != null ? event.getComponent() : null;
+        UIComponent comp = (event != null ? event.getComponent() : null);
         Integer idx = extraerIdx(comp);
-
         String clientId = safeClientId(comp);
         String typed = getAutoCompleteTypedRobusto(comp);
 
@@ -5914,7 +5913,7 @@ private void tryLoadCargoFromVista(FacesContext ctx) {
             return;
         }
 
-        String desc = typed != null ? typed.trim() : "";
+        String desc = (typed != null ? typed.trim() : "");
         if (desc.isEmpty()) {
             row.setDescripcion(null);
             row.setCie10(null);
@@ -5934,7 +5933,6 @@ private void tryLoadCargoFromVista(FacesContext ctx) {
         try {
             List<Cie10> candidatos = cie10Service.buscarPorDescripcionLike(desc, 20);
             LOG.info("... [AC-K-DESC] candidatos.size=" + (candidatos == null ? "null" : candidatos.size()));
-
             if (candidatos != null && !candidatos.isEmpty()) {
                 cie = pickBestByDescripcion(candidatos, desc);
             }
@@ -5950,11 +5948,11 @@ private void tryLoadCargoFromVista(FacesContext ctx) {
             row.setDescripcion(cie.getDescripcion());
             row.setCie10(cie);
             LOG.info("<<< [AC-K-DESC] blur AFTER MATCH codigo=[" + row.getCodigo() + "] desc=[" + row.getDescripcion() + "]");
-        } else {
-
-            row.setCie10(null);
-            LOG.info("<<< [AC-K-DESC] blur AFTER NO-MATCH keep desc=[" + row.getDescripcion() + "]");
+            return;
         }
+
+        row.setCie10(null);
+        LOG.info("<<< [AC-K-DESC] blur AFTER NO-MATCH keep desc=[" + row.getDescripcion() + "]");
     }
 
     public void onKTipoChange(AjaxBehaviorEvent event) {
