@@ -1,14 +1,6 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package ec.gob.igm.rrhh.consultorio.domain.model;
 
-/**
- *
- * @author GUERRA_KLEBER
- */
- 
+
 
 
 
@@ -24,9 +16,7 @@ public class FichaActLaboral implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    // =====================================================
     // PK – generado por SEQUENCE (correcto)
-    // =====================================================
     @Id
     @SequenceGenerator(
             name = "SQ_FICHA_ACT_LAB_GEN",
@@ -37,16 +27,12 @@ public class FichaActLaboral implements Serializable {
     @Column(name = "ID_FICHA_ACT_LAB", nullable = false)
     private Long idFichaActLab;
 
-    // =====================================================
     // Relación con FICHA_OCUPACIONAL
-    // =====================================================
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "ID_FICHA", nullable = false)
     private FichaOcupacional ficha;
 
-    // =====================================================
     // Datos de la actividad laboral
-    // =====================================================
     @Column(name = "NRO_FILA", nullable = false)
     private Integer nroFila;
 
@@ -84,9 +70,6 @@ public class FichaActLaboral implements Serializable {
     @Column(name = "OBSERVACIONES", length = 2000)
     private String observaciones;
 
-    // =====================================================
-    // Auditoría
-    // =====================================================
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "F_CREACION")
     private Date fCreacion;
@@ -101,20 +84,17 @@ public class FichaActLaboral implements Serializable {
     @Column(name = "USR_ACTUALIZACION", length = 30)
     private String usrActualizacion;
 
-    // ==========================
-    // Constructores
-    // ==========================
-    
+
     // Constructor vacío (requerido por JPA)
     public FichaActLaboral() {
     }
 
     // Constructor completo (Reemplaza @AllArgsConstructor)
-    public FichaActLaboral(Long idFichaActLab, FichaOcupacional ficha, Integer nroFila, 
-                           String centroTrabajo, String actividad, String esAnterior, 
-                           String esActual, String tiempo, String incidente, 
-                           String accidente, String enfOcupacional, Date fechaEvento, 
-                           String especificar, String observaciones, Date fCreacion, 
+    public FichaActLaboral(Long idFichaActLab, FichaOcupacional ficha, Integer nroFila,
+                           String centroTrabajo, String actividad, String esAnterior,
+                           String esActual, String tiempo, String incidente,
+                           String accidente, String enfOcupacional, Date fechaEvento,
+                           String especificar, String observaciones, Date fCreacion,
                            String usrCreacion, Date fActualizacion, String usrActualizacion) {
         this.idFichaActLab = idFichaActLab;
         this.ficha = ficha;
@@ -136,9 +116,7 @@ public class FichaActLaboral implements Serializable {
         this.usrActualizacion = usrActualizacion;
     }
 
-    // =====================================================
     // Lifecycle
-    // =====================================================
     @PrePersist
     public void prePersist() {
         if (fCreacion == null) fCreacion = new Date();
@@ -154,10 +132,6 @@ public class FichaActLaboral implements Serializable {
         fActualizacion = new Date();
     }
 
-    // ==========================
-    // Equals y HashCode
-    // Basado en idFichaActLab (@EqualsAndHashCode.Include)
-    // ==========================
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -171,10 +145,7 @@ public class FichaActLaboral implements Serializable {
         return Objects.hash(idFichaActLab);
     }
 
-    // ==========================
-    // ToString
     // Excluye 'ficha' (@ToString(exclude = ...))
-    // ==========================
     @Override
     public String toString() {
         return "FichaActLaboral{" +
@@ -198,9 +169,6 @@ public class FichaActLaboral implements Serializable {
                 '}';
     }
 
-    // =====================================================
-    // Helpers para JSF (no mapeados por JPA)
-    // =====================================================
     public boolean isAnteriorBool() { return "S".equalsIgnoreCase(esAnterior); }
     public void setAnteriorBool(boolean v) { this.esAnterior = v ? "S" : "N"; }
 
@@ -216,9 +184,6 @@ public class FichaActLaboral implements Serializable {
     public boolean isEnfOcupacionalBool() { return "S".equalsIgnoreCase(enfOcupacional); }
     public void setEnfOcupacionalBool(boolean v) { this.enfOcupacional = v ? "S" : "N"; }
 
-    // ==========================
-    // Getters y Setters
-    // ==========================
     public Long getIdFichaActLab() {
         return idFichaActLab;
     }

@@ -8,7 +8,7 @@
   <persistence-unit name="consultorioPU" transaction-type="JTA">
     <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
 
-    <!-- 🔹 CAMBIO AQUI: nuevo JNDI -->
+
     <jta-data-source>jdbc/rrhhDS</jta-data-source>
 
         <class>ec.gob.prueba.prueba_maven.modelo.DatEmpleado</class>

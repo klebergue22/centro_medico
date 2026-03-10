@@ -7,58 +7,56 @@
 
     <persistence-unit name="consultorioPU" transaction-type="JTA">
 
-        <!-- Datasource gestionado por WildFly -->
+
         <jta-data-source>java:/jdbc/consultorioDS</jta-data-source>
 
-        <!-- Si prefieres escaneo automático de entidades, no declares <class> -->
+
 
         <properties>
 
-            <!-- ===================================================== -->
-            <!-- 1) Esquema: NO tocar BD en runtime -->
-            <!-- ===================================================== -->
+
+
+
             <property name="jakarta.persistence.schema-generation.database.action"
                       value="none"/>
 
-            <!-- ===================================================== -->
-            <!-- 2) Dialect defensivo para Oracle 11g -->
-            <!-- ===================================================== -->
+
+
+
             <property name="hibernate.dialect" value="org.hibernate.community.dialect.Oracle10gDialect"/>
 
 
-            <!-- ===================================================== -->
-            <!-- 3) JTA correcto para WildFly -->
-            <!-- ===================================================== -->
+
+
             <property name="hibernate.transaction.jta.platform"
                       value="org.hibernate.engine.transaction.jta.platform.internal.JBossAppServerJtaPlatform"/>
 
-            <!-- ===================================================== -->
-            <!-- 4) Compatibilidad JDBC / Oracle 11g -->
-            <!-- ===================================================== -->
+
+
+
             <property name="hibernate.boot.allow_jdbc_metadata_access"
                       value="true"/>
 
             <property name="hibernate.jdbc.lob.non_contextual_creation"
                       value="true"/>
 
-            <!-- ===================================================== -->
-            <!-- 5) Batch seguro (mejora rendimiento sin romper 11g) -->
-            <!-- ===================================================== -->
+
+
+
             <property name="hibernate.jdbc.batch_size" value="25"/>
             <property name="hibernate.order_inserts" value="true"/>
             <property name="hibernate.order_updates" value="true"/>
 
-            <!-- ===================================================== -->
-            <!-- 6) Logs SQL (DEV solamente) -->
-            <!-- ===================================================== -->
+
+
+
             <property name="hibernate.show_sql" value="true"/>
             <property name="hibernate.format_sql" value="true"/>
 
-            <!-- ===================================================== -->
-            <!-- 7) Estabilidad adicional -->
-            <!-- ===================================================== -->
-            <property name="hibernate.generate_statistics" value="false"/>
 
+
+
+            <property name="hibernate.generate_statistics" value="false"/>
 
         </properties>
     </persistence-unit>

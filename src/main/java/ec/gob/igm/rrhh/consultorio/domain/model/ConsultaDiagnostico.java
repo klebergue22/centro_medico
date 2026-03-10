@@ -1,13 +1,5 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package ec.gob.igm.rrhh.consultorio.domain.model;
 
-/**
- *
- * @author GUERRA_KLEBER
- */
 
 
 import jakarta.persistence.*;
@@ -56,30 +48,18 @@ public class ConsultaDiagnostico implements Serializable {
     )
     private Cie10 cie10;
 
-    /**
-     * 'P' = Principal, 'S' = Secundario En BD tiene DEFAULT 'P' y CHECK
-     * (TIPO_DIAG IN ('P','S')). Recomendación: setear siempre en Java para no
-     * depender del DEFAULT si JPA manda null.
-     */
     @Column(name = "TIPO_DIAG", length = 1, nullable = true)
     private String tipoDiag;
 
     @Column(name = "OBSERVACION", length = 1000)
     private String observacion;
 
-    /**
-     * Columna virtual en Oracle: ES_PPAL GENERATED ALWAYS AS (CASE WHEN
-     * TIPO_DIAG='P' THEN 1 ELSE NULL END) VIRTUAL
-     */
     @Column(name = "ES_PPAL", insertable = false, updatable = false)
     private Long esPpal;
 
     @Column(name = "ESTADO", length = 20, nullable = false)
     private String estado;
 
-    // ==========================
-    // Constructores
-    // ==========================
     public ConsultaDiagnostico() {
     }
 
@@ -94,9 +74,7 @@ public class ConsultaDiagnostico implements Serializable {
         this.estado = estado;
     }
 
-    // ==========================
     // Lifecycle Callbacks
-    // ==========================
     @PrePersist
     public void prePersist() {
         if (estado == null || estado.trim().isEmpty()) {
@@ -107,10 +85,6 @@ public class ConsultaDiagnostico implements Serializable {
         }
     }
 
-    // ==========================
-    // Equals y HashCode
-    // Basado en idConsDiag (@EqualsAndHashCode(of = "idConsDiag"))
-    // ==========================
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -124,10 +98,7 @@ public class ConsultaDiagnostico implements Serializable {
         return Objects.hash(idConsDiag);
     }
 
-    // ==========================
-    // ToString
     // Excluye consulta y cie10 (@ToString(exclude = ...))
-    // ==========================
     @Override
     public String toString() {
         return "ConsultaDiagnostico{" +
@@ -139,9 +110,6 @@ public class ConsultaDiagnostico implements Serializable {
                 '}';
     }
 
-    // ==========================
-    // Getters y Setters
-    // ==========================
     public Long getIdConsDiag() {
         return idConsDiag;
     }
@@ -198,9 +166,7 @@ public class ConsultaDiagnostico implements Serializable {
         this.estado = estado;
     }
 
-    // =========================================================
     // Compatibilidad con UI/Controller (CentroMedicoCtrl)
-    // =========================================================
 
     public String getCodigo() {
         // si está asociado a CIE10 real, úsalo

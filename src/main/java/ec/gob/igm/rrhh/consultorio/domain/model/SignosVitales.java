@@ -1,13 +1,5 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package ec.gob.igm.rrhh.consultorio.domain.model;
 
-/**
- *
- * @author GUERRA_KLEBER
- */
 
 
 
@@ -78,19 +70,16 @@ public class SignosVitales implements Serializable {
     @Column(name = "USR_ACTUALIZACION", length = 30)
     private String usrActualizacion;
 
-    // ==========================
-    // Constructores
-    // ==========================
-    
+
     // Constructor vacío (requerido por JPA)
     public SignosVitales() {
     }
 
     // Constructor completo (Reemplaza @AllArgsConstructor)
-    public SignosVitales(Long idSignos, BigDecimal temperaturaC, Integer paSistolica, 
-                           Integer paDiastolica, Integer frecuenciaCard, Integer frecuenciaResp, 
-                           Integer satO2, BigDecimal pesoKg, BigDecimal tallaM, BigDecimal imc, 
-                           BigDecimal perimetroAbdCm, Date fechaCreacion, String usrCreacion, 
+    public SignosVitales(Long idSignos, BigDecimal temperaturaC, Integer paSistolica,
+                           Integer paDiastolica, Integer frecuenciaCard, Integer frecuenciaResp,
+                           Integer satO2, BigDecimal pesoKg, BigDecimal tallaM, BigDecimal imc,
+                           BigDecimal perimetroAbdCm, Date fechaCreacion, String usrCreacion,
                            Date fechaActualizacion, String usrActualizacion) {
         this.idSignos = idSignos;
         this.temperaturaC = temperaturaC;
@@ -109,10 +98,6 @@ public class SignosVitales implements Serializable {
         this.usrActualizacion = usrActualizacion;
     }
 
-    // ==========================
-    // Equals y HashCode
-    // Basado en idSignos
-    // ==========================
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -126,9 +111,6 @@ public class SignosVitales implements Serializable {
         return Objects.hash(idSignos);
     }
 
-    // ==========================
-    // ToString
-    // ==========================
     @Override
     public String toString() {
         return "SignosVitales{" +
@@ -150,9 +132,6 @@ public class SignosVitales implements Serializable {
                 '}';
     }
 
-    // ==========================
-    // Getters y Setters (Manuales conservados)
-    // ==========================
     public Long getIdSignos() {
         return idSignos;
     }

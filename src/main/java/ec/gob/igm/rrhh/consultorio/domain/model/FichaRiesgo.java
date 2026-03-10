@@ -1,13 +1,5 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package ec.gob.igm.rrhh.consultorio.domain.model;
 
-/**
- *
- * @author GUERRA_KLEBER
- */
 
 
 
@@ -23,9 +15,7 @@ public class FichaRiesgo implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    // ======================================================
     // PK – generado por TRIGGER en Oracle
-    // ======================================================
        @Id
     @SequenceGenerator(
             name = "FICHA_RIESGO_GEN",
@@ -34,13 +24,11 @@ public class FichaRiesgo implements Serializable {
     )
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "FICHA_RIESGO_GEN")
     @Column(name = "ID_FICHA_RIESGO", nullable = false)
-    
+
     private Long idFichaRiesgo;
 
-    // ======================================================
     // Relación 1–1 con FICHA_OCUPACIONAL
     // (UX_FR_FICHA lo garantiza)
-    // ======================================================
     @OneToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(
             name = "ID_FICHA",
@@ -49,9 +37,7 @@ public class FichaRiesgo implements Serializable {
     )
     private FichaOcupacional ficha;
 
-    // ======================================================
     // Datos del puesto / actividades
-    // ======================================================
     @Column(name = "PUESTO_TRABAJO", length = 200)
     private String puestoTrabajo;
 
@@ -76,9 +62,7 @@ public class FichaRiesgo implements Serializable {
     @Column(name = "ACTIVIDAD_7", length = 500)
     private String actividad7;
 
-    // ======================================================
     // Riesgos por categoría
-    // ======================================================
     @Column(name = "RIESGOS_FISICOS", length = 2000)
     private String riesgosFisicos;
 
@@ -103,9 +87,6 @@ public class FichaRiesgo implements Serializable {
     @Column(name = "MEDIDAS_PREVENTIVAS", length = 2000)
     private String medidasPreventivas;
 
-    // ======================================================
-    // Auditoría
-    // ======================================================
     @Column(name = "ESTADO", length = 20)
     private String estado;
 
@@ -123,21 +104,18 @@ public class FichaRiesgo implements Serializable {
     @Column(name = "USR_ACTUALIZACION", length = 30)
     private String usrActualizacion;
 
-    // ==========================
-    // Constructores
-    // ==========================
-    
+
     // Constructor vacío (requerido por JPA)
     public FichaRiesgo() {
     }
 
     // Constructor completo (Reemplaza @AllArgsConstructor)
-    public FichaRiesgo(Long idFichaRiesgo, FichaOcupacional ficha, String puestoTrabajo, 
-                       String actividad1, String actividad2, String actividad3, 
-                       String actividad4, String actividad5, String actividad6, String actividad7, 
-                       String riesgosFisicos, String riesgosSeguridad, String riesgosQuimicos, 
-                       String riesgosBiologicos, String riesgosErgonomicos, String riesgosPsicosociales, 
-                       String observaciones, String medidasPreventivas, String estado, 
+    public FichaRiesgo(Long idFichaRiesgo, FichaOcupacional ficha, String puestoTrabajo,
+                       String actividad1, String actividad2, String actividad3,
+                       String actividad4, String actividad5, String actividad6, String actividad7,
+                       String riesgosFisicos, String riesgosSeguridad, String riesgosQuimicos,
+                       String riesgosBiologicos, String riesgosErgonomicos, String riesgosPsicosociales,
+                       String observaciones, String medidasPreventivas, String estado,
                        Date fCreacion, String usrCreacion, Date fActualizacion, String usrActualizacion) {
         this.idFichaRiesgo = idFichaRiesgo;
         this.ficha = ficha;
@@ -164,9 +142,7 @@ public class FichaRiesgo implements Serializable {
         this.usrActualizacion = usrActualizacion;
     }
 
-    // ======================================================
     // Lifecycle
-    // ======================================================
     @PrePersist
     public void prePersist() {
         if (estado == null || estado.trim().isEmpty()) {
@@ -182,10 +158,6 @@ public class FichaRiesgo implements Serializable {
         fActualizacion = new Date();
     }
 
-    // ==========================
-    // Equals y HashCode
-    // Basado en idFichaRiesgo (@EqualsAndHashCode.Include)
-    // ==========================
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -199,10 +171,7 @@ public class FichaRiesgo implements Serializable {
         return Objects.hash(idFichaRiesgo);
     }
 
-    // ==========================
-    // ToString
     // Excluye 'ficha' (@ToString(exclude = ...))
-    // ==========================
     @Override
     public String toString() {
         return "FichaRiesgo{" +
@@ -231,9 +200,6 @@ public class FichaRiesgo implements Serializable {
                 '}';
     }
 
-    // ==========================
-    // Getters y Setters
-    // ==========================
     public Long getIdFichaRiesgo() {
         return idFichaRiesgo;
     }

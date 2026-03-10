@@ -45,9 +45,9 @@
     tr { page-break-inside: avoid; }
 
     .blk { margin-top: 6px; }
-    
+
     /* FIX: Mejor handling de texto en celdas */
-    .cell-input-display { 
+    .cell-input-display {
       display: block;
       width: 100%;
       white-space: normal;
@@ -69,20 +69,20 @@
     .risk-col { width: 9.57%; }
 
     /* ===== H (Actividad laboral) - CORREGIDO ===== */
-    .hx-grid { 
-      width:100%; 
-      border-collapse:collapse; 
-      margin: 6px 0; 
-      table-layout: fixed; 
+    .hx-grid {
+      width:100%;
+      border-collapse:collapse;
+      margin: 6px 0;
+      table-layout: fixed;
     }
-    .hx-grid th, .hx-grid td { 
-      border:1px solid #7fa87e; 
-      padding:3px 4px; 
-      vertical-align:top; 
-      font-size:9.5px; 
-      line-height:1.12; 
+    .hx-grid th, .hx-grid td {
+      border:1px solid #7fa87e;
+      padding:3px 4px;
+      vertical-align:top;
+      font-size:9.5px;
+      line-height:1.12;
     }
-    .hx-grid thead th { 
+    .hx-grid thead th {
       background:#eef6ee;
       font-size:8.0px;
       line-height:1.05;
@@ -92,18 +92,18 @@
       white-space:normal;
       word-break:break-word;
     }
-    .hx-grid tbody td { 
-      font-size:9.4px; 
-      line-height:1.12; 
+    .hx-grid tbody td {
+      font-size:9.4px;
+      line-height:1.12;
     }
-    .hx-grid .cell-input-display { 
-      white-space:normal; 
-      word-break:break-word; 
+    .hx-grid .cell-input-display {
+      white-space:normal;
+      word-break:break-word;
     }
-    .hx-note { 
-      font-weight:normal; 
-      font-size:7.5px; 
-      color:#666; 
+    .hx-note {
+      font-weight:normal;
+      font-size:7.5px;
+      color:#666;
       display:block;
     }
 
@@ -149,8 +149,8 @@
     .l-grid th, .l-grid td, .n-grid th, .n-grid td { border:1px solid #7fa87e; padding:3px 4px; font-size:9.8px; line-height:1.15; }
     .l-head th { background:#eef6ee; }
     .n-sub th { background:#eef6ee; }
-    
-    
+
+
     /* ===== Firma Profesional / Trabajador (O + P) ===== */
 .sign-wrap{ margin-top:10px; page-break-inside:avoid; }
 .sign-table{ width:100%; border-collapse:collapse; table-layout:fixed; }
@@ -223,7 +223,7 @@
   height:44px;
   vertical-align:top !important;
 }
-  
+
     /* =========================================================
        FIX WRAP / NO OVERLAP (Flying-Saucer)
        ========================================================= */
@@ -259,7 +259,7 @@
       text-overflow: ellipsis;
       white-space: nowrap;
     }
-    
+
     .text-wrap {
       white-space: pre-wrap;
       word-wrap: break-word;
@@ -270,7 +270,6 @@
 </head>
 <body>
 
-<!-- Cabecera con logos -->
 <div id="pageHeader">
 <table class="hdr">
   <tr>
@@ -279,7 +278,7 @@
     </td>
     <td style="width:60%; text-align:center;">
       <div class="title">FICHA OCUPACIONAL</div>
-      <!-- FIX: Fecha corregida -->
+
       <div class="muted">Generado: {{fecha_yyyy}}-{{fecha_MM}}-{{fecha_dd}}</div>
     </td>
     <td style="width:20%; text-align:right;">
@@ -289,7 +288,6 @@
 </table>
 </div>
 
-<!-- A. DATOS DEL ESTABLECIMIENTO / USUARIO -->
 <table class="tbl">
   <tr><th colspan="8" class="sec">A. DATOS DEL ESTABLECIMIENTO / USUARIO</th></tr>
   <tr>
@@ -322,7 +320,6 @@
   </tr>
 </table>
 
-<!-- ATENCIÓN PRIORITARIA -->
 <table class="tbl">
   <tr><th colspan="8" class="sec">ATENCIÓN PRIORITARIA</th></tr>
   <tr>
@@ -338,10 +335,6 @@
   </tr>
 </table>
 
-
-<!-- DETALLE ATENCIÓN PRIORITARIA (se muestra solo si aplica) -->
-
-<!-- Discapacidad -->
 <table class="tbl" style="{{apDiscapacidad_style}}">
   <tr><th colspan="8" class="sec">DISCAPACIDAD</th></tr>
   <tr>
@@ -357,7 +350,6 @@
   </tr>
 </table>
 
-<!-- Enfermedad Catastrófica / Huérfana / Rara -->
 <table class="tbl" style="{{apCatastrofica_style}}">
   <tr><th colspan="8" class="sec">ENFERMEDAD CATASTRÓFICA, HUÉRFANA Y RARA</th></tr>
   <tr>
@@ -368,7 +360,6 @@
   </tr>
 </table>
 
-<!-- B. MOTIVO DE CONSULTA -->
 <table class="tbl">
   <tr><th colspan="8" class="sec">B. MOTIVO DE CONSULTA</th></tr>
   <tr>
@@ -383,7 +374,6 @@
   </tr>
 </table>
 
-<!-- C. ANTECEDENTES PERSONALES -->
 <table class="tbl">
   <tr><th colspan="8" class="sec">C. ANTECEDENTES PERSONALES</th></tr>
   <tr>
@@ -397,7 +387,6 @@
   </tr>
 </table>
 
-<!-- ANTECEDENTES REPRODUCTIVOS (MASCULINO) – se muestra sólo si sexo = M -->
 {{#if sexoM}}
 <table class="tbl">
   <tr><th colspan="8" class="sec">ANTECEDENTES REPRODUCTIVOS MASCULINOS</th></tr>
@@ -408,7 +397,6 @@
 </table>
 {{/if}}
 
-<!-- ANTECEDENTES GINECO OBSTÉTRICOS (MUJER) – se muestra sólo si sexo = F -->
 {{#if sexoF}}
 <table class="tbl">
   <tr><th colspan="8" class="sec">ANTECEDENTES GINECO OBSTÉTRICOS</th></tr>
@@ -425,7 +413,6 @@
   </tr>
 </table>
 
-<!-- Tabla de exámenes (dos filas) -->
 <table class="tbl">
   <tr><th colspan="8" class="sec">EXÁMENES REALIZADOS</th></tr>
   <tr>
@@ -443,7 +430,6 @@
 </table>
 {{/if}}
 
-<!-- CONSUMO DE SUSTANCIAS -->
 <table class="tbl">
   <tr><th colspan="11" class="sec">CONSUMO DE SUSTANCIAS / ESTILO DE VIDA / CONDICIÓN PREEXISTENTE</th></tr>
   <thead>
@@ -504,13 +490,11 @@
   </tbody>
 </table>
 
-<!-- D. ENFERMEDAD O PROBLEMA ACTUAL -->
 <table class="tbl">
   <tr><th colspan="8" class="sec">D. ENFERMEDAD O PROBLEMA ACTUAL</th></tr>
   <tr><td colspan="8"><span class="cell-input-display">{{enfermedad_actual}}</span></td></tr>
 </table>
 
-<!-- E. CONSTANTES VITALES Y ANTROPOMETRÍA -->
 <table class="tbl">
   <tr><th colspan="10" class="sec">E. CONSTANTES VITALES Y ANTROPOMETRÍA</th></tr>
   <tr>
@@ -528,7 +512,6 @@
   </tr>
 </table>
 
-<!-- F. EXAMEN FÍSICO REGIONAL (REDISEÑO tipo grilla web) -->
 <table class="exf-grid">
   <colgroup>
     <col style="width:21%;" /><col style="width:4%;" />
@@ -539,7 +522,7 @@
 
   <tr><th colspan="8" class="sec">F. EXAMEN FÍSICO REGIONAL</th></tr>
 
-  <!-- Encabezados 1..4 -->
+
   <tr class="exf-head">
     <th colspan="2">1. Piel</th>
     <th colspan="2">2. Ojos</th>
@@ -611,7 +594,7 @@
     <td class="exf-val"><span class="box">{{exf_oro_dentadura}}</span></td>
   </tr>
 
-  <!-- Encabezados 5..8 -->
+
   <tr class="exf-head">
     <th colspan="2">5. Nariz</th>
     <th colspan="2">6. Cuello</th>
@@ -666,7 +649,7 @@
     <td class="exf-lbl">&#160;</td><td class="exf-val"><span class="box">&#160;</span></td>
   </tr>
 
-  <!-- Encabezados 9..12 -->
+
   <tr class="exf-head">
     <th colspan="2">9. Abdomen</th>
     <th colspan="2">10. Columna</th>
@@ -714,7 +697,7 @@
     <td class="exf-val"><span class="box">{{exf_ext_inf}}</span></td>
   </tr>
 
-  <!-- 13 Neurológico -->
+
   <tr class="exf-head">
     <th colspan="8">13. Neurológico</th>
   </tr>
@@ -732,20 +715,17 @@
     <td class="exf-val"><span class="box">{{exf_neuro_reflejos}}</span></td>
   </tr>
 
-  <!-- Observación -->
+
   <tr>
     <td class="exf-obs-title" colspan="2">Observación</td>
     <td class="exf-obs" colspan="6"><span class="cell-input-display">{{obs_examen_fisico}}</span></td>
   </tr>
 </table>
 
-<!-- ============================================= -->
-<!-- MATRIZ DE IDENTIFICACIÓN DE RIESGOS LABORALES (STEP 2) -->
-<!-- ============================================= -->
 <div class="blk">
   <div class="sec">MATRIZ DE IDENTIFICACIÓN DE RIESGOS LABORALES</div>
 
-  <!-- Puesto de trabajo -->
+
   <table class="risk-grid" style="margin-bottom:6px;">
     <tr>
       <th colspan="8" style="text-align:left; background:#f5f5f5; padding:6px;">
@@ -754,7 +734,7 @@
     </tr>
   </table>
 
-  <!-- Actividades laborales (cabecera + fila) -->
+
   <table class="risk-grid">
     <colgroup>
       <col class="risk-col-label" />
@@ -781,7 +761,7 @@
     </tbody>
   </table>
 
-  <!-- RIESGOS FÍSICOS -->
+
   <div style="margin-top:10px; border:1px solid #7fa87e; padding:4px;">
     <div style="background:#d9f2d9; font-weight:bold; padding:4px;">FÍSICO</div>
     <table class="risk-grid">
@@ -801,7 +781,7 @@
     </table>
   </div>
 
-  <!-- RIESGOS DE SEGURIDAD -->
+
   <div style="margin-top:10px; border:1px solid #7fa87e; padding:4px;">
     <div style="background:#d9f2d9; font-weight:bold; padding:4px;">DE SEGURIDAD</div>
     <table class="risk-grid">
@@ -826,7 +806,7 @@
     </table>
   </div>
 
-  <!-- RIESGOS QUÍMICOS -->
+
   <div style="margin-top:10px; border:1px solid #7fa87e; padding:4px;">
     <div style="background:#d9f2d9; font-weight:bold; padding:4px;">QUÍMICO</div>
     <table class="risk-grid">
@@ -845,7 +825,7 @@
     </table>
   </div>
 
-  <!-- RIESGOS BIOLÓGICOS -->
+
   <div style="margin-top:10px; border:1px solid #7fa87e; padding:4px;">
     <div style="background:#d9f2d9; font-weight:bold; padding:4px;">BIOLÓGICO</div>
     <table class="risk-grid">
@@ -862,7 +842,7 @@
     </table>
   </div>
 
-  <!-- RIESGOS ERGONÓMICOS -->
+
   <div style="margin-top:10px; border:1px solid #7fa87e; padding:4px;">
     <div style="background:#d9f2d9; font-weight:bold; padding:4px;">ERGONÓMICO</div>
     <table class="risk-grid">
@@ -878,7 +858,7 @@
     </table>
   </div>
 
-  <!-- RIESGOS PSICOSOCIALES -->
+
   <div style="margin-top:10px; border:1px solid #7fa87e; padding:4px;">
     <div style="background:#d9f2d9; font-weight:bold; padding:4px;">PSICOSOCIAL</div>
     <table class="risk-grid">
@@ -896,7 +876,7 @@
     </table>
   </div>
 
-  <!-- MEDIDAS PREVENTIVAS -->
+
   <table class="risk-grid" style="margin-top:10px;">
     <colgroup>
       <col class="risk-col-label" />
@@ -918,9 +898,6 @@
   </table>
 </div>
 
-<!-- ============================================= -->
-<!-- H. ACTIVIDAD LABORAL / INCIDENTES / ACCIDENTES / ENFERMEDADES OCUPACIONALES - CORREGIDO -->
-<!-- ============================================= -->
 <div class="blk">
   <div class="sec">H. ACTIVIDAD LABORAL / INCIDENTES / ACCIDENTES / ENFERMEDADES OCUPACIONALES</div>
   <table class="hx-grid">
@@ -940,7 +917,7 @@
       <col style="width:12%;" />
     </colgroup>
     <thead>
-      <!-- FIX: Encabezados reorganizados correctamente -->
+
       <tr>
         <th rowspan="2">CENTRO DE TRABAJO</th>
         <th rowspan="2">ACTIVIDADES QUE DESEMPEÑABA</th>
@@ -1027,9 +1004,6 @@
   </table>
 </div>
 
-<!-- ============================================= -->
-<!-- I. ACTIVIDADES EXTRALABORALES - CORREGIDO -->
-<!-- ============================================= -->
 <div class="blk">
   <div class="sec">I. ACTIVIDADES EXTRALABORALES</div>
   <table class="i-grid">
@@ -1065,9 +1039,6 @@
   </table>
 </div>
 
-<!-- ============================================= -->
-<!-- J. RESULTADOS DE EXÁMENES GENERALES Y ESPECÍFICOS SEGÚN RIESGO/PUESTO -->
-<!-- ============================================= -->
 <div class="blk">
   <div class="sec">J. RESULTADOS DE EXÁMENES GENERALES Y ESPECÍFICOS SEGÚN RIESGO/PUESTO</div>
   <table class="j-grid">
@@ -1097,9 +1068,6 @@
   </div>
 </div>
 
-<!-- ============================================= -->
-<!-- K. DIAGNÓSTICO — PRE: PRESUNTIVO  DEF: DEFINITIVO -->
-<!-- ============================================= -->
 <div class="blk">
   <div class="sec">K. DIAGNÓSTICO — PRE: PRESUNTIVO  DEF: DEFINITIVO</div>
   <table class="k-grid">
@@ -1161,9 +1129,6 @@
   </table>
 </div>
 
-<!-- ============================================= -->
-<!-- L. APTITUD MÉDICA PARA EL TRABAJO -->
-<!-- ============================================= -->
 <div class="blk">
   <div class="sec">L. APTITUD MÉDICA PARA EL TRABAJO</div>
   <table class="l-grid">
@@ -1190,17 +1155,11 @@
   </div>
 </div>
 
-<!-- ============================================= -->
-<!-- M. RECOMENDACIONES Y/O TRATAMIENTO -->
-<!-- ============================================= -->
 <div class="blk">
   <div class="sec">M. RECOMENDACIONES Y/O TRATAMIENTO</div>
   <div class="cell-input-display" style="white-space:pre-wrap;">{{recomendaciones}}</div>
 </div>
 
-<!-- ============================================= -->
-<!-- N. RETIRO (EVALUACIÓN) -->
-<!-- ============================================= -->
 <div class="blk">
   <div class="sec">N. RETIRO (EVALUACIÓN)</div>
   <table class="n-grid">
@@ -1226,9 +1185,6 @@
   </div>
 </div>
 
-<!-- ============================================= -->
-<!-- O. DATOS DEL PROFESIONAL  +  P. FIRMA DEL TRABAJADOR -->
-<!-- ============================================= -->
 <div class="sign-wrap">
   <table class="sign-table">
     <colgroup>
@@ -1236,13 +1192,13 @@
       <col style="width:27%;" />
     </colgroup>
 
-    <!-- Cabeceras principales -->
+
     <tr>
       <th class="sign-head">O. DATOS DEL PROFESIONAL</th>
       <th class="sign-head">P. FIRMA DEL TRABAJADOR</th>
     </tr>
 
-    <!-- Subcabeceras -->
+
     <tr>
       <td style="padding:0;">
         <table class="sign-table" style="border:0;">
@@ -1264,12 +1220,12 @@
               <div class="cell-input-display">{{medico_codigo}}</div>
             </td>
 
-            <!-- Firma y sello del profesional -->
+
             <td class="c">
               <div class="sign-box">
-                <!-- Si tienes imagen de firma/sello en DataURI -->
+
               </div>
-              <!-- Línea para firmar si no hay imagen -->
+
               <div class="sign-line"></div>
               <div class="muted">Firma y sello</div>
             </td>
@@ -1277,12 +1233,12 @@
         </table>
       </td>
 
-      <!-- Firma del trabajador -->
+
       <td class="c">
         <div class="sign-box">
         </div>
 
-        <!-- Línea para firma manual -->
+
         <div class="sign-line"></div>
       </td>
     </tr>

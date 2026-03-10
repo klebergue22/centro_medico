@@ -5,38 +5,32 @@
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
 
-    <!-- Se ejecuta dentro de template -->
+
     <ui:define name="metadata">
         <f:viewAction action="#{centroMedicoCtrl.preRenderInit}" onPostback="true"/>
     </ui:define>
 
-    <!-- ===================================================== -->
-    <!-- ===================== CONTENIDO ====================== -->
-    <!-- ===================================================== -->
+
+
+
     <ui:define name="content">
         <h:outputText value="Evaluación Médica Ocupacional" />
         <h:outputStylesheet library="primefaces" name="primeicons/primeicons.css"/>
 
 
-        <!-- RC para actualizar wizard y msgs desde dialogs -->
-        
-        <!-- Auto-abrir diálogo de cédula en el primer render (evita depender de executeScript del bean) -->
+
+
   <p:remoteCommand name="rcAutoOpenCedulaDlg"
                  autoRun="true"
                  process="@this"
                  actionListener="#{centroMedicoCtrl.consumirAutoOpenCedulaDlg}"
                  oncomplete="if (args.openCedulaDlg === true) { PF('dlgCedula').show(); }"/>
 
-
 <p:remoteCommand name="rcUpdateWizard"
                          process="@this"
                          update="@([id$=wdzFicha]) @([id$=msgs])"/>
 
 
-
-
-
-        <!-- Wizard -->
         <p:wizard id="wdzFicha" widgetVar="wdzFicha"
                   showNavBar="false" showStepStatus="true"
                   nextLabel="Siguiente" backLabel="Anterior"
@@ -61,7 +55,7 @@
 
         </p:wizard>
 
-        <!-- Barra navegación -->
+
         <p:toolbar styleClass="mt-3">
             <p:toolbarGroup>
                 <p:commandButton value="Anterior"
@@ -81,12 +75,12 @@
 
     </ui:define>
 
-    <!-- ===================================================== -->
-    <!-- ===================== DIALOGS ======================== -->
-    <!-- ===================================================== -->
+
+
+
     <ui:define name="dialogs">
 
-        <!-- DIALOGO BUSCAR CEDULA -->
+
         <p:dialog id="dlgCedula"
                   widgetVar="dlgCedula"
                   header="Buscar por cédula"
@@ -96,9 +90,6 @@
                   draggable="false"
                   appendTo="@(body)"
                   width="560">
-
-
-
 
             <h:form id="dlgCedulaForm">
 
@@ -148,7 +139,7 @@
 
                 </h:panelGrid>
 
-                <!-- Panel: se muestra SOLO cuando permitirIngresoManual=true -->
+
                 <p:outputPanel id="panelBtnManualWrap"
                                layout="block"
                                style="margin-top:14px;"
@@ -182,7 +173,7 @@
             </h:form>
         </p:dialog>
 
-        <!-- DIALOGO PERSONA AUX -->
+
         <p:dialog id="dlgPersonaAux"
                   widgetVar="dlgPersonaAux"
                   header="Ingreso manual de datos"
@@ -270,11 +261,6 @@
                                  }"/>
             </h:form>
         </p:dialog>
-
-
-
-
-
 
     </ui:define>
 

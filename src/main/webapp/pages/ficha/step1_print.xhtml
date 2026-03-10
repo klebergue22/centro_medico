@@ -4,7 +4,7 @@
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
 
-    <!-- A. DATOS DEL ESTABLECIMIENTO / USUARIO -->
+
     <p:fieldset legend="A. DATOS DEL ESTABLECIMIENTO / USUARIO" toggleable="true">
 
         <p:panelGrid columns="4" layout="grid"
@@ -63,7 +63,7 @@
 
         </p:panelGrid>
 
-        <!-- ATENCIÓN PRIORITARIA -->
+
         <p:fieldset legend="ATENCIÓN PRIORITARIA" styleClass="ap-fieldset" style="margin-top:.5rem;">
             <div class="ap-grid">
                 <div class="ap-item">
@@ -89,7 +89,7 @@
             </div>
         </p:fieldset>
 
-        <!-- BIO/IDENTIFICACIÓN -->
+
         <h:panelGrid columns="4"
                      columnClasses="w-15rem, w-35rem, w-15rem, w-35rem"
                      styleClass="ui-fluid" style="margin-top:.5rem">
@@ -97,8 +97,6 @@
             <h:outputLabel for="sexowd" value="Sexo"/>
 
             <h:outputText value="#{fichaPrintCtrl.cm.sexo}" />
-
-
 
             <h:outputLabel for="fecNac" value="Fecha de nacimiento"/>
 
@@ -109,16 +107,14 @@
                         showOn="button"
                         yearRange="1924:2007">
 
-                
 
-                
+
+
 
             </p:calendar>
 
             <h:outputLabel for="edad" value="Edad (años)"/>
             <h:outputText value="#{fichaPrintCtrl.cm.edad}" />
-
-
 
             <h:outputLabel for="sangre" value="Grupo sanguíneo"/>
             <h:outputText value="#{fichaPrintCtrl.cm.grupoSanguineo}" />
@@ -129,7 +125,7 @@
 
     </p:fieldset>
 
-    <!-- B. MOTIVO DE CONSULTA -->
+
     <p:fieldset legend="B. MOTIVO DE CONSULTA" toggleable="true">
         <h:panelGrid columns="4"
                      columnClasses="w-15rem, w-35rem, w-15rem, w-35rem"
@@ -141,29 +137,29 @@
             <h:outputLabel value="Fecha de atención"/>
             <h:outputText value="#{fichaPrintCtrl.cm.fechaAtencion}" />
 
-            <!-- Selector de tipo de evaluación -->
+
             <h:panelGrid  >
                 <h:outputLabel for="tipoEval" value="Tipo Evaluación"/>
                 <h:outputText value="#{fichaPrintCtrl.cm.tipoEval}" />
             </h:panelGrid>
 
-            <!-- Bloque que se re-renderiza con las fechas -->
+
             <h:panelGroup id="fechasPanel" layout="block">
                 <h:panelGrid >
 
-                    <!-- Fecha de ingreso -->
+
                     <ui:fragment rendered="#{fichaPrintCtrl.cm.tipoEval eq 'INGRESO' or centroMedicoCtrl.tipoEval eq 'PERIODICO'}">
                         <h:outputLabel for="fecIngreso" value="Fecha de ingreso"/>
                         <h:outputText value="#{fichaPrintCtrl.cm.fecIngreso}" />
                     </ui:fragment>
 
-                    <!-- Fecha de reintegro -->
+
                     <ui:fragment rendered="#{fichaPrintCtrl.cm.tipoEval eq 'REINTEGRO' or centroMedicoCtrl.tipoEval eq 'PERIODICO'}">
                         <h:outputLabel for="fecReintegro" value="Fecha de reintegro"/>
                         <h:outputText value="#{fichaPrintCtrl.cm.fecReintegro}" />
                     </ui:fragment>
 
-                    <!-- Último día laboral (retiro) -->
+
                     <ui:fragment rendered="#{fichaPrintCtrl.cm.tipoEval eq 'RETIRO' or centroMedicoCtrl.tipoEval eq 'PERIODICO'}">
                         <h:outputLabel for="fecRetiro" value="Último día laboral"/>
                         <h:outputText value="#{fichaPrintCtrl.cm.fecRetiro}" />
@@ -177,7 +173,7 @@
         </h:panelGrid>
     </p:fieldset>
 
-    <!-- C. ANTECEDENTES PERSONALES -->
+
     <p:fieldset legend="C. ANTECEDENTES PERSONALES" toggleable="true">
         <h:panelGrid columns="2" columnClasses="w-20rem," styleClass="ui-fluid">
             <h:outputLabel value="Antecedentes clínicos y quirúrgicos"/>
@@ -200,7 +196,7 @@
         </h:panelGrid>
         <p:outputPanel id="sexoBlocks" layout="block"  style="margin-top:8px">
 
-            <!-- Condicional: REPRODUCTIVOS MASCULINOS -->
+
             <h:panelGroup id="panelReproMas" rendered="#{fichaPrintCtrl.cm.sexo eq 'M'}" layout="block" style="margin-top:8px;">
                 <p:fieldset legend="ANTECEDENTES REPRODUCTIVOS MASCULINOS" toggleable="true" collapsed="false">
                     <h:panelGrid columns="4" styleClass="ui-fluid"
@@ -213,9 +209,9 @@
                 </p:fieldset>
             </h:panelGroup>
 
-            <!-- Condicional: GINECO OBSTÉTRICOS (MUJER) -->
+
             <h:panelGroup id="panelGineObst" rendered="#{fichaPrintCtrl.cm.sexo eq 'F'}" layout="block" style="margin-top:8px;">
-                <!-- C. ANTECEDENTES GINECO OBSTÉTRICOS -->
+
                 <p:fieldset legend="ANTECEDENTES GINECO OBSTÉTRICOS" toggleable="true">
                     <h:panelGroup id="obstetricos">
                         <table class="obst-grid">
@@ -238,14 +234,14 @@
                                 </tr>
                             </thead>
 
-                            <!-- Fila de captura -->
+
                             <tr>
-                                <!-- FUM -->
+
                                 <td colspan="2">
                                     <h:outputText value=""/>
                                 </td>
 
-                                <!-- Números: TODOS con obst-fit -->
+
                                 <td class="txt-c">
                                     <h:outputText value="#{fichaPrintCtrl.cm.gestas}" />
                                 </td>
@@ -259,14 +255,14 @@
                                     <h:outputText value="#{fichaPrintCtrl.cm.abortos}" />
                                 </td>
 
-                                <!-- MPF: checks centrados + campo "¿cuál?" a 100% -->
+
                                 <td><div class="obst-chk"><h:outputText value=""/></div></td>
                                 <td><h:outputText value=""/></td>
                                 <td><div class="obst-chk"><h:outputText value=""/></div></td>
                                 <td><div class="obst-chk"><h:outputText value=""/></div></td>
                             </tr>
 
-                            <!-- Cabecera Exámenes -->
+
                             <tr>
                                 <th colspan="2">EXÁMENES REALIZADOS ¿CUÁL?</th>
                                 <th>TIEMPO<br/><span style="font-weight:400">(años)</span></th>
@@ -279,20 +275,20 @@
                                 </td>
                             </tr>
 
-                            <!-- Fila 1 -->
-                            <tr>
-                                <td colspan="2"><h:outputText value=""/></td>
-                                <td><h:outputText value=""/></td>
-                                <td colspan="7"><h:outputText value=""/></td>
-                            </tr>
-                            <!-- Fila 2 -->
+
                             <tr>
                                 <td colspan="2"><h:outputText value=""/></td>
                                 <td><h:outputText value=""/></td>
                                 <td colspan="7"><h:outputText value=""/></td>
                             </tr>
 
-                            <!-- Observación -->
+                            <tr>
+                                <td colspan="2"><h:outputText value=""/></td>
+                                <td><h:outputText value=""/></td>
+                                <td colspan="7"><h:outputText value=""/></td>
+                            </tr>
+
+
                             <tr>
                                 <th colspan="3">Observación</th>
                                 <td colspan="7"><h:outputText value=""/></td>
@@ -361,9 +357,9 @@
                     </thead>
 
                     <tbody>
-                        <!-- Fila 1 -->
+
                         <tr>
-                            <!-- CONSUMO -->
+
                             <td>TABACO</td>
                             <td>
                                 <h:outputText value="#{fichaPrintCtrl.cm.consTiempoConsumo[0]}" />
@@ -378,7 +374,7 @@
                                 <h:outputText value="#{fichaPrintCtrl.cm.consNoConsume[0] ? 'SI' : 'NO'}" />
                             </td>
 
-                            <!-- ESTILO DE VIDA -->
+
                             <td rowspan="3" class="txt-c">ACTIVIDAD FÍSICA</td>
                             <td>
                                 <h:outputText value="#{fichaPrintCtrl.cm.afCual[0]}" />
@@ -387,7 +383,7 @@
                                 <h:outputText value="#{fichaPrintCtrl.cm.afTiempo[0]}" />
                             </td>
 
-                            <!-- CONDICIÓN PREEXISTENTE -->
+
                             <td rowspan="3" class="txt-c">MEDICACIÓN HABITUAL</td>
                             <td>
                                 <h:outputText value="#{fichaPrintCtrl.cm.medCual[0]}" />
@@ -397,9 +393,9 @@
                             </td>
                         </tr>
 
-                        <!-- Fila 2 -->
+
                         <tr>
-                            <!-- CONSUMO -->
+
                             <td>ALCOHOL</td>
                             <td>
                                 <h:outputText value="#{fichaPrintCtrl.cm.consTiempoConsumo[1]}" />
@@ -414,7 +410,7 @@
                                 <h:outputText value="#{fichaPrintCtrl.cm.consNoConsume[1] ? 'SI' : 'NO'}" />
                             </td>
 
-                            <!-- ESTILO DE VIDA -->
+
                             <td>
                                 <h:outputText value="#{fichaPrintCtrl.cm.afCual[1]}" />
                             </td>
@@ -422,7 +418,7 @@
                                 <h:outputText value="#{fichaPrintCtrl.cm.afTiempo[1]}" />
                             </td>
 
-                            <!-- CONDICIÓN -->
+
                             <td>
                                 <h:outputText value="#{fichaPrintCtrl.cm.medCual[1]}" />
                             </td>
@@ -431,9 +427,9 @@
                             </td>
                         </tr>
 
-                        <!-- Fila 3 -->
+
                         <tr>
-                            <!-- CONSUMO -->
+
                             <td>OTRAS: <span class="c-sub">¿cuál?</span></td>
                             <td>
                                 <h:outputText value="#{fichaPrintCtrl.cm.consTiempoConsumo[2]}" />
@@ -448,7 +444,7 @@
                                 <h:outputText value="#{fichaPrintCtrl.cm.consNoConsume[2] ? 'SI' : 'NO'}" />
                             </td>
 
-                            <!-- ESTILO DE VIDA -->
+
                             <td>
                                 <h:outputText value="#{fichaPrintCtrl.cm.afCual[2]}" />
                             </td>
@@ -456,7 +452,7 @@
                                 <h:outputText value="#{fichaPrintCtrl.cm.afTiempo[2]}" />
                             </td>
 
-                            <!-- CONDICIÓN -->
+
                             <td>
                                 <h:outputText value="#{fichaPrintCtrl.cm.medCual[2]}" />
                             </td>
@@ -465,7 +461,7 @@
                             </td>
                         </tr>
 
-                        <!-- Observación -->
+
                         <tr>
                             <th colspan="2">Observación</th>
                             <td colspan="9">
@@ -480,12 +476,12 @@
 
     </p:fieldset>
 
-    <!-- D. ENFERMEDAD O PROBLEMA ACTUAL -->
+
     <p:fieldset legend="D. ENFERMEDAD O PROBLEMA ACTUAL" toggleable="true">
         <h:outputText value="#{fichaPrintCtrl.cm.ficha.enfermedadProbActual}" />
     </p:fieldset>
 
-    <!-- E. CONSTANTES VITALES Y ANTROPOMETRÍA -->
+
     <p:fieldset legend="E. CONSTANTES VITALES Y ANTROPOMETRÍA" toggleable="true">
         <h:panelGrid columns="10" styleClass="ui-fluid vit-grid">
 
@@ -534,8 +530,6 @@
 
     </p:fieldset>
 
-
-<!-- "F. EXAMEN FÍSICO REGIONAL" -->
 <p:fieldset legend="F. EXAMEN FÍSICO REGIONAL"
             toggleable="true"
             styleClass="fieldset-encaps">
@@ -543,7 +537,7 @@
     <table class="f-grid4">
         <tbody>
 
-            <!-- fila 1: 1..4 -->
+
             <tr>
                 <td>
                     <div class="f-title">1. Piel</div>
@@ -592,7 +586,7 @@
                 </td>
             </tr>
 
-            <!-- fila 2: 5..8 -->
+
             <tr>
                 <td>
                     <div class="f-title">5. Nariz</div>
@@ -631,7 +625,7 @@
                 </td>
             </tr>
 
-            <!-- fila 3: 9..12 -->
+
             <tr>
                 <td>
                     <div class="f-title">9. Abdomen</div>
@@ -670,7 +664,7 @@
                 </td>
             </tr>
 
-            <!-- fila 4: 13 + 3 vacíos -->
+
             <tr>
                 <td>
                     <div class="f-title">13. Neurológico</div>
@@ -697,15 +691,5 @@
         <h:outputText value="#{fichaPrintCtrl.cm.ficha.obsExamenFisicoReg}" />
     </div>
 </p:fieldset>
-
-
-
-
-
-
-
-
-
-
 
 </ui:composition>

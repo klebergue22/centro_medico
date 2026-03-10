@@ -1,27 +1,14 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package ec.gob.igm.rrhh.consultorio.domain.dto;
 
-/**
- *
- * @author GUERRA_KLEBER
- */
 
 
 import java.io.Serializable;
 import java.util.Date;
 
-/**
- * DTO de solo lectura para consumir la vista RH.VW_EMP_CONTRATO_VIGENTE.
- * No es entidad JPA, no se persiste.
- */
 public class EmpleadoCargoDTO implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    // ===== Datos personales (RH.T_DAT_EMPLEADO) =====
     private Long noPersona;
     private String noCedula;
 
@@ -37,7 +24,6 @@ public class EmpleadoCargoDTO implements Serializable {
     private String email;
     private String emailInstitucional;
 
-    // ===== Contrato vigente más actual (RH.T_CONTRATACIONES) =====
     private Long noCont;
     private String estadoContrato;
     private Date fContrato;
@@ -45,16 +31,13 @@ public class EmpleadoCargoDTO implements Serializable {
 
     private Long noFuncion;
 
-    // ===== Cargo (RH.T_FUNCION) =====
     private String cargoDescrip;
     private String cargoAbrev;
 
     public EmpleadoCargoDTO() {
     }
 
-    // -------------------------
     // Getters / Setters
-    // -------------------------
 
     public Long getNoPersona() {
         return noPersona;
@@ -200,9 +183,6 @@ public class EmpleadoCargoDTO implements Serializable {
         this.cargoAbrev = cargoAbrev;
     }
 
-    // -------------------------
-    // Helpers
-    // -------------------------
 
     public String getApellidosNombres() {
         String a1 = priApellido != null ? priApellido.trim() : "";

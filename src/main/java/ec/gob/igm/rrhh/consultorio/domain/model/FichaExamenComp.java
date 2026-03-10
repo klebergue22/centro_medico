@@ -1,13 +1,5 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package ec.gob.igm.rrhh.consultorio.domain.model;
 
-/**
- *
- * @author GUERRA_KLEBER
- */
 
 
 
@@ -63,18 +55,15 @@ public class FichaExamenComp implements Serializable {
     @Column(name = "USR_ACTUALIZACION", length = 30)
     private String usrActualizacion;
 
-    // ==========================
-    // Constructores
-    // ==========================
 
     // Constructor vacío (requerido por JPA)
     public FichaExamenComp() {
     }
 
     // Constructor completo (Reemplaza @AllArgsConstructor)
-    public FichaExamenComp(Long idFichaExamen, FichaOcupacional ficha, Integer nroFila, 
-                           String nombreExamen, Date fechaExamen, String resultado, 
-                           Date fCreacion, String usrCreacion, Date fActualizacion, 
+    public FichaExamenComp(Long idFichaExamen, FichaOcupacional ficha, Integer nroFila,
+                           String nombreExamen, Date fechaExamen, String resultado,
+                           Date fCreacion, String usrCreacion, Date fActualizacion,
                            String usrActualizacion) {
         this.idFichaExamen = idFichaExamen;
         this.ficha = ficha;
@@ -88,12 +77,10 @@ public class FichaExamenComp implements Serializable {
         this.usrActualizacion = usrActualizacion;
     }
 
-    // ==========================
     // Lifecycle
-    // ==========================
     @PrePersist
     public void prePersist() {
-        if (fCreacion == null) fCreacion = new Date(); 
+        if (fCreacion == null) fCreacion = new Date();
     }
 
     @PreUpdate
@@ -101,10 +88,6 @@ public class FichaExamenComp implements Serializable {
         fActualizacion = new Date();
     }
 
-    // ==========================
-    // Equals y HashCode
-    // Basado en idFichaExamen (@EqualsAndHashCode.Include)
-    // ==========================
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -118,10 +101,7 @@ public class FichaExamenComp implements Serializable {
         return Objects.hash(idFichaExamen);
     }
 
-    // ==========================
-    // ToString
     // Excluye 'ficha' (@ToString(exclude = ...))
-    // ==========================
     @Override
     public String toString() {
         return "FichaExamenComp{" +
@@ -137,9 +117,6 @@ public class FichaExamenComp implements Serializable {
                 '}';
     }
 
-    // ==========================
-    // Getters y Setters
-    // ==========================
     public Long getIdFichaExamen() {
         return idFichaExamen;
     }
@@ -220,4 +197,4 @@ public class FichaExamenComp implements Serializable {
         this.usrActualizacion = usrActualizacion;
     }
 }
- 
+

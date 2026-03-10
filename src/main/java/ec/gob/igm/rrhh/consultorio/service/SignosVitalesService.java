@@ -1,13 +1,5 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package ec.gob.igm.rrhh.consultorio.service;
 
-/**
- *
- * @author GUERRA_KLEBER
- */
 
 import ec.gob.igm.rrhh.consultorio.domain.model.SignosVitales;
 import jakarta.ejb.Stateless;
@@ -31,11 +23,6 @@ public class SignosVitalesService implements Serializable {
         }
     }
 
-    /**
-     * Guarda o actualiza un registro de signos vitales.
-     * - Si idSignos es null -> persist
-     * - Si idSignos no es null -> merge
-     */
     public SignosVitales guardar(SignosVitales signos) {
         assertEm();
 
@@ -54,9 +41,6 @@ public class SignosVitalesService implements Serializable {
         return merged;
     }
 
-    /**
-     * Buscar signos vitales por ID.
-     */
     public SignosVitales buscarPorId(Long id) {
         assertEm();
 
