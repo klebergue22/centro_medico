@@ -333,28 +333,28 @@ public class CentroMedicoCtrl implements Serializable {
     private String exfNarizTabique;
     private String exfNarizCornetes;
     private String exfNarizMucosas;
-    private String exfNarizSenos;           // Mapeará a exfNarizSenosParanasa
-    private String exfCuelloTiroides;       // Mapeará a exfCuelloTiroidesMasas
+    private String exfNarizSenos;
+    private String exfCuelloTiroides;
     private String exfCuelloMovilidad;
     private String exfToraxMamas;
     private String exfToraxPulmones;
     private String exfToraxCorazon;
-    private String exfToraxParrilla;         // Mapeará a exfToraxParrillaCostal
-    private String exfAbdomenVisceras;       // Mapeará a exfAbdVisceras
-    private String exfAbdomenPared;          // Mapeará a exfAbdParedAbdominal
-    private String exfColumnaFlexibilidad;   // Mapeará a exfColFlexibilidad
-    private String exfColumnaDesviacion;     // Mapeará a exfColDesviacion
-    private String exfColumnaDolor;          // Mapeará a exfColDolor
+    private String exfAbdomenVisceras;
+    private String exfAbdomenPared;
+    private String exfColumnaFlexibilidad;
+    private String exfColumnaDesviacion;
+    private String exfColumnaDolor;
+    private String exfToraxParrilla;
     private String exfPelvisPelvis;
     private String exfPelvisGenitales;
     private String exfExtVascular;
-    private String exfExtSup;                // Mapeará a exfExtMiembrosSup
-    private String exfExtInf;                // Mapeará a exfExtMiembrosInf
+    private String exfExtSup;
+    private String exfExtInf;
     private String exfNeuroFuerza;
     private String exfNeuroSensibilidad;
     private String exfNeuroMarcha;
     private String exfNeuroReflejos;
-    private String obsExamenFisico;          // Mapeará a obsExamenFisicoRegional o obsExamenFisicoReg
+    private String obsExamenFisico;
 
     @EJB
     private EmpleadoRhService empleadoRhService;
@@ -985,79 +985,82 @@ public class CentroMedicoCtrl implements Serializable {
      * guarda el step actual
      */
     public void guardarStepActual() {
-    LOG.info(">>> ENTRO A guardarStepActual, step=" + activeStep);
-    FacesContext ctx = FacesContext.getCurrentInstance();
+        LOG.info(">>> ENTRO A guardarStepActual, step=" + activeStep);
+        FacesContext ctx = FacesContext.getCurrentInstance();
 
-    try {
-        final String next = saveCurrentStepAndGetNext();
+        try {
+            final String next = saveCurrentStepAndGetNext();
 
-        if (ctx != null && !ctx.isValidationFailed() && next != null) {
-            activeStep = next;
+            if (ctx != null && !ctx.isValidationFailed() && next != null) {
+                activeStep = next;
 
-            // ✅ Aquí sí o sí: cada vez que llegas a Step4 regenera ambos PDFs
-            if ("step4".equals(next)) {
-                onEnterStep4AutoRegenerar();
+                // ✅ Aquí sí o sí: cada vez que llegas a Step4 regenera ambos PDFs
+                if ("step4".equals(next)) {
+                    onEnterStep4AutoRegenerar();
 
-                // ✅ refresca el wizard para que el <object> tome el nuevo token
-                PrimeFaces.current().ajax().update("@([id$=wdzFicha])");
+                    // ✅ refresca el wizard para que el <object> tome el nuevo token
+                    PrimeFaces.current().ajax().update("@([id$=wdzFicha])");
+                }
+            }
+
+        } catch (RuntimeException ex) {
+            handleUnexpected("guardarStepActual", ex);
+            if (ctx != null) {
+                ctx.validationFailed();
             }
         }
+    }
 
-    } catch (RuntimeException ex) {
-        handleUnexpected("guardarStepActual", ex);
-        if (ctx != null) {
-            ctx.validationFailed();
+    private void onEnterStep4AutoRegenerar() {
+        try {
+            if (this.ficha == null || this.ficha.getIdFicha() == null) {
+                return;
+            }
+
+            // ✅ fuerza render y evita “quedarse pegado”
+            this.fichaPdfListo = false;
+            this.certificadoListo = false;
+            this.pdfTokenFicha = null;
+            this.pdfTokenCertificado = null;
+
+            prepararVistaPreviaFicha();
+            prepararVistaPreviaCertificado();
+
+        } catch (Exception ex) {
+            LOG.warn("Auto-regeneración Step4 falló", ex);
         }
     }
-}
-private void onEnterStep4AutoRegenerar() {
-    try {
-        if (this.ficha == null || this.ficha.getIdFicha() == null) {
+
+    private void asegurarPersonaAuxPersistida() {
+
+        // 1) Solo aplica para ingreso manual
+        if (!permitirIngresoManual) {
             return;
         }
 
-        // ✅ fuerza render y evita “quedarse pegado”
-        this.fichaPdfListo = false;
-        this.certificadoListo = false;
-        this.pdfTokenFicha = null;
-        this.pdfTokenCertificado = null;
-
-        prepararVistaPreviaFicha();
-        prepararVistaPreviaCertificado();
-
-    } catch (Exception ex) {
-        LOG.warn("Auto-regeneración Step4 falló", ex);
-    }
-}
-private void asegurarPersonaAuxPersistida() {
-
-    // 1) Solo aplica para ingreso manual
-    if (!permitirIngresoManual) {
-        return;
-    }
-
-    // 2) Debe existir personaAux
-    if (personaAux == null) {
-        return;
-    }
-
-    // 3) Si ya está persistida, solo asegurar relación
-    if (personaAux.getIdPersonaAux() != null) {
-        if (ficha != null) {
-            ficha.setPersonaAux(personaAux);
+        // 2) Debe existir personaAux
+        if (personaAux == null) {
+            return;
         }
-        return;
+
+        // 3) Si ya está persistida, solo asegurar relación
+        if (personaAux.getIdPersonaAux() != null) {
+            if (ficha != null) {
+                ficha.setPersonaAux(personaAux);
+            }
+            return;
+        }
+
+        // 4) Persistir PersonaAux primero
+        PersonaAux saved = personaAuxService.guardar(personaAux);  // <-- tu service real
+
+        this.personaAux = saved;
+
+        if (ficha != null) {
+            ficha.setPersonaAux(saved);
+        }
     }
 
-    // 4) Persistir PersonaAux primero
-    PersonaAux saved = personaAuxService.guardar(personaAux);  // <-- tu service real
-
-    this.personaAux = saved;
-
-    if (ficha != null) {
-        ficha.setPersonaAux(saved);
-    }
-}
     private String saveCurrentStepAndGetNext() {
         if ("step1".equals(activeStep)) {
             guardarStep1();
@@ -1442,8 +1445,6 @@ private void asegurarPersonaAuxPersistida() {
 
         saveDraftOccupationalRecord(now, user);
 
-
-
         auditStep1(savedSv);
     }
 
@@ -1544,90 +1545,90 @@ private void asegurarPersonaAuxPersistida() {
 
     private void mapStep1ToOccupationalRecord(Date now, String user, String patientId) {
 
-    ficha.setFechaEvaluacion(fechaAtencion);
-    ficha.setTipoEvaluacion(tipoEval);
+        ficha.setFechaEvaluacion(fechaAtencion);
+        ficha.setTipoEvaluacion(tipoEval);
 
-    ficha.setGinecoExamen1(ginecoExamen1);
-    ficha.setGinecoTiempo1(ginecoTiempo1);
-    ficha.setGinecoResultado1(ginecoResultado1);
-    ficha.setGinecoExamen2(ginecoExamen2);
-    ficha.setGinecoTiempo2(ginecoTiempo2);
-    ficha.setGinecoResultado2(ginecoResultado2);
-    ficha.setGinecoObservacion(ginecoObservacion);
+        ficha.setGinecoExamen1(ginecoExamen1);
+        ficha.setGinecoTiempo1(ginecoTiempo1);
+        ficha.setGinecoResultado1(ginecoResultado1);
+        ficha.setGinecoExamen2(ginecoExamen2);
+        ficha.setGinecoTiempo2(ginecoTiempo2);
+        ficha.setGinecoResultado2(ginecoResultado2);
+        ficha.setGinecoObservacion(ginecoObservacion);
 
-    ficha.setApEmbarazada(sn(apEmbarazada));
-    ficha.setApDiscapacidad(sn(apDiscapacidad));
-    ficha.setApCatastrofica(sn(apCatastrofica));
-    ficha.setApLactancia(sn(apLactancia));
-    ficha.setApAdultoMayor(sn(apAdultoMayor));
+        ficha.setApEmbarazada(sn(apEmbarazada));
+        ficha.setApDiscapacidad(sn(apDiscapacidad));
+        ficha.setApCatastrofica(sn(apCatastrofica));
+        ficha.setApLactancia(sn(apLactancia));
+        ficha.setApAdultoMayor(sn(apAdultoMayor));
 
-    ficha.setAntClinicoQuir(antClinicoQuirurgico);
-    ficha.setAntFamiliares(antFamiliares);
-    ficha.setCondicionEspecial(condicionEspecial);
+        ficha.setAntClinicoQuir(antClinicoQuirurgico);
+        ficha.setAntFamiliares(antFamiliares);
+        ficha.setCondicionEspecial(condicionEspecial);
 
-    ficha.setAutorizaTransfusion(autorizaTransfusion);
-    ficha.setTratHormonal(tratamientoHormonal);
-    ficha.setTratHormonalCual(tratamientoHormonalCual);
+        ficha.setAutorizaTransfusion(autorizaTransfusion);
+        ficha.setTratHormonal(tratamientoHormonal);
+        ficha.setTratHormonalCual(tratamientoHormonalCual);
 
-    ficha.setExamReproMasc(examenReproMasculino);
-    ficha.setTiempoReproMasc(tiempoReproMasculino);
+        ficha.setExamReproMasc(examenReproMasculino);
+        ficha.setTiempoReproMasc(tiempoReproMasculino);
 
-    ficha.setFum(fum);
-    ficha.setGestas(gestas);
-    ficha.setPartos(partos);
-    ficha.setCesareas(cesareas);
-    ficha.setAbortos(abortos);
-    ficha.setPlanificacion(planificacion);
-    ficha.setPlanificacionCual(planificacionCual);
+        ficha.setFum(fum);
+        ficha.setGestas(gestas);
+        ficha.setPartos(partos);
+        ficha.setCesareas(cesareas);
+        ficha.setAbortos(abortos);
+        ficha.setPlanificacion(planificacion);
+        ficha.setPlanificacionCual(planificacionCual);
 
-    // D. ENFERMEDAD O PROBLEMA ACTUAL (Step 1)
-    //ficha.setEnfermedadProbActual(trimToNull(enfermedadActual));
-    if (ficha.getEnfermedadProbActual() != null) {
-        ficha.setEnfermedadProbActual(ficha.getEnfermedadProbActual().trim());
+        // D. ENFERMEDAD O PROBLEMA ACTUAL (Step 1)
+        //ficha.setEnfermedadProbActual(trimToNull(enfermedadActual));
+        if (ficha.getEnfermedadProbActual() != null) {
+            ficha.setEnfermedadProbActual(ficha.getEnfermedadProbActual().trim());
+        }
+        // Discapacidad (solo si AP_DISCAPACIDAD = S)
+        if (apDiscapacidad) {
+            ficha.setDisTipo(trimToNull(discapTipo));
+            ficha.setDisDescripcion(trimToNull(discapDesc));
+            ficha.setDisPorcentaje(discapPorc);
+        } else {
+            ficha.setDisTipo(null);
+            ficha.setDisDescripcion(null);
+            ficha.setDisPorcentaje(null);
+        }
+
+        // Catastrófica / Huérfana / Rara (solo si AP_CATASTROFICA = S)
+        if (apCatastrofica) {
+            ficha.setCatDiagnostico(trimToNull(catasDiagnostico));
+            ficha.setCatCalificada(Boolean.TRUE.equals(catasCalificada) ? "S" : "N");
+        } else {
+            ficha.setCatDiagnostico(null);
+            // Si no aplica, evita NULL si tu columna es NOT NULL; si permite null, puedes dejar null
+            ficha.setCatCalificada(null);
+        }
+
+        // Panel N. Retiro (solo si tipo evaluación = RETIRO)
+        // ✅ FIX ORA-01407: N_RET_EVAL NO puede ser NULL -> usar "N" por defecto
+        String tipo = trimToNull(tipoEval);
+
+        if ("RETIRO".equalsIgnoreCase(tipo)) {
+
+            String realiza = trimToNull(nRealizaEvaluacion);
+            String relTrab = trimToNull(nRelacionTrabajo);
+
+            ficha.setnRetEval(realiza != null ? realiza : "N");
+            ficha.setnRetRelTrab(relTrab != null ? relTrab : "N");
+            ficha.setnRetObs(trimToNull(nObsRetiro));
+
+        } else {
+            // ⚠️ NO NULL porque la columna N_RET_EVAL es NOT NULL
+            ficha.setnRetEval("N");
+            ficha.setnRetRelTrab("N");  // recomendado para consistencia
+            ficha.setnRetObs(null);
+        }
+
+        mapConsumoVidaCondToFicha(ficha);
     }
-    // Discapacidad (solo si AP_DISCAPACIDAD = S)
-    if (apDiscapacidad) {
-        ficha.setDisTipo(trimToNull(discapTipo));
-        ficha.setDisDescripcion(trimToNull(discapDesc));
-        ficha.setDisPorcentaje(discapPorc);
-    } else {
-        ficha.setDisTipo(null);
-        ficha.setDisDescripcion(null);
-        ficha.setDisPorcentaje(null);
-    }
-
-    // Catastrófica / Huérfana / Rara (solo si AP_CATASTROFICA = S)
-    if (apCatastrofica) {
-        ficha.setCatDiagnostico(trimToNull(catasDiagnostico));
-        ficha.setCatCalificada(Boolean.TRUE.equals(catasCalificada) ? "S" : "N");
-    } else {
-        ficha.setCatDiagnostico(null);
-        // Si no aplica, evita NULL si tu columna es NOT NULL; si permite null, puedes dejar null
-        ficha.setCatCalificada(null);
-    }
-
-    // Panel N. Retiro (solo si tipo evaluación = RETIRO)
-    // ✅ FIX ORA-01407: N_RET_EVAL NO puede ser NULL -> usar "N" por defecto
-    String tipo = trimToNull(tipoEval);
-
-    if ("RETIRO".equalsIgnoreCase(tipo)) {
-
-        String realiza = trimToNull(nRealizaEvaluacion);
-        String relTrab = trimToNull(nRelacionTrabajo);
-
-        ficha.setnRetEval(realiza != null ? realiza : "N");
-        ficha.setnRetRelTrab(relTrab != null ? relTrab : "N");
-        ficha.setnRetObs(trimToNull(nObsRetiro));
-
-    } else {
-        // ⚠️ NO NULL porque la columna N_RET_EVAL es NOT NULL
-        ficha.setnRetEval("N");
-        ficha.setnRetRelTrab("N");  // recomendado para consistencia
-        ficha.setnRetObs(null);
-    }
-
-    mapConsumoVidaCondToFicha(ficha);
-}
 
     /**
      * Normaliza entradas tipo "SI/NO", "S/N", "true/false" a "S" o "N".
@@ -2401,79 +2402,80 @@ private void asegurarPersonaAuxPersistida() {
 
     // PDF - Ficha Ocupacional
     private void recargarFichaDesdeBdParaImpresion() {
-    if (this.ficha == null || this.ficha.getIdFicha() == null) {
-        return;
-    }
-
-    FichaOcupacional fresh = fichaService.reloadById(this.ficha.getIdFicha());
-    if (fresh != null) {
-        this.ficha = fresh;
-    }
-}
- public void prepararVistaPreviaFicha() {
-    FacesContext ctx = FacesContext.getCurrentInstance();
-
-    try {
-        if (!verificarFichaParaPdfFicha()) {
-            fichaPdfListo = false;
+        if (this.ficha == null || this.ficha.getIdFicha() == null) {
             return;
         }
 
-        // ✅ 0) MUY IMPORTANTE: si estás en ingreso manual, PersonaAux debe estar persistida
-        //    (esto evita: TransientObjectException: references an unsaved transient instance of PersonaAux)
-        asegurarPersonaAuxPersistida();
-
-        // ✅ 1) Persistir lo último en BD (merge/update)
-        ficha = fichaService.actualizar(ficha);
-
-        // ✅ 2) Recargar fresh desde BD (evita estado viejo / lazy)
-        recargarFichaDesdeBdParaImpresion();
-
-        // ✅ 3) Construir y renderizar
-        String html = construirHtmlFichaDesdePlantilla();
-        byte[] bytes = renderizarPdf(html);
-
-        // ✅ 4) Guardar token en sesión (tu lógica actual)
-        String token = "FICHA_" + UUID.randomUUID().toString().replace("-", "");
-        ExternalContext ec = ctx.getExternalContext();
-        HttpSession session = (HttpSession) ec.getSession(true);
-
-        @SuppressWarnings("unchecked")
-        Map<String, byte[]> pdfStore = (Map<String, byte[]>) session.getAttribute("PDF_STORE");
-        if (pdfStore == null) {
-            pdfStore = new HashMap<>();
-            session.setAttribute("PDF_STORE", pdfStore);
+        FichaOcupacional fresh = fichaService.reloadById(this.ficha.getIdFicha());
+        if (fresh != null) {
+            this.ficha = fresh;
         }
-        pdfStore.put(token, bytes);
-
-        this.pdfTokenFicha = token;
-        this.fichaPdfListo = true;
-
-        this.activeStep = "step4";
-        this.mostrarDlgCedula = false;
-
-        ctx.addMessage(null, new FacesMessage(
-                FacesMessage.SEVERITY_INFO,
-                "PDF Ficha listo",
-                "Se generó la ficha para vista previa y descarga."
-        ));
-
-        PrimeFaces.current().ajax().addCallbackParam("fichaListo", fichaPdfListo);
-        PrimeFaces.current().ajax().update(":msgs", "@([id$=wdzFicha])");
-
-    } catch (Exception ex) {
-        this.fichaPdfListo = false;
-        this.pdfTokenFicha = null;
-
-        LOG.error("Error generando PDF FICHA", ex);
-
-        ctx.addMessage(null, new FacesMessage(
-                FacesMessage.SEVERITY_ERROR,
-                "Error",
-                "No se pudo generar el PDF de la ficha"
-        ));
     }
-}
+
+    public void prepararVistaPreviaFicha() {
+        FacesContext ctx = FacesContext.getCurrentInstance();
+
+        try {
+            if (!verificarFichaParaPdfFicha()) {
+                fichaPdfListo = false;
+                return;
+            }
+
+            // ✅ 0) MUY IMPORTANTE: si estás en ingreso manual, PersonaAux debe estar persistida
+            //    (esto evita: TransientObjectException: references an unsaved transient instance of PersonaAux)
+            asegurarPersonaAuxPersistida();
+
+            // ✅ 1) Persistir lo último en BD (merge/update)
+            ficha = fichaService.actualizar(ficha);
+
+            // ✅ 2) Recargar fresh desde BD (evita estado viejo / lazy)
+            recargarFichaDesdeBdParaImpresion();
+
+            // ✅ 3) Construir y renderizar
+            String html = construirHtmlFichaDesdePlantilla();
+            byte[] bytes = renderizarPdf(html);
+
+            // ✅ 4) Guardar token en sesión (tu lógica actual)
+            String token = "FICHA_" + UUID.randomUUID().toString().replace("-", "");
+            ExternalContext ec = ctx.getExternalContext();
+            HttpSession session = (HttpSession) ec.getSession(true);
+
+            @SuppressWarnings("unchecked")
+            Map<String, byte[]> pdfStore = (Map<String, byte[]>) session.getAttribute("PDF_STORE");
+            if (pdfStore == null) {
+                pdfStore = new HashMap<>();
+                session.setAttribute("PDF_STORE", pdfStore);
+            }
+            pdfStore.put(token, bytes);
+
+            this.pdfTokenFicha = token;
+            this.fichaPdfListo = true;
+
+            this.activeStep = "step4";
+            this.mostrarDlgCedula = false;
+
+            ctx.addMessage(null, new FacesMessage(
+                    FacesMessage.SEVERITY_INFO,
+                    "PDF Ficha listo",
+                    "Se generó la ficha para vista previa y descarga."
+            ));
+
+            PrimeFaces.current().ajax().addCallbackParam("fichaListo", fichaPdfListo);
+            PrimeFaces.current().ajax().update(":msgs", "@([id$=wdzFicha])");
+
+        } catch (Exception ex) {
+            this.fichaPdfListo = false;
+            this.pdfTokenFicha = null;
+
+            LOG.error("Error generando PDF FICHA", ex);
+
+            ctx.addMessage(null, new FacesMessage(
+                    FacesMessage.SEVERITY_ERROR,
+                    "Error",
+                    "No se pudo generar el PDF de la ficha"
+            ));
+        }
+    }
 
     private void debugObjetosAntesDeImprimir() {
         LOG.info("[PRINT] ficha=" + (ficha != null));
@@ -4190,7 +4192,7 @@ private void asegurarPersonaAuxPersistida() {
                 return new ArrayList<>();
             }
 
-            List<String> out = new ArrayList<>(); 
+            List<String> out = new ArrayList<>();
 
             List<Cie10> lista = cie10Service.buscarJerarquiaPorTerm(q);
             LOG.debug("... [AC-K-COD] service.buscarJerarquiaPorTerm(q={}) size={}", q,
@@ -4467,37 +4469,37 @@ private void asegurarPersonaAuxPersistida() {
         }
     }
 
-private void tryLoadCargoFromVista(FacesContext ctx) {
+    private void tryLoadCargoFromVista(FacesContext ctx) {
 
-    // Usa la misma cédula que ya tienes en tu flujo
-    String ced = SnUtils.trimToNull(this.cedulaBusqueda); // ajusta si tu variable se llama distinto
-    if (ced == null) {
-        if (this.ficha != null) {
-            this.ficha.setCiiu(null);
-        }
-        return;
-    }
-
-    EmpleadoCargoDTO dto = empleadoRhService.buscarPorCedulaEnVista(ced);
-
-    // Si no hay cargo vigente -> deja en blanco y muestra mensaje
-    if (dto == null || SnUtils.trimToNull(dto.getCargoDescrip()) == null) {
-        if (this.ficha != null) {
-            this.ficha.setCiiu(null); // o "" si prefieres
+        // Usa la misma cédula que ya tienes en tu flujo
+        String ced = SnUtils.trimToNull(this.cedulaBusqueda); // ajusta si tu variable se llama distinto
+        if (ced == null) {
+            if (this.ficha != null) {
+                this.ficha.setCiiu(null);
+            }
+            return;
         }
 
-        addCedulaDiaLOGMessage(ctx,
-            FacesMessage.SEVERITY_WARN,
-            "Cargo",
-            "El empleado no registra cargo vigente en RRHH.");
-        return;
-    }
+        EmpleadoCargoDTO dto = empleadoRhService.buscarPorCedulaEnVista(ced);
 
-    // ✅ AQUÍ está el punto: se setea el campo que está en la pantalla
-    if (this.ficha != null) {
-        this.ficha.setCiiu(dto.getCargoDescrip()); // <-- se refleja en Puesto de Trabajo CIUO
+        // Si no hay cargo vigente -> deja en blanco y muestra mensaje
+        if (dto == null || SnUtils.trimToNull(dto.getCargoDescrip()) == null) {
+            if (this.ficha != null) {
+                this.ficha.setCiiu(null); // o "" si prefieres
+            }
+
+            addCedulaDiaLOGMessage(ctx,
+                    FacesMessage.SEVERITY_WARN,
+                    "Cargo",
+                    "El empleado no registra cargo vigente en RRHH.");
+            return;
+        }
+
+        // ✅ AQUÍ está el punto: se setea el campo que está en la pantalla
+        if (this.ficha != null) {
+            this.ficha.setCiiu(dto.getCargoDescrip()); // <-- se refleja en Puesto de Trabajo CIUO
+        }
     }
-}
     private static final String CEDULA_MSG_CLIENT_ID = "dlgCedulaForm:cedulaBusqueda";
 
     private static class CedulaSearchOutcome {
@@ -6900,16 +6902,15 @@ private void tryLoadCargoFromVista(FacesContext ctx) {
 
     /**
      * PARA MANEJAR LA GENERACION Y REGENERACION
+     *
      * @return
      */
-
-
     public void reloadFichaDesdeBd() {
-    if (this.ficha == null || this.ficha.getIdFicha() == null) {
-        return;
+        if (this.ficha == null || this.ficha.getIdFicha() == null) {
+            return;
+        }
+        this.ficha = fichaService.findById(this.ficha.getIdFicha());
     }
-    this.ficha = fichaService.findById(this.ficha.getIdFicha());
-}
 
     public String getDiscapTipo() {
         return discapTipo;
