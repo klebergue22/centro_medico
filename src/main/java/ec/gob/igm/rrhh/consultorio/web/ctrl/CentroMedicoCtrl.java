@@ -4236,7 +4236,7 @@ private void asegurarPersonaAuxPersistida() {
                     + (out.isEmpty() ? "" : (" first=[" + out.get(0) + "]")));
             return out;
 
-        } catch (RuntimeException e) {
+        } catch (Exception e) {
             LOG.error("!!! [AC-K-COD] ERROR {} : {}", e.getClass().getName(), e.getMessage(), e);
             return new ArrayList<>();
         }
@@ -4270,7 +4270,7 @@ private void asegurarPersonaAuxPersistida() {
                     + (out.isEmpty() ? "" : (" first=[" + out.get(0) + "]")));
             return out;
 
-        } catch (RuntimeException e) {
+        } catch (Exception e) {
             LOG.error("!!! [AC-K-DESC] ERROR {} : {}", e.getClass().getName(), e.getMessage(), e);
             return new ArrayList<String>();
         }
@@ -5844,7 +5844,7 @@ private void tryLoadCargoFromVista(FacesContext ctx) {
             return;
         }
 
-        String codigo = normalizeTypedValue(typed);
+        String codigo = typed != null ? typed.trim() : "";
         if (codigo.isEmpty()) {
             clearDiagnosticoRow(row);
             LOG.info("<<< [AC-K-COD] blur empty => cleared row");
@@ -5914,7 +5914,7 @@ private void tryLoadCargoFromVista(FacesContext ctx) {
             return;
         }
 
-        String desc = normalizeTypedValue(typed);
+        String desc = typed != null ? typed.trim() : "";
         if (desc.isEmpty()) {
             row.setDescripcion(null);
             row.setCie10(null);
@@ -5932,6 +5932,13 @@ private void tryLoadCargoFromVista(FacesContext ctx) {
 
         Cie10 cie = buscarMejorCie10PorDescripcion(desc);
 
+            if (candidatos != null && !candidatos.isEmpty()) {
+                cie = pickBestByDescripcion(candidatos, desc);
+            }
+        } catch (Exception e) {
+            LOG.info("!!! [AC-K-DESC] error: " + e.getMessage());
+        }
+
         LOG.debug("... [AC-K-DESC] pickBest => "
                 + (cie != null ? (cie.getCodigo() + " | " + cie.getDescripcion()) : "null"));
 
@@ -5944,48 +5951,6 @@ private void tryLoadCargoFromVista(FacesContext ctx) {
 
             row.setCie10(null);
             LOG.info("<<< [AC-K-DESC] blur AFTER NO-MATCH keep desc=[" + row.getDescripcion() + "]");
-        }
-    }
-
-    private String normalizeTypedValue(String typed) {
-        return typed != null ? typed.trim() : "";
-    }
-
-    private void clearDiagnosticoRow(ConsultaDiagnostico row) {
-        row.setCodigo(null);
-        row.setDescripcion(null);
-        row.setCie10(null);
-    }
-
-    private void setCodigoSinMatch(ConsultaDiagnostico row, String codigo) {
-        row.setCodigo(codigo);
-        row.setCie10(null);
-    }
-
-    private void applyCodigoLookupResult(ConsultaDiagnostico row, String codigoIngresado, Cie10 cie) {
-        if (cie != null) {
-            row.setCodigo(cie.getCodigo());
-            row.setDescripcion(cie.getDescripcion());
-            row.setCie10(cie);
-            LOG.info("<<< [AC-K-COD] blur AFTER MATCH codigo=[" + row.getCodigo() + "] desc=[" + row.getDescripcion() + "]");
-            return;
-        }
-
-        setCodigoSinMatch(row, codigoIngresado);
-        LOG.info("<<< [AC-K-COD] blur AFTER NO-MATCH keep codigo=[" + row.getCodigo() + "]");
-    }
-
-    private Cie10 buscarMejorCie10PorDescripcion(String descripcion) {
-        try {
-            List<Cie10> candidatos = cie10Service.buscarPorDescripcionLike(descripcion, 20);
-            LOG.info("... [AC-K-DESC] candidatos.size=" + (candidatos == null ? "null" : candidatos.size()));
-            if (candidatos == null || candidatos.isEmpty()) {
-                return null;
-            }
-            return pickBestByDescripcion(candidatos, descripcion);
-        } catch (RuntimeException e) {
-            LOG.error("!!! [AC-K-DESC] error buscando candidatos para descripcion=[{}]", descripcion, e);
-            return null;
         }
     }
 
