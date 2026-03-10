@@ -5562,6 +5562,24 @@ rep.put("condicionEspecial", safe(condicionEspecial));
 
         Cie10 cie = cie10Service.buscarPorCodigo(codigoUp);
 
+        if (cie == null) {
+            List<Cie10> sugerencias = cie10Service.buscarJerarquiaPorTerm(codigoUp);
+            if (sugerencias != null) {
+                String codigoNorm = codigoUp.replaceAll("[^A-Z0-9]", "");
+                for (Cie10 candidato : sugerencias) {
+                    if (candidato == null || candidato.getCodigo() == null) {
+                        continue;
+                    }
+
+                    String candidatoNorm = candidato.getCodigo().toUpperCase().replaceAll("[^A-Z0-9]", "");
+                    if (candidatoNorm.equals(codigoNorm)) {
+                        cie = candidato;
+                        break;
+                    }
+                }
+            }
+        }
+
         LOG.debug("... [AC-K-COD] buscarPorCodigo(" + codigoUp + ") => "
                 + (cie != null ? (cie.getCodigo() + " | " + cie.getDescripcion()) : "null"));
 
