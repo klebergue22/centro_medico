@@ -4214,7 +4214,7 @@ private void asegurarPersonaAuxPersistida() {
                 return new ArrayList<>();
             }
 
-            List<String> out = new ArrayList<>();
+            List<String> out = new ArrayList<>(); 
 
             List<Cie10> lista = cie10Service.buscarJerarquiaPorTerm(q);
             LOG.debug("... [AC-K-COD] service.buscarJerarquiaPorTerm(q={}) size={}", q,
