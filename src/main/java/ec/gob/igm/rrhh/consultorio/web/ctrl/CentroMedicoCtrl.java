@@ -2403,70 +2403,65 @@ private void asegurarPersonaAuxPersistida() {
 
     // PDF - Ficha Ocupacional
     private void recargarFichaDesdeBdParaImpresion() {
-    if (this.ficha == null || this.ficha.getIdFicha() == null) {
-        return;
-    }
-
-    FichaOcupacional fresh = fichaService.reloadById(this.ficha.getIdFicha());
-    if (fresh != null) {
-        this.ficha = fresh;
-    }
-}
- public void prepararVistaPreviaFicha() {
-    FacesContext ctx = FacesContext.getCurrentInstance();
-
-    try {
-        if (!verificarFichaParaPdfFicha()) {
-            fichaPdfListo = false;
+        if (this.ficha == null || this.ficha.getIdFicha() == null) {
             return;
         }
 
-        // ✅ 0) MUY IMPORTANTE: si estás en ingreso manual, PersonaAux debe estar persistida
-        //    (esto evita: TransientObjectException: references an unsaved transient instance of PersonaAux)
-        asegurarPersonaAuxPersistida();
-
-        // ✅ 1) Persistir lo último en BD (merge/update)
-        ficha = fichaService.actualizar(ficha);
-
-        // ✅ 2) Recargar fresh desde BD (evita estado viejo / lazy)
-        recargarFichaDesdeBdParaImpresion();
-
-        // ✅ 3) Construir y renderizar
-        String html = construirHtmlFichaDesdePlantilla();
-        byte[] bytes = renderizarPdf(html);
-
-        // ✅ 4) Guardar token en sesión
-        String token = "FICHA_" + UUID.randomUUID().toString().replace("-", "");
-        pdfSessionStore.put(ctx, token, bytes);
-
-        this.pdfTokenFicha = token;
-        this.fichaPdfListo = true;
-
-        this.activeStep = "step4";
-        this.mostrarDlgCedula = false;
-
-        ctx.addMessage(null, new FacesMessage(
-                FacesMessage.SEVERITY_INFO,
-                "PDF Ficha listo",
-                "Se generó la ficha para vista previa y descarga."
-        ));
-
-        PrimeFaces.current().ajax().addCallbackParam("fichaListo", fichaPdfListo);
-        PrimeFaces.current().ajax().update(":msgs", "@([id$=wdzFicha])");
-
-    } catch (Exception ex) {
-        this.fichaPdfListo = false;
-        this.pdfTokenFicha = null;
-
-        LOG.error("Error generando PDF FICHA", ex);
-
-        ctx.addMessage(null, new FacesMessage(
-                FacesMessage.SEVERITY_ERROR,
-                "Error",
-                "No se pudo generar el PDF de la ficha"
-        ));
+        FichaOcupacional fresh = fichaService.reloadById(this.ficha.getIdFicha());
+        if (fresh != null) {
+            this.ficha = fresh;
+        }
     }
-}
+
+    public void prepararVistaPreviaFicha() {
+        FacesContext ctx = FacesContext.getCurrentInstance();
+
+        try {
+            if (!verificarFichaParaPdfFicha()) {
+                fichaPdfListo = false;
+                return;
+            }
+
+            // En ingreso manual, PersonaAux debe estar persistida.
+            asegurarPersonaAuxPersistida();
+
+            // Persistir cambios y recargar estado desde base.
+            ficha = fichaService.actualizar(ficha);
+            recargarFichaDesdeBdParaImpresion();
+
+            String html = construirHtmlFichaDesdePlantilla();
+            byte[] bytes = renderizarPdf(html);
+
+            String token = "FICHA_" + UUID.randomUUID().toString().replace("-", "");
+            pdfSessionStore.put(ctx, token, bytes);
+
+            this.pdfTokenFicha = token;
+            this.fichaPdfListo = true;
+            this.activeStep = "step4";
+            this.mostrarDlgCedula = false;
+
+            ctx.addMessage(null, new FacesMessage(
+                    FacesMessage.SEVERITY_INFO,
+                    "PDF Ficha listo",
+                    "Se generó la ficha para vista previa y descarga."
+            ));
+
+            PrimeFaces.current().ajax().addCallbackParam("fichaListo", fichaPdfListo);
+            PrimeFaces.current().ajax().update(":msgs", "@([id$=wdzFicha])");
+
+        } catch (Exception ex) {
+            this.fichaPdfListo = false;
+            this.pdfTokenFicha = null;
+
+            LOG.error("Error generando PDF FICHA", ex);
+
+            ctx.addMessage(null, new FacesMessage(
+                    FacesMessage.SEVERITY_ERROR,
+                    "Error",
+                    "No se pudo generar el PDF de la ficha"
+            ));
+        }
+    }
 
     private void debugObjetosAntesDeImprimir() {
         LOG.info("[PRINT] ficha=" + (ficha != null));
