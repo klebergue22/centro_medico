@@ -425,10 +425,9 @@ public class CentroMedicoPdfFacade implements Serializable {
                 ensureDiagSize(6);
             }
 
-            System.out.println("GET? " + !FacesContext.getCurrentInstance().isPostback()
-                    + " activeStep=" + activeStep
-                    + " empleadoSel=" + (empleadoSel == null)
-                    + " mostrarDlgCedula=" + mostrarDlgCedula);
+            LOG.debug("GET? {} activeStep={} empleadoSel={} mostrarDlgCedula={}",
+                    !FacesContext.getCurrentInstance().isPostback(), activeStep,
+                    (empleadoSel == null), mostrarDlgCedula);
 
         } catch (RuntimeException e) {
             log.error("preRenderInit failed. activeStep={}, noPersonaSel={}, cedulaBusqueda={}",
@@ -964,7 +963,7 @@ public class CentroMedicoPdfFacade implements Serializable {
     }
 
     public void guardarStepActual() {
-        System.out.println(">>> ENTRO A guardarStepActual, step=" + activeStep);
+        LOG.info(">>> ENTRO A guardarStepActual, step={}", activeStep);
         FacesContext ctx = FacesContext.getCurrentInstance();
         try {
             final String next = saveCurrentStepAndGetNext();
@@ -2735,15 +2734,15 @@ public class CentroMedicoPdfFacade implements Serializable {
 
         // ✅ (si tu plantilla lo usa en ficha)
         // === LOG DE VALORES EN EL MAPA (solo para depuración) ===
-        System.out.println("=== buildReemplazosFicha - valores en el mapa ===");
-        System.out.println("gineco_examen1 = " + rep.get("gineco_examen1"));
-        System.out.println("gineco_tiempo1 = " + rep.get("gineco_tiempo1"));
-        System.out.println("gineco_resultado1 = " + rep.get("gineco_resultado1"));
-        System.out.println("gineco_examen2 = " + rep.get("gineco_examen2"));
-        System.out.println("gineco_tiempo2 = " + rep.get("gineco_tiempo2"));
-        System.out.println("gineco_resultado2 = " + rep.get("gineco_resultado2"));
-        System.out.println("gineco_observacion = " + rep.get("gineco_observacion"));
-        System.out.println("=================================================");
+        LOG.debug("=== buildReemplazosFicha - valores en el mapa ===");
+        LOG.debug("gineco_examen1 = {}", rep.get("gineco_examen1"));
+        LOG.debug("gineco_tiempo1 = {}", rep.get("gineco_tiempo1"));
+        LOG.debug("gineco_resultado1 = {}", rep.get("gineco_resultado1"));
+        LOG.debug("gineco_examen2 = {}", rep.get("gineco_examen2"));
+        LOG.debug("gineco_tiempo2 = {}", rep.get("gineco_tiempo2"));
+        LOG.debug("gineco_resultado2 = {}", rep.get("gineco_resultado2"));
+        LOG.debug("gineco_observacion = {}", rep.get("gineco_observacion"));
+        LOG.debug("=================================================");
 
         cargarActividadesLaboralesList(rep);
         cargarMedidasPreventivasList(rep);
@@ -3957,24 +3956,24 @@ rep.put("condicionEspecial", safe(condicionEspecial));
 
     public List<String> completarCie10FilaPorCodigo(String query) {
         try {
-            jakarta.faces.context.FacesContext fc = jakarta.faces.context.FacesContext.getCurrentInstance();
+            FacesContext fc = FacesContext.getCurrentInstance();
             String viewId = (fc != null && fc.getViewRoot() != null) ? fc.getViewRoot().getViewId() : "null";
-            System.out.println(">>> [AC-K-COD] complete ENTER query=[" + query + "] viewId=" + viewId);
+            LOG.info(">>> [AC-K-COD] complete ENTER query=[" + query + "] viewId=" + viewId);
 
             if (query == null) {
-                System.out.println("<<< [AC-K-COD] query=null => return empty");
+                LOG.info("<<< [AC-K-COD] query=null => return empty");
                 return new ArrayList<>();
             }
 
             String q = query.trim().toUpperCase().replaceAll("[^A-Z0-9]", "");
             if (q.isEmpty()) {
-                System.out.println("<<< [AC-K-COD] q empty after normalize => return empty");
+                LOG.info("<<< [AC-K-COD] q empty after normalize => return empty");
                 return new ArrayList<>();
             }
 
             List<Cie10> lista = cie10Service.buscarJerarquiaPorTerm(q);
-            System.out.println("... [AC-K-COD] service.buscarJerarquiaPorTerm(q=" + q + ") size="
-                    + (lista == null ? "null" : lista.size()));
+            LOG.debug("... [AC-K-COD] service.buscarJerarquiaPorTerm(q={}) size={}", q,
+                    (lista == null ? "null" : lista.size()));
 
             List<String> out = new ArrayList<>();
 
@@ -3990,32 +3989,31 @@ rep.put("condicionEspecial", safe(condicionEspecial));
                 }
             }
 
-            System.out.println("<<< [AC-K-COD] RETURN out.size=" + out.size()
+            LOG.info("<<< [AC-K-COD] RETURN out.size=" + out.size()
                     + (out.isEmpty() ? "" : (" first=[" + out.get(0) + "]")));
             return out;
 
-        } catch (Exception e) {
-            System.out.println("!!! [AC-K-COD] ERROR " + e.getClass().getName() + " : " + e.getMessage());
-            e.printStackTrace();
+        } catch (RuntimeException e) {
+            LOG.error("!!! [AC-K-COD] ERROR {} : {}", e.getClass().getName(), e.getMessage(), e);
             return new ArrayList<>();
         }
     }
 
     public List<String> completarCie10FilaPorDescripcion(String query) {
         try {
-            jakarta.faces.context.FacesContext fc = jakarta.faces.context.FacesContext.getCurrentInstance();
+            FacesContext fc = FacesContext.getCurrentInstance();
             String viewId = (fc != null && fc.getViewRoot() != null) ? fc.getViewRoot().getViewId() : "null";
-            System.out.println(">>> [AC-K-DESC] complete ENTER query=[" + query + "] viewId=" + viewId);
+            LOG.info(">>> [AC-K-DESC] complete ENTER query=[" + query + "] viewId=" + viewId);
 
             List<String> out = new ArrayList<String>();
             if (query == null || query.trim().isEmpty()) {
-                System.out.println("<<< [AC-K-DESC] query empty => return empty");
+                LOG.info("<<< [AC-K-DESC] query empty => return empty");
                 return out;
             }
 
             List<Cie10> lista = cie10Service.buscarPorDescripcionLike(query, 20);
-            System.out.println("... [AC-K-DESC] service.buscarPorDescripcionLike size="
-                    + (lista == null ? "null" : lista.size()));
+            LOG.debug("... [AC-K-DESC] service.buscarPorDescripcionLike size={}",
+                    (lista == null ? "null" : lista.size()));
 
             if (lista != null) {
                 for (Cie10 c : lista) {
@@ -4025,13 +4023,12 @@ rep.put("condicionEspecial", safe(condicionEspecial));
                 }
             }
 
-            System.out.println("<<< [AC-K-DESC] RETURN out.size=" + out.size()
+            LOG.info("<<< [AC-K-DESC] RETURN out.size=" + out.size()
                     + (out.isEmpty() ? "" : (" first=[" + out.get(0) + "]")));
             return out;
 
-        } catch (Exception e) {
-            System.out.println("!!! [AC-K-DESC] ERROR " + e.getClass().getName() + " : " + e.getMessage());
-            e.printStackTrace();
+        } catch (RuntimeException e) {
+            LOG.error("!!! [AC-K-DESC] ERROR {} : {}", e.getClass().getName(), e.getMessage(), e);
             return new ArrayList<String>();
         }
     }
@@ -5413,14 +5410,14 @@ rep.put("condicionEspecial", safe(condicionEspecial));
 
     private String getCompValueDebug(UIComponent comp) {
         if (comp == null) {
-            System.out.println("... [VAL] comp=null");
+            LOG.info("... [VAL] comp=null");
             return null;
         }
 
         String clientId;
         try {
             clientId = comp.getClientId(FacesContext.getCurrentInstance());
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             clientId = String.valueOf(comp.getId());
         }
 
@@ -5437,7 +5434,7 @@ rep.put("condicionEspecial", safe(condicionEspecial));
             value = in.getValue();
         }
 
-        System.out.println("... [VAL] compId=" + comp.getId()
+        LOG.debug("... [VAL] compId=" + comp.getId()
                 + " clientId=" + clientId
                 + " idxAttr=" + idxAttr
                 + " submitted=" + submitted
@@ -5458,7 +5455,7 @@ rep.put("condicionEspecial", safe(condicionEspecial));
 
     private Integer extraerIdx(UIComponent comp) {
         if (comp == null) {
-            System.out.println("... [IDX] extraerIdx comp=null");
+            LOG.info("... [IDX] extraerIdx comp=null");
             return null;
         }
         Object idxObj = comp.getAttributes().get("idx");
@@ -5466,11 +5463,11 @@ rep.put("condicionEspecial", safe(condicionEspecial));
         String clientId;
         try {
             clientId = comp.getClientId(FacesContext.getCurrentInstance());
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             clientId = String.valueOf(comp.getId());
         }
 
-        System.out.println("... [IDX] extraerIdx compId=" + comp.getId()
+        LOG.debug("... [IDX] extraerIdx compId=" + comp.getId()
                 + " clientId=" + clientId
                 + " idxAttr=" + idxObj);
 
@@ -5479,10 +5476,18 @@ rep.put("condicionEspecial", safe(condicionEspecial));
         }
         try {
             return Integer.parseInt(idxObj.toString());
-        } catch (Exception e) {
-            System.out.println("... [IDX] extraerIdx parse ERROR idxAttr=" + idxObj + " ex=" + e);
+        } catch (NumberFormatException e) {
+            LOG.info("... [IDX] extraerIdx parse ERROR idxAttr={} ex={}", idxObj, e.toString());
             return null;
         }
+    }
+
+    private ConsultaDiagnostico getDiagRow(Integer idx, String contexto) {
+        if (idx == null || listaDiag == null || idx < 0 || idx >= listaDiag.size()) {
+            LOG.info("<<< [{}] idx INVALID => {}", contexto, idx);
+            return null;
+        }
+        return listaDiag.get(idx);
     }
 
     public void onKCieCodigoSelect(SelectEvent<String> event) {
@@ -5490,18 +5495,16 @@ rep.put("condicionEspecial", safe(condicionEspecial));
         Integer idx = extraerIdx(comp);
         String selected = (event != null ? event.getObject() : null);
 
-        System.out.println(">>> [AC-K-COD] itemSelect idx=" + idx
+        LOG.info(">>> [AC-K-COD] itemSelect idx=" + idx
                 + " selected=[" + selected + "] clientId=" + (comp != null ? comp.getClientId() : "null"));
 
-        if (idx == null || listaDiag == null || idx < 0 || idx >= listaDiag.size()) {
-            System.out.println("<<< [AC-K-COD] itemSelect idx INVALID");
+        ConsultaDiagnostico row = getDiagRow(idx, "AC-K-COD itemSelect");
+        if (row == null) {
             return;
         }
 
-        ConsultaDiagnostico row = listaDiag.get(idx);
-
         if (selected == null || selected.trim().isEmpty()) {
-            System.out.println("<<< [AC-K-COD] itemSelect empty selection => no-op");
+            LOG.info("<<< [AC-K-COD] itemSelect empty selection => no-op");
             return;
         }
 
@@ -5509,7 +5512,7 @@ rep.put("condicionEspecial", safe(condicionEspecial));
         row.setCodigo(codigo);
 
         Cie10 cie = cie10Service.buscarPorCodigo(codigo);
-        System.out.println("... [AC-K-COD] itemSelect buscarPorCodigo(" + codigo + ") => " + (cie != null ? cie.getCodigo() : "null"));
+        LOG.info("... [AC-K-COD] itemSelect buscarPorCodigo(" + codigo + ") => " + (cie != null ? cie.getCodigo() : "null"));
 
         if (cie != null) {
             row.setCodigo(cie.getCodigo());
@@ -5520,7 +5523,7 @@ rep.put("condicionEspecial", safe(condicionEspecial));
             row.setCie10(null);
         }
 
-        System.out.println("<<< [AC-K-COD] itemSelect AFTER codigo=[" + row.getCodigo() + "] desc=[" + row.getDescripcion() + "]");
+        LOG.info("<<< [AC-K-COD] itemSelect AFTER codigo=[" + row.getCodigo() + "] desc=[" + row.getDescripcion() + "]");
     }
 
     public void onKCieCodigoBlur(AjaxBehaviorEvent event) {
@@ -5530,14 +5533,12 @@ rep.put("condicionEspecial", safe(condicionEspecial));
         String clientId = safeClientId(comp);
         String typed = getAutoCompleteTypedRobusto(comp);
 
-        System.out.println(">>> [AC-K-COD] blur idx=" + idx + " clientId=" + clientId + " typed=[" + typed + "]");
+        LOG.info(">>> [AC-K-COD] blur idx=" + idx + " clientId=" + clientId + " typed=[" + typed + "]");
 
-        if (idx == null || listaDiag == null || idx < 0 || idx >= listaDiag.size()) {
-            System.out.println("<<< [AC-K-COD] blur idx INVALID => " + idx);
+        ConsultaDiagnostico row = getDiagRow(idx, "AC-K-COD blur");
+        if (row == null) {
             return;
         }
-
-        ConsultaDiagnostico row = listaDiag.get(idx);
 
         String codigo = typed != null ? typed.trim() : "";
         if (codigo.isEmpty()) {
@@ -5545,7 +5546,7 @@ rep.put("condicionEspecial", safe(condicionEspecial));
             row.setCodigo(null);
             row.setDescripcion(null);
             row.setCie10(null);
-            System.out.println("<<< [AC-K-COD] blur empty => cleared row");
+            LOG.info("<<< [AC-K-COD] blur empty => cleared row");
             return;
         }
 
@@ -5555,25 +5556,25 @@ rep.put("condicionEspecial", safe(condicionEspecial));
             row.setCodigo(codigoUp);
             row.setCie10(null);
 
-            System.out.println("<<< [AC-K-COD] blur partial [" + codigoUp + "] => keep, no exact lookup");
+            LOG.info("<<< [AC-K-COD] blur partial [" + codigoUp + "] => keep, no exact lookup");
             return;
         }
 
         Cie10 cie = cie10Service.buscarPorCodigo(codigoUp);
 
-        System.out.println("... [AC-K-COD] buscarPorCodigo(" + codigoUp + ") => "
+        LOG.debug("... [AC-K-COD] buscarPorCodigo(" + codigoUp + ") => "
                 + (cie != null ? (cie.getCodigo() + " | " + cie.getDescripcion()) : "null"));
 
         if (cie != null) {
             row.setCodigo(cie.getCodigo());
             row.setDescripcion(cie.getDescripcion());
             row.setCie10(cie);
-            System.out.println("<<< [AC-K-COD] blur AFTER MATCH codigo=[" + row.getCodigo() + "] desc=[" + row.getDescripcion() + "]");
+            LOG.info("<<< [AC-K-COD] blur AFTER MATCH codigo=[" + row.getCodigo() + "] desc=[" + row.getDescripcion() + "]");
         } else {
 
             row.setCodigo(codigoUp);
             row.setCie10(null);
-            System.out.println("<<< [AC-K-COD] blur AFTER NO-MATCH keep codigo=[" + row.getCodigo() + "]");
+            LOG.info("<<< [AC-K-COD] blur AFTER NO-MATCH keep codigo=[" + row.getCodigo() + "]");
         }
     }
 
@@ -5582,19 +5583,17 @@ rep.put("condicionEspecial", safe(condicionEspecial));
         UIComponent comp = event.getComponent();
         Integer idx = extraerIdx(comp);
 
-        System.out.println(">>> [AC-K-DESC] itemSelect ENTER desc=[" + descripcion + "] idx=" + idx);
+        LOG.info(">>> [AC-K-DESC] itemSelect ENTER desc=[" + descripcion + "] idx=" + idx);
 
-        if (idx == null || idx < 0 || idx >= listaDiag.size()) {
-            System.out.println("<<< [AC-K-DESC] itemSelect idx INVALID => " + idx);
+        ConsultaDiagnostico row = getDiagRow(idx, "AC-K-DESC itemSelect");
+        if (row == null) {
             return;
         }
-
-        ConsultaDiagnostico row = listaDiag.get(idx);
         row.setDescripcion(descripcion);
 
         if (descripcion != null && !descripcion.trim().isEmpty()) {
             Cie10 cie = cie10Service.buscarPrimeroPorDescripcion(descripcion.trim());
-            System.out.println("... [AC-K-DESC] buscarPrimeroPorDescripcion => " + (cie != null ? cie.getCodigo() : "null"));
+            LOG.info("... [AC-K-DESC] buscarPrimeroPorDescripcion => " + (cie != null ? cie.getCodigo() : "null"));
 
             if (cie != null) {
                 row.setCodigo(cie.getCodigo());
@@ -5605,7 +5604,7 @@ rep.put("condicionEspecial", safe(condicionEspecial));
             }
         }
 
-        System.out.println("<<< [AC-K-DESC] itemSelect row AFTER idx=" + idx
+        LOG.info("<<< [AC-K-DESC] itemSelect row AFTER idx=" + idx
                 + " codigo=[" + row.getCodigo() + "] desc=[" + row.getDescripcion() + "]");
 
         syncCie10PrincipalFromK();
@@ -5618,20 +5617,18 @@ rep.put("condicionEspecial", safe(condicionEspecial));
         String clientId = safeClientId(comp);
         String typed = getAutoCompleteTypedRobusto(comp);
 
-        System.out.println(">>> [AC-K-DESC] blur idx=" + idx + " clientId=" + clientId + " typed=[" + typed + "]");
+        LOG.info(">>> [AC-K-DESC] blur idx=" + idx + " clientId=" + clientId + " typed=[" + typed + "]");
 
-        if (idx == null || listaDiag == null || idx < 0 || idx >= listaDiag.size()) {
-            System.out.println("<<< [AC-K-DESC] blur idx INVALID => " + idx);
+        ConsultaDiagnostico row = getDiagRow(idx, "AC-K-DESC blur");
+        if (row == null) {
             return;
         }
-
-        ConsultaDiagnostico row = listaDiag.get(idx);
 
         String desc = typed != null ? typed.trim() : "";
         if (desc.isEmpty()) {
             row.setDescripcion(null);
             row.setCie10(null);
-            System.out.println("<<< [AC-K-DESC] blur empty => cleared descripcion");
+            LOG.info("<<< [AC-K-DESC] blur empty => cleared descripcion");
             return;
         }
 
@@ -5639,7 +5636,7 @@ rep.put("condicionEspecial", safe(condicionEspecial));
 
         if (desc.length() < 4) {
             row.setCie10(null);
-            System.out.println("<<< [AC-K-DESC] blur partial => keep desc only");
+            LOG.info("<<< [AC-K-DESC] blur partial => keep desc only");
             return;
         }
 
@@ -5647,43 +5644,28 @@ rep.put("condicionEspecial", safe(condicionEspecial));
         try {
 
             List<Cie10> candidatos = cie10Service.buscarPorDescripcionLike(desc, 20);
-            System.out.println("... [AC-K-DESC] candidatos.size=" + (candidatos == null ? "null" : candidatos.size()));
+            LOG.info("... [AC-K-DESC] candidatos.size=" + (candidatos == null ? "null" : candidatos.size()));
 
             if (candidatos != null && !candidatos.isEmpty()) {
                 cie = pickBestByDescripcion(candidatos, desc);
             }
-        } catch (Exception e) {
-            System.out.println("!!! [AC-K-DESC] error: " + e.getMessage());
+        } catch (RuntimeException e) {
+            LOG.error("!!! [AC-K-DESC] error: {}", e.getMessage(), e);
         }
 
-        System.out.println("... [AC-K-DESC] pickBest => "
+        LOG.debug("... [AC-K-DESC] pickBest => "
                 + (cie != null ? (cie.getCodigo() + " | " + cie.getDescripcion()) : "null"));
 
         if (cie != null) {
             row.setCodigo(cie.getCodigo());
             row.setDescripcion(cie.getDescripcion());
             row.setCie10(cie);
-            System.out.println("<<< [AC-K-DESC] blur AFTER MATCH codigo=[" + row.getCodigo() + "] desc=[" + row.getDescripcion() + "]");
+            LOG.info("<<< [AC-K-DESC] blur AFTER MATCH codigo=[" + row.getCodigo() + "] desc=[" + row.getDescripcion() + "]");
         } else {
 
             row.setCie10(null);
-            System.out.println("<<< [AC-K-DESC] blur AFTER NO-MATCH keep desc=[" + row.getDescripcion() + "]");
+            LOG.info("<<< [AC-K-DESC] blur AFTER NO-MATCH keep desc=[" + row.getDescripcion() + "]");
         }
-    }
-
-    private String getAutoCompleteTyped(UIComponent comp) {
-        if (comp == null) {
-            return null;
-        }
-
-        FacesContext fc = FacesContext.getCurrentInstance();
-        String clientId = comp.getClientId(fc);
-
-        String key = clientId + "_input";
-        String typed = fc.getExternalContext().getRequestParameterMap().get(key);
-
-        System.out.println("... [AC-TYPED] clientId=" + clientId + " param=" + key + " typed=[" + typed + "]");
-        return typed;
     }
 
     public void onKTipoChange(AjaxBehaviorEvent event) {
@@ -5692,15 +5674,14 @@ rep.put("condicionEspecial", safe(condicionEspecial));
 
         String clientId = safeClientId(comp);
 
-        System.out.println(">>> [K-TIPO] change ENTER idx=" + idx + " clientId=" + clientId);
+        LOG.info(">>> [K-TIPO] change ENTER idx=" + idx + " clientId=" + clientId);
 
-        if (idx == null || idx < 0 || listaDiag == null || idx >= listaDiag.size()) {
-            System.out.println("<<< [K-TIPO] change idx INVALID => " + idx);
+        ConsultaDiagnostico row = getDiagRow(idx, "K-TIPO change");
+        if (row == null) {
             return;
         }
 
-        ConsultaDiagnostico row = listaDiag.get(idx);
-        System.out.println("<<< [K-TIPO] AFTER idx=" + idx
+        LOG.info("<<< [K-TIPO] AFTER idx=" + idx
                 + " codigo=[" + row.getCodigo() + "]"
                 + " desc=[" + row.getDescripcion() + "]"
                 + " tipo=[" + row.getTipoDiag() + "]");
@@ -5726,17 +5707,17 @@ rep.put("condicionEspecial", safe(condicionEspecial));
             for (String k : keys) {
                 String v = params.get(k);
                 if (v != null) {
-                    System.out.println("... [REQ] AC typed key=" + k + " => [" + v + "]");
+                    LOG.info("... [REQ] AC typed key=" + k + " => [" + v + "]");
                     return v;
                 }
             }
 
-            System.out.println("!!! [REQ] AC typed NOT FOUND for base=" + base
+            LOG.warn("!!! [REQ] AC typed NOT FOUND for base=" + base
                     + " (tried _input, base, _hinput, _query)");
             return null;
 
-        } catch (Exception e) {
-            System.out.println("!!! [REQ] getAutoCompleteTypedRobusto ERROR: " + e.getMessage());
+        } catch (RuntimeException e) {
+            LOG.error("!!! [REQ] getAutoCompleteTypedRobusto ERROR: {}", e.getMessage(), e);
             return null;
         }
     }
@@ -5745,7 +5726,7 @@ rep.put("condicionEspecial", safe(condicionEspecial));
         try {
             FacesContext fc = FacesContext.getCurrentInstance();
             return (fc != null && comp != null) ? comp.getClientId(fc) : "null";
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             return "err:" + e.getMessage();
         }
     }
