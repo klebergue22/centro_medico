@@ -70,6 +70,7 @@ import ec.gob.igm.rrhh.consultorio.service.AuditoriaConsultorioService;
 import ec.gob.igm.rrhh.consultorio.service.Cie10Service;
 import ec.gob.igm.rrhh.consultorio.service.EmpleadoRhService;
 import ec.gob.igm.rrhh.consultorio.service.EmpleadoService;
+import ec.gob.igm.rrhh.consultorio.service.ExamenFisicoRegionalService;
 import ec.gob.igm.rrhh.consultorio.service.FichaActLaboralService;
 import ec.gob.igm.rrhh.consultorio.service.FichaDiagnosticoService;
 import ec.gob.igm.rrhh.consultorio.service.FichaExamenCompService;
@@ -386,6 +387,8 @@ public class CentroMedicoCtrl implements Serializable {
 
     @EJB
     private transient FichaExamenCompService fichaExamenCompService;
+    @EJB
+    private transient ExamenFisicoRegionalService examenFisicoRegionalService;
 
     // =====================================================
     // JSF Lifecycle / Inicialización
@@ -2043,45 +2046,8 @@ private void asegurarPersonaAuxPersistida() {
         // Enfermedad actual (viene directamente del formulario en ficha.enfermedadProbActual)
         ficha.setEnfermedadProbActual(trimToNull(ficha.getEnfermedadProbActual()));
 
-// Examen físico
-        ficha.setExfPielCicatrices(preferSn(ficha.getExfPielCicatrices(), ficha, "exfPielCicatricesBool"));
-        ficha.setExfOjosParpados(preferSn(ficha.getExfOjosParpados(), ficha, "exfOjosParpadosBool"));
-        ficha.setExfOjosConjuntivas(preferSn(ficha.getExfOjosConjuntivas(), ficha, "exfOjosConjuntivasBool"));
-        ficha.setExfOjosPupilas(preferSn(ficha.getExfOjosPupilas(), ficha, "exfOjosPupilasBool"));
-        ficha.setExfOjosCornea(preferSn(ficha.getExfOjosCornea(), ficha, "exfOjosCorneaBool"));
-        ficha.setExfOjosMotilidad(preferSn(ficha.getExfOjosMotilidad(), ficha, "exfOjosMotilidadBool"));
-        ficha.setExfOidoConducto(preferSn(ficha.getExfOidoConducto(), ficha, "exfOidoConductoBool"));
-        ficha.setExfOidoPabellon(preferSn(ficha.getExfOidoPabellon(), ficha, "exfOidoPabellonBool"));
-        ficha.setExfOidoTimpanos(preferSn(ficha.getExfOidoTimpanos(), ficha, "exfOidoTimpanosBool"));
-        ficha.setExfOroLabios(preferSn(ficha.getExfOroLabios(), ficha, "exfOroLabiosBool"));
-        ficha.setExfOroLengua(preferSn(ficha.getExfOroLengua(), ficha, "exfOroLenguaBool"));
-        ficha.setExfOroFaringe(preferSn(ficha.getExfOroFaringe(), ficha, "exfOroFaringeBool"));
-        ficha.setExfOroAmigdalas(preferSn(ficha.getExfOroAmigdalas(), ficha, "exfOroAmigdalasBool"));
-        ficha.setExfOroDentadura(preferSn(ficha.getExfOroDentadura(), ficha, "exfOroDentaduraBool"));
-        ficha.setExfNarizTabique(preferSn(ficha.getExfNarizTabique(), ficha, "exfNarizTabiqueBool"));
-        ficha.setExfNarizCornetes(preferSn(ficha.getExfNarizCornetes(), ficha, "exfNarizCornetesBool"));
-        ficha.setExfNarizMucosas(preferSn(ficha.getExfNarizMucosas(), ficha, "exfNarizMucosasBool"));
-        ficha.setExfNarizSenosParanasa(preferSn(ficha.getExfNarizSenosParanasa(), ficha, "exfNarizSenosParanasaBool"));
-        ficha.setExfCuelloTiroidesMasas(preferSn(ficha.getExfCuelloTiroidesMasas(), ficha, "exfCuelloTiroidesMasasBool"));
-        ficha.setExfCuelloMovilidad(preferSn(ficha.getExfCuelloMovilidad(), ficha, "exfCuelloMovilidadBool"));
-        ficha.setExfToraxMamas(preferSn(ficha.getExfToraxMamas(), ficha, "exfToraxMamasBool"));
-        ficha.setExfToraxPulmones(preferSn(ficha.getExfToraxPulmones(), ficha, "exfToraxPulmonesBool"));
-        ficha.setExfToraxCorazon(preferSn(ficha.getExfToraxCorazon(), ficha, "exfToraxCorazonBool"));
-        ficha.setExfToraxParrillaCostal(preferSn(ficha.getExfToraxParrillaCostal(), ficha, "exfToraxParrillaCostalBool"));
-        ficha.setExfAbdVisceras(preferSn(ficha.getExfAbdVisceras(), ficha, "exfAbdViscerasBool"));
-        ficha.setExfAbdParedAbdominal(preferSn(ficha.getExfAbdParedAbdominal(), ficha, "exfAbdParedAbdominalBool"));
-        ficha.setExfColFlexibilidad(preferSn(ficha.getExfColFlexibilidad(), ficha, "exfColFlexibilidadBool"));
-        ficha.setExfColDesviacion(preferSn(ficha.getExfColDesviacion(), ficha, "exfColDesviacionBool"));
-        ficha.setExfColDolor(preferSn(ficha.getExfColDolor(), ficha, "exfColDolorBool"));
-        ficha.setExfPelvisPelvis(preferSn(ficha.getExfPelvisPelvis(), ficha, "exfPelvisPelvisBool"));
-        ficha.setExfPelvisGenitales(preferSn(ficha.getExfPelvisGenitales(), ficha, "exfPelvisGenitalesBool"));
-        ficha.setExfExtVascular(preferSn(ficha.getExfExtVascular(), ficha, "exfExtVascularBool"));
-        ficha.setExfExtMiembrosSup(preferSn(ficha.getExfExtMiembrosSup(), ficha, "exfExtMiembrosSupBool"));
-        ficha.setExfExtMiembrosInf(preferSn(ficha.getExfExtMiembrosInf(), ficha, "exfExtMiembrosInfBool"));
-        ficha.setExfNeuroFuerza(preferSn(ficha.getExfNeuroFuerza(), ficha, "exfNeuroFuerzaBool"));
-        ficha.setExfNeuroSensibilidad(preferSn(ficha.getExfNeuroSensibilidad(), ficha, "exfNeuroSensibilidadBool"));
-        ficha.setExfNeuroMarcha(preferSn(ficha.getExfNeuroMarcha(), ficha, "exfNeuroMarchaBool"));
-        ficha.setExfNeuroReflejos(preferSn(ficha.getExfNeuroReflejos(), ficha, "exfNeuroReflejosBool"));
+// Examen físico regional (SOLID: lógica centralizada en servicio)
+        examenFisicoRegionalService.aplicarExamenFisicoRegional(ficha);
         // OBS_EXAMEN_FISICO_REG: no sobreescribir con null si la UI está enlazada directo a ficha.obsExamenFisicoReg
         String _obsExf = trimToNull(obsExamenFisico);
         if (_obsExf == null) {
@@ -2093,8 +2059,7 @@ private void asegurarPersonaAuxPersistida() {
         ficha.setDetalleObs(detalleObservaciones);
         ficha.setRecomendaciones(recomendaciones);
 
-        ficha.setnRetEval(preferSn(ficha.getnRetEval(), ficha, "nRetEvalBool"));
-        ficha.setnRetRelTrab(preferSn(ficha.getnRetRelTrab(), ficha, "nRetRelTrabBool"));
+        examenFisicoRegionalService.aplicarRetiro(ficha);
         ficha.setnRetObs(nObsRetiro);
 
         ficha.setMedicoNombre(medicoNombre);
@@ -6801,35 +6766,6 @@ private void tryLoadCargoFromVista(FacesContext ctx) {
 
     public void sethEnfermedad(String[] hEnfermedad) {
         this.hEnfermedad = hEnfermedad;
-    }
-
-    // ===========================
-    // Helpers: S/N desde boolean *Bool (reflexión) para no depender del getter en compile-time
-    // ===========================
-    private String snFromBoolProp(Object bean, String prop) {
-        if (bean == null || prop == null) {
-            return null;
-        }
-        try {
-            java.beans.PropertyDescriptor pd = new java.beans.PropertyDescriptor(prop, bean.getClass());
-            Object v = pd.getReadMethod().invoke(bean);
-            return Boolean.TRUE.equals(v) ? "S" : "N";
-        } catch (Exception ignore) {
-            return null; // si no existe la propiedad, no rompe
-        }
-    }
-
-    private String preferSn(String currentSn, Object bean, String boolProp) {
-        // Si ya viene "S" o "N" en el campo real, respétalo. Caso contrario intenta leer del *Bool.
-        if ("S".equalsIgnoreCase(currentSn) || "N".equalsIgnoreCase(currentSn)) {
-            return currentSn.toUpperCase();
-        }
-        String fromBool = snFromBoolProp(bean, boolProp);
-        return fromBool != null ? fromBool : "N";
-    }
-
-    private String markXFromSn(String sn) {
-        return "S".equalsIgnoreCase(sn) || "X".equalsIgnoreCase(sn) ? "X" : "";
     }
 
     void cargarAtencionPrioritaria(Map<String, String> rep) {
