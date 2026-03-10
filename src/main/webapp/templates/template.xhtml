@@ -4,6 +4,7 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:f="http://xmlns.jcp.org/jsf/core">
+
 <f:view locale="es">
     <f:metadata>
         <ui:insert name="metadata"/>
@@ -11,11 +12,15 @@
 
     <h:head>
         <title><ui:insert name="title">RRHH</ui:insert></title>
+
+        <!-- Primero se inserta lo que cada página agregue al head (theme, primeflex, etc.) -->
+        <ui:insert name="head"/>
+
+        <!-- Luego tu CSS institucional para que sobrescriba al theme -->
         <h:outputStylesheet library="css" name="igm.css"/>
 
         <link rel="icon" type="image/png"
               href="#{request.contextPath}/resources/images/LOGO_IGM_FULL_COLOR.png" />
-        <ui:insert name="head"/>
     </h:head>
 
     <h:body>
@@ -43,12 +48,12 @@
                 <p:menubar styleClass="navbar-militar">
                     <p:menuitem value="Inicio" icon="pi pi-home" outcome="/index.xhtml"/>
                     <p:submenu label="Módulos" icon="pi pi-sitemap">
-                        <p:menuitem value="Empleados" icon="pi pi-users" outcome="/pages/empleados.xhtml"/>
-                        <p:menuitem value="Contrataciones" icon="pi pi-briefcase" outcome="/pages/contrataciones.xhtml"/>
+                        <p:menuitem value="Citas" icon="pi pi-users" outcome="/pages/empleados.xhtml"/>
+                        <p:menuitem value="Recetas" icon="pi pi-briefcase" outcome="/pages/contrataciones.xhtml"/>
                         <p:menuitem value="Salud" icon="pi pi-plus-circle" outcome="/pages/centroMedico.xhtml"/>
                     </p:submenu>
                 </p:menubar>
-                <span class="brand">RRHH · Demo</span>
+                <span class="brand">RRHH · Salud</span>
             </div>
 
             <div class="page-container">
@@ -66,7 +71,7 @@
             <ui:insert name="footer-scripts"/>
         </h:form>
 
-        <!-- ✅ AQUÍ VAN LOS DIALOGS (FUERA DEL FORM PRINCIPAL) -->
+        <!-- Dialogs fuera del form principal -->
         <ui:insert name="dialogs"/>
 
     </h:body>

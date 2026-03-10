@@ -4,6 +4,7 @@ import ec.gob.igm.rrhh.consultorio.domain.model.FichaOcupacional;
 import jakarta.ejb.Stateless;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.TypedQuery;
 
 @Stateless
 
@@ -28,14 +29,16 @@ public class FichaOcupacionalService {
     }
 
     /**
-     * Oracle trata "" (cadena vacía) como NULL.
-     * Varias columnas EXF_* están definidas NOT NULL en la tabla, por lo que si
-     * la UI no marca nada o llega vacío, el merge/persist falla con ORA-01407.
+     * Oracle trata "" (cadena vacía) como NULL. Varias columnas EXF_* están
+     * definidas NOT NULL en la tabla, por lo que si la UI no marca nada o llega
+     * vacío, el merge/persist falla con ORA-01407.
      *
      * Por convención, guardamos "N" cuando no hay selección.
      */
     private void normalizarNoNulos(FichaOcupacional f) {
-        if (f == null) return;
+        if (f == null) {
+            return;
+        }
 
         f.setExfPielCicatrices(snNoNull(f.getExfPielCicatrices()));
         f.setExfOjosParpados(snNoNull(f.getExfOjosParpados()));
@@ -83,12 +86,53 @@ public class FichaOcupacionalService {
     }
 
     private String snNoNull(String v) {
-        if (v == null) return "N";
+        if (v == null) {
+            return "N";
+        }
         String t = v.trim();
         return t.isEmpty() ? "N" : t;
     }
 
     private String safeTrim(String v) {
         return v == null ? null : v.trim();
+    }
+
+    public FichaOcupacional findById(Long idFicha) {
+        if (idFicha == null) {
+            return null;
+        }
+        return em.find(FichaOcupacional.class, idFicha);
+    }
+
+    public FichaOcupacional reloadById(Long idFicha) {
+        if (idFicha == null) {
+            return null;
+        }
+
+        FichaOcupacional f = em.find(FichaOcupacional.class, idFicha);
+        if (f != null) {
+            em.refresh(f); // fuerza a traer lo último de BD
+        }
+        return f;
+    }
+      public FichaOcupacional reloadForPrint(Long idFicha) {
+        if (idFicha == null) {
+            return null;
+        }
+
+        final String jpql = """
+            SELECT f
+            FROM FichaOcupacional f
+            LEFT JOIN FETCH f.empleado
+            LEFT JOIN FETCH f.personaAux
+            LEFT JOIN FETCH f.signos
+            LEFT JOIN FETCH f.cie10Principal
+            WHERE f.idFicha = :id
+        """;
+
+        TypedQuery<FichaOcupacional> q = em.createQuery(jpql, FichaOcupacional.class);
+        q.setParameter("id", idFicha);
+
+        return q.getResultStream().findFirst().orElse(null);
     }
 }

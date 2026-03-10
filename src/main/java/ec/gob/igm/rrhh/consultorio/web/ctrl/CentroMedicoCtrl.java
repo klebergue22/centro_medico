@@ -1,49 +1,5 @@
 package ec.gob.igm.rrhh.consultorio.web.ctrl;
 
-/**
- *
- * @author GUERRA_KLEBER
- */
-import com.lowagie.text.DocumentException;
-import com.lowagie.text.pdf.BaseFont;
-import ec.gob.igm.rrhh.consultorio.domain.model.AuditoriaConsultorio;
-import ec.gob.igm.rrhh.consultorio.domain.model.Cie10;
-import ec.gob.igm.rrhh.consultorio.domain.model.ConsultaDiagnostico;
-import ec.gob.igm.rrhh.consultorio.domain.model.ConsultaMedica;
-import ec.gob.igm.rrhh.consultorio.domain.model.DatEmpleado;
-import ec.gob.igm.rrhh.consultorio.domain.model.FichaActLaboral;
-import ec.gob.igm.rrhh.consultorio.domain.model.FichaExamenComp;
-import ec.gob.igm.rrhh.consultorio.domain.model.FichaOcupacional;
-import ec.gob.igm.rrhh.consultorio.domain.model.FichaRiesgo;
-import ec.gob.igm.rrhh.consultorio.domain.model.FichaRiesgoDet;
-import ec.gob.igm.rrhh.consultorio.domain.model.PersonaAux;
-import ec.gob.igm.rrhh.consultorio.domain.model.SignosVitales;
-import ec.gob.igm.rrhh.consultorio.service.AuditoriaConsultorioService;
-import ec.gob.igm.rrhh.consultorio.service.Cie10Service;
-import ec.gob.igm.rrhh.consultorio.service.EmpleadoService;
-import ec.gob.igm.rrhh.consultorio.service.FichaActLaboralService;
-import ec.gob.igm.rrhh.consultorio.service.FichaDiagnosticoService;
-import ec.gob.igm.rrhh.consultorio.service.FichaExamenCompService;
-import ec.gob.igm.rrhh.consultorio.service.FichaOcupacionalService;
-import ec.gob.igm.rrhh.consultorio.service.FichaRiesgoDetService;
-import ec.gob.igm.rrhh.consultorio.service.FichaRiesgoService;
-import ec.gob.igm.rrhh.consultorio.service.PersonaAuxService;
-import ec.gob.igm.rrhh.consultorio.service.SignosVitalesService;
-import jakarta.annotation.PostConstruct;
-import jakarta.ejb.EJB;
-import jakarta.faces.application.FacesMessage;
-import jakarta.faces.component.UIComponent;
-import jakarta.faces.component.UIInput;
-import jakarta.faces.component.UIViewRoot;
-import jakarta.faces.context.ExternalContext;
-import jakarta.faces.context.FacesContext;
-import jakarta.faces.context.PartialViewContext;
-import jakarta.faces.context.ResponseWriter;
-import jakarta.faces.event.AjaxBehaviorEvent;
-import jakarta.faces.view.ViewDeclarationLanguage;
-import jakarta.faces.view.ViewScoped;
-import jakarta.inject.Named;
-import jakarta.servlet.http.HttpSession;
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -72,6 +28,23 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 import java.util.regex.Pattern;
+
+import jakarta.annotation.PostConstruct;
+import jakarta.ejb.EJB;
+import jakarta.faces.application.FacesMessage;
+import jakarta.faces.component.UIComponent;
+import jakarta.faces.component.UIInput;
+import jakarta.faces.component.UIViewRoot;
+import jakarta.faces.context.ExternalContext;
+import jakarta.faces.context.FacesContext;
+import jakarta.faces.context.PartialViewContext;
+import jakarta.faces.context.ResponseWriter;
+import jakarta.faces.event.AjaxBehaviorEvent;
+import jakarta.faces.view.ViewDeclarationLanguage;
+import jakarta.faces.view.ViewScoped;
+import jakarta.inject.Named;
+import jakarta.servlet.http.HttpSession;
+
 import org.primefaces.PrimeFaces;
 import org.primefaces.event.FlowEvent;
 import org.primefaces.event.SelectEvent;
@@ -79,6 +52,40 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xhtmlrenderer.pdf.ITextRenderer;
 
+import com.lowagie.text.DocumentException;
+import com.lowagie.text.pdf.BaseFont;
+import ec.gob.igm.rrhh.consultorio.domain.dto.EmpleadoCargoDTO;
+
+import ec.gob.igm.rrhh.consultorio.domain.model.AuditoriaConsultorio;
+import ec.gob.igm.rrhh.consultorio.domain.model.Cie10;
+import ec.gob.igm.rrhh.consultorio.domain.model.ConsultaDiagnostico;
+import ec.gob.igm.rrhh.consultorio.domain.model.ConsultaMedica;
+import ec.gob.igm.rrhh.consultorio.domain.model.DatEmpleado;
+import ec.gob.igm.rrhh.consultorio.domain.model.FichaActLaboral;
+import ec.gob.igm.rrhh.consultorio.domain.model.FichaExamenComp;
+import ec.gob.igm.rrhh.consultorio.domain.model.FichaOcupacional;
+import ec.gob.igm.rrhh.consultorio.domain.model.FichaRiesgo;
+import ec.gob.igm.rrhh.consultorio.domain.model.FichaRiesgoDet;
+import ec.gob.igm.rrhh.consultorio.domain.model.PersonaAux;
+import ec.gob.igm.rrhh.consultorio.domain.model.SignosVitales;
+import ec.gob.igm.rrhh.consultorio.service.AuditoriaConsultorioService;
+import ec.gob.igm.rrhh.consultorio.service.Cie10Service;
+import ec.gob.igm.rrhh.consultorio.service.EmpleadoRhService;
+import ec.gob.igm.rrhh.consultorio.service.EmpleadoService;
+import ec.gob.igm.rrhh.consultorio.service.FichaActLaboralService;
+import ec.gob.igm.rrhh.consultorio.service.FichaDiagnosticoService;
+import ec.gob.igm.rrhh.consultorio.service.FichaExamenCompService;
+import ec.gob.igm.rrhh.consultorio.service.FichaOcupacionalService;
+import ec.gob.igm.rrhh.consultorio.service.FichaRiesgoDetService;
+import ec.gob.igm.rrhh.consultorio.service.FichaRiesgoService;
+import ec.gob.igm.rrhh.consultorio.service.PersonaAuxService;
+import ec.gob.igm.rrhh.consultorio.service.SignosVitalesService;
+import ec.gob.igm.rrhh.consultorio.web.util.SnUtils;
+
+/**
+ *
+ * @author GUERRA_KLEBER
+ */
 @Named("centroMedicoCtrl")
 @ViewScoped
 
@@ -87,9 +94,6 @@ public class CentroMedicoCtrl implements Serializable {
     private static final Logger LOG = LoggerFactory.getLogger(CentroMedicoCtrl.class);
 
     private static final long serialVersionUID = 1L;
-
-    private static final Logger log = LoggerFactory.getLogger(CentroMedicoCtrl.class);
-
     private static final List<String> STATIC_RISK_COLS = new ArrayList<>();
 
     static {
@@ -112,9 +116,9 @@ public class CentroMedicoCtrl implements Serializable {
     }
 
     private void handleUnexpected(String action, Throwable t) {
-        log.error("Unexpected error during {}. activeStep={}, noPersonaSel={}, cedulaBusqueda={}",
+        LOG.error("Unexpected error during {}. activeStep={}, noPersonaSel={}, cedulaBusqueda={}",
                 action, activeStep, noPersonaSel, cedulaBusqueda, t);
-        error("Ocurrió un error inesperado al " + action + ". Revise el log o contacte a soporte.");
+        error("Ocurrió un error inesperado al " + action + ". Revise el LOG o contacte a soporte.");
     }
 
     private static final int H_ROWS = 4;
@@ -126,7 +130,7 @@ public class CentroMedicoCtrl implements Serializable {
 
     private boolean mostrarDlgCedula = true;
     private boolean preRenderDone = false;
-    private boolean mostrarDialogoAux;
+    private boolean mostrarDiaLOGoAux;
     private boolean permitirIngresoManual;
 
     private String cedulaBusqueda;
@@ -168,6 +172,12 @@ public class CentroMedicoCtrl implements Serializable {
     private boolean apCatastrofica;
     private boolean apLactancia;
     private boolean apAdultoMayor;
+    private String discapTipo;
+    private String discapDesc;
+    private Integer discapPorc;
+
+    private String catasDiagnostico;
+    private Boolean catasCalificada; // en UI como boolean
 
     private String antClinicoQuirurgico;
     private String antFamiliares;
@@ -350,28 +360,8 @@ public class CentroMedicoCtrl implements Serializable {
     private String exfNeuroReflejos;
     private String obsExamenFisico;          // Mapeará a obsExamenFisicoRegional o obsExamenFisicoReg
 
-    public boolean isCertPdfListo() {
-        return certificadoListo;
-    }
-
-    public String getFichaToken() {
-        return pdfTokenFicha;
-    }
-
-    public String getCertToken() {
-        return pdfTokenCertificado;
-    }
-
-    private int stepIndex = 1;
-
-    public boolean isFichaPdfListo() {
-        return fichaPdfListo;
-    }
-
-    public String getPdfTokenFicha() {
-        return pdfTokenFicha;
-    }
-
+    @EJB
+    private EmpleadoRhService empleadoRhService;
     @EJB
     private transient Cie10Service cie10Service;
     @EJB
@@ -396,6 +386,9 @@ public class CentroMedicoCtrl implements Serializable {
     @EJB
     private transient FichaExamenCompService fichaExamenCompService;
 
+    // =====================================================
+    // JSF Lifecycle / Inicialización
+    // =====================================================
     public void preRenderInit() {
         try {
             FacesContext fc = FacesContext.getCurrentInstance();
@@ -422,13 +415,14 @@ public class CentroMedicoCtrl implements Serializable {
                 ensureDiagSize(6);
             }
 
-            System.out.println("GET? " + !FacesContext.getCurrentInstance().isPostback()
-                    + " activeStep=" + activeStep
-                    + " empleadoSel=" + (empleadoSel == null)
-                    + " mostrarDlgCedula=" + mostrarDlgCedula);
+            LOG.info("GET? {} activeStep={} empleadoSel={} mostrarDlgCedula={}",
+                    !FacesContext.getCurrentInstance().isPostback(),
+                    activeStep,
+                    (empleadoSel == null),
+                    mostrarDlgCedula);
 
         } catch (RuntimeException e) {
-            log.error("preRenderInit failed. activeStep={}, noPersonaSel={}, cedulaBusqueda={}",
+            LOG.error("preRenderInit failed. activeStep={}, noPersonaSel={}, cedulaBusqueda={}",
                     activeStep, noPersonaSel, cedulaBusqueda, e);
         }
     }
@@ -531,6 +525,7 @@ public class CentroMedicoCtrl implements Serializable {
 
         if (ficha.getRucEstablecimiento() == null || ficha.getRucEstablecimiento().isBlank()) {
             ficha.setRucEstablecimiento(ruc);
+
         }
 
         ficha.setFechaEvaluacion(fechaAtencion);
@@ -588,7 +583,7 @@ public class CentroMedicoCtrl implements Serializable {
         }
 
         if (STATIC_RISK_COLS == null || STATIC_RISK_COLS.isEmpty()) {
-            log.warn("CRÍTICO: STATIC_RISK_COLS está vacío. Reinicializando...");
+            LOG.warn("CRÍTICO: STATIC_RISK_COLS está vacío. Reinicializando...");
             STATIC_RISK_COLS.clear();
             for (int i = 1; i <= 7; i++) {
                 STATIC_RISK_COLS.add(String.valueOf(i));
@@ -848,25 +843,37 @@ public class CentroMedicoCtrl implements Serializable {
         this.edad = calcularEdad(f);
     }
 
+    /**
+     * cambio de step
+     *
+     * @param event
+     * @return
+     */
     public String onFlow(FlowEvent event) {
-        String nextStep = event.getNewStep();
+        // Navegación del wizard (PrimeFaces)
+        // NOTA: La persistencia/validación por paso se maneja en los botones (guardarStepActual / retrocederStep)
+        // para evitar doble guardado cuando se ejecuta PF('wdzFicha').next()/back().
+        final String nextStep = event.getNewStep();
         this.activeStep = nextStep;
-
         if ("step1".equals(nextStep)) {
             cedulaDlgAutoOpened = false;
-
-        } else {
-
-            mostrarDlgCedula = false;
         }
-
         return nextStep;
     }
 
+    /**
+     * Metodo que se usa en la vista
+     */
     public void calcularEdad() {
         this.edad = calcularEdad(this.fechaNacimiento);
     }
 
+    /**
+     * Recibe una fecha y calcula la edad actual
+     *
+     * @param fechaNacimiento
+     * @return
+     */
     private Integer calcularEdad(Date fechaNacimiento) {
         if (fechaNacimiento == null) {
             return null;
@@ -895,6 +902,11 @@ public class CentroMedicoCtrl implements Serializable {
         return years;
     }
 
+    /**
+     * limpia la hora
+     *
+     * @param cal
+     */
     private void limpiarHora(Calendar cal) {
         cal.set(Calendar.HOUR_OF_DAY, 0);
         cal.set(Calendar.MINUTE, 0);
@@ -902,6 +914,11 @@ public class CentroMedicoCtrl implements Serializable {
         cal.set(Calendar.MILLISECOND, 0);
     }
 
+    /**
+     * Valida que sea una edad valida mayor a 18 años
+     *
+     * @return
+     */
     public Date getFechaMaximaNacimiento() {
         Calendar cal = Calendar.getInstance();
         cal.add(Calendar.YEAR, -18);
@@ -912,6 +929,9 @@ public class CentroMedicoCtrl implements Serializable {
         return cal.getTime();
     }
 
+    /**
+     * Se usa en calculo de la edad para ejercer un trabajo
+     */
     public void validarEdadMinima() {
         if (edad != null && edad < 18) {
             FacesContext.getCurrentInstance().addMessage(null,
@@ -921,6 +941,9 @@ public class CentroMedicoCtrl implements Serializable {
         }
     }
 
+    /**
+     * calculo del Indice de masa corporal
+     */
     public void recalcularIMC() {
         if (peso != null && tallaCm != null && tallaCm > 0) {
             double m = tallaCm / 100.0;
@@ -960,36 +983,89 @@ public class CentroMedicoCtrl implements Serializable {
         }
     }
 
+    /**
+     * guarda el step actual
+     */
     public void guardarStepActual() {
-        System.out.println(">>> ENTRO A guardarStepActual, step=" + activeStep);
-        FacesContext ctx = FacesContext.getCurrentInstance();
-        try {
-            final String next = saveCurrentStepAndGetNext();
-            if (ctx != null && !ctx.isValidationFailed() && next != null) {
-                activeStep = next;
-            }
-        } catch (RuntimeException ex) {
-            handleUnexpected("guardarStepActual", ex);
-            if (ctx != null) {
-                ctx.validationFailed();
+    LOG.info(">>> ENTRO A guardarStepActual, step=" + activeStep);
+    FacesContext ctx = FacesContext.getCurrentInstance();
+
+    try {
+        final String next = saveCurrentStepAndGetNext();
+
+        if (ctx != null && !ctx.isValidationFailed() && next != null) {
+            activeStep = next;
+
+            // ✅ Aquí sí o sí: cada vez que llegas a Step4 regenera ambos PDFs
+            if ("step4".equals(next)) {
+                onEnterStep4AutoRegenerar();
+
+                // ✅ refresca el wizard para que el <object> tome el nuevo token
+                PrimeFaces.current().ajax().update("@([id$=wdzFicha])");
             }
         }
+
+    } catch (RuntimeException ex) {
+        handleUnexpected("guardarStepActual", ex);
+        if (ctx != null) {
+            ctx.validationFailed();
+        }
+    }
+}
+private void onEnterStep4AutoRegenerar() {
+    try {
+        if (this.ficha == null || this.ficha.getIdFicha() == null) {
+            return;
+        }
+
+        // ✅ fuerza render y evita “quedarse pegado”
+        this.fichaPdfListo = false;
+        this.certificadoListo = false;
+        this.pdfTokenFicha = null;
+        this.pdfTokenCertificado = null;
+
+        prepararVistaPreviaFicha();
+        prepararVistaPreviaCertificado();
+
+    } catch (Exception ex) {
+        LOG.warn("Auto-regeneración Step4 falló", ex);
+    }
+}
+private void asegurarPersonaAuxPersistida() {
+
+    // 1) Solo aplica para ingreso manual
+    if (!permitirIngresoManual) {
+        return;
     }
 
+    // 2) Debe existir personaAux
+    if (personaAux == null) {
+        return;
+    }
+
+    // 3) Si ya está persistida, solo asegurar relación
+    if (personaAux.getIdPersonaAux() != null) {
+        if (ficha != null) {
+            ficha.setPersonaAux(personaAux);
+        }
+        return;
+    }
+
+    // 4) Persistir PersonaAux primero
+    PersonaAux saved = personaAuxService.guardar(personaAux);  // <-- tu service real
+
+    this.personaAux = saved;
+
+    if (ficha != null) {
+        ficha.setPersonaAux(saved);
+    }
+}
     private String saveCurrentStepAndGetNext() {
         if ("step1".equals(activeStep)) {
             guardarStep1();
             return "step2";
         }
         if ("step2".equals(activeStep)) {
-
-            if (!validarStep2()) {
-                FacesContext ctx = FacesContext.getCurrentInstance();
-                if (ctx != null) {
-                    ctx.validationFailed();
-                }
-                return null;
-            }
             guardarStep2();
             return "step3";
         }
@@ -1332,6 +1408,9 @@ public class CentroMedicoCtrl implements Serializable {
         }
     }
 
+    // =====================================================
+    // Wizard - Guardado Step 1
+    // =====================================================
     public void guardarStep1() {
         FacesContext ctx = FacesContext.getCurrentInstance();
         try {
@@ -1366,6 +1445,8 @@ public class CentroMedicoCtrl implements Serializable {
         final SignosVitales savedSv = upsertVitalSigns(now, user);
 
         saveDraftOccupationalRecord(now, user);
+        
+        
 
         auditStep1(savedSv);
     }
@@ -1379,6 +1460,28 @@ public class CentroMedicoCtrl implements Serializable {
     private void resolveSelectedEmployeeIfNeeded() {
         if (empleadoSel == null && noPersonaSel != null) {
             empleadoSel = empleadoService.buscarPorId(noPersonaSel);
+        }
+    }
+
+    public void onBuscarPorCedulaRh() {
+        FacesContext ctx = FacesContext.getCurrentInstance();
+        PrimeFaces pf = PrimeFaces.current();
+
+        try {
+            // 1) Búsqueda normal (ya te llena empleadoSel/personaAux y cierra diálogo si aplica)
+            buscarCedula();
+
+            // 2) Cargar cargo vigente desde la vista RRHH y setearlo en ficha.ciiu
+            tryLoadCargoFromVista(ctx);
+
+            // 3) Refrescar UI (panel principal + mensajes)
+            pf.ajax().update(":msgs", "@([id$=wdzFicha])");
+
+        } catch (RuntimeException ex) {
+            handleUnexpected("onBuscarPorCedulaRh", ex);
+            addCedulaDiaLOGMessage(ctx, FacesMessage.SEVERITY_ERROR, "Error",
+                    "Ocurrió un error al consultar datos de RRHH.");
+            pf.ajax().update(":msgs");
         }
     }
 
@@ -1439,48 +1542,116 @@ public class CentroMedicoCtrl implements Serializable {
         }
 
         ficha.setNoHistoriaClinica(cedulaPaciente);
+        ficha.setNoArchivo(cedulaPaciente);
         return cedulaPaciente;
     }
 
     private void mapStep1ToOccupationalRecord(Date now, String user, String patientId) {
-        ficha.setFechaEvaluacion(fechaAtencion);
-        ficha.setTipoEvaluacion(tipoEval);
-        ficha.setGinecoExamen1(ginecoExamen1);
-        ficha.setGinecoTiempo1(ginecoTiempo1);
-        ficha.setGinecoResultado1(ginecoResultado1);
-        ficha.setGinecoExamen2(ginecoExamen2);
-        ficha.setGinecoTiempo2(ginecoTiempo2);
-        ficha.setGinecoResultado2(ginecoResultado2);
-        ficha.setGinecoObservacion(ginecoObservacion);
 
-        ficha.setApEmbarazada(sn(apEmbarazada));
-        ficha.setApDiscapacidad(sn(apDiscapacidad));
-        ficha.setApCatastrofica(sn(apCatastrofica));
-        ficha.setApLactancia(sn(apLactancia));
-        ficha.setApAdultoMayor(sn(apAdultoMayor));
+    ficha.setFechaEvaluacion(fechaAtencion);
+    ficha.setTipoEvaluacion(tipoEval);
 
-        ficha.setAntClinicoQuir(antClinicoQuirurgico);
-        ficha.setAntFamiliares(antFamiliares);
-        ficha.setCondicionEspecial(condicionEspecial);
+    ficha.setGinecoExamen1(ginecoExamen1);
+    ficha.setGinecoTiempo1(ginecoTiempo1);
+    ficha.setGinecoResultado1(ginecoResultado1);
+    ficha.setGinecoExamen2(ginecoExamen2);
+    ficha.setGinecoTiempo2(ginecoTiempo2);
+    ficha.setGinecoResultado2(ginecoResultado2);
+    ficha.setGinecoObservacion(ginecoObservacion);
 
-        ficha.setAutorizaTransfusion(autorizaTransfusion);
-        ficha.setTratHormonal(tratamientoHormonal);
-        ficha.setTratHormonalCual(tratamientoHormonalCual);
+    ficha.setApEmbarazada(sn(apEmbarazada));
+    ficha.setApDiscapacidad(sn(apDiscapacidad));
+    ficha.setApCatastrofica(sn(apCatastrofica));
+    ficha.setApLactancia(sn(apLactancia));
+    ficha.setApAdultoMayor(sn(apAdultoMayor));
 
-        ficha.setExamReproMasc(examenReproMasculino);
-        ficha.setTiempoReproMasc(tiempoReproMasculino);
+    ficha.setAntClinicoQuir(antClinicoQuirurgico);
+    ficha.setAntFamiliares(antFamiliares);
+    ficha.setCondicionEspecial(condicionEspecial);
 
-        ficha.setFum(fum);
-        ficha.setGestas(gestas);
-        ficha.setPartos(partos);
-        ficha.setCesareas(cesareas);
-        ficha.setAbortos(abortos);
-        ficha.setPlanificacion(planificacion);
-        ficha.setPlanificacionCual(planificacionCual);
-        // D. ENFERMEDAD O PROBLEMA ACTUAL (Step 1)
-        ficha.setEnfermedadProbActual(trimToNull(ficha.getEnfermedadProbActual()));
+    ficha.setAutorizaTransfusion(autorizaTransfusion);
+    ficha.setTratHormonal(tratamientoHormonal);
+    ficha.setTratHormonalCual(tratamientoHormonalCual);
 
-        mapConsumoVidaCondToFicha(ficha);
+    ficha.setExamReproMasc(examenReproMasculino);
+    ficha.setTiempoReproMasc(tiempoReproMasculino);
+
+    ficha.setFum(fum);
+    ficha.setGestas(gestas);
+    ficha.setPartos(partos);
+    ficha.setCesareas(cesareas);
+    ficha.setAbortos(abortos);
+    ficha.setPlanificacion(planificacion);
+    ficha.setPlanificacionCual(planificacionCual);
+
+    // D. ENFERMEDAD O PROBLEMA ACTUAL (Step 1)
+    //ficha.setEnfermedadProbActual(trimToNull(enfermedadActual));
+    if (ficha.getEnfermedadProbActual() != null) {
+        ficha.setEnfermedadProbActual(ficha.getEnfermedadProbActual().trim());
+    }
+    // =====================================================
+    // Discapacidad (solo si AP_DISCAPACIDAD = S)
+    // =====================================================
+    if (apDiscapacidad) {
+        ficha.setDisTipo(trimToNull(discapTipo));
+        ficha.setDisDescripcion(trimToNull(discapDesc));
+        ficha.setDisPorcentaje(discapPorc);
+    } else {
+        ficha.setDisTipo(null);
+        ficha.setDisDescripcion(null);
+        ficha.setDisPorcentaje(null);
+    }
+
+    // =====================================================
+    // Catastrófica / Huérfana / Rara (solo si AP_CATASTROFICA = S)
+    // =====================================================
+    if (apCatastrofica) {
+        ficha.setCatDiagnostico(trimToNull(catasDiagnostico));
+        ficha.setCatCalificada(Boolean.TRUE.equals(catasCalificada) ? "S" : "N");
+    } else {
+        ficha.setCatDiagnostico(null);
+        // Si no aplica, evita NULL si tu columna es NOT NULL; si permite null, puedes dejar null
+        ficha.setCatCalificada(null);
+    }
+
+    // =====================================================
+    // Panel N. Retiro (solo si tipo evaluación = RETIRO)
+    // ✅ FIX ORA-01407: N_RET_EVAL NO puede ser NULL -> usar "N" por defecto
+    // =====================================================
+    String tipo = trimToNull(tipoEval);
+
+    if ("RETIRO".equalsIgnoreCase(tipo)) {
+
+        String realiza = trimToNull(nRealizaEvaluacion);
+        String relTrab = trimToNull(nRelacionTrabajo);
+
+        ficha.setnRetEval(realiza != null ? realiza : "N");
+        ficha.setnRetRelTrab(relTrab != null ? relTrab : "N");
+        ficha.setnRetObs(trimToNull(nObsRetiro));
+
+    } else {
+        // ⚠️ NO NULL porque la columna N_RET_EVAL es NOT NULL
+        ficha.setnRetEval("N");
+        ficha.setnRetRelTrab("N");  // recomendado para consistencia
+        ficha.setnRetObs(null);
+    }
+
+    mapConsumoVidaCondToFicha(ficha);
+}
+
+    /**
+     * Normaliza entradas tipo "SI/NO", "S/N", "true/false" a "S" o "N".
+     */
+    private String normalizeSn(String v) {
+        String x = trimToNull(v);
+        if (x == null) {
+            return "N";
+        }
+        x = x.trim().toUpperCase();
+        if ("S".equals(x) || "SI".equals(x) || "1".equals(x) || "TRUE".equals(x)) {
+            return "S";
+        }
+        return "N";
     }
 
     private static BigDecimal bd(Double v, int scale) {
@@ -1507,11 +1678,21 @@ public class CentroMedicoCtrl implements Serializable {
     private SignosVitales upsertVitalSigns(Date now, String user) {
         final int[] pa = parseBloodPressureOrThrow(paStr);
 
-        SignosVitales sv = (ficha.getSignos() != null) ? ficha.getSignos() : this.signos;
+        // 1) Tomar referencia actual (puede ser proxy lazy detached)
+        SignosVitales current = (ficha.getSignos() != null) ? ficha.getSignos() : this.signos;
+
+        // 2) Si ya existe ID -> recargar el registro desde BD (managed) ANTES de setear
+        SignosVitales sv = null;
+        if (current != null && current.getIdSignos() != null) {
+            sv = signosService.buscarPorId(current.getIdSignos()); // <-- IMPLEMENTAR
+        }
+
+        // 3) Si no existía o no se encontró -> crear nuevo
         if (sv == null) {
             sv = new SignosVitales();
         }
 
+        // 4) Ya es managed o nuevo: setters sin LazyInitializationException
         sv.setTemperaturaC(bd(temp, 1));
         sv.setPaSistolica(pa[0]);
         sv.setPaDiastolica(pa[1]);
@@ -1529,9 +1710,13 @@ public class CentroMedicoCtrl implements Serializable {
 
         stampAuditFieldsForVitalSigns(sv, now, user);
 
+        // 5) Guardar
         sv = signosService.guardar(sv);
+
+        // 6) Re-enlazar
         this.signos = sv;
         ficha.setSignos(sv);
+
         return sv;
     }
 
@@ -1553,7 +1738,7 @@ public class CentroMedicoCtrl implements Serializable {
         }
 
         stampAuditFieldsForFicha(ficha, now, user);
-
+        asegurarPersonaAuxPersistida();
         ficha = fichaService.guardar(ficha);
     }
 
@@ -1625,6 +1810,9 @@ public class CentroMedicoCtrl implements Serializable {
         return valido;
     }
 
+    // =====================================================
+    // Wizard - Guardado Step 2
+    // =====================================================
     public void guardarStep2() {
         FacesContext ctx = FacesContext.getCurrentInstance();
         try {
@@ -1835,6 +2023,9 @@ public class CentroMedicoCtrl implements Serializable {
         return valido;
     }
 
+    // =====================================================
+    // Wizard - Guardado Step 3
+    // =====================================================
     public void guardarStep3() {
         FacesContext ctx = FacesContext.getCurrentInstance();
         try {
@@ -1881,7 +2072,7 @@ public class CentroMedicoCtrl implements Serializable {
 
     private void guardarStep3_FichaGeneral(FacesContext ctx, Date ahora, String usuario) {
 
-        log.info(String.valueOf("STEP3-A: Guardando datos generales en FICHA_OCUPACIONAL"));
+        LOG.info(String.valueOf("STEP3-A: Guardando datos generales en FICHA_OCUPACIONAL"));
 
         if (!isBlank(codCie10Ppal)) {
             Cie10 cie = cie10Service.buscarPorCodigo(codCie10Ppal.trim());
@@ -1941,7 +2132,12 @@ public class CentroMedicoCtrl implements Serializable {
         ficha.setExfNeuroSensibilidad(preferSn(ficha.getExfNeuroSensibilidad(), ficha, "exfNeuroSensibilidadBool"));
         ficha.setExfNeuroMarcha(preferSn(ficha.getExfNeuroMarcha(), ficha, "exfNeuroMarchaBool"));
         ficha.setExfNeuroReflejos(preferSn(ficha.getExfNeuroReflejos(), ficha, "exfNeuroReflejosBool"));
-        ficha.setObsExamenFisicoRegional(obsExamenFisico); // o setObsExamenFisicoReg()
+        // OBS_EXAMEN_FISICO_REG: no sobreescribir con null si la UI está enlazada directo a ficha.obsExamenFisicoReg
+        String _obsExf = trimToNull(obsExamenFisico);
+        if (_obsExf == null) {
+            _obsExf = trimToNull(ficha.getObsExamenFisicoReg());
+        }
+        ficha.setObsExamenFisicoReg(_obsExf);
 
         ficha.setAptitudSel(aptitudSel);
         ficha.setDetalleObs(detalleObservaciones);
@@ -1958,15 +2154,15 @@ public class CentroMedicoCtrl implements Serializable {
 
         ficha.setFechaActualizacion(ahora);
         ficha.setUsrActualizacion(usuario);
-
+        asegurarPersonaAuxPersistida();
         ficha = fichaService.guardar(ficha);
 
-        log.info(String.valueOf("STEP3-A-OK: FICHA_OCUPACIONAL actualizada. ID_FICHA=" + ficha.getIdFicha()));
+        LOG.info(String.valueOf("STEP3-A-OK: FICHA_OCUPACIONAL actualizada. ID_FICHA=" + ficha.getIdFicha()));
     }
 
     private void guardarStep3_H_ActividadLaboral(Date ahora, String usuario) {
 
-        log.info(String.valueOf("STEP3-H: Procesando Actividad Laboral (FICHA_ACT_LABORAL)"));
+        LOG.info(String.valueOf("STEP3-H: Procesando Actividad Laboral (FICHA_ACT_LABORAL)"));
 
         ensureActLabSize();
 
@@ -2024,15 +2220,15 @@ public class CentroMedicoCtrl implements Serializable {
             fichaActLaboralService.guardar(fal);
         }
 
-        log.info(String.valueOf("STEP3-H-OK"));
+        LOG.info(String.valueOf("STEP3-H-OK"));
     }
 
     private void guardarStep3_I_Extralaborales(Date ahora, String usuario) {
 
-        log.info(String.valueOf("STEP3-I: Procesando Actividades Extralaborales (SERIALIZADO EN FICHA)"));
+        LOG.info(String.valueOf("STEP3-I: Procesando Actividades Extralaborales (SERIALIZADO EN FICHA)"));
 
         if (tipoAct == null || fechaAct == null || descAct == null) {
-            log.info(String.valueOf("STEP3-I: Listas I null -> no se guarda (no rompe)"));
+            LOG.info(String.valueOf("STEP3-I: Listas I null -> no se guarda (no rompe)"));
             return;
         }
 
@@ -2071,15 +2267,15 @@ public class CentroMedicoCtrl implements Serializable {
 
         ficha = fichaService.guardar(ficha);
 
-        log.info(String.valueOf("STEP3-I-OK"));
+        LOG.info(String.valueOf("STEP3-I-OK"));
     }
 
     private void guardarStep3_J_Examenes(Date ahora, String usuario) {
 
-        log.info(String.valueOf("STEP3-J: Procesando Exámenes (FICHA_EXAMEN_COMP)"));
+        LOG.info(String.valueOf("STEP3-J: Procesando Exámenes (FICHA_EXAMEN_COMP)"));
 
         if (examNombre == null || examFecha == null || examResultado == null) {
-            log.info(String.valueOf("STEP3-J: Listas J null -> no se guarda J"));
+            LOG.info(String.valueOf("STEP3-J: Listas J null -> no se guarda J"));
             return;
         }
 
@@ -2102,7 +2298,7 @@ public class CentroMedicoCtrl implements Serializable {
             if (!filaTieneDatos) {
 
                 int del = fichaExamenCompService.eliminarPorFichaYFila(ficha.getIdFicha(), nroFila);
-                log.info(String.valueOf("STEP3-J-FILA " + nroFila + ": vacía -> delete=" + del));
+                LOG.info(String.valueOf("STEP3-J-FILA " + nroFila + ": vacía -> delete=" + del));
                 continue;
             }
 
@@ -2113,9 +2309,9 @@ public class CentroMedicoCtrl implements Serializable {
                 ex.setFicha(ficha);
                 ex.setNroFila(nroFila);
 
-                log.info(String.valueOf("STEP3-J-FILA " + nroFila + ": INSERT"));
+                LOG.info(String.valueOf("STEP3-J-FILA " + nroFila + ": INSERT"));
             } else {
-                log.info(String.valueOf("STEP3-J-FILA " + nroFila + ": UPDATE id=" + ex.getIdFichaExamen()));
+                LOG.info(String.valueOf("STEP3-J-FILA " + nroFila + ": UPDATE id=" + ex.getIdFichaExamen()));
             }
 
             ex.setNombreExamen(nombre);
@@ -2125,28 +2321,28 @@ public class CentroMedicoCtrl implements Serializable {
             fichaExamenCompService.guardar(ex, usuario);
         }
 
-        log.info(String.valueOf("STEP3-J-OK"));
+        LOG.info(String.valueOf("STEP3-J-OK"));
     }
 
     private void guardarStep3_K_Diagnosticos(Date ahora, String usuario) {
 
-        log.info(String.valueOf("STEP3-K: Procesando Diagnósticos"));
+        LOG.info(String.valueOf("STEP3-K: Procesando Diagnósticos"));
 
         if (listaDiag == null || listaDiag.isEmpty()) {
-            log.info(String.valueOf("STEP3-K: listaDiag vacía -> OK"));
+            LOG.info(String.valueOf("STEP3-K: listaDiag vacía -> OK"));
             return;
         }
 
         if (fichaDiagnosticoService == null) {
-            log.info(String.valueOf("STEP3-K: fichaDiagnosticoService null -> no se guarda K"));
+            LOG.info(String.valueOf("STEP3-K: fichaDiagnosticoService null -> no se guarda K"));
             return;
         }
 
         try {
             fichaDiagnosticoService.guardarDiagnosticosDeFicha(ficha.getIdFicha(), listaDiag, ahora, usuario);
-            log.info(String.valueOf("STEP3-K-OK (service)"));
+            LOG.info(String.valueOf("STEP3-K-OK (service)"));
         } catch (NoSuchMethodError | RuntimeException ex) {
-            log.info(String.valueOf("STEP3-K: Tu service no tiene guardarDiagnosticosDeFicha(...) -> no se guarda K"));
+            LOG.info(String.valueOf("STEP3-K: Tu service no tiene guardarDiagnosticosDeFicha(...) -> no se guarda K"));
 
         }
     }
@@ -2180,39 +2376,83 @@ public class CentroMedicoCtrl implements Serializable {
 
         if (ficha != null) {
 
+            // 0) Detectar modo auxiliar SIN depender solo de permitirIngresoManual
+            //    (si hay personaAux en controller o en ficha, entonces es modo auxiliar)
+            boolean modoAux = permitirIngresoManual
+                    || (this.personaAux != null)
+                    || (ficha.getPersonaAux() != null);
+
+            // 1) Sincronizar paciente
+            if (modoAux) {
+                if (this.personaAux != null
+                        && this.personaAux.getCedula() != null
+                        && !this.personaAux.getCedula().trim().isEmpty()) {
+                    ficha.setPersonaAux(this.personaAux);
+                }
+                ficha.setEmpleado(null);
+            } else {
+                if (this.empleadoSel != null) {
+                    ficha.setEmpleado(this.empleadoSel);
+                }
+                // si estás 100% seguro que no aplica personaAux cuando hay empleado, puedes limpiar:
+                // ficha.setPersonaAux(null);
+            }
+
+            // 2) Completar aptitud desde variable del controlador si en ficha viene vacío
             if (ficha.getAptitudSel() == null || ficha.getAptitudSel().trim().isEmpty()) {
                 if (this.aptitudSel != null && !this.aptitudSel.trim().isEmpty()) {
                     ficha.setAptitudSel(this.aptitudSel);
                 }
             }
+
+            // 3) Completar fecha de emisión del certificado
             if (ficha.getFechaEmision() == null) {
-                if (this.fechaEmision != null) {
-                    ficha.setFechaEmision(this.fechaEmision);
+                ficha.setFechaEmision(this.fechaEmision != null ? this.fechaEmision : new java.util.Date());
+            }
+
+            // 4) Validación empleado/persona auxiliar (sin LAZY)
+            boolean tieneEmpleado = (this.empleadoSel != null) || (ficha.getEmpleado() != null);
+
+            boolean tienePersonaAux = false;
+
+            // 4.1) Primero por controller (no proxy)
+            if (this.personaAux != null
+                    && this.personaAux.getCedula() != null
+                    && !this.personaAux.getCedula().trim().isEmpty()) {
+                tienePersonaAux = true;
+            }
+
+            // 4.2) Fallback por ficha sin disparar proxy
+            if (!tienePersonaAux && ficha.getPersonaAux() != null) {
+                try {
+                    boolean loaded = jakarta.persistence.Persistence.getPersistenceUtil().isLoaded(ficha.getPersonaAux());
+                    if (loaded) {
+                        String ced = ficha.getPersonaAux().getCedula();
+                        tienePersonaAux = (ced != null && !ced.trim().isEmpty());
+                    } else {
+                        // existe relación pero es proxy lazy: no leer campos
+                        tienePersonaAux = true;
+                    }
+                } catch (RuntimeException ex) {
+                    LOG.warn("No se pudo validar PersonaAux.cedula por LAZY/proxy. Se omite lectura.", ex);
+                    tienePersonaAux = true;
                 }
             }
 
-            boolean tieneEmpleado = (ficha.getEmpleado() != null);
-            boolean tienePersonaAux = (ficha.getPersonaAux() != null
-                    && ficha.getPersonaAux().getCedula() != null
-                    && !ficha.getPersonaAux().getCedula().trim().isEmpty());
-
+            // 4.3) Aplicar regla por modo
             if (!tieneEmpleado && !tienePersonaAux) {
                 sb.append("- Debe seleccionar un empleado o registrar una persona auxiliar.\n");
+            } else if (modoAux) {
+                if (!tienePersonaAux) {
+                    sb.append("- En modo ingreso manual: falta registrar la persona auxiliar.\n");
+                }
             } else {
-
-                if (permitirIngresoManual) {
-
-                    if (!tienePersonaAux) {
-                        sb.append("- En modo ingreso manual: falta registrar la persona auxiliar.\n");
-                    }
-                } else {
-
-                    if (!tieneEmpleado) {
-                        sb.append("- Falta seleccionar el empleado.\n");
-                    }
+                if (!tieneEmpleado) {
+                    sb.append("- Falta seleccionar el empleado.\n");
                 }
             }
 
+            // 5) Validaciones generales
             if (ficha.getFechaEvaluacion() == null) {
                 sb.append("- Falta la fecha de evaluación.\n");
             }
@@ -2223,6 +2463,7 @@ public class CentroMedicoCtrl implements Serializable {
                 sb.append("- Debe seleccionar la aptitud médica.\n");
             }
 
+            // 6) CIE10 principal
             if (ficha.getCie10Principal() == null
                     || ficha.getCie10Principal().getCodigo() == null
                     || ficha.getCie10Principal().getCodigo().trim().isEmpty()) {
@@ -2239,10 +2480,12 @@ public class CentroMedicoCtrl implements Serializable {
                 sb.append("- Debe registrar un diagnóstico CIE10 principal.\n");
             }
 
+            // 7) Signos vitales
             if (ficha.getSignos() == null) {
                 sb.append("- Debe registrar signos vitales (peso/talla) en Step 3.\n");
             }
 
+            // 8) Fecha emisión
             if (ficha.getFechaEmision() == null) {
                 sb.append("- Falta la fecha de emisión del certificado.\n");
             }
@@ -2259,77 +2502,103 @@ public class CentroMedicoCtrl implements Serializable {
         return true;
     }
 
-    public void prepararVistaPreviaFicha() {
-        FacesContext ctx = FacesContext.getCurrentInstance();
-
-        try {
-            if (!verificarFichaParaPdfFicha()) {
-                fichaPdfListo = false;
-                return;
-            }
-
-            String html = construirHtmlFichaDesdePlantilla();
-            byte[] bytes = renderizarPdf(html);
-
-            String token = "FICHA_" + UUID.randomUUID().toString().replace("-", "");
-            ExternalContext ec = ctx.getExternalContext();
-            HttpSession session = (HttpSession) ec.getSession(true);
-
-            @SuppressWarnings("unchecked")
-            Map<String, byte[]> pdfStore = (Map<String, byte[]>) session.getAttribute("PDF_STORE");
-            if (pdfStore == null) {
-                pdfStore = new HashMap<>();
-                session.setAttribute("PDF_STORE", pdfStore);
-            }
-            pdfStore.put(token, bytes);
-
-            this.pdfTokenFicha = token;
-            this.fichaPdfListo = true;
-
-            this.activeStep = "step4";
-
-            this.mostrarDlgCedula = false;
-
-            ctx.addMessage(null, new FacesMessage(
-                    FacesMessage.SEVERITY_INFO,
-                    "PDF Ficha listo",
-                    "Se generó la ficha (Steps 1 al 3) para vista previa y descarga."
-            ));
-            PrimeFaces.current().ajax().addCallbackParam("fichaListo", fichaPdfListo);
-
-        } catch (Exception ex) {
-            this.fichaPdfListo = false;
-            this.pdfTokenFicha = null;
-
-            log.error("Error generando PDF FICHA", ex);
-
-            ctx.addMessage(null, new FacesMessage(
-                    FacesMessage.SEVERITY_ERROR,
-                    "Error",
-                    "No se pudo generar el PDF de la ficha"
-            ));
-        }
+    // =====================================================
+    // PDF - Ficha Ocupacional
+    // =====================================================
+    private void recargarFichaDesdeBdParaImpresion() {
+    if (this.ficha == null || this.ficha.getIdFicha() == null) {
+        return;
     }
 
-    private void debugObjetosAntesDeImprimir() {
-        log.info("[PRINT] ficha=" + (ficha != null));
-        if (ficha != null) {
-            log.info("[PRINT] ficha.instSistema=" + ficha.getInstSistema());
-            log.info("[PRINT] ficha.ruc=" + ficha.getRucEstablecimiento());
-            log.info("[PRINT] ficha.centroTrabajo=" + ficha.getEstablecimientoCt());
-            log.info("[PRINT] ficha.ciiu=" + ficha.getCiiu());
-            log.info("[PRINT] ficha.noHistoria=" + ficha.getNoHistoriaClinica());
-            log.info("[PRINT] ficha.noArchivo=" + ficha.getNoArchivo());
+    FichaOcupacional fresh = fichaService.reloadById(this.ficha.getIdFicha());
+    if (fresh != null) {
+        this.ficha = fresh;
+    }
+}
+ public void prepararVistaPreviaFicha() {
+    FacesContext ctx = FacesContext.getCurrentInstance();
+
+    try {
+        if (!verificarFichaParaPdfFicha()) {
+            fichaPdfListo = false;
+            return;
         }
 
-        log.info("[PRINT] empleadoSel=" + (empleadoSel != null));
+        // ✅ 0) MUY IMPORTANTE: si estás en ingreso manual, PersonaAux debe estar persistida
+        //    (esto evita: TransientObjectException: references an unsaved transient instance of PersonaAux)
+        asegurarPersonaAuxPersistida();
+
+        // ✅ 1) Persistir lo último en BD (merge/update)
+        ficha = fichaService.actualizar(ficha);
+
+        // ✅ 2) Recargar fresh desde BD (evita estado viejo / lazy)
+        recargarFichaDesdeBdParaImpresion();
+
+        // ✅ 3) Construir y renderizar
+        String html = construirHtmlFichaDesdePlantilla();
+        byte[] bytes = renderizarPdf(html);
+
+        // ✅ 4) Guardar token en sesión (tu lógica actual)
+        String token = "FICHA_" + UUID.randomUUID().toString().replace("-", "");
+        ExternalContext ec = ctx.getExternalContext();
+        HttpSession session = (HttpSession) ec.getSession(true);
+
+        @SuppressWarnings("unchecked")
+        Map<String, byte[]> pdfStore = (Map<String, byte[]>) session.getAttribute("PDF_STORE");
+        if (pdfStore == null) {
+            pdfStore = new HashMap<>();
+            session.setAttribute("PDF_STORE", pdfStore);
+        }
+        pdfStore.put(token, bytes);
+
+        this.pdfTokenFicha = token;
+        this.fichaPdfListo = true;
+
+        this.activeStep = "step4";
+        this.mostrarDlgCedula = false;
+
+        ctx.addMessage(null, new FacesMessage(
+                FacesMessage.SEVERITY_INFO,
+                "PDF Ficha listo",
+                "Se generó la ficha para vista previa y descarga."
+        ));
+
+        PrimeFaces.current().ajax().addCallbackParam("fichaListo", fichaPdfListo);
+        PrimeFaces.current().ajax().update(":msgs", "@([id$=wdzFicha])");
+
+    } catch (Exception ex) {
+        this.fichaPdfListo = false;
+        this.pdfTokenFicha = null;
+
+        LOG.error("Error generando PDF FICHA", ex);
+
+        ctx.addMessage(null, new FacesMessage(
+                FacesMessage.SEVERITY_ERROR,
+                "Error",
+                "No se pudo generar el PDF de la ficha"
+        ));
+    }
+}
+
+    private void debugObjetosAntesDeImprimir() {
+        LOG.info("[PRINT] ficha=" + (ficha != null));
+        if (ficha != null) {
+            LOG.info("[PRINT] ficha.instSistema=" + ficha.getInstSistema());
+            LOG.info("[PRINT] ficha.ruc=" + ficha.getRucEstablecimiento());
+            LOG.info("[PRINT] ficha.centroTrabajo=" + ficha.getEstablecimientoCt());
+            LOG.info("[PRINT] ficha.ciiu=" + ficha.getCiiu());
+            LOG.info("[PRINT] ficha.noHistoria=" + ficha.getNoHistoriaClinica());
+            LOG.info("[PRINT] ficha.noArchivo=" + ficha.getNoArchivo());
+        }
+
+        LOG.info("[PRINT] empleadoSel=" + (empleadoSel != null));
         if (empleadoSel != null) {
-            log.info("[PRINT] empleadoSel.priApellido=" + empleadoSel.getPriApellido());
-            log.info("[PRINT] empleadoSel.segApellido=" + empleadoSel.getSegApellido());
-            log.info("[PRINT] empleadoSel.nombres=" + empleadoSel.getNombres());
+            LOG.info("[PRINT] empleadoSel.priApellido=" + empleadoSel.getPriApellido());
+            LOG.info("[PRINT] empleadoSel.segApellido=" + empleadoSel.getSegApellido());
+            LOG.info("[PRINT] empleadoSel.nombres=" + empleadoSel.getNombres());
             // si tienes:
-            // log.info("[PRINT] empleadoSel.sexo=" + empleadoSel.getSexo());
-            // log.info("[PRINT] empleadoSel.fechaNac=" + empleadoSel.getFechaNacimiento());
+            // LOG.info("[PRINT] empleadoSel.sexo=" + empleadoSel.getSexo());
+            // LOG.info("[PRINT] empleadoSel.fechaNac=" + empleadoSel.getFechaNacimiento());
         }
     }
 
@@ -2341,40 +2610,66 @@ public class CentroMedicoCtrl implements Serializable {
             sb.append("- No existe ficha en memoria.\n");
         } else {
 
-            if (!permitirIngresoManual && empleadoSel == null) {
-                sb.append("- Falta seleccionar el empleado (empleadoSel == null).\n");
+            // 1) Determinar "modo auxiliar" sin depender solo de permitirIngresoManual
+            //    Si hay personaAux en controller o en ficha, asumimos ingreso manual.
+            boolean modoAux = permitirIngresoManual
+                    || (this.personaAux != null)
+                    || (ficha.getPersonaAux() != null);
+
+            // 2) Validación de empleado / persona auxiliar
+            boolean tieneEmpleado = (empleadoSel != null) || (ficha.getEmpleado() != null);
+
+            boolean tienePersonaAux = false;
+
+            // 2.1) Primero con el objeto del controller (no proxy)
+            if (this.personaAux != null
+                    && this.personaAux.getCedula() != null
+                    && !this.personaAux.getCedula().trim().isEmpty()) {
+                tienePersonaAux = true;
             }
 
-            boolean tieneEmpleado = (ficha.getEmpleado() != null);
-            boolean tienePersonaAux = (ficha.getPersonaAux() != null
-                    && ficha.getPersonaAux().getCedula() != null
-                    && !ficha.getPersonaAux().getCedula().trim().isEmpty());
-
-            if (!tieneEmpleado && !tienePersonaAux) {
-                sb.append("- Debe seleccionar un empleado o registrar una persona auxiliar.\n");
-            } else {
-                if (permitirIngresoManual) {
-                    if (!tienePersonaAux) {
-                        sb.append("- En modo ingreso manual: falta registrar la persona auxiliar.\n");
+            // 2.2) Fallback: si existe relación en ficha, NO tocar getters lazy si no está loaded
+            if (!tienePersonaAux && ficha.getPersonaAux() != null) {
+                try {
+                    boolean loaded = jakarta.persistence.Persistence.getPersistenceUtil().isLoaded(ficha.getPersonaAux());
+                    if (loaded) {
+                        String ced = ficha.getPersonaAux().getCedula();
+                        tienePersonaAux = (ced != null && !ced.trim().isEmpty());
+                    } else {
+                        // existe relación, pero es proxy lazy -> no leer campos
+                        tienePersonaAux = true;
                     }
-                } else {
-                    if (!tieneEmpleado) {
-                        sb.append("- Falta seleccionar el empleado.\n");
-                    }
+                } catch (RuntimeException ex) {
+                    LOG.warn("No se pudo validar PersonaAux por LAZY/proxy. Se omite lectura para evitar LazyInitializationException.", ex);
+                    tienePersonaAux = true;
                 }
             }
 
+            // 3) Reglas según modo
+            if (!tieneEmpleado && !tienePersonaAux) {
+                sb.append("- Debe seleccionar un empleado o registrar una persona auxiliar.\n");
+            } else if (modoAux) {
+                // En modo auxiliar, NO exijas empleado
+                if (!tienePersonaAux) {
+                    sb.append("- En modo ingreso manual: falta registrar la persona auxiliar.\n");
+                }
+            } else {
+                // En modo empleado, exiges empleado
+                if (!tieneEmpleado) {
+                    sb.append("- Falta seleccionar el empleado.\n");
+                }
+            }
+
+            // 4) Validaciones generales
             if (ficha.getFechaEvaluacion() == null) {
                 sb.append("- Falta la fecha de evaluación.\n");
             }
             if (ficha.getTipoEvaluacion() == null || ficha.getTipoEvaluacion().trim().isEmpty()) {
                 sb.append("- Falta el tipo de evaluación.\n");
             }
-
             if (ficha.getSignos() == null) {
                 sb.append("- Falta registrar signos vitales (Step 3).\n");
             }
-
             if (ficha.getIdFicha() == null) {
                 sb.append("- La ficha aún no se ha guardado.\n");
             }
@@ -2473,7 +2768,7 @@ public class CentroMedicoCtrl implements Serializable {
             throw new IllegalStateException("FacesContext es null. Solo dentro de request JSF.");
         }
 
-        log.info("FichaPrint: renderFaceletToHtml START viewId={}", viewId);
+        LOG.info("FichaPrint: renderFaceletToHtml START viewId={}", viewId);
 
         UIViewRoot originalViewRoot = fc.getViewRoot();
         ResponseWriter originalWriter = fc.getResponseWriter();
@@ -2511,11 +2806,11 @@ public class CentroMedicoCtrl implements Serializable {
             rw.flush();
 
             String html = sw.toString();
-            log.info("FichaPrint: renderFaceletToHtml END viewId={} htmlLen={}", viewId, html != null ? html.length() : -1);
+            LOG.info("FichaPrint: renderFaceletToHtml END viewId={} htmlLen={}", viewId, html != null ? html.length() : -1);
             return html;
 
         } catch (Exception e) {
-            log.error("FichaPrint: renderFaceletToHtml ERROR viewId={}", viewId, e);
+            LOG.error("FichaPrint: renderFaceletToHtml ERROR viewId={}", viewId, e);
             throw new RuntimeException("Error renderizando facelet " + viewId, e);
 
         } finally {
@@ -2552,7 +2847,7 @@ public class CentroMedicoCtrl implements Serializable {
             return html;
 
         } catch (IOException e) {
-            log.error("[FICHA] Error cargando plantilla_ficha.html", e);
+            LOG.error("[FICHA] Error cargando plantilla_ficha.html", e);
             // Devuelve HTML mínimo para que veas el error en PDF/preview
             return "<html><body><h3>Error cargando plantilla_ficha.html</h3><pre>"
                     + safe(e.getMessage()) + "</pre></body></html>";
@@ -2702,8 +2997,8 @@ public class CentroMedicoCtrl implements Serializable {
             // fechaNacimiento = empleadoSel.getFechaNacimiento(); // Date
             // grupoSanguineo = empleadoSel.getGrupoSanguineo();
             // lateralidad = empleadoSel.getLateralidad();
-            // Si no sabes el nombre exacto, imprime en log:
-            // log.info("empleadoSel class = {}", empleadoSel.getClass());
+            // Si no sabes el nombre exacto, imprime en LOG:
+            // LOG.info("empleadoSel class = {}", empleadoSel.getClass());
         }
 
         // 3) Edad si tienes fechaNacimiento
@@ -2714,24 +3009,24 @@ public class CentroMedicoCtrl implements Serializable {
         }
     }
 
-    private void logDebugStep1() {
-        log.info("[STEP1] institucion=" + institucion);
-        log.info("[STEP1] ruc=" + ruc);
-        log.info("[STEP1] centroTrabajo=" + centroTrabajo);
-        log.info("[STEP1] ciiu=" + ciiu);
-        log.info("[STEP1] noHistoria=" + noHistoria);
-        log.info("[STEP1] noArchivo=" + noArchivo);
+    private void LOGDebugStep1() {
+        LOG.info("[STEP1] institucion=" + institucion);
+        LOG.info("[STEP1] ruc=" + ruc);
+        LOG.info("[STEP1] centroTrabajo=" + centroTrabajo);
+        LOG.info("[STEP1] ciiu=" + ciiu);
+        LOG.info("[STEP1] noHistoria=" + noHistoria);
+        LOG.info("[STEP1] noArchivo=" + noArchivo);
 
-        log.info("[STEP1] apellido1=" + apellido1);
-        log.info("[STEP1] apellido2=" + apellido2);
-        log.info("[STEP1] nombre1=" + nombre1);
-        log.info("[STEP1] nombre2=" + nombre2);
+        LOG.info("[STEP1] apellido1=" + apellido1);
+        LOG.info("[STEP1] apellido2=" + apellido2);
+        LOG.info("[STEP1] nombre1=" + nombre1);
+        LOG.info("[STEP1] nombre2=" + nombre2);
 
-        log.info("[STEP1] sexo=" + sexo);
-        log.info("[STEP1] fechaNacimiento=" + safeDate(fechaNacimiento));
-        log.info("[STEP1] edad=" + safeNum(edad));
-        log.info("[STEP1] grupoSanguineo=" + grupoSanguineo);
-        log.info("[STEP1] lateralidad=" + lateralidad);
+        LOG.info("[STEP1] sexo=" + sexo);
+        LOG.info("[STEP1] fechaNacimiento=" + safeDate(fechaNacimiento));
+        LOG.info("[STEP1] edad=" + safeNum(edad));
+        LOG.info("[STEP1] grupoSanguineo=" + grupoSanguineo);
+        LOG.info("[STEP1] lateralidad=" + lateralidad);
     }
 
     private Map<String, String> buildReemplazosFicha() {
@@ -2759,15 +3054,15 @@ public class CentroMedicoCtrl implements Serializable {
 
         // ✅ (si tu plantilla lo usa en ficha)
         // === LOG DE VALORES EN EL MAPA (solo para depuración) ===
-        System.out.println("=== buildReemplazosFicha - valores en el mapa ===");
-        System.out.println("gineco_examen1 = " + rep.get("gineco_examen1"));
-        System.out.println("gineco_tiempo1 = " + rep.get("gineco_tiempo1"));
-        System.out.println("gineco_resultado1 = " + rep.get("gineco_resultado1"));
-        System.out.println("gineco_examen2 = " + rep.get("gineco_examen2"));
-        System.out.println("gineco_tiempo2 = " + rep.get("gineco_tiempo2"));
-        System.out.println("gineco_resultado2 = " + rep.get("gineco_resultado2"));
-        System.out.println("gineco_observacion = " + rep.get("gineco_observacion"));
-        System.out.println("=================================================");
+        LOG.info("=== buildReemplazosFicha - valores en el mapa ===");
+        LOG.info("gineco_examen1 = " + rep.get("gineco_examen1"));
+        LOG.info("gineco_tiempo1 = " + rep.get("gineco_tiempo1"));
+        LOG.info("gineco_resultado1 = " + rep.get("gineco_resultado1"));
+        LOG.info("gineco_examen2 = " + rep.get("gineco_examen2"));
+        LOG.info("gineco_tiempo2 = " + rep.get("gineco_tiempo2"));
+        LOG.info("gineco_resultado2 = " + rep.get("gineco_resultado2"));
+        LOG.info("gineco_observacion = " + rep.get("gineco_observacion"));
+        LOG.info("=================================================");
 
         cargarActividadesLaboralesList(rep);
         cargarMedidasPreventivasList(rep);
@@ -2824,20 +3119,20 @@ public class CentroMedicoCtrl implements Serializable {
         rep.put("exf_neuro_sensibilidad", markX(exfNeuroSensibilidad));
         rep.put("exf_neuro_marcha", markX(exfNeuroMarcha));
         rep.put("exf_neuro_reflejos", markX(exfNeuroReflejos));
-        rep.put("obs_examen_fisico", safe(obsExamenFisico));
+        rep.put("obs_examen_fisico", safe(trimToNull(obsExamenFisico) != null ? trimToNull(obsExamenFisico) : (ficha != null ? trimToNull(ficha.getObsExamenFisicoReg()) : null)));
     }
 
     private void cargarLogos(Map<String, String> rep) {
         try {
             rep.put("LOGO_IGM_DATAURI", dataUriFromResource("images/LOGO_IGM_FULL_COLOR.png"));
         } catch (IOException ex) {
-            log.warn("[FICHA] No se pudo cargar logo IGM", ex);
+            LOG.warn("[FICHA] No se pudo cargar LOGo IGM", ex);
             rep.put("LOGO_IGM_DATAURI", "");
         }
         try {
             rep.put("LOGO_MIDENA_DATAURI", dataUriFromResource("images/LOGO_MIDENA.png"));
         } catch (IOException ex) {
-            log.warn("[FICHA] No se pudo cargar logo MIDENA", ex);
+            LOG.warn("[FICHA] No se pudo cargar LOGo MIDENA", ex);
             rep.put("LOGO_MIDENA_DATAURI", "");
         }
     }
@@ -2905,7 +3200,7 @@ public class CentroMedicoCtrl implements Serializable {
         putStringArray0Based(rep, "af_tiempo_", afTiempo);
         putStringArray0Based(rep, "med_cual_", medCual);
         putIntArray0Based(rep, "med_cant_", medCant);
-        rep.put("consumo_observacion", safe(consumoObservacion));
+        rep.put("consumo_observacion", safe(trimToNull(consumoVidaCondObs) != null ? trimToNull(consumoVidaCondObs) : (ficha != null ? trimToNull(ficha.getObsConsumoVidaCond()) : null)));
         rep.put("consumo_vida_cond_obs", safe(consumoVidaCondObs));
         rep.put("cons_otras_cual", safe(consOtrasCual));
     }
@@ -2951,12 +3246,49 @@ public class CentroMedicoCtrl implements Serializable {
             rep.put("puestoTrabajo", safe(fichaRiesgo.getPuestoTrabajo()));
             // Garantiza que nunca queden {{otros_*}} en el HTML aunque no hayan datos
             for (int i = 1; i <= 7; i++) {
-                rep.putIfAbsent("otros_fis_" + i, safe(otrosRiesgos.get("otros_fis_" + i)));
-                rep.putIfAbsent("otros_seg_" + i, safe(otrosRiesgos.get("otros_seg_" + i)));
-                rep.putIfAbsent("otros_qui_" + i, safe(otrosRiesgos.get("otros_qui_" + i)));
-                rep.putIfAbsent("otros_bio_" + i, safe(otrosRiesgos.get("otros_bio_" + i)));
-                rep.putIfAbsent("otros_erg_" + i, safe(otrosRiesgos.get("otros_erg_" + i)));
-                rep.putIfAbsent("otros_psi_" + i, safe(otrosRiesgos.get("otros_psi_" + i)));
+                // En UI a veces las llaves vienen con convenciones distintas; cubrimos variantes
+                rep.putIfAbsent("otros_fis_" + i, safe(firstNonEmpty(
+                        otrosRiesgos.get("otros_fis_" + i),
+                        otrosRiesgos.get("FIS_OTROS_" + i),
+                        otrosRiesgos.get("fis_otros_" + i),
+                        otrosRiesgos.get("otrosFis" + i),
+                        otrosRiesgos.get("otrosFis_" + i)
+                )));
+                rep.putIfAbsent("otros_seg_" + i, safe(firstNonEmpty(
+                        otrosRiesgos.get("otros_seg_" + i),
+                        otrosRiesgos.get("SEG_OTROS_" + i),
+                        otrosRiesgos.get("seg_otros_" + i),
+                        otrosRiesgos.get("otrosSeg" + i),
+                        otrosRiesgos.get("otrosSeg_" + i)
+                )));
+                rep.putIfAbsent("otros_qui_" + i, safe(firstNonEmpty(
+                        otrosRiesgos.get("otros_qui_" + i),
+                        otrosRiesgos.get("QUI_OTROS_" + i),
+                        otrosRiesgos.get("qui_otros_" + i),
+                        otrosRiesgos.get("otrosQui" + i),
+                        otrosRiesgos.get("otrosQui_" + i)
+                )));
+                rep.putIfAbsent("otros_bio_" + i, safe(firstNonEmpty(
+                        otrosRiesgos.get("otros_bio_" + i),
+                        otrosRiesgos.get("BIO_OTROS_" + i),
+                        otrosRiesgos.get("bio_otros_" + i),
+                        otrosRiesgos.get("otrosBio" + i),
+                        otrosRiesgos.get("otrosBio_" + i)
+                )));
+                rep.putIfAbsent("otros_erg_" + i, safe(firstNonEmpty(
+                        otrosRiesgos.get("otros_erg_" + i),
+                        otrosRiesgos.get("ERG_OTROS_" + i),
+                        otrosRiesgos.get("erg_otros_" + i),
+                        otrosRiesgos.get("otrosErg" + i),
+                        otrosRiesgos.get("otrosErg_" + i)
+                )));
+                rep.putIfAbsent("otros_psi_" + i, safe(firstNonEmpty(
+                        otrosRiesgos.get("otros_psi_" + i),
+                        otrosRiesgos.get("PSI_OTROS_" + i),
+                        otrosRiesgos.get("psi_otros_" + i),
+                        otrosRiesgos.get("otrosPsi" + i),
+                        otrosRiesgos.get("otrosPsi_" + i)
+                )));
             }
 
         } else {
@@ -3069,7 +3401,18 @@ public class CentroMedicoCtrl implements Serializable {
         rep.put("l_apto_obs", aptoObsX);
         rep.put("l_apto_limit", aptoLimitX);
         rep.put("l_no_apto", noAptoX);
-        rep.put("l_observaciones", safe(detalleObservaciones));
+        String obs = detalleObservaciones;
+        if (obs == null || obs.trim().isEmpty()) {
+            // fallback: si observaciones ya están en la entidad Ficha, las tomamos de ahí
+            obs = getFichaStringByReflection(ficha,
+                    "getDetalleObs",
+                    "getDetalleObservaciones",
+                    "getObservaciones",
+                    "getObs",
+                    "getObservacion"
+            );
+        }
+        rep.put("l_observaciones", safe(obs));
     }
 
     private void cargarNRetiro(Map<String, String> rep) {
@@ -3238,7 +3581,7 @@ public class CentroMedicoCtrl implements Serializable {
     m.put("fecha_MM", safe(fecha_MM));
     m.put("fecha_dd", safe(fecha_dd));*/
         m.put("LOGO_IGM_DATAURI", buildLogoDataUri("LOGO_IGM_FULL_COLOR.png"));
-        m.put("LOGO_MIDENA_DATAURI", buildLogoDataUri("logomidena.png"));
+        m.put("LOGO_MIDENA_DATAURI", buildLogoDataUri("LOGomidena.png"));
 
         return m;
     }
@@ -3319,7 +3662,7 @@ public class CentroMedicoCtrl implements Serializable {
             ExternalContext ec = FacesContext.getCurrentInstance().getExternalContext();
             ec.getSessionMap().put("centroMedicoPrint", this);
         } catch (Exception e) {
-            log.warn("No se pudo colocar centroMedicoPrint en sesión.", e);
+            LOG.warn("No se pudo colocar centroMedicoPrint en sesión.", e);
         }
 
         String html = renderFaceletToHtml("/pages/ficha/fichaPrint.xhtml");
@@ -3358,7 +3701,7 @@ public class CentroMedicoCtrl implements Serializable {
                 ctx.addMessage(null, new FacesMessage(
                         FacesMessage.SEVERITY_ERROR, "Error", "No se pudo generar el PDF"));
             }
-            log.error("Unexpected error while preparing PDF preview.", ex);
+            LOG.error("Unexpected error while preparing PDF preview.", ex);
         }
     }
 
@@ -3424,11 +3767,15 @@ public class CentroMedicoCtrl implements Serializable {
         pdfObjectUrl = null;
     }
 
+    // =====================================================
+    // PDF - Certificado Médico
+    // =====================================================
     public void prepararVistaPreviaCertificado() {
         FacesContext ctx = FacesContext.getCurrentInstance();
 
         try {
 
+            // 1) Asegurar que la FICHA esté lista (porque el certificado depende de la ficha)
             if (!fichaPdfListo || pdfTokenFicha == null) {
                 prepararVistaPreviaFicha();
                 if (!fichaPdfListo || pdfTokenFicha == null) {
@@ -3437,11 +3784,23 @@ public class CentroMedicoCtrl implements Serializable {
                 }
             }
 
+            // 2) ✅ Setear FECHA DE EMISIÓN del certificado (solo si está null)
+            //    Esta fecha pertenece al certificado, por eso se setea aquí,
+            //    cuando el usuario pide "vista previa / descarga del certificado".
+            if (ficha != null && ficha.getFechaEmision() == null) {
+                ficha.setFechaEmision(new java.util.Date());
+            }
+            if (ficha != null) {
+                this.fechaEmision = ficha.getFechaEmision();
+            }
+
+            // 3) Validar que todo esté completo (incluye fecha de emisión)
             if (!verificarFichaCompleta()) {
                 certificadoListo = false;
                 return;
             }
 
+            // 4) Generar el PDF del certificado
             generatePdfPreview(ctx);
 
             certificadoListo = (pdfTokenCertificado != null);
@@ -3467,7 +3826,7 @@ public class CentroMedicoCtrl implements Serializable {
                         "No se pudo generar el PDF del certificado"
                 ));
             }
-            log.error("Error generando PDF CERTIFICADO", ex);
+            LOG.error("Error generando PDF CERTIFICADO", ex);
         }
     }
 
@@ -3490,20 +3849,20 @@ public class CentroMedicoCtrl implements Serializable {
         try {
             Path p = Path.of(System.getProperty("java.io.tmpdir"), fileName);
             Files.writeString(p, xhtml, StandardCharsets.UTF_8);
-            log.error("PDF DEBUG: Se guardó XHTML en {}", p.toAbsolutePath(), ex);
+            LOG.error("PDF DEBUG: Se guardó XHTML en {}", p.toAbsolutePath(), ex);
         } catch (Exception ignore) {
-            log.error("PDF DEBUG: No se pudo guardar XHTML de diagnóstico.", ignore);
+            LOG.error("PDF DEBUG: No se pudo guardar XHTML de diagnóstico.", ignore);
         }
     }
 
     private byte[] renderizarPdf(String xhtml) throws DocumentException, IOException {
 
         if (xhtml == null || xhtml.trim().isEmpty()) {
-            log.error("renderizarPdf: El string HTML recibido es NULO o VACÍO.");
+            LOG.error("renderizarPdf: El string HTML recibido es NULO o VACÍO.");
             throw new IllegalArgumentException(
                     "El contenido HTML para generar el PDF está vacío. "
                     + "Esto generalmente significa que el método renderFaceletToHtml falló. "
-                    + "Revise el log del servidor buscando 'FichaPrint: renderFaceletToHtml ERROR' para ver el error real."
+                    + "Revise el LOG del servidor buscando 'FichaPrint: renderFaceletToHtml ERROR' para ver el error real."
             );
         }
 
@@ -3527,7 +3886,7 @@ public class CentroMedicoCtrl implements Serializable {
                 );
             }
         } catch (DocumentException | IOException e) {
-            log.debug("Skipping optional font registration for PDF rendering.", e);
+            LOG.debug("Skipping optional font registration for PDF rendering.", e);
         }
 
         try {
@@ -3546,10 +3905,12 @@ public class CentroMedicoCtrl implements Serializable {
 
     private String construirHtmlDesdePlantilla() throws IOException {
 
-        String template = cargarRecursoComoString("PLANTILLA.html");
+        String template = cargarRecursoComoString("plantilla_certificado.html");
         template = normalizarXhtml(template);
 
-        Date f = (fechaEmision != null) ? fechaEmision : new Date();
+        Date f = (ficha != null && ficha.getFechaEmision() != null)
+                ? ficha.getFechaEmision()
+                : ((fechaEmision != null) ? fechaEmision : new Date());
         SimpleDateFormat yy = new SimpleDateFormat("yyyy");
         SimpleDateFormat MM = new SimpleDateFormat("MM");
         SimpleDateFormat dd = new SimpleDateFormat("dd");
@@ -3595,29 +3956,29 @@ public class CentroMedicoCtrl implements Serializable {
             }
         }
 
-        String logoIgmUrl = "";
-        String logoMidenaUrl = "";
+        String LOGoIgmUrl = "";
+        String LOGoMidenaUrl = "";
         try {
-            logoIgmUrl = FacesContext.getCurrentInstance()
+            LOGoIgmUrl = FacesContext.getCurrentInstance()
                     .getExternalContext()
                     .getResource("/resources/images/LOGO_IGM_FULL_COLOR.png")
                     .toExternalForm();
         } catch (RuntimeException ex) {
-            System.err.println("[PDF] No se pudo resolver LOGO_IGM_FULL_COLOR.png: " + ex.getMessage());
+            LOG.error("[PDF] No se pudo resolver LOGO_IGM_FULL_COLOR.png: " + ex.getMessage());
         }
         try {
-            logoMidenaUrl = FacesContext.getCurrentInstance()
+            LOGoMidenaUrl = FacesContext.getCurrentInstance()
                     .getExternalContext()
-                    .getResource("/resources/images/logomidena.PNG")
+                    .getResource("/resources/images/LOGO_MIDENA.png")
                     .toExternalForm();
         } catch (RuntimeException ex) {
-            System.err.println("[PDF] No se pudo resolver LOGO_MIDENA_FULL_COLO.png: " + ex.getMessage());
+            LOG.error("[PDF] No se pudo resolver LOGO_MIDENA.png: " + ex.getMessage());
         }
 
         Map<String, String> rep = new LinkedHashMap<>();
 
-        rep.put("LOGO_IGM_DATAURI", logoIgmUrl);
-        rep.put("LOGO_MIDENA_DATAURI", logoMidenaUrl);
+        rep.put("LOGO_IGM_DATAURI", LOGoIgmUrl);
+        rep.put("LOGO_MIDENA_DATAURI", LOGoMidenaUrl);
 
         rep.put("institucion", safe(institucion));
         rep.put("ruc", safe(ruc));
@@ -3685,7 +4046,7 @@ public class CentroMedicoCtrl implements Serializable {
                 .getExternalContext()
                 .getResourceAsStream("/resources/" + pathFromResources);
         if (in == null) {
-            System.err.println("[PDF] No se encontró recurso: /resources/" + pathFromResources);
+            LOG.error("[PDF] No se encontró recurso: /resources/" + pathFromResources);
             return "";
         }
         byte[] bytes;
@@ -3925,16 +4286,16 @@ public class CentroMedicoCtrl implements Serializable {
         try {
             jakarta.faces.context.FacesContext fc = jakarta.faces.context.FacesContext.getCurrentInstance();
             String viewId = (fc != null && fc.getViewRoot() != null) ? fc.getViewRoot().getViewId() : "null";
-            System.out.println(">>> [AC-K-COD] complete ENTER query=[" + query + "] viewId=" + viewId);
+            LOG.info(">>> [AC-K-COD] complete ENTER query=[" + query + "] viewId=" + viewId);
 
             if (query == null) {
-                System.out.println("<<< [AC-K-COD] query=null => return empty");
+                LOG.info("<<< [AC-K-COD] query=null => return empty");
                 return new ArrayList<>();
             }
 
             String q = query.trim().toUpperCase().replaceAll("[^A-Z0-9]", "");
             if (q.isEmpty()) {
-                System.out.println("<<< [AC-K-COD] q empty after normalize => return empty");
+                LOG.info("<<< [AC-K-COD] q empty after normalize => return empty");
                 return new ArrayList<>();
             }
 
@@ -3961,7 +4322,7 @@ public class CentroMedicoCtrl implements Serializable {
             return out;
 
         } catch (Exception e) {
-            System.out.println("!!! [AC-K-COD] ERROR " + e.getClass().getName() + " : " + e.getMessage());
+            LOG.info("!!! [AC-K-COD] ERROR " + e.getClass().getName() + " : " + e.getMessage());
             e.printStackTrace();
             return new ArrayList<>();
         }
@@ -3971,11 +4332,11 @@ public class CentroMedicoCtrl implements Serializable {
         try {
             jakarta.faces.context.FacesContext fc = jakarta.faces.context.FacesContext.getCurrentInstance();
             String viewId = (fc != null && fc.getViewRoot() != null) ? fc.getViewRoot().getViewId() : "null";
-            System.out.println(">>> [AC-K-DESC] complete ENTER query=[" + query + "] viewId=" + viewId);
+            LOG.info(">>> [AC-K-DESC] complete ENTER query=[" + query + "] viewId=" + viewId);
 
             List<String> out = new ArrayList<String>();
             if (query == null || query.trim().isEmpty()) {
-                System.out.println("<<< [AC-K-DESC] query empty => return empty");
+                LOG.info("<<< [AC-K-DESC] query empty => return empty");
                 return out;
             }
 
@@ -3996,7 +4357,7 @@ public class CentroMedicoCtrl implements Serializable {
             return out;
 
         } catch (Exception e) {
-            System.out.println("!!! [AC-K-DESC] ERROR " + e.getClass().getName() + " : " + e.getMessage());
+            LOG.info("!!! [AC-K-DESC] ERROR " + e.getClass().getName() + " : " + e.getMessage());
             e.printStackTrace();
             return new ArrayList<String>();
         }
@@ -4021,13 +4382,16 @@ public class CentroMedicoCtrl implements Serializable {
             personaAux.setCedula(cedulaBusqueda.trim());
         }
 
-        mostrarDialogoAux = true;
+        mostrarDiaLOGoAux = true;
         PrimeFaces.current().executeScript("PF('dlgPersonaAux').show();");
     }
 
+    // =====================================================
+    // Persona Auxiliar - Registro y Selección
+    // =====================================================
     public void guardarPersonaAuxYUsar() {
 
-        log.info(String.valueOf("INGRESA AL METODO DE GUARDAR "));
+        LOG.info(String.valueOf("INGRESA AL METODO DE GUARDAR "));
         FacesContext ctx = FacesContext.getCurrentInstance();
 
         if (personaAux == null) {
@@ -4040,7 +4404,7 @@ public class CentroMedicoCtrl implements Serializable {
             return;
         }
 
-        log.info(String.valueOf("PERSONA AUXILIAR ANTES VALIDAR: " + personaAux));
+        LOG.info(String.valueOf("PERSONA AUXILIAR ANTES VALIDAR: " + personaAux));
 
         if (esVacio(personaAux.getCedula())
                 || esVacio(personaAux.getApellido1())
@@ -4098,7 +4462,7 @@ public class CentroMedicoCtrl implements Serializable {
             this.fechaNacimiento = personaAux.getFechaNac();
             this.noHistoria = personaAux.getCedula();
 
-            mostrarDialogoAux = false;
+            mostrarDiaLOGoAux = false;
             mostrarDlgCedula = false;
             permitirIngresoManual = false;
             PrimeFaces.current().ajax().update(":noHistoriaClinica");
@@ -4113,7 +4477,7 @@ public class CentroMedicoCtrl implements Serializable {
                     "Se guardó la persona auxiliar y se cargaron los datos en la ficha."
             ));
 
-            log.info("PersonaAux guardada manualmente: {} {} / {} {} (cedula={})",
+            LOG.info("PersonaAux guardada manualmente: {} {} / {} {} (cedula={})",
                     personaAux.getApellido1(),
                     personaAux.getApellido2(),
                     personaAux.getNombre1(),
@@ -4121,7 +4485,7 @@ public class CentroMedicoCtrl implements Serializable {
                     personaAux.getCedula());
 
         } catch (RuntimeException e) {
-            log.error("Error guardando datos manuales", e);
+            LOG.error("Error guardando datos manuales", e);
             ctx.addMessage(null, new FacesMessage(
                     FacesMessage.SEVERITY_ERROR,
                     "Error",
@@ -4131,6 +4495,12 @@ public class CentroMedicoCtrl implements Serializable {
         }
     }
 
+    // =====================================================
+    // Búsqueda de Cédula / DiáLOGo Inicial
+    // =====================================================
+    // =====================================================
+    // Búsqueda de Cédula / Diálogo Inicial
+    // =====================================================
     public void buscarCedula() {
         FacesContext ctx = FacesContext.getCurrentInstance();
         PrimeFaces pf = PrimeFaces.current();
@@ -4138,34 +4508,76 @@ public class CentroMedicoCtrl implements Serializable {
         try {
             final CedulaSearchOutcome outcome = searchCedulaAndPrepareUi();
 
+            if (outcome.isEncontrado()) {
+                tryLoadCargoFromVista(ctx);
+            } else {
+                // si no se encontró, limpia el campo en la ficha (para que no se quede “pegado”)
+                if (this.ficha != null) {
+                    this.ficha.setCiiu(null); // o "" si prefieres vacío
+                }
+            }
+
             if (outcome.isEncontrado() || outcome.isMostrarManual()) {
                 mostrarDlgCedula = false;
             }
 
-            pushCedulaDialogCallbackParams(pf, outcome);
+            pushCedulaDiaLOGCallbackParams(pf, outcome);
 
-            updateCedulaDialog(pf);
+            updateCedulaDiaLOG(pf);
+
+            // ✅ refresca mensajes + wizard (y el campo cargo si lo tienes en step1)
             pf.ajax().update(":msgs", "@([id$=wdzFicha])");
 
         } catch (BusinessValidationException ex) {
-            addCedulaDialogMessage(ctx, FacesMessage.SEVERITY_WARN, "Búsqueda", ex.getMessage());
+            addCedulaDiaLOGMessage(ctx, FacesMessage.SEVERITY_WARN, "Búsqueda", ex.getMessage());
 
-            pushCedulaDialogCallbackParams(pf, CedulaSearchOutcome.notFoundNoManual());
+            pushCedulaDiaLOGCallbackParams(pf, CedulaSearchOutcome.notFoundNoManual());
 
-            updateCedulaDialog(pf);
+            updateCedulaDiaLOG(pf);
             pf.ajax().update(":msgs");
 
         } catch (RuntimeException ex) {
             handleUnexpected("buscarCedula", ex);
-            addCedulaDialogMessage(ctx, FacesMessage.SEVERITY_ERROR, "Error", "Ocurrió un error al buscar la cédula.");
+            addCedulaDiaLOGMessage(ctx, FacesMessage.SEVERITY_ERROR, "Error", "Ocurrió un error al buscar la cédula.");
 
-            pushCedulaDialogCallbackParams(pf, CedulaSearchOutcome.notFoundNoManual());
+            pushCedulaDiaLOGCallbackParams(pf, CedulaSearchOutcome.notFoundNoManual());
 
-            updateCedulaDialog(pf);
+            updateCedulaDiaLOG(pf);
             pf.ajax().update(":msgs");
         }
     }
 
+private void tryLoadCargoFromVista(FacesContext ctx) {
+
+    // Usa la misma cédula que ya tienes en tu flujo
+    String ced = SnUtils.trimToNull(this.cedulaBusqueda); // ajusta si tu variable se llama distinto
+    if (ced == null) {
+        if (this.ficha != null) {
+            this.ficha.setCiiu(null);
+        }
+        return;
+    }
+
+    EmpleadoCargoDTO dto = empleadoRhService.buscarPorCedulaEnVista(ced);
+
+    // Si no hay cargo vigente -> deja en blanco y muestra mensaje
+    if (dto == null || SnUtils.trimToNull(dto.getCargoDescrip()) == null) {
+        if (this.ficha != null) {
+            this.ficha.setCiiu(null); // o "" si prefieres
+        }
+
+        addCedulaDiaLOGMessage(ctx,
+            FacesMessage.SEVERITY_WARN,
+            "Cargo",
+            "El empleado no registra cargo vigente en RRHH.");
+        return;
+    }
+
+    // ✅ AQUÍ está el punto: se setea el campo que está en la pantalla
+    if (this.ficha != null) {
+        this.ficha.setCiiu(dto.getCargoDescrip()); // <-- se refleja en Puesto de Trabajo CIUO
+    }
+}
     private static final String CEDULA_MSG_CLIENT_ID = "dlgCedulaForm:cedulaBusqueda";
 
     private static class CedulaSearchOutcome {
@@ -4211,19 +4623,19 @@ public class CentroMedicoCtrl implements Serializable {
 
         if (emp != null) {
             loadEmployeeFromRrhh(emp);
-            showPersonaAuxDialog(false);
-            addCedulaDialogInfoMessage();
+            showPersonaAuxDiaLOG(false);
+            addCedulaDiaLOGInfoMessage();
             pf.ajax().update(":wdzFicha", ":msgs");
-            updateCedulaDialog(pf);
+            updateCedulaDiaLOG(pf);
             return CedulaSearchOutcome.found();
         }
 
         prepareManualEntry(cedula);
-        showPersonaAuxDialog(true);
-        addCedulaDialogWarnMessage();
+        showPersonaAuxDiaLOG(true);
+        addCedulaDiaLOGWarnMessage();
         pf.ajax().update(":wdzFicha", ":msgs",
                 ":dlgPersonaAuxForm:cedManual", ":dlgPersonaAuxForm:gridManual", ":dlgPersonaAuxForm:msgPersonaAux");
-        updateCedulaDialog(pf);
+        updateCedulaDiaLOG(pf);
         return CedulaSearchOutcome.notFoundManual();
     }
 
@@ -4259,6 +4671,7 @@ public class CentroMedicoCtrl implements Serializable {
         edad = calcularEdad(fechaNacimiento);
 
         ficha.setNoHistoriaClinica(emp.getNoCedula());
+        ficha.setNoArchivo(emp.getNoCedula());
         ficha.setEmpleado(emp);
         ficha.setPersonaAux(null);
 
@@ -4278,37 +4691,38 @@ public class CentroMedicoCtrl implements Serializable {
         personaAux.setFechaNac(null);
 
         ficha.setNoHistoriaClinica(cedula);
+        ficha.setNoArchivo(cedula);
 
         permitirIngresoManual = true;
         mostrarDlgCedula = true;
     }
 
-    private void showPersonaAuxDialog(boolean show) {
+    private void showPersonaAuxDiaLOG(boolean show) {
 
     }
 
-    private void addCedulaDialogInfoMessage() {
+    private void addCedulaDiaLOGInfoMessage() {
         FacesContext ctx = FacesContext.getCurrentInstance();
-        addCedulaDialogMessage(ctx, FacesMessage.SEVERITY_INFO, "Búsqueda", "Información cargada desde RRHH.");
+        addCedulaDiaLOGMessage(ctx, FacesMessage.SEVERITY_INFO, "Búsqueda", "Información cargada desde RRHH.");
     }
 
-    private void addCedulaDialogWarnMessage() {
+    private void addCedulaDiaLOGWarnMessage() {
         FacesContext ctx = FacesContext.getCurrentInstance();
-        addCedulaDialogMessage(ctx, FacesMessage.SEVERITY_WARN, "Búsqueda",
+        addCedulaDiaLOGMessage(ctx, FacesMessage.SEVERITY_WARN, "Búsqueda",
                 "No se encontró la cédula. Puede ingresar los datos manualmente.");
     }
 
-    private void addCedulaDialogMessage(FacesContext ctx, FacesMessage.Severity sev, String summary, String detail) {
+    private void addCedulaDiaLOGMessage(FacesContext ctx, FacesMessage.Severity sev, String summary, String detail) {
         if (ctx != null) {
             ctx.addMessage(CEDULA_MSG_CLIENT_ID, new FacesMessage(sev, summary, detail));
         }
     }
 
-    private void updateCedulaDialog(PrimeFaces pf) {
+    private void updateCedulaDiaLOG(PrimeFaces pf) {
         pf.ajax().update(":dlgCedulaForm:msgCedula", ":dlgCedulaForm:panelBtnManualWrap");
     }
 
-    private void pushCedulaDialogCallbackParams(PrimeFaces pf, CedulaSearchOutcome outcome) {
+    private void pushCedulaDiaLOGCallbackParams(PrimeFaces pf, CedulaSearchOutcome outcome) {
         pf.ajax().addCallbackParam("encontrado", outcome.found);
         pf.ajax().addCallbackParam("mostrarManual", outcome.showManual);
     }
@@ -4691,6 +5105,14 @@ public class CentroMedicoCtrl implements Serializable {
         this.consTiempoAbstinenciaMeses = v;
     }
 
+    public String getObsExamenFisico() {
+        return obsExamenFisico;
+    }
+
+    public void setObsExamenFisico(String obsExamenFisico) {
+        this.obsExamenFisico = obsExamenFisico;
+    }
+
     public String getConsObservacion() {
         return consumoVidaCondObs;
     }
@@ -4739,16 +5161,16 @@ public class CentroMedicoCtrl implements Serializable {
 
     private void s3(String msg) {
 
-        log.info("[STEP3] {}", msg);
+        LOG.info("[STEP3] {}", msg);
 
-        log.info(String.valueOf("[STEP3] " + msg));
+        LOG.info(String.valueOf("[STEP3] " + msg));
     }
 
     private void s3e(String msg, Throwable t) {
-        log.error("[STEP3] " + msg, t);
-        log.info(String.valueOf("[STEP3-ERROR] " + msg));
+        LOG.error("[STEP3] " + msg, t);
+        LOG.info(String.valueOf("[STEP3-ERROR] " + msg));
         if (t != null) {
-            log.error("Unexpected error.", t);
+            LOG.error("Unexpected error.", t);
         }
     }
 
@@ -5379,7 +5801,7 @@ public class CentroMedicoCtrl implements Serializable {
 
     private String getCompValueDebug(UIComponent comp) {
         if (comp == null) {
-            System.out.println("... [VAL] comp=null");
+            LOG.info("... [VAL] comp=null");
             return null;
         }
 
@@ -5424,7 +5846,7 @@ public class CentroMedicoCtrl implements Serializable {
 
     private Integer extraerIdx(UIComponent comp) {
         if (comp == null) {
-            System.out.println("... [IDX] extraerIdx comp=null");
+            LOG.info("... [IDX] extraerIdx comp=null");
             return null;
         }
         Object idxObj = comp.getAttributes().get("idx");
@@ -5446,7 +5868,7 @@ public class CentroMedicoCtrl implements Serializable {
         try {
             return Integer.parseInt(idxObj.toString());
         } catch (Exception e) {
-            System.out.println("... [IDX] extraerIdx parse ERROR idxAttr=" + idxObj + " ex=" + e);
+            LOG.info("... [IDX] extraerIdx parse ERROR idxAttr=" + idxObj + " ex=" + e);
             return null;
         }
     }
@@ -5460,14 +5882,14 @@ public class CentroMedicoCtrl implements Serializable {
                 + " selected=[" + selected + "] clientId=" + (comp != null ? comp.getClientId() : "null"));
 
         if (idx == null || listaDiag == null || idx < 0 || idx >= listaDiag.size()) {
-            System.out.println("<<< [AC-K-COD] itemSelect idx INVALID");
+            LOG.info("<<< [AC-K-COD] itemSelect idx INVALID");
             return;
         }
 
         ConsultaDiagnostico row = listaDiag.get(idx);
 
         if (selected == null || selected.trim().isEmpty()) {
-            System.out.println("<<< [AC-K-COD] itemSelect empty selection => no-op");
+            LOG.info("<<< [AC-K-COD] itemSelect empty selection => no-op");
             return;
         }
 
@@ -5475,7 +5897,7 @@ public class CentroMedicoCtrl implements Serializable {
         row.setCodigo(codigo);
 
         Cie10 cie = cie10Service.buscarPorCodigo(codigo);
-        System.out.println("... [AC-K-COD] itemSelect buscarPorCodigo(" + codigo + ") => " + (cie != null ? cie.getCodigo() : "null"));
+        LOG.info("... [AC-K-COD] itemSelect buscarPorCodigo(" + codigo + ") => " + (cie != null ? cie.getCodigo() : "null"));
 
         if (cie != null) {
             row.setCodigo(cie.getCodigo());
@@ -5486,7 +5908,7 @@ public class CentroMedicoCtrl implements Serializable {
             row.setCie10(null);
         }
 
-        System.out.println("<<< [AC-K-COD] itemSelect AFTER codigo=[" + row.getCodigo() + "] desc=[" + row.getDescripcion() + "]");
+        LOG.info("<<< [AC-K-COD] itemSelect AFTER codigo=[" + row.getCodigo() + "] desc=[" + row.getDescripcion() + "]");
     }
 
     public void onKCieCodigoBlur(AjaxBehaviorEvent event) {
@@ -5496,10 +5918,10 @@ public class CentroMedicoCtrl implements Serializable {
         String clientId = safeClientId(comp);
         String typed = getAutoCompleteTypedRobusto(comp);
 
-        System.out.println(">>> [AC-K-COD] blur idx=" + idx + " clientId=" + clientId + " typed=[" + typed + "]");
+        LOG.info(">>> [AC-K-COD] blur idx=" + idx + " clientId=" + clientId + " typed=[" + typed + "]");
 
         if (idx == null || listaDiag == null || idx < 0 || idx >= listaDiag.size()) {
-            System.out.println("<<< [AC-K-COD] blur idx INVALID => " + idx);
+            LOG.info("<<< [AC-K-COD] blur idx INVALID => " + idx);
             return;
         }
 
@@ -5511,7 +5933,7 @@ public class CentroMedicoCtrl implements Serializable {
             row.setCodigo(null);
             row.setDescripcion(null);
             row.setCie10(null);
-            System.out.println("<<< [AC-K-COD] blur empty => cleared row");
+            LOG.info("<<< [AC-K-COD] blur empty => cleared row");
             return;
         }
 
@@ -5521,7 +5943,7 @@ public class CentroMedicoCtrl implements Serializable {
             row.setCodigo(codigoUp);
             row.setCie10(null);
 
-            System.out.println("<<< [AC-K-COD] blur partial [" + codigoUp + "] => keep, no exact lookup");
+            LOG.info("<<< [AC-K-COD] blur partial [" + codigoUp + "] => keep, no exact lookup");
             return;
         }
 
@@ -5534,12 +5956,12 @@ public class CentroMedicoCtrl implements Serializable {
             row.setCodigo(cie.getCodigo());
             row.setDescripcion(cie.getDescripcion());
             row.setCie10(cie);
-            System.out.println("<<< [AC-K-COD] blur AFTER MATCH codigo=[" + row.getCodigo() + "] desc=[" + row.getDescripcion() + "]");
+            LOG.info("<<< [AC-K-COD] blur AFTER MATCH codigo=[" + row.getCodigo() + "] desc=[" + row.getDescripcion() + "]");
         } else {
 
             row.setCodigo(codigoUp);
             row.setCie10(null);
-            System.out.println("<<< [AC-K-COD] blur AFTER NO-MATCH keep codigo=[" + row.getCodigo() + "]");
+            LOG.info("<<< [AC-K-COD] blur AFTER NO-MATCH keep codigo=[" + row.getCodigo() + "]");
         }
     }
 
@@ -5548,10 +5970,10 @@ public class CentroMedicoCtrl implements Serializable {
         UIComponent comp = event.getComponent();
         Integer idx = extraerIdx(comp);
 
-        System.out.println(">>> [AC-K-DESC] itemSelect ENTER desc=[" + descripcion + "] idx=" + idx);
+        LOG.info(">>> [AC-K-DESC] itemSelect ENTER desc=[" + descripcion + "] idx=" + idx);
 
         if (idx == null || idx < 0 || idx >= listaDiag.size()) {
-            System.out.println("<<< [AC-K-DESC] itemSelect idx INVALID => " + idx);
+            LOG.info("<<< [AC-K-DESC] itemSelect idx INVALID => " + idx);
             return;
         }
 
@@ -5560,7 +5982,7 @@ public class CentroMedicoCtrl implements Serializable {
 
         if (descripcion != null && !descripcion.trim().isEmpty()) {
             Cie10 cie = cie10Service.buscarPrimeroPorDescripcion(descripcion.trim());
-            System.out.println("... [AC-K-DESC] buscarPrimeroPorDescripcion => " + (cie != null ? cie.getCodigo() : "null"));
+            LOG.info("... [AC-K-DESC] buscarPrimeroPorDescripcion => " + (cie != null ? cie.getCodigo() : "null"));
 
             if (cie != null) {
                 row.setCodigo(cie.getCodigo());
@@ -5584,10 +6006,10 @@ public class CentroMedicoCtrl implements Serializable {
         String clientId = safeClientId(comp);
         String typed = getAutoCompleteTypedRobusto(comp);
 
-        System.out.println(">>> [AC-K-DESC] blur idx=" + idx + " clientId=" + clientId + " typed=[" + typed + "]");
+        LOG.info(">>> [AC-K-DESC] blur idx=" + idx + " clientId=" + clientId + " typed=[" + typed + "]");
 
         if (idx == null || listaDiag == null || idx < 0 || idx >= listaDiag.size()) {
-            System.out.println("<<< [AC-K-DESC] blur idx INVALID => " + idx);
+            LOG.info("<<< [AC-K-DESC] blur idx INVALID => " + idx);
             return;
         }
 
@@ -5597,7 +6019,7 @@ public class CentroMedicoCtrl implements Serializable {
         if (desc.isEmpty()) {
             row.setDescripcion(null);
             row.setCie10(null);
-            System.out.println("<<< [AC-K-DESC] blur empty => cleared descripcion");
+            LOG.info("<<< [AC-K-DESC] blur empty => cleared descripcion");
             return;
         }
 
@@ -5605,7 +6027,7 @@ public class CentroMedicoCtrl implements Serializable {
 
         if (desc.length() < 4) {
             row.setCie10(null);
-            System.out.println("<<< [AC-K-DESC] blur partial => keep desc only");
+            LOG.info("<<< [AC-K-DESC] blur partial => keep desc only");
             return;
         }
 
@@ -5613,13 +6035,13 @@ public class CentroMedicoCtrl implements Serializable {
         try {
 
             List<Cie10> candidatos = cie10Service.buscarPorDescripcionLike(desc, 20);
-            System.out.println("... [AC-K-DESC] candidatos.size=" + (candidatos == null ? "null" : candidatos.size()));
+            LOG.info("... [AC-K-DESC] candidatos.size=" + (candidatos == null ? "null" : candidatos.size()));
 
             if (candidatos != null && !candidatos.isEmpty()) {
                 cie = pickBestByDescripcion(candidatos, desc);
             }
         } catch (Exception e) {
-            System.out.println("!!! [AC-K-DESC] error: " + e.getMessage());
+            LOG.info("!!! [AC-K-DESC] error: " + e.getMessage());
         }
 
         System.out.println("... [AC-K-DESC] pickBest => "
@@ -5629,11 +6051,11 @@ public class CentroMedicoCtrl implements Serializable {
             row.setCodigo(cie.getCodigo());
             row.setDescripcion(cie.getDescripcion());
             row.setCie10(cie);
-            System.out.println("<<< [AC-K-DESC] blur AFTER MATCH codigo=[" + row.getCodigo() + "] desc=[" + row.getDescripcion() + "]");
+            LOG.info("<<< [AC-K-DESC] blur AFTER MATCH codigo=[" + row.getCodigo() + "] desc=[" + row.getDescripcion() + "]");
         } else {
 
             row.setCie10(null);
-            System.out.println("<<< [AC-K-DESC] blur AFTER NO-MATCH keep desc=[" + row.getDescripcion() + "]");
+            LOG.info("<<< [AC-K-DESC] blur AFTER NO-MATCH keep desc=[" + row.getDescripcion() + "]");
         }
     }
 
@@ -5648,7 +6070,7 @@ public class CentroMedicoCtrl implements Serializable {
         String key = clientId + "_input";
         String typed = fc.getExternalContext().getRequestParameterMap().get(key);
 
-        System.out.println("... [AC-TYPED] clientId=" + clientId + " param=" + key + " typed=[" + typed + "]");
+        LOG.info("... [AC-TYPED] clientId=" + clientId + " param=" + key + " typed=[" + typed + "]");
         return typed;
     }
 
@@ -5658,10 +6080,10 @@ public class CentroMedicoCtrl implements Serializable {
 
         String clientId = safeClientId(comp);
 
-        System.out.println(">>> [K-TIPO] change ENTER idx=" + idx + " clientId=" + clientId);
+        LOG.info(">>> [K-TIPO] change ENTER idx=" + idx + " clientId=" + clientId);
 
         if (idx == null || idx < 0 || listaDiag == null || idx >= listaDiag.size()) {
-            System.out.println("<<< [K-TIPO] change idx INVALID => " + idx);
+            LOG.info("<<< [K-TIPO] change idx INVALID => " + idx);
             return;
         }
 
@@ -5692,7 +6114,7 @@ public class CentroMedicoCtrl implements Serializable {
             for (String k : keys) {
                 String v = params.get(k);
                 if (v != null) {
-                    System.out.println("... [REQ] AC typed key=" + k + " => [" + v + "]");
+                    LOG.info("... [REQ] AC typed key=" + k + " => [" + v + "]");
                     return v;
                 }
             }
@@ -5702,7 +6124,7 @@ public class CentroMedicoCtrl implements Serializable {
             return null;
 
         } catch (Exception e) {
-            System.out.println("!!! [REQ] getAutoCompleteTypedRobusto ERROR: " + e.getMessage());
+            LOG.info("!!! [REQ] getAutoCompleteTypedRobusto ERROR: " + e.getMessage());
             return null;
         }
     }
@@ -5779,12 +6201,12 @@ public class CentroMedicoCtrl implements Serializable {
         this.preRenderDone = preRenderDone;
     }
 
-    public boolean isMostrarDialogoAux() {
-        return mostrarDialogoAux;
+    public boolean isMostrarDiaLOGoAux() {
+        return mostrarDiaLOGoAux;
     }
 
-    public void setMostrarDialogoAux(boolean mostrarDialogoAux) {
-        this.mostrarDialogoAux = mostrarDialogoAux;
+    public void setMostrarDiaLOGoAux(boolean mostrarDiaLOGoAux) {
+        this.mostrarDiaLOGoAux = mostrarDiaLOGoAux;
     }
 
     public Integer getNoPersonaSel() {
@@ -6460,12 +6882,57 @@ public class CentroMedicoCtrl implements Serializable {
         return "S".equalsIgnoreCase(sn) || "X".equalsIgnoreCase(sn) ? "X" : "";
     }
 
-    private void cargarAtencionPrioritaria(Map<String, String> rep) {
+    void cargarAtencionPrioritaria(Map<String, String> rep) {
+
+        // --- Marca SI/NO (lo que ya tenías) ---
         rep.put("apCatastrofica_sn", apCatastrofica ? "SI" : "NO");
         rep.put("apDiscapacidad_sn", apDiscapacidad ? "SI" : "NO");
         rep.put("apEmbarazada_sn", apEmbarazada ? "SI" : "NO");
         rep.put("apLactancia_sn", apLactancia ? "SI" : "NO");
         rep.put("apAdultoMayor_sn", apAdultoMayor ? "SI" : "NO");
+
+        // --- Para PDF: decide “aplica” usando la ficha (si existe), si no usa el checkbox ---
+        boolean aplicaDis = false;
+        boolean aplicaCat = false;
+
+        if (ficha != null) {
+            aplicaDis = "S".equalsIgnoreCase(safe(ficha.getApDiscapacidad()));
+            aplicaCat = "S".equalsIgnoreCase(safe(ficha.getApCatastrofica()));
+        } else {
+            aplicaDis = apDiscapacidad;
+            aplicaCat = apCatastrofica;
+        }
+
+        // Engine no soporta if => ocultamos por style
+        rep.put("apDiscapacidad_style", aplicaDis ? "" : "display:none;");
+        rep.put("apCatastrofica_style", aplicaCat ? "" : "display:none;");
+
+        // --- Discapacidad (DIS_*) ---
+        rep.put("disTipo", safe(ficha != null ? ficha.getDisTipo() : null));
+        rep.put("disDescripcion", safe(ficha != null ? ficha.getDisDescripcion() : null));
+
+        Integer porc = (ficha != null ? ficha.getDisPorcentaje() : null);
+        rep.put("disPorcentaje", porc == null ? "" : String.valueOf(porc)); // la plantilla le pone “%” si quieres
+
+        // --- Catastrófica (CAT_*) ---
+        rep.put("catDiagnostico", safe(ficha != null ? ficha.getCatDiagnostico() : null));
+
+        String catCal = safe(ficha != null ? ficha.getCatCalificada() : null);
+        if ("S".equalsIgnoreCase(catCal) || "TRUE".equalsIgnoreCase(catCal)) {
+            rep.put("catCalificada", "SI");
+        } else if ("N".equalsIgnoreCase(catCal) || "FALSE".equalsIgnoreCase(catCal)) {
+            rep.put("catCalificada", "NO");
+        } else {
+            rep.put("catCalificada", catCal); // por si viene vacío o ya viene SI/NO
+        }
+        LOG.info("[PDF] disTipo=" + rep.get("disTipo")
+                + " disDescripcion=" + rep.get("disDescripcion")
+                + " disPorcentaje=" + rep.get("disPorcentaje")
+                + " catDiagnostico=" + rep.get("catDiagnostico")
+                + " catCalificada=" + rep.get("catCalificada")
+                + " styleDis=" + rep.get("apDiscapacidad_style")
+                + " styleCat=" + rep.get("apCatastrofica_style"));
+
     }
 
     private void cargarActividadLaboralArrays(Map<String, String> rep) {
@@ -6486,4 +6953,141 @@ public class CentroMedicoCtrl implements Serializable {
             rep.put("h_obs_" + idx, safe(getSafe(actLabObservaciones, i)));
         }
     }
+
+    // =====================================================
+    // Helpers para PDF (Ficha): observaciones y "Otros" riesgos
+    // =====================================================
+    /**
+     * Retorna el primer String no nulo y no vacío (trim).
+     */
+    private static String firstNonEmpty(String... vals) {
+        if (vals == null) {
+            return null;
+        }
+        for (String v : vals) {
+            if (v != null && !v.trim().isEmpty()) {
+                return v;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Intenta obtener un String desde la entidad Ficha mediante reflexión. Útil
+     * cuando el bean del controlador no tiene el valor pero la entidad sí.
+     */
+    private static String getFichaStringByReflection(Object fo, String... getterNames) {
+        if (fo == null || getterNames == null) {
+            return null;
+        }
+        for (String g : getterNames) {
+            if (g == null || g.trim().isEmpty()) {
+                continue;
+            }
+            try {
+                java.lang.reflect.Method m = fo.getClass().getMethod(g);
+                Object r = m.invoke(fo);
+                if (r != null) {
+                    String s = String.valueOf(r);
+                    if (!s.trim().isEmpty()) {
+                        return s;
+                    }
+                }
+            } catch (Exception ignore) {
+                // si no existe el getter, seguimos con el siguiente
+            }
+        }
+        return null;
+    }
+
+    public void onToggleDiscapacidad() {
+        if (!apDiscapacidad) {
+            discapTipo = null;
+            discapDesc = null;
+            discapPorc = null;
+        }
+    }
+
+    public void onToggleCatastrofica() {
+        if (!apCatastrofica) {
+            catasDiagnostico = null;
+            catasCalificada = null;
+        }
+    }
+    
+    /**
+     * PARA MANEJAR LA GENERACION Y REGENERACION 
+     * @return 
+     */
+    
+    
+    public void reloadFichaDesdeBd() {
+    if (this.ficha == null || this.ficha.getIdFicha() == null) {
+        return;
+    }
+    this.ficha = fichaService.findById(this.ficha.getIdFicha());
+}
+
+    public String getDiscapTipo() {
+        return discapTipo;
+    }
+
+    public void setDiscapTipo(String discapTipo) {
+        this.discapTipo = discapTipo;
+    }
+
+    public String getDiscapDesc() {
+        return discapDesc;
+    }
+
+    public void setDiscapDesc(String discapDesc) {
+        this.discapDesc = discapDesc;
+    }
+
+    public Integer getDiscapPorc() {
+        return discapPorc;
+    }
+
+    public void setDiscapPorc(Integer discapPorc) {
+        this.discapPorc = discapPorc;
+    }
+
+    public String getCatasDiagnostico() {
+        return catasDiagnostico;
+    }
+
+    public void setCatasDiagnostico(String catasDiagnostico) {
+        this.catasDiagnostico = catasDiagnostico;
+    }
+
+    public Boolean getCatasCalificada() {
+        return catasCalificada;
+    }
+
+    public void setCatasCalificada(Boolean catasCalificada) {
+        this.catasCalificada = catasCalificada;
+    }
+
+    public boolean isCertPdfListo() {
+        return certificadoListo;
+    }
+
+    public String getFichaToken() {
+        return pdfTokenFicha;
+    }
+
+    public String getCertToken() {
+        return pdfTokenCertificado;
+    }
+
+    private int stepIndex = 1;
+
+    public boolean isFichaPdfListo() {
+        return fichaPdfListo;
+    }
+
+    public String getPdfTokenFicha() {
+        return pdfTokenFicha;
+    }
+
 }

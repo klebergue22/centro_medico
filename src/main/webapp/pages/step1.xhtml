@@ -23,7 +23,8 @@
 
             <h:outputLabel value=" Puesto de Trabajo CIUO"/>
             <h:panelGroup styleClass="field-wrap">
-                <p:inputText value="#{centroMedicoCtrl.ficha.ciiu}" maxlength="20"/>
+                
+                <p:inputTextarea value="#{centroMedicoCtrl.ficha.ciiu}" maxlength="20"/>
             </h:panelGroup>
 
             <h:outputLabel value="Centro de trabajo"/>
@@ -65,28 +66,129 @@
 
         <!-- ATENCIÓN PRIORITARIA -->
         <p:fieldset legend="ATENCIÓN PRIORITARIA" styleClass="ap-fieldset" style="margin-top:.5rem;">
+
             <div class="ap-grid">
                 <div class="ap-item">
                     <p:selectBooleanCheckbox value="#{centroMedicoCtrl.apEmbarazada}" />
                     <h:outputText value="Embarazada" styleClass="ap-label"/>
                 </div>
+
                 <div class="ap-item">
-                    <p:selectBooleanCheckbox value="#{centroMedicoCtrl.apDiscapacidad}" />
+                    <p:selectBooleanCheckbox value="#{centroMedicoCtrl.apDiscapacidad}">
+                        <p:ajax process="@this"
+                                listener="#{centroMedicoCtrl.onToggleDiscapacidad}"
+                                update="@form:apDiscapPanel"/>
+                    </p:selectBooleanCheckbox>
                     <h:outputText value="Discapacidad" styleClass="ap-label"/>
                 </div>
+
                 <div class="ap-item">
-                    <p:selectBooleanCheckbox value="#{centroMedicoCtrl.apCatastrofica}" />
+                    <p:selectBooleanCheckbox value="#{centroMedicoCtrl.apCatastrofica}">
+                        <p:ajax process="@this"
+                                listener="#{centroMedicoCtrl.onToggleCatastrofica}"
+                                update="@form:apCatasPanel"/>
+                    </p:selectBooleanCheckbox>
                     <h:outputText value="Enf. catastrófica" styleClass="ap-label"/>
                 </div>
+
                 <div class="ap-item">
                     <p:selectBooleanCheckbox value="#{centroMedicoCtrl.apLactancia}" />
                     <h:outputText value="Lactancia" styleClass="ap-label"/>
                 </div>
+
                 <div class="ap-item">
                     <p:selectBooleanCheckbox value="#{centroMedicoCtrl.apAdultoMayor}" />
                     <h:outputText value="Adulto mayor" styleClass="ap-label"/>
                 </div>
             </div>
+
+            <!-- =======================
+                 Discapacidad
+                 ======================= -->
+            <p:outputPanel id="apDiscapPanel" style="margin-top:.75rem;">
+                <ui:fragment rendered="#{centroMedicoCtrl.apDiscapacidad}">
+                    <p:panel header="Discapacidad">
+
+                        <div class="ui-fluid" style="display:flex; flex-wrap:wrap; gap:12px;">
+
+                            <div style="flex: 1 1 280px; min-width:260px;">
+                                <h:outputLabel for="dis_tipo" value="Tipo:" style="font-weight:bold; display:block; margin-bottom:4px;"/>
+                                <p:selectOneMenu id="dis_tipo" value="#{centroMedicoCtrl.discapTipo}" style="width:100%;">
+                                    <f:selectItem itemLabel="Seleccione" itemValue="" noSelectionOption="true"/>
+                                    <f:selectItem itemLabel="Físico" itemValue="FISICO"/>
+                                    <f:selectItem itemLabel="Auditivo" itemValue="AUDITIVO"/>
+                                    <f:selectItem itemLabel="Intelectual" itemValue="INTELECTUAL"/>
+                                    <f:selectItem itemLabel="Lenguaje" itemValue="LENGUAJE"/>
+                                    <f:selectItem itemLabel="Visual" itemValue="VISUAL"/>
+                                    <f:selectItem itemLabel="Psicosocial" itemValue="PSICOSOCIAL"/>
+                                </p:selectOneMenu>
+                            </div>
+
+                            <div style="flex: 0 0 180px; min-width:160px;">
+                                <h:outputLabel for="dis_porc" value="Porcentaje (%):" style="font-weight:bold; display:block; margin-bottom:4px;"/>
+
+                                <div style="display:flex; align-items:center; gap:12px; width:100%;">
+                                    <!-- input target del slider -->
+                                    <p:inputText id="dis_porc" value="#{centroMedicoCtrl.discapPorc}" style="width:80px; text-align:center;">
+                                        <f:convertNumber integerOnly="true" />
+                                    </p:inputText>
+
+                                    <!-- slider -->
+                                  <p:slider for="dis_porc" minValue="0" maxValue="100" step="1" style="flex:1;" styleClass="igmslider"/>
+
+                                    <h:outputText value="%" style="font-weight:bold;"/>
+                                </div>
+                            </div>
+
+                            <div style="flex: 1 1 100%; min-width:260px;">
+                                <h:outputLabel for="dis_desc" value="Descripción:" style="font-weight:bold; display:block; margin-bottom:4px;"/>
+                                <p:inputTextarea id="dis_desc"
+                                                 value="#{centroMedicoCtrl.discapDesc}"
+                                                 rows="3" autoResize="true"
+                                                 maxlength="500"
+                                                 style="width:100%;"
+                                                 placeholder="Descripción de la discapacidad"/>
+                            </div>
+
+                        </div>
+
+                    </p:panel>
+                </ui:fragment>
+            </p:outputPanel>
+
+            <!-- =======================
+                 Catastrófica / Huérfana / Rara
+                 ======================= -->
+            <p:outputPanel id="apCatasPanel" style="margin-top:.75rem;">
+                <ui:fragment rendered="#{centroMedicoCtrl.apCatastrofica}">
+                    <p:panel header="Enfermedad Catastrófica, Huérfana y Rara">
+
+                        <div class="ui-fluid" style="display:flex; flex-wrap:wrap; gap:12px;">
+
+                            <div style="flex: 1 1 100%; min-width:260px;">
+                                <h:outputLabel for="cat_diag" value="Diagnóstico:" style="font-weight:bold; display:block; margin-bottom:4px;"/>
+                                <p:inputTextarea id="cat_diag"
+                                                 value="#{centroMedicoCtrl.catasDiagnostico}"
+                                                 rows="3" autoResize="true"
+                                                 maxlength="500"
+                                                 style="width:100%;"
+                                                 placeholder="Diagnóstico"/>
+                            </div>
+
+                            <div style="flex: 0 0 260px; min-width:240px;">
+                                <h:outputLabel for="cat_calif" value="Calificada:" style="font-weight:bold; display:block; margin-bottom:4px;"/>
+                                <p:selectOneRadio id="cat_calif" value="#{centroMedicoCtrl.catasCalificada}" layout="lineDirection">
+                                    <f:selectItem itemLabel="Sí" itemValue="true"/>
+                                    <f:selectItem itemLabel="No" itemValue="false"/>
+                                </p:selectOneRadio>
+                            </div>
+
+                        </div>
+
+                    </p:panel>
+                </ui:fragment>
+            </p:outputPanel>
+
         </p:fieldset>
 
         <!-- BIO/IDENTIFICACIÓN -->
@@ -158,86 +260,92 @@
     </p:fieldset>
 
     <!-- B. MOTIVO DE CONSULTA -->
-    <p:fieldset legend="B. MOTIVO DE CONSULTA" toggleable="true">
-        <h:panelGrid columns="4"
-                     columnClasses="w-15rem, w-35rem, w-15rem, w-35rem"
-                     styleClass="ui-fluid">
+   <p:fieldset legend="B. MOTIVO DE CONSULTA" toggleable="true">
+    <h:panelGrid columns="4"
+                 columnClasses="w-15rem, w-35rem, w-15rem, w-35rem"
+                 styleClass="ui-fluid">
 
-            <h:outputLabel value="Puesto de trabajo (CIUO)"/>
-            <p:inputText placeholder="CIUO"/>
+        <h:outputLabel value="Puesto de trabajo (CIUO)"/>
+        <p:inputText value="#{centroMedicoCtrl.ficha.ciiu}"
+                     placeholder="CIUO"
+                     maxlength="20"/>
 
-            <h:outputLabel value="Fecha de atención"/>
-            <p:calendar value="#{centroMedicoCtrl.fechaAtencion}" 
-                        pattern="dd/MM/yyyy" 
-                        navigator="true" 
-                        showOn="button"/>
+        <h:outputLabel value="Fecha de atención"/>
+        <p:calendar value="#{centroMedicoCtrl.fechaAtencion}"
+                    pattern="dd/MM/yyyy"
+                    navigator="true"
+                    showOn="button"/>
 
-            <!-- Selector de tipo de evaluación -->
-            <h:panelGrid  >
-                <h:outputLabel for="tipoEval" value="Tipo Evaluación"/>
-                <p:selectOneRadio id="tipoEval" value="#{centroMedicoCtrl.tipoEval}">
-                    <f:selectItem itemLabel="Ingreso" itemValue="INGRESO"/>
-                    <f:selectItem itemLabel="Periódico" itemValue="PERIODICO"/>
-                    <f:selectItem itemLabel="Reintegro" itemValue="REINTEGRO"/>
-                    <f:selectItem itemLabel="Retiro" itemValue="RETIRO"/>
-                    <!-- Re-renderiza el bloque de fechas al cambiar -->
-                    <p:ajax event="valueChange"
-                            listener="#{centroMedicoCtrl.syncTipoEvaluacion}"
-                            process="@form" update="fechasPanel"
-                            />
-                </p:selectOneRadio>
-            </h:panelGrid>
+        <!-- Selector de tipo de evaluación -->
+        <h:panelGrid>
+            <h:outputLabel for="tipoEval" value="Tipo Evaluación"/>
+            <p:selectOneRadio id="tipoEval" value="#{centroMedicoCtrl.tipoEval}">
+                <f:selectItem itemLabel="Ingreso" itemValue="INGRESO"/>
+                <f:selectItem itemLabel="Periódico" itemValue="PERIODICO"/>
+                <f:selectItem itemLabel="Reintegro" itemValue="REINTEGRO"/>
+                <f:selectItem itemLabel="Retiro" itemValue="RETIRO"/>
 
-            <!-- Bloque que se re-renderiza con las fechas -->
-            <h:panelGroup id="fechasPanel" layout="block">
-                <h:panelGrid >
-
-                    <!-- Fecha de ingreso -->
-                    <ui:fragment rendered="#{centroMedicoCtrl.tipoEval eq 'INGRESO' or centroMedicoCtrl.tipoEval eq 'PERIODICO'}">
-                        <h:outputLabel for="fecIngreso" value="Fecha de ingreso"/>
-                        <p:calendar id="fecIngreso"
-                                    value="#{centroMedicoCtrl.fecIngreso}"
-                                    pattern="dd/MM/yyyy"
-                                    showOn="button"/>
-                    </ui:fragment>
-
-                    <!-- Fecha de reintegro -->
-                    <ui:fragment rendered="#{centroMedicoCtrl.tipoEval eq 'REINTEGRO' or centroMedicoCtrl.tipoEval eq 'PERIODICO'}">
-                        <h:outputLabel for="fecReintegro" value="Fecha de reintegro"/>
-                        <p:calendar id="fecReintegro"
-                                    value="#{centroMedicoCtrl.fecReintegro}"
-                                    pattern="dd/MM/yyyy"
-                                    showOn="button"/>
-                    </ui:fragment>
-
-                    <!-- Último día laboral (retiro) -->
-                    <ui:fragment rendered="#{centroMedicoCtrl.tipoEval eq 'RETIRO' or centroMedicoCtrl.tipoEval eq 'PERIODICO'}">
-                        <h:outputLabel for="fecRetiro" value="Último día laboral"/>
-                        <p:calendar id="fecRetiro"
-                                    value="#{centroMedicoCtrl.fecRetiro}"
-                                    pattern="dd/MM/yyyy"
-                                    showOn="button"/>
-                    </ui:fragment>
-
-                </h:panelGrid>
-            </h:panelGroup>
-
-            <h:outputLabel value="Observación" />
-            <p:inputTextarea style="width:190%; min-width:400px;" rows="2" autoResize="true" placeholder="Observación"/>
+                <!-- Re-renderiza solo el bloque de fechas -->
+                <p:ajax listener="#{centroMedicoCtrl.syncTipoEvaluacion}"
+                        process="@this"
+                        update="fechasPanel"/>
+            </p:selectOneRadio>
         </h:panelGrid>
-    </p:fieldset>
+
+        <!-- Bloque que se re-renderiza con las fechas -->
+        <h:panelGroup id="fechasPanel" layout="block">
+            <h:panelGrid columns="2" styleClass="ui-fluid">
+
+                <!-- Fecha de ingreso: INGRESO / PERIODICO -->
+                <ui:fragment rendered="#{centroMedicoCtrl.tipoEval eq 'INGRESO' or centroMedicoCtrl.tipoEval eq 'PERIODICO'}">
+                    <h:outputLabel for="fecIngreso" value="Fecha de ingreso"/>
+                    <p:calendar id="fecIngreso"
+                                value="#{centroMedicoCtrl.fecIngreso}"
+                                pattern="dd/MM/yyyy"
+                                showOn="button"/>
+                </ui:fragment>
+
+                <!-- Fecha de reintegro: solo REINTEGRO -->
+                <ui:fragment rendered="#{centroMedicoCtrl.tipoEval eq 'REINTEGRO'}">
+                    <h:outputLabel for="fecReintegro" value="Fecha de reintegro"/>
+                    <p:calendar id="fecReintegro"
+                                value="#{centroMedicoCtrl.fecReintegro}"
+                                pattern="dd/MM/yyyy"
+                                showOn="button"/>
+                </ui:fragment>
+
+                <!-- Último día laboral: solo RETIRO -->
+                <ui:fragment rendered="#{centroMedicoCtrl.tipoEval eq 'RETIRO'}">
+                    <h:outputLabel for="fecRetiro" value="Último día laboral"/>
+                    <p:calendar id="fecRetiro"
+                                value="#{centroMedicoCtrl.fecRetiro}"
+                                pattern="dd/MM/yyyy"
+                                showOn="button"/>
+                </ui:fragment>
+
+            </h:panelGrid>
+        </h:panelGroup>
+
+        <h:outputLabel value="Observación" />
+        <p:inputTextarea id="obsGeneral"
+                         value="#{centroMedicoCtrl.motivoObs}"
+                         style="width:190%; min-width:400px;" rows="2" autoResize="true"
+                         maxlength="2000"
+                         placeholder="Observación"/>
+    </h:panelGrid>
+</p:fieldset>
 
     <!-- C. ANTECEDENTES PERSONALES -->
     <p:fieldset legend="C. ANTECEDENTES PERSONALES" toggleable="true">
         <h:panelGrid columns="2" columnClasses="w-20rem," styleClass="ui-fluid">
             <h:outputLabel value="Antecedentes clínicos y quirúrgicos"/>
-            <p:inputTextarea style="width:140%; min-width:500px;" rows="3" autoResize="true" value="#{centroMedicoCtrl.antClinicoQuirurgico}"/>
+            <p:inputTextarea style="width:140%; min-width:600px;" rows="3" autoResize="true" value="#{centroMedicoCtrl.antClinicoQuirurgico}"/>
 
             <h:outputLabel value="Antecedentes familiares"/>
-            <p:inputTextarea rows="3" autoResize="true" value="#{centroMedicoCtrl.antFamiliares}"/>
+            <p:inputTextarea rows="3" style="width:140%; min-width:600px;" autoResize="true" value="#{centroMedicoCtrl.antFamiliares}"/>
 
             <h:outputLabel value="Condición especial (urgencias / emergencia / tx)"/>
-            <p:inputTextarea rows="2" autoResize="true" value="#{centroMedicoCtrl.condicionEspecial}"/>
+            <p:inputTextarea rows="2" style="width:140%; min-width:600px;" autoResize="true" value="#{centroMedicoCtrl.condicionEspecial}"/>
 
             <h:outputLabel value="Autoriza transfusiones"/>
             <p:selectOneRadio value="#{centroMedicoCtrl.autorizaTransfusion}">
@@ -252,7 +360,7 @@
             </p:selectOneRadio>
 
             <h:outputLabel value="¿Cuál?"/>
-            <p:inputText value="#{centroMedicoCtrl.tratamientoHormonalCual}"/>
+            <p:inputTextarea style="width:140%; min-width:600px;" value="#{centroMedicoCtrl.tratamientoHormonalCual}"/>
         </h:panelGrid>
         <p:outputPanel id="sexoBlocks" layout="block"  style="margin-top:8px">
 
@@ -853,15 +961,4 @@
                              value="#{centroMedicoCtrl.ficha.obsExamenFisicoReg}"/>
         </div>
     </p:fieldset>
-
-
-
-
-
-
-
-
-
-
-
 </ui:composition>

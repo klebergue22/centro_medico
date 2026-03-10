@@ -18,7 +18,7 @@
       font-family: Arial, sans-serif;
       font-size: 11px;        /* -1 para comprimir */
       line-height: 1.25;      /* más compacto */
-      color: #333;
+      color: #222;
     }
 
     /* Evitar saltos de página dentro de tablas y bloques clave */
@@ -29,8 +29,10 @@
     /* Tablas generales */
     table { width: 100%; border-collapse: collapse; margin-bottom: 6px; }
     th, td { border: 1px solid #7fa87e; padding: 5px; text-align: left; }
-    th { background: #d9f2d9; font-weight: bold; color: #333; }
-    .sec { background: #cfd8ff; font-weight: bold; color: #1a1a4d; font-size: 12.5px; }
+    
+    /* Colores unificados con Ficha Ocupacional */
+    th { background: #eef6ee; font-weight: bold; color: #1a1a4d; }
+    .sec { background: #d9f2d9; font-weight: bold; color: #1a1a4d; font-size: 12.5px; }
 
     /* Cabecera y título */
     .header-logos { width:100%; border:0; margin-bottom: 6px; }
@@ -49,7 +51,7 @@
     /* Utilitarios */
     .caja {
       height: 18px; width: 28px; text-align: center;
-      vertical-align: middle; border: 1px solid #333;
+      vertical-align: middle; border: 1px solid #7fa87e;
     }
     .center { text-align: center; }
     .observaciones { min-height: 48px; vertical-align: top; }   /* -altura */
@@ -57,12 +59,28 @@
 
     .footer {
       margin-top: 8px; text-align: center; font-size: 10px;
-      color: #666; border-top: 1px solid #999; padding-top: 6px;
+      color: #666; border-top: 1px solid #7fa87e; padding-top: 6px;
     }
 
     /* Ajustes muy concretos para que quepa todo */
     .td-tight th, .td-tight td { padding: 4px; }
     .nota p { margin: 0 0 4px 0; }
+
+    /* Celdas de entrada como en Ficha Ocupacional */
+    .cell-input-display {
+      display: block;
+      width: 100%;
+      white-space: normal;
+      overflow-wrap: break-word;
+      word-wrap: break-word;
+      word-break: break-word;
+    }
+
+    /* Labels de campos en negrilla */
+    .lbl {
+      font-weight: bold;
+      color: #1a1a4d;
+    }
 
   </style>
 </head>
@@ -93,32 +111,32 @@
       <th colspan="8" class="sec">A. DATOS DEL ESTABLECIMIENTO - DATOS DEL USUARIO</th>
     </tr>
     <tr>
-      <td>INSTITUCIÓN DEL SISTEMA</td>
-      <td colspan="3">{{institucion}}</td>
-      <td>RUC</td>
-      <td colspan="3">{{ruc}}</td>
+      <td class="lbl">Institución del Sistema</td>
+      <td colspan="3"><span class="cell-input-display">{{institucion}}</span></td>
+      <td class="lbl">RUC</td>
+      <td colspan="3"><span class="cell-input-display">{{ruc}}</span></td>
     </tr>
     <tr>
-      <td>ESTABLECIMIENTO / CENTRO DE TRABAJO</td>
-      <td colspan="3">{{centroTrabajo}}</td>
-      <td>NÚMERO DE FORMULARIO</td>
-      <td colspan="3">{{num_formulario}}</td>
+      <td class="lbl">Establecimiento / Centro de Trabajo</td>
+      <td colspan="3"><span class="cell-input-display">{{centroTrabajo}}</span></td>
+      <td class="lbl">Número de Formulario</td>
+      <td colspan="3"><span class="cell-input-display">{{num_formulario}}</span></td>
     </tr>
     <tr>
-      <td>PRIMER APELLIDO</td>
-      <td>{{apellido1}}</td>
-      <td>SEGUNDO APELLIDO</td>
-      <td>{{apellido2}}</td>
-      <td>PRIMER NOMBRE</td>
-      <td>{{nombre1}}</td>
-      <td>SEGUNDO NOMBRE</td>
-      <td>{{nombre2}}</td>
+      <td class="lbl">Primer Apellido</td>
+      <td><span class="cell-input-display">{{apellido1}}</span></td>
+      <td class="lbl">Segundo Apellido</td>
+      <td><span class="cell-input-display">{{apellido2}}</span></td>
+      <td class="lbl">Primer Nombre</td>
+      <td><span class="cell-input-display">{{nombre1}}</span></td>
+      <td class="lbl">Segundo Nombre</td>
+      <td><span class="cell-input-display">{{nombre2}}</span></td>
     </tr>
     <tr>
-      <td>SEXO</td>
-      <td>{{sexo}}</td>
-      <td colspan="2">PUESTO DE TRABAJO (CIUO)</td>
-      <td colspan="4">{{ciiu}}</td>
+      <td class="lbl">Sexo</td>
+      <td><span class="cell-input-display">{{sexo}}</span></td>
+      <td colspan="2" class="lbl">Puesto de Trabajo (CIUO)</td>
+      <td colspan="4"><span class="cell-input-display">{{ciiu}}</span></td>
     </tr>
   </table>
 
@@ -128,7 +146,7 @@
       <th colspan="12" class="sec">B. DATOS GENERALES</th>
     </tr>
     <tr>
-      <td>FECHA DE EMISIÓN:</td>
+      <td class="lbl">Fecha de Emisión:</td>
       <td class="center caja">{{fecha_yyyy}}</td>
       <td class="center caja">{{fecha_MM}}</td>
       <td class="center caja">{{fecha_dd}}</td>
@@ -142,14 +160,14 @@
       <td colspan="8"></td>
     </tr>
     <tr>
-      <td>EVALUACIÓN:</td>
-      <td class="center">INGRESO</td>
+      <td class="lbl">Evaluación:</td>
+      <td class="center lbl">Ingreso</td>
       <td class="center caja">{{chk_ingreso}}</td>
-      <td class="center">PERIÓDICO</td>
+      <td class="center lbl">Periódico</td>
       <td class="center caja">{{chk_periodico}}</td>
-      <td class="center">REINTEGRO</td>
+      <td class="center lbl">Reintegro</td>
       <td class="center caja">{{chk_reintegro}}</td>
-      <td class="center">RETIRO</td>
+      <td class="center lbl">Retiro</td>
       <td class="center caja">{{chk_retiro}}</td>
       <td colspan="3"></td>
     </tr>
@@ -161,19 +179,19 @@
       <th colspan="8" class="sec">C. APTITUD MÉDICA PARA EL TRABAJO</th>
     </tr>
     <tr>
-      <td class="center">APTO</td>
+      <td class="center lbl">Apto</td>
       <td class="center caja">{{chk_apto}}</td>
-      <td class="center">APTO EN OBSERVACIÓN</td>
+      <td class="center lbl">Apto en Observación</td>
       <td class="center caja">{{chk_obs}}</td>
-      <td class="center">APTO CON LIMITACIONES</td>
+      <td class="center lbl">Apto con Limitaciones</td>
       <td class="center caja">{{chk_lim}}</td>
-      <td class="center">NO APTO</td>
+      <td class="center lbl">No Apto</td>
       <td class="center caja">{{chk_noapto}}</td>
     </tr>
     <tr>
       <td colspan="8" class="observaciones">
         <strong>DETALLE DE OBSERVACIONES:</strong><br />
-        {{detalleObservaciones}}
+        <span class="cell-input-display">{{detalleObservaciones}}</span>
       </td>
     </tr>
   </table>
@@ -190,13 +208,13 @@
       </td>
     </tr>
     <tr>
-      <td colspan="10" style="text-align: center; font-weight: bold;">{{recomendaciones}}</td>
+      <td colspan="10" style="text-align: center; font-weight: bold;"><span class="cell-input-display">{{recomendaciones}}</span></td>
     </tr>
     <tr>
-      <td colspan="10" style="height: 44px; border: 1px solid #333; vertical-align: top; padding: 5px;"></td>
+      <td colspan="10" style="height: 44px; border: 1px solid #7fa87e; vertical-align: top; padding: 5px;"></td>
     </tr>
     <tr>
-      <td colspan="10" class="nota" style="font-size: 10.5px; padding: 6px; background-color: #f9f9f9;">
+      <td colspan="10" class="nota" style="font-size: 10.5px; padding: 6px; background-color: #eef6ee;">
         <p><strong>Con este documento certifico que el trabajador se ha sometido a la evaluación médica requerida para (el ingreso / la ejecución / el reingreso y retiro) al puesto laboral y se le ha informado sobre los riesgos relacionados con el trabajo, emitiendo recomendaciones relacionadas con su estado de salud.</strong></p>
         <p><strong>La presente certificación se expide con base en el formulario de Evaluación Ocupacional, el cual tiene carácter de confidencial.</strong></p>
       </td>
@@ -209,13 +227,13 @@
       <th colspan="10" class="sec">E. DATOS DEL PROFESIONAL</th>
     </tr>
     <tr>
-      <td>NOMBRE Y APELLIDO</td>
-      <td>{{medicoNombre}}</td>
-      <td>CÓDIGO MÉDICO</td>
-      <td>{{medicoCodigo}}</td>
+      <td class="lbl">Nombre y Apellido</td>
+      <td><span class="cell-input-display">{{medicoNombre}}</span></td>
+      <td class="lbl">Código Médico</td>
+      <td><span class="cell-input-display">{{medicoCodigo}}</span></td>
       <td colspan="6"
-          style="border:1px solid #333; height:70px; vertical-align:top; text-align:center; padding:4px;">
-        <div style="font-weight:bold; margin-top:2px;">FIRMA Y SELLO</div>
+          style="border:1px solid #7fa87e; height:70px; vertical-align:top; text-align:center; padding:4px;">
+        <div style="font-weight:bold; margin-top:2px; color:#1a1a4d;">FIRMA Y SELLO</div>
         <div style="margin-top:28px; border-top:1px solid #333; width:70%; margin-left:auto; margin-right:auto;"></div>
       </td>
     </tr>
@@ -227,7 +245,7 @@
       <th colspan="10" class="sec">F. FIRMA DEL USUARIO</th>
     </tr>
     <tr>
-      <td colspan="10" style="height: 50px; border: 1px solid #333;"></td>
+      <td colspan="10" style="height: 50px; border: 1px solid #7fa87e;"></td>
     </tr>
   </table>
 

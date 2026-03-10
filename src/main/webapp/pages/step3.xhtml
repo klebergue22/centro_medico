@@ -105,13 +105,13 @@
 
                             <td class="hx-date">
                                 <p:datePicker id="iess_fecha_#{st.index}"
-                                            value="#{centroMedicoCtrl.iessFecha[st.index]}"
-                                            pattern="dd/MM/yyyy"
-                                            monthNavigator="true"
-                                            yearNavigator="true"
-                                            showIcon="true"
-                                            styleClass="hx-date-picker"
-                                            inputStyle="width:100%"/>
+                                              value="#{centroMedicoCtrl.iessFecha[st.index]}"
+                                              pattern="dd/MM/yyyy"
+                                              monthNavigator="true"
+                                              yearNavigator="true"
+                                              showIcon="true"
+                                              styleClass="hx-date-picker"
+                                              inputStyle="width:100%"/>
                             </td>
 
                             <td>
@@ -176,13 +176,13 @@
 
                             <td class="i-date">
                                 <p:datePicker id="fechaAct"
-                                            value="#{centroMedicoCtrl.fechaAct[st.index]}"
-                                            pattern="dd/MM/yyyy"
-                                            monthNavigator="true"
-                                            yearNavigator="true"
-                                            showIcon="true"
-                                            styleClass="hx-date-picker"
-                                            inputStyle="width:100%"/>
+                                              value="#{centroMedicoCtrl.fechaAct[st.index]}"
+                                              pattern="dd/MM/yyyy"
+                                              monthNavigator="true"
+                                              yearNavigator="true"
+                                              showIcon="true"
+                                              styleClass="hx-date-picker"
+                                              inputStyle="width:100%"/>
                             </td>
 
                             <td>
@@ -236,13 +236,13 @@
 
                             <td class="j-date">
                                 <p:datePicker id="examFecha"
-                                            value="#{centroMedicoCtrl.examFecha[st.index]}"
-                                            pattern="dd/MM/yyyy"
-                                            monthNavigator="true"
-                                            yearNavigator="true"
-                                            showIcon="true"
-                                            styleClass="hx-date-picker"
-                                            inputStyle="width:100%"/>
+                                              value="#{centroMedicoCtrl.examFecha[st.index]}"
+                                              pattern="dd/MM/yyyy"
+                                              monthNavigator="true"
+                                              yearNavigator="true"
+                                              showIcon="true"
+                                              styleClass="hx-date-picker"
+                                              inputStyle="width:100%"/>
                             </td>
 
                             <td>
@@ -312,21 +312,21 @@
                             <tr>
                                 <!-- CIE-10 -->
                                 <td>
-                                <p:autoComplete id="kCie"
-                value="#{d.codigo}"
-                completeMethod="#{centroMedicoCtrl.completarCie10FilaPorCodigo}"
-                dropdown="true"
-                dropdownMode="current"
-                cache="false"
-                minQueryLength="1"
-                queryDelay="200"
-                forceSelection="false"
-                appendTo="@(body)"
-                panelStyleClass="k-ac-panel"
-                styleClass="cell-input"
-                var="it"
-                itemLabel="#{it}"
-                itemValue="#{it}">
+                                    <p:autoComplete id="kCie"
+                                                    value="#{d.codigo}"
+                                                    completeMethod="#{centroMedicoCtrl.completarCie10FilaPorCodigo}"
+                                                    dropdown="true"
+                                                    dropdownMode="current"
+                                                    cache="false"
+                                                    minQueryLength="1"
+                                                    queryDelay="200"
+                                                    forceSelection="false"
+                                                    appendTo="@(body)"
+                                                    panelStyleClass="k-ac-panel"
+                                                    styleClass="cell-input"
+                                                    var="it"
+                                                    itemLabel="#{it}"
+                                                    itemValue="#{it}">
 
                                         <f:attribute name="idx" value="#{st.index}"/>
 
@@ -348,21 +348,21 @@
 
                                 <!-- DESCRIPCIÓN -->
                                 <td>
-                       <p:autoComplete id="kDesc"
-                value="#{d.descripcion}"
-                completeMethod="#{centroMedicoCtrl.completarCie10FilaPorDescripcion}"
-                dropdown="true"
-                dropdownMode="current"
-                cache="false"
-                minQueryLength="2"
-                queryDelay="200"
-                forceSelection="false"
-                appendTo="@(body)"
-                panelStyleClass="k-ac-panel"
-                styleClass="cell-input"
-                var="it"
-                itemLabel="#{it}"
-                itemValue="#{it}">
+                                    <p:autoComplete id="kDesc"
+                                                    value="#{d.descripcion}"
+                                                    completeMethod="#{centroMedicoCtrl.completarCie10FilaPorDescripcion}"
+                                                    dropdown="true"
+                                                    dropdownMode="current"
+                                                    cache="false"
+                                                    minQueryLength="2"
+                                                    queryDelay="200"
+                                                    forceSelection="false"
+                                                    appendTo="@(body)"
+                                                    panelStyleClass="k-ac-panel"
+                                                    styleClass="cell-input"
+                                                    var="it"
+                                                    itemLabel="#{it}"
+                                                    itemValue="#{it}">
 
                                         <f:attribute name="idx" value="#{st.index}"/>
 
@@ -497,60 +497,64 @@
     </p:fieldset>
 
     <!-- N -->
-    <p:fieldset legend="N. RETIRO (evaluación)" toggleable="true">
-        <h:panelGroup layout="block" styleClass="ui-fluid">
+    <p:outputPanel id="panelRetiro" layout="block">
+        <ui:fragment rendered="#{centroMedicoCtrl.tipoEval eq 'RETIRO'}">
+            <p:fieldset legend="N. RETIRO (evaluación)" toggleable="true">
+                <h:panelGroup layout="block" styleClass="ui-fluid">
 
-            <!-- Radio 1: SE REALIZA LA EVALUACIÓN -->
-            <p:selectOneRadio id="n_realiza_eval" layout="custom"
-                              value="#{centroMedicoCtrl.NRealizaEvaluacion}">
-                <f:selectItem itemLabel="SI" itemValue="S"/>
-                <f:selectItem itemLabel="NO" itemValue="N"/>
-            </p:selectOneRadio>
+                    <!-- Radio 1: SE REALIZA LA EVALUACIÓN -->
+                    <p:selectOneRadio id="n_realiza_eval" layout="custom"
+                                      value="#{centroMedicoCtrl.NRealizaEvaluacion}">
+                        <f:selectItem itemLabel="SI" itemValue="S"/>
+                        <f:selectItem itemLabel="NO" itemValue="N"/>
+                    </p:selectOneRadio>
 
-            <!-- Radio 2: RELACIONADA CON EL TRABAJO -->
-            <p:selectOneRadio id="n_relacion_trabajo" layout="custom"
-                              value="#{centroMedicoCtrl.NRelacionTrabajo}">
-                <f:selectItem itemLabel="SI" itemValue="S"/>
-                <f:selectItem itemLabel="NO" itemValue="N"/>
-            </p:selectOneRadio>
+                    <!-- Radio 2: RELACIONADA CON EL TRABAJO -->
+                    <p:selectOneRadio id="n_relacion_trabajo" layout="custom"
+                                      value="#{centroMedicoCtrl.NRelacionTrabajo}">
+                        <f:selectItem itemLabel="SI" itemValue="S"/>
+                        <f:selectItem itemLabel="NO" itemValue="N"/>
+                    </p:selectOneRadio>
 
-            <table class="n-grid">
-                <colgroup>
-                    <col class="n-col-label"/>
-                    <col class="n-col-si"/>
-                    <col class="n-col-no"/>
-                </colgroup>
-                <thead>
-                    <tr class="n-sub">
-                        <th></th><th>SI</th><th>NO</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>SE REALIZA LA EVALUACIÓN</td>
-                        <td class="n-center"><p:radioButton for="n_realiza_eval" itemIndex="0"/></td>
-                        <td class="n-center"><p:radioButton for="n_realiza_eval" itemIndex="1"/></td>
-                    </tr>
-                    <tr>
-                        <td>LA CONDICIÓN DE SALUD ESTÁ RELACIONADA CON EL TRABAJO</td>
-                        <td class="n-center"><p:radioButton for="n_relacion_trabajo" itemIndex="0"/></td>
-                        <td class="n-center"><p:radioButton for="n_relacion_trabajo" itemIndex="1"/></td>
-                    </tr>
-                </tbody>
-            </table>
+                    <table class="n-grid">
+                        <colgroup>
+                            <col class="n-col-label"/>
+                            <col class="n-col-si"/>
+                            <col class="n-col-no"/>
+                        </colgroup>
+                        <thead>
+                            <tr class="n-sub">
+                                <th></th><th>SI</th><th>NO</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>SE REALIZA LA EVALUACIÓN</td>
+                                <td class="n-center"><p:radioButton for="n_realiza_eval" itemIndex="0"/></td>
+                                <td class="n-center"><p:radioButton for="n_realiza_eval" itemIndex="1"/></td>
+                            </tr>
+                            <tr>
+                                <td>LA CONDICIÓN DE SALUD ESTÁ RELACIONADA CON EL TRABAJO</td>
+                                <td class="n-center"><p:radioButton for="n_relacion_trabajo" itemIndex="0"/></td>
+                                <td class="n-center"><p:radioButton for="n_relacion_trabajo" itemIndex="1"/></td>
+                            </tr>
+                        </tbody>
+                    </table>
 
-            <h:panelGrid columns="1" style="width:100%; margin-top:8px;">
-                <h:outputLabel for="n_obs" value="Observación:"
-                               style="font-weight:bold; margin-bottom:4px;"/>
-                <p:inputTextarea id="n_obs"
-                                 value="#{centroMedicoCtrl.NObsRetiro}"
-                                 rows="3" autoResize="true"
-                                 styleClass="n-observacion"
-                                 placeholder="Detalle de la evaluación de retiro"/>
-            </h:panelGrid>
+                    <h:panelGrid columns="1" style="width:100%; margin-top:8px;">
+                        <h:outputLabel for="n_obs" value="Observación:"
+                                       style="font-weight:bold; margin-bottom:4px;"/>
+                        <p:inputTextarea id="n_obs"
+                                         value="#{centroMedicoCtrl.NObsRetiro}"
+                                         rows="3" autoResize="true"
+                                         styleClass="n-observacion"
+                                         placeholder="Detalle de la evaluación de retiro"/>
+                    </h:panelGrid>
 
-        </h:panelGroup>
-    </p:fieldset>
+                </h:panelGroup>
+            </p:fieldset>
+        </ui:fragment>
+    </p:outputPanel>
 
     <!-- O -->
     <p:fieldset legend="O. Datos del profesional" toggleable="true" collapsed="true">

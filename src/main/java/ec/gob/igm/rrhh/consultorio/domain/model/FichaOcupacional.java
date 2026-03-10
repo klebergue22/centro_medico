@@ -80,6 +80,26 @@ public class FichaOcupacional implements Serializable {
 
     @Column(name = "AP_ADULTO_MAYOR", length = 1)
     private String apAdultoMayor;
+    // =====================================================
+// Discapacidad (detalle)
+// =====================================================
+    @Column(name = "DIS_TIPO", length = 20)
+    private String disTipo; // Fisico, Auditivo, Intelectual, Lenguaje, Visual, Psicosocial
+
+    @Column(name = "DIS_DESCRIPCION", length = 1000)
+    private String disDescripcion;
+
+    @Column(name = "DIS_PORCENTAJE")
+    private Integer disPorcentaje;
+
+// =====================================================
+// Enfermedad Catastrófica, Huérfana y Rara (detalle)
+// =====================================================
+    @Column(name = "CAT_DIAGNOSTICO", length = 2000)
+    private String catDiagnostico;
+
+    @Column(name = "CAT_CALIFICADA", length = 1)
+    private String catCalificada; // S/N
 
     // Antecedentes
     @Column(name = "ANT_CLINICO_QUIR", length = 2000)
@@ -753,6 +773,7 @@ public class FichaOcupacional implements Serializable {
         apCatastrofica = defaultN(apCatastrofica);
         apLactancia = defaultN(apLactancia);
         apAdultoMayor = defaultN(apAdultoMayor);
+        catCalificada = defaultN(catCalificada);
 
         tabExCons = defaultN(tabExCons);
         tabNoCons = defaultN(tabNoCons);
@@ -941,6 +962,20 @@ public class FichaOcupacional implements Serializable {
     public void setApAdultoMayor(String apAdultoMayor) {
         this.apAdultoMayor = apAdultoMayor;
     }
+    public String getDisTipo() { return disTipo; }
+public void setDisTipo(String disTipo) { this.disTipo = disTipo; }
+
+public String getDisDescripcion() { return disDescripcion; }
+public void setDisDescripcion(String disDescripcion) { this.disDescripcion = disDescripcion; }
+
+public Integer getDisPorcentaje() { return disPorcentaje; }
+public void setDisPorcentaje(Integer disPorcentaje) { this.disPorcentaje = disPorcentaje; }
+
+public String getCatDiagnostico() { return catDiagnostico; }
+public void setCatDiagnostico(String catDiagnostico) { this.catDiagnostico = catDiagnostico; }
+
+public String getCatCalificada() { return catCalificada; }
+public void setCatCalificada(String catCalificada) { this.catCalificada = catCalificada; }
 
     public String getAntClinicoQuir() {
         return antClinicoQuir;
@@ -1050,15 +1085,14 @@ public class FichaOcupacional implements Serializable {
         return planificacion;
     }
 
-  public void setPlanificacion(String planificacion) {
-    this.planificacion = planificacion;
+    public void setPlanificacion(String planificacion) {
+        this.planificacion = planificacion;
 
-    // Limpia el "¿cuál?" si ya no es SI
-    if (!"SI".equalsIgnoreCase(this.planificacion)) {
-        this.planificacionCual = null;
+        // Limpia el "¿cuál?" si ya no es SI
+        if (!"SI".equalsIgnoreCase(this.planificacion)) {
+            this.planificacionCual = null;
+        }
     }
-}
-
 
     public String getPlanificacionCual() {
         return planificacionCual;
@@ -1799,7 +1833,7 @@ public class FichaOcupacional implements Serializable {
     // =========================================================
     // PROPIEDADES TRANSIENT PARA CHECKBOX (XHTML usa sufijo Bool)
     // =========================================================
-        private static Boolean toBool(String v) {
+    private static Boolean toBool(String v) {
         if (v == null) {
             return null;
         }
@@ -1810,7 +1844,7 @@ public class FichaOcupacional implements Serializable {
         return "S".equalsIgnoreCase(v) || "1".equals(v) || "Y".equalsIgnoreCase(v) || "T".equalsIgnoreCase(v) || "TRUE".equalsIgnoreCase(v);
     }
 
-        private static String fromBool(Boolean b) {
+    private static String fromBool(Boolean b) {
         if (b == null) {
             return null;
         }
@@ -2069,18 +2103,17 @@ public class FichaOcupacional implements Serializable {
         this.exfToraxPulmones = fromBool(value);
     }
 
-    
     // =========================================================
     // PROPIEDADES TRANSIENT "Bool" (para checkbox en XHTML)
     // Estas propiedades NO se guardan como Boolean, sino que
     // mapean a los campos reales String (S/N) persistidos.
     // =========================================================
-
     // Abdomen: Vísceras / Pared abdominal
     @Transient
     public Boolean getExfAbdomenViscerasBool() {
         return toBool(this.exfAbdVisceras);
     }
+
     public void setExfAbdomenViscerasBool(Boolean value) {
         this.exfAbdVisceras = fromBool(value);
     }
@@ -2089,6 +2122,7 @@ public class FichaOcupacional implements Serializable {
     public Boolean getExfAbdomenParedBool() {
         return toBool(this.exfAbdParedAbdominal);
     }
+
     public void setExfAbdomenParedBool(Boolean value) {
         this.exfAbdParedAbdominal = fromBool(value);
     }
@@ -2098,6 +2132,7 @@ public class FichaOcupacional implements Serializable {
     public Boolean getExfColumnaFlexibilidadBool() {
         return toBool(this.exfColFlexibilidad);
     }
+
     public void setExfColumnaFlexibilidadBool(Boolean value) {
         this.exfColFlexibilidad = fromBool(value);
     }
@@ -2106,6 +2141,7 @@ public class FichaOcupacional implements Serializable {
     public Boolean getExfColumnaDesviacionBool() {
         return toBool(this.exfColDesviacion);
     }
+
     public void setExfColumnaDesviacionBool(Boolean value) {
         this.exfColDesviacion = fromBool(value);
     }
@@ -2114,6 +2150,7 @@ public class FichaOcupacional implements Serializable {
     public Boolean getExfColumnaDolorBool() {
         return toBool(this.exfColDolor);
     }
+
     public void setExfColumnaDolorBool(Boolean value) {
         this.exfColDolor = fromBool(value);
     }
@@ -2123,6 +2160,7 @@ public class FichaOcupacional implements Serializable {
     public Boolean getExfCuelloTiroidesBool() {
         return toBool(this.exfCuelloTiroidesMasas);
     }
+
     public void setExfCuelloTiroidesBool(Boolean value) {
         this.exfCuelloTiroidesMasas = fromBool(value);
     }
@@ -2132,6 +2170,7 @@ public class FichaOcupacional implements Serializable {
     public Boolean getExfNarizSenosBool() {
         return toBool(this.exfNarizSenosParanasa);
     }
+
     public void setExfNarizSenosBool(Boolean value) {
         this.exfNarizSenosParanasa = fromBool(value);
     }
@@ -2141,6 +2180,7 @@ public class FichaOcupacional implements Serializable {
     public Boolean getExfToraxParrillaBool() {
         return toBool(this.exfToraxParrillaCostal);
     }
+
     public void setExfToraxParrillaBool(Boolean value) {
         this.exfToraxParrillaCostal = fromBool(value);
     }
@@ -2150,6 +2190,7 @@ public class FichaOcupacional implements Serializable {
     public Boolean getExfExtSupBool() {
         return toBool(this.exfExtMiembrosSup);
     }
+
     public void setExfExtSupBool(Boolean value) {
         this.exfExtMiembrosSup = fromBool(value);
     }
@@ -2158,6 +2199,7 @@ public class FichaOcupacional implements Serializable {
     public Boolean getExfExtInfBool() {
         return toBool(this.exfExtMiembrosInf);
     }
+
     public void setExfExtInfBool(Boolean value) {
         this.exfExtMiembrosInf = fromBool(value);
     }
@@ -2167,6 +2209,7 @@ public class FichaOcupacional implements Serializable {
     public Boolean getnRetEvalBool() {
         return toBool(this.nRetEval);
     }
+
     public void setnRetEvalBool(Boolean value) {
         this.nRetEval = fromBool(value);
     }
@@ -2175,6 +2218,7 @@ public class FichaOcupacional implements Serializable {
     public Boolean getnRetRelTrabBool() {
         return toBool(this.nRetRelTrab);
     }
+
     public void setnRetRelTrabBool(Boolean value) {
         this.nRetRelTrab = fromBool(value);
     }
@@ -2234,5 +2278,7 @@ public class FichaOcupacional implements Serializable {
     public void setGinecoObservacion(String ginecoObservacion) {
         this.ginecoObservacion = ginecoObservacion;
     }
+    
+    
 
 }
