@@ -2,7 +2,6 @@ package ec.gob.igm.rrhh.consultorio.web.ctrl;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -49,10 +48,7 @@ import org.primefaces.event.FlowEvent;
 import org.primefaces.event.SelectEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.xhtmlrenderer.pdf.ITextRenderer;
 
-import com.lowagie.text.DocumentException;
-import com.lowagie.text.pdf.BaseFont;
 import ec.gob.igm.rrhh.consultorio.domain.dto.EmpleadoCargoDTO;
 
 import ec.gob.igm.rrhh.consultorio.domain.model.AuditoriaConsultorio;
@@ -83,7 +79,8 @@ import ec.gob.igm.rrhh.consultorio.service.SignosVitalesService;
 import ec.gob.igm.rrhh.consultorio.service.Step1VitalSignsManager;
 import ec.gob.igm.rrhh.consultorio.web.audit.CentroMedicoAuditService;
 import ec.gob.igm.rrhh.consultorio.web.pdf.PdfTemplateEngine;
-import ec.gob.igm.rrhh.consultorio.web.session.PdfSessionStore;
+import ec.gob.igm.rrhh.consultorio.web.pdf.PdfRenderer;
+import ec.gob.igm.rrhh.consultorio.web.session.PdfSessionStorage;
 import ec.gob.igm.rrhh.consultorio.web.util.SnUtils;
 
 /**
@@ -393,8 +390,11 @@ public class CentroMedicoCtrl implements Serializable {
     @EJB
     private transient CentroMedicoAuditService centroMedicoAuditService;
 
-    @EJB
-    private transient PdfSessionStore pdfSessionStore;
+    @Inject
+    private transient PdfSessionStorage pdfSessionStore;
+
+    @Inject
+    private transient PdfRenderer pdfRenderer;
 
     @Inject
     private transient PdfTemplateEngine pdfTemplateEngine;
@@ -3500,32 +3500,7 @@ private void asegurarPersonaAuxPersistida() {
     }
 
     private String renderTemplate(String template, Map<String, String> rep) {
-        String withIfBlocks = applyIfBlocks(template, rep);
-        String rendered = pdfTemplateEngine.render(withIfBlocks, rep);
-        return rendered.replaceAll("\\{\\{[^}]+\\}\\}", "");
-    }
-
-    private String applyIfBlocks(String template, Map<String, String> rep) {
-        // Soporta: {{#if sexoM}} ... {{/if}}
-        // Si rep.get("sexoM") es "true"/"1"/"X" => deja el bloque, caso contrario lo elimina
-        final java.util.regex.Pattern p = java.util.regex.Pattern.compile(
-                "\\{\\{#if\\s+([a-zA-Z0-9_]+)\\}\\}([\\s\\S]*?)\\{\\{\\/if\\}\\}",
-                java.util.regex.Pattern.MULTILINE
-        );
-
-        java.util.regex.Matcher m = p.matcher(template);
-        StringBuffer out = new StringBuffer();
-        while (m.find()) {
-            String key = m.group(1);
-            String body = m.group(2);
-
-            String val = rep.getOrDefault(key, "");
-            boolean on = "true".equalsIgnoreCase(val) || "1".equals(val) || "X".equalsIgnoreCase(val) || "SI".equalsIgnoreCase(val);
-
-            m.appendReplacement(out, java.util.regex.Matcher.quoteReplacement(on ? body : ""));
-        }
-        m.appendTail(out);
-        return out.toString();
+        return pdfTemplateEngine.render(template, rep);
     }
 
     private String construirHtmlFichaDesdePrintFacelets() {
@@ -3705,7 +3680,7 @@ private void asegurarPersonaAuxPersistida() {
         }
     }
 
-    private byte[] renderizarPdf(String xhtml) throws DocumentException, IOException {
+    private byte[] renderizarPdf(String xhtml) throws IOException {
 
         if (xhtml == null || xhtml.trim().isEmpty()) {
             LOG.error("renderizarPdf: El string HTML recibido es NULO o VACÍO.");
@@ -3718,39 +3693,12 @@ private void asegurarPersonaAuxPersistida() {
 
         final String xhtmlOk = sanitizeXhtmlForPdf(xhtml);
 
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        ITextRenderer renderer = new ITextRenderer();
-
-        String baseURL = FacesContext.getCurrentInstance()
-                .getExternalContext()
-                .getResource("/")
-                .toExternalForm();
-
         try {
-            String fontsBase = FacesContext.getCurrentInstance()
-                    .getExternalContext().getRealPath("/resources/fonts/");
-            if (fontsBase != null) {
-                renderer.getFontResolver().addFont(
-                        fontsBase + File.separator + "DejaVuSans.ttf",
-                        BaseFont.IDENTITY_H, true
-                );
-            }
-        } catch (DocumentException | IOException e) {
-            LOG.debug("Skipping optional font registration for PDF rendering.", e);
-        }
-
-        try {
-            renderer.setDocumentFromString(xhtmlOk, baseURL);
+            return pdfRenderer.render(xhtmlOk);
         } catch (RuntimeException ex) {
             dumpXhtmlDebug("fichaPrint_debug.xhtml", xhtmlOk, ex);
             throw ex;
         }
-
-        renderer.layout();
-        renderer.createPDF(baos);
-        renderer.finishPDF();
-
-        return baos.toByteArray();
     }
 
     private String construirHtmlDesdePlantilla() throws IOException {

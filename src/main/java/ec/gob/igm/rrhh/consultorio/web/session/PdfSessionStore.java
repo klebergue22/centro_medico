@@ -8,10 +8,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Stateless
-public class PdfSessionStore {
+public class PdfSessionStore implements PdfSessionStorage {
 
     private static final String PDF_STORE_KEY = "PDF_STORE";
 
+    @Override
     public void put(FacesContext ctx, String token, byte[] bytes) {
         if (ctx == null || token == null || bytes == null) {
             return;
@@ -21,6 +22,7 @@ public class PdfSessionStore {
         getStore(session, true).put(token, bytes);
     }
 
+    @Override
     public void remove(FacesContext ctx, String token) {
         if (ctx == null || token == null) {
             return;
