@@ -9,8 +9,6 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.Serializable;
 import java.io.StringWriter;
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -80,6 +78,7 @@ import ec.gob.igm.rrhh.consultorio.service.FichaRiesgoDetService;
 import ec.gob.igm.rrhh.consultorio.service.FichaRiesgoService;
 import ec.gob.igm.rrhh.consultorio.service.PersonaAuxService;
 import ec.gob.igm.rrhh.consultorio.service.SignosVitalesService;
+import ec.gob.igm.rrhh.consultorio.service.Step1VitalSignsManager;
 import ec.gob.igm.rrhh.consultorio.web.util.SnUtils;
 
 /**
@@ -368,6 +367,8 @@ public class CentroMedicoCtrl implements Serializable {
     private transient FichaOcupacionalService fichaService;
     @EJB
     private transient SignosVitalesService signosService;
+    @EJB
+    private transient Step1VitalSignsManager step1VitalSignsManager;
     @EJB
     private transient FichaRiesgoService fichaRiesgoService;
     @EJB
@@ -1654,79 +1655,28 @@ private void asegurarPersonaAuxPersistida() {
         return "N";
     }
 
-    private static BigDecimal bd(Double v, int scale) {
-        if (v == null) {
-            return null;
-        }
-        return BigDecimal.valueOf(v).setScale(scale, RoundingMode.HALF_UP);
-    }
-
-    private int[] parseBloodPressureOrThrow(String pa) {
-        try {
-            String[] parts = pa.split("/");
-            if (parts.length != 2) {
-                throw new IllegalArgumentException("Invalid PA");
-            }
-            Integer sis = Integer.valueOf(parts[0].trim());
-            Integer dias = Integer.valueOf(parts[1].trim());
-            return new int[]{sis, dias};
-        } catch (RuntimeException ex) {
-            throw new BusinessValidationException("El formato de PA debe ser 120/80 (números enteros separados por '/').");
-        }
-    }
-
     private SignosVitales upsertVitalSigns(Date now, String user) {
-        final int[] pa = parseBloodPressureOrThrow(paStr);
-
-        // 1) Tomar referencia actual (puede ser proxy lazy detached)
         SignosVitales current = (ficha.getSignos() != null) ? ficha.getSignos() : this.signos;
 
-        // 2) Si ya existe ID -> recargar el registro desde BD (managed) ANTES de setear
-        SignosVitales sv = null;
-        if (current != null && current.getIdSignos() != null) {
-            sv = signosService.buscarPorId(current.getIdSignos()); // <-- IMPLEMENTAR
-        }
+        try {
+            SignosVitales sv = step1VitalSignsManager.upsertVitalSigns(
+                    current,
+                    paStr,
+                    temp,
+                    fc,
+                    fr,
+                    satO2,
+                    peso,
+                    tallaCm,
+                    perimetroAbd,
+                    now,
+                    user);
 
-        // 3) Si no existía o no se encontró -> crear nuevo
-        if (sv == null) {
-            sv = new SignosVitales();
-        }
-
-        // 4) Ya es managed o nuevo: setters sin LazyInitializationException
-        sv.setTemperaturaC(bd(temp, 1));
-        sv.setPaSistolica(pa[0]);
-        sv.setPaDiastolica(pa[1]);
-        sv.setFrecuenciaCard(fc);
-        sv.setFrecuenciaResp(fr);
-        sv.setSatO2(satO2);
-        sv.setPesoKg(bd(peso, 2));
-
-        BigDecimal tallaM = (tallaCm == null)
-                ? null
-                : bd(tallaCm, 2).divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
-
-        sv.setTallaM(tallaM);
-        sv.setPerimetroAbdCm(bd(perimetroAbd, 1));
-
-        stampAuditFieldsForVitalSigns(sv, now, user);
-
-        // 5) Guardar
-        sv = signosService.guardar(sv);
-
-        // 6) Re-enlazar
-        this.signos = sv;
-        ficha.setSignos(sv);
-
-        return sv;
-    }
-
-    private void stampAuditFieldsForVitalSigns(SignosVitales sv, Date now, String user) {
-        if (sv.getIdSignos() == null) {
-            sv.setFechaCreacion(now);
-            sv.setUsrCreacion(user);
-        } else {
-            sv.setFechaActualizacion(now);
-            sv.setUsrActualizacion(user);
+            this.signos = sv;
+            ficha.setSignos(sv);
+            return sv;
+        } catch (IllegalArgumentException ex) {
+            throw new BusinessValidationException(ex.getMessage());
         }
     }
 
