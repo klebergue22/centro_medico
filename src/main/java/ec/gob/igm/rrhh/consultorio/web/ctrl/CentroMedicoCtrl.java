@@ -70,6 +70,7 @@ import ec.gob.igm.rrhh.consultorio.service.AuditoriaConsultorioService;
 import ec.gob.igm.rrhh.consultorio.service.Cie10Service;
 import ec.gob.igm.rrhh.consultorio.service.EmpleadoRhService;
 import ec.gob.igm.rrhh.consultorio.service.EmpleadoService;
+import ec.gob.igm.rrhh.consultorio.service.ExamenFisicoRegionalService;
 import ec.gob.igm.rrhh.consultorio.service.FichaActLaboralService;
 import ec.gob.igm.rrhh.consultorio.service.FichaDiagnosticoService;
 import ec.gob.igm.rrhh.consultorio.service.FichaExamenCompService;
@@ -386,6 +387,8 @@ public class CentroMedicoCtrl implements Serializable {
 
     @EJB
     private transient FichaExamenCompService fichaExamenCompService;
+    @EJB
+    private transient ExamenFisicoRegionalService examenFisicoRegionalService;
 
     // =====================================================
     // JSF Lifecycle / Inicialización
@@ -2043,45 +2046,8 @@ private void asegurarPersonaAuxPersistida() {
         // Enfermedad actual (viene directamente del formulario en ficha.enfermedadProbActual)
         ficha.setEnfermedadProbActual(trimToNull(ficha.getEnfermedadProbActual()));
 
-// Examen físico
-        ficha.setExfPielCicatrices(preferSn(ficha.getExfPielCicatrices(), ficha, "exfPielCicatricesBool"));
-        ficha.setExfOjosParpados(preferSn(ficha.getExfOjosParpados(), ficha, "exfOjosParpadosBool"));
-        ficha.setExfOjosConjuntivas(preferSn(ficha.getExfOjosConjuntivas(), ficha, "exfOjosConjuntivasBool"));
-        ficha.setExfOjosPupilas(preferSn(ficha.getExfOjosPupilas(), ficha, "exfOjosPupilasBool"));
-        ficha.setExfOjosCornea(preferSn(ficha.getExfOjosCornea(), ficha, "exfOjosCorneaBool"));
-        ficha.setExfOjosMotilidad(preferSn(ficha.getExfOjosMotilidad(), ficha, "exfOjosMotilidadBool"));
-        ficha.setExfOidoConducto(preferSn(ficha.getExfOidoConducto(), ficha, "exfOidoConductoBool"));
-        ficha.setExfOidoPabellon(preferSn(ficha.getExfOidoPabellon(), ficha, "exfOidoPabellonBool"));
-        ficha.setExfOidoTimpanos(preferSn(ficha.getExfOidoTimpanos(), ficha, "exfOidoTimpanosBool"));
-        ficha.setExfOroLabios(preferSn(ficha.getExfOroLabios(), ficha, "exfOroLabiosBool"));
-        ficha.setExfOroLengua(preferSn(ficha.getExfOroLengua(), ficha, "exfOroLenguaBool"));
-        ficha.setExfOroFaringe(preferSn(ficha.getExfOroFaringe(), ficha, "exfOroFaringeBool"));
-        ficha.setExfOroAmigdalas(preferSn(ficha.getExfOroAmigdalas(), ficha, "exfOroAmigdalasBool"));
-        ficha.setExfOroDentadura(preferSn(ficha.getExfOroDentadura(), ficha, "exfOroDentaduraBool"));
-        ficha.setExfNarizTabique(preferSn(ficha.getExfNarizTabique(), ficha, "exfNarizTabiqueBool"));
-        ficha.setExfNarizCornetes(preferSn(ficha.getExfNarizCornetes(), ficha, "exfNarizCornetesBool"));
-        ficha.setExfNarizMucosas(preferSn(ficha.getExfNarizMucosas(), ficha, "exfNarizMucosasBool"));
-        ficha.setExfNarizSenosParanasa(preferSn(ficha.getExfNarizSenosParanasa(), ficha, "exfNarizSenosParanasaBool"));
-        ficha.setExfCuelloTiroidesMasas(preferSn(ficha.getExfCuelloTiroidesMasas(), ficha, "exfCuelloTiroidesMasasBool"));
-        ficha.setExfCuelloMovilidad(preferSn(ficha.getExfCuelloMovilidad(), ficha, "exfCuelloMovilidadBool"));
-        ficha.setExfToraxMamas(preferSn(ficha.getExfToraxMamas(), ficha, "exfToraxMamasBool"));
-        ficha.setExfToraxPulmones(preferSn(ficha.getExfToraxPulmones(), ficha, "exfToraxPulmonesBool"));
-        ficha.setExfToraxCorazon(preferSn(ficha.getExfToraxCorazon(), ficha, "exfToraxCorazonBool"));
-        ficha.setExfToraxParrillaCostal(preferSn(ficha.getExfToraxParrillaCostal(), ficha, "exfToraxParrillaCostalBool"));
-        ficha.setExfAbdVisceras(preferSn(ficha.getExfAbdVisceras(), ficha, "exfAbdViscerasBool"));
-        ficha.setExfAbdParedAbdominal(preferSn(ficha.getExfAbdParedAbdominal(), ficha, "exfAbdParedAbdominalBool"));
-        ficha.setExfColFlexibilidad(preferSn(ficha.getExfColFlexibilidad(), ficha, "exfColFlexibilidadBool"));
-        ficha.setExfColDesviacion(preferSn(ficha.getExfColDesviacion(), ficha, "exfColDesviacionBool"));
-        ficha.setExfColDolor(preferSn(ficha.getExfColDolor(), ficha, "exfColDolorBool"));
-        ficha.setExfPelvisPelvis(preferSn(ficha.getExfPelvisPelvis(), ficha, "exfPelvisPelvisBool"));
-        ficha.setExfPelvisGenitales(preferSn(ficha.getExfPelvisGenitales(), ficha, "exfPelvisGenitalesBool"));
-        ficha.setExfExtVascular(preferSn(ficha.getExfExtVascular(), ficha, "exfExtVascularBool"));
-        ficha.setExfExtMiembrosSup(preferSn(ficha.getExfExtMiembrosSup(), ficha, "exfExtMiembrosSupBool"));
-        ficha.setExfExtMiembrosInf(preferSn(ficha.getExfExtMiembrosInf(), ficha, "exfExtMiembrosInfBool"));
-        ficha.setExfNeuroFuerza(preferSn(ficha.getExfNeuroFuerza(), ficha, "exfNeuroFuerzaBool"));
-        ficha.setExfNeuroSensibilidad(preferSn(ficha.getExfNeuroSensibilidad(), ficha, "exfNeuroSensibilidadBool"));
-        ficha.setExfNeuroMarcha(preferSn(ficha.getExfNeuroMarcha(), ficha, "exfNeuroMarchaBool"));
-        ficha.setExfNeuroReflejos(preferSn(ficha.getExfNeuroReflejos(), ficha, "exfNeuroReflejosBool"));
+// Examen físico regional (SOLID: lógica centralizada en servicio)
+        examenFisicoRegionalService.aplicarExamenFisicoRegional(ficha);
         // OBS_EXAMEN_FISICO_REG: no sobreescribir con null si la UI está enlazada directo a ficha.obsExamenFisicoReg
         String _obsExf = trimToNull(obsExamenFisico);
         if (_obsExf == null) {
@@ -2093,8 +2059,7 @@ private void asegurarPersonaAuxPersistida() {
         ficha.setDetalleObs(detalleObservaciones);
         ficha.setRecomendaciones(recomendaciones);
 
-        ficha.setnRetEval(preferSn(ficha.getnRetEval(), ficha, "nRetEvalBool"));
-        ficha.setnRetRelTrab(preferSn(ficha.getnRetRelTrab(), ficha, "nRetRelTrabBool"));
+        examenFisicoRegionalService.aplicarRetiro(ficha);
         ficha.setnRetObs(nObsRetiro);
 
         ficha.setMedicoNombre(medicoNombre);
@@ -4234,7 +4199,7 @@ private void asegurarPersonaAuxPersistida() {
 
     public List<String> completarCie10FilaPorCodigo(String query) {
         try {
-            jakarta.faces.context.FacesContext fc = jakarta.faces.context.FacesContext.getCurrentInstance();
+            FacesContext fc = FacesContext.getCurrentInstance();
             String viewId = (fc != null && fc.getViewRoot() != null) ? fc.getViewRoot().getViewId() : "null";
             LOG.info(">>> [AC-K-COD] complete ENTER query=[" + query + "] viewId=" + viewId);
 
@@ -4250,8 +4215,8 @@ private void asegurarPersonaAuxPersistida() {
             }
 
             List<Cie10> lista = cie10Service.buscarJerarquiaPorTerm(q);
-            System.out.println("... [AC-K-COD] service.buscarJerarquiaPorTerm(q=" + q + ") size="
-                    + (lista == null ? "null" : lista.size()));
+            LOG.debug("... [AC-K-COD] service.buscarJerarquiaPorTerm(q={}) size={}", q,
+                    (lista == null ? "null" : lista.size()));
 
             List<String> out = new ArrayList<>();
 
@@ -4267,20 +4232,19 @@ private void asegurarPersonaAuxPersistida() {
                 }
             }
 
-            System.out.println("<<< [AC-K-COD] RETURN out.size=" + out.size()
+            LOG.info("<<< [AC-K-COD] RETURN out.size=" + out.size()
                     + (out.isEmpty() ? "" : (" first=[" + out.get(0) + "]")));
             return out;
 
-        } catch (Exception e) {
-            LOG.info("!!! [AC-K-COD] ERROR " + e.getClass().getName() + " : " + e.getMessage());
-            e.printStackTrace();
+        } catch (RuntimeException e) {
+            LOG.error("!!! [AC-K-COD] ERROR {} : {}", e.getClass().getName(), e.getMessage(), e);
             return new ArrayList<>();
         }
     }
 
     public List<String> completarCie10FilaPorDescripcion(String query) {
         try {
-            jakarta.faces.context.FacesContext fc = jakarta.faces.context.FacesContext.getCurrentInstance();
+            FacesContext fc = FacesContext.getCurrentInstance();
             String viewId = (fc != null && fc.getViewRoot() != null) ? fc.getViewRoot().getViewId() : "null";
             LOG.info(">>> [AC-K-DESC] complete ENTER query=[" + query + "] viewId=" + viewId);
 
@@ -4291,8 +4255,8 @@ private void asegurarPersonaAuxPersistida() {
             }
 
             List<Cie10> lista = cie10Service.buscarPorDescripcionLike(query, 20);
-            System.out.println("... [AC-K-DESC] service.buscarPorDescripcionLike size="
-                    + (lista == null ? "null" : lista.size()));
+            LOG.debug("... [AC-K-DESC] service.buscarPorDescripcionLike size={}",
+                    (lista == null ? "null" : lista.size()));
 
             if (lista != null) {
                 for (Cie10 c : lista) {
@@ -4302,13 +4266,12 @@ private void asegurarPersonaAuxPersistida() {
                 }
             }
 
-            System.out.println("<<< [AC-K-DESC] RETURN out.size=" + out.size()
+            LOG.info("<<< [AC-K-DESC] RETURN out.size=" + out.size()
                     + (out.isEmpty() ? "" : (" first=[" + out.get(0) + "]")));
             return out;
 
-        } catch (Exception e) {
-            LOG.info("!!! [AC-K-DESC] ERROR " + e.getClass().getName() + " : " + e.getMessage());
-            e.printStackTrace();
+        } catch (RuntimeException e) {
+            LOG.error("!!! [AC-K-DESC] ERROR {} : {}", e.getClass().getName(), e.getMessage(), e);
             return new ArrayList<String>();
         }
     }
@@ -5758,7 +5721,7 @@ private void tryLoadCargoFromVista(FacesContext ctx) {
         String clientId;
         try {
             clientId = comp.getClientId(FacesContext.getCurrentInstance());
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             clientId = String.valueOf(comp.getId());
         }
 
@@ -5775,7 +5738,7 @@ private void tryLoadCargoFromVista(FacesContext ctx) {
             value = in.getValue();
         }
 
-        System.out.println("... [VAL] compId=" + comp.getId()
+        LOG.debug("... [VAL] compId=" + comp.getId()
                 + " clientId=" + clientId
                 + " idxAttr=" + idxAttr
                 + " submitted=" + submitted
@@ -5804,11 +5767,11 @@ private void tryLoadCargoFromVista(FacesContext ctx) {
         String clientId;
         try {
             clientId = comp.getClientId(FacesContext.getCurrentInstance());
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             clientId = String.valueOf(comp.getId());
         }
 
-        System.out.println("... [IDX] extraerIdx compId=" + comp.getId()
+        LOG.debug("... [IDX] extraerIdx compId=" + comp.getId()
                 + " clientId=" + clientId
                 + " idxAttr=" + idxObj);
 
@@ -5817,10 +5780,18 @@ private void tryLoadCargoFromVista(FacesContext ctx) {
         }
         try {
             return Integer.parseInt(idxObj.toString());
-        } catch (Exception e) {
-            LOG.info("... [IDX] extraerIdx parse ERROR idxAttr=" + idxObj + " ex=" + e);
+        } catch (NumberFormatException e) {
+            LOG.info("... [IDX] extraerIdx parse ERROR idxAttr={} ex={}", idxObj, e.toString());
             return null;
         }
+    }
+
+    private ConsultaDiagnostico getDiagRow(Integer idx, String contexto) {
+        if (idx == null || listaDiag == null || idx < 0 || idx >= listaDiag.size()) {
+            LOG.info("<<< [{}] idx INVALID => {}", contexto, idx);
+            return null;
+        }
+        return listaDiag.get(idx);
     }
 
     public void onKCieCodigoSelect(SelectEvent<String> event) {
@@ -5828,15 +5799,13 @@ private void tryLoadCargoFromVista(FacesContext ctx) {
         Integer idx = extraerIdx(comp);
         String selected = (event != null ? event.getObject() : null);
 
-        System.out.println(">>> [AC-K-COD] itemSelect idx=" + idx
+        LOG.info(">>> [AC-K-COD] itemSelect idx=" + idx
                 + " selected=[" + selected + "] clientId=" + (comp != null ? comp.getClientId() : "null"));
 
-        if (idx == null || listaDiag == null || idx < 0 || idx >= listaDiag.size()) {
-            LOG.info("<<< [AC-K-COD] itemSelect idx INVALID");
+        ConsultaDiagnostico row = getDiagRow(idx, "AC-K-COD itemSelect");
+        if (row == null) {
             return;
         }
-
-        ConsultaDiagnostico row = listaDiag.get(idx);
 
         if (selected == null || selected.trim().isEmpty()) {
             LOG.info("<<< [AC-K-COD] itemSelect empty selection => no-op");
@@ -5870,19 +5839,14 @@ private void tryLoadCargoFromVista(FacesContext ctx) {
 
         LOG.info(">>> [AC-K-COD] blur idx=" + idx + " clientId=" + clientId + " typed=[" + typed + "]");
 
-        if (idx == null || listaDiag == null || idx < 0 || idx >= listaDiag.size()) {
-            LOG.info("<<< [AC-K-COD] blur idx INVALID => " + idx);
+        ConsultaDiagnostico row = getDiagRow(idx, "AC-K-COD blur");
+        if (row == null) {
             return;
         }
 
-        ConsultaDiagnostico row = listaDiag.get(idx);
-
-        String codigo = typed != null ? typed.trim() : "";
+        String codigo = normalizeTypedValue(typed);
         if (codigo.isEmpty()) {
-
-            row.setCodigo(null);
-            row.setDescripcion(null);
-            row.setCie10(null);
+            clearDiagnosticoRow(row);
             LOG.info("<<< [AC-K-COD] blur empty => cleared row");
             return;
         }
@@ -5890,44 +5854,31 @@ private void tryLoadCargoFromVista(FacesContext ctx) {
         String codigoUp = codigo.toUpperCase();
 
         if (codigoUp.length() < 3) {
-            row.setCodigo(codigoUp);
-            row.setCie10(null);
-
+            setCodigoSinMatch(row, codigoUp);
             LOG.info("<<< [AC-K-COD] blur partial [" + codigoUp + "] => keep, no exact lookup");
             return;
         }
 
         Cie10 cie = cie10Service.buscarPorCodigo(codigoUp);
 
-        System.out.println("... [AC-K-COD] buscarPorCodigo(" + codigoUp + ") => "
+        LOG.debug("... [AC-K-COD] buscarPorCodigo(" + codigoUp + ") => "
                 + (cie != null ? (cie.getCodigo() + " | " + cie.getDescripcion()) : "null"));
 
-        if (cie != null) {
-            row.setCodigo(cie.getCodigo());
-            row.setDescripcion(cie.getDescripcion());
-            row.setCie10(cie);
-            LOG.info("<<< [AC-K-COD] blur AFTER MATCH codigo=[" + row.getCodigo() + "] desc=[" + row.getDescripcion() + "]");
-        } else {
-
-            row.setCodigo(codigoUp);
-            row.setCie10(null);
-            LOG.info("<<< [AC-K-COD] blur AFTER NO-MATCH keep codigo=[" + row.getCodigo() + "]");
-        }
+        applyCodigoLookupResult(row, codigoUp, cie);
     }
 
-    public void onKDescSelect(SelectEvent event) {
-        String descripcion = (String) event.getObject();
+    public void onKDescSelect(SelectEvent<String> event) {
+        String descripcion = event.getObject();
         UIComponent comp = event.getComponent();
         Integer idx = extraerIdx(comp);
 
         LOG.info(">>> [AC-K-DESC] itemSelect ENTER desc=[" + descripcion + "] idx=" + idx);
 
-        if (idx == null || idx < 0 || idx >= listaDiag.size()) {
-            LOG.info("<<< [AC-K-DESC] itemSelect idx INVALID => " + idx);
+        ConsultaDiagnostico row = getDiagRow(idx, "AC-K-DESC itemSelect");
+        if (row == null) {
             return;
         }
 
-        ConsultaDiagnostico row = listaDiag.get(idx);
         row.setDescripcion(descripcion);
 
         if (descripcion != null && !descripcion.trim().isEmpty()) {
@@ -5943,7 +5894,7 @@ private void tryLoadCargoFromVista(FacesContext ctx) {
             }
         }
 
-        System.out.println("<<< [AC-K-DESC] itemSelect row AFTER idx=" + idx
+        LOG.info("<<< [AC-K-DESC] itemSelect row AFTER idx=" + idx
                 + " codigo=[" + row.getCodigo() + "] desc=[" + row.getDescripcion() + "]");
 
         syncCie10PrincipalFromK();
@@ -5958,14 +5909,12 @@ private void tryLoadCargoFromVista(FacesContext ctx) {
 
         LOG.info(">>> [AC-K-DESC] blur idx=" + idx + " clientId=" + clientId + " typed=[" + typed + "]");
 
-        if (idx == null || listaDiag == null || idx < 0 || idx >= listaDiag.size()) {
-            LOG.info("<<< [AC-K-DESC] blur idx INVALID => " + idx);
+        ConsultaDiagnostico row = getDiagRow(idx, "AC-K-DESC blur");
+        if (row == null) {
             return;
         }
 
-        ConsultaDiagnostico row = listaDiag.get(idx);
-
-        String desc = typed != null ? typed.trim() : "";
+        String desc = normalizeTypedValue(typed);
         if (desc.isEmpty()) {
             row.setDescripcion(null);
             row.setCie10(null);
@@ -5981,20 +5930,9 @@ private void tryLoadCargoFromVista(FacesContext ctx) {
             return;
         }
 
-        Cie10 cie = null;
-        try {
+        Cie10 cie = buscarMejorCie10PorDescripcion(desc);
 
-            List<Cie10> candidatos = cie10Service.buscarPorDescripcionLike(desc, 20);
-            LOG.info("... [AC-K-DESC] candidatos.size=" + (candidatos == null ? "null" : candidatos.size()));
-
-            if (candidatos != null && !candidatos.isEmpty()) {
-                cie = pickBestByDescripcion(candidatos, desc);
-            }
-        } catch (Exception e) {
-            LOG.info("!!! [AC-K-DESC] error: " + e.getMessage());
-        }
-
-        System.out.println("... [AC-K-DESC] pickBest => "
+        LOG.debug("... [AC-K-DESC] pickBest => "
                 + (cie != null ? (cie.getCodigo() + " | " + cie.getDescripcion()) : "null"));
 
         if (cie != null) {
@@ -6009,19 +5947,46 @@ private void tryLoadCargoFromVista(FacesContext ctx) {
         }
     }
 
-    private String getAutoCompleteTyped(UIComponent comp) {
-        if (comp == null) {
-            return null;
+    private String normalizeTypedValue(String typed) {
+        return typed != null ? typed.trim() : "";
+    }
+
+    private void clearDiagnosticoRow(ConsultaDiagnostico row) {
+        row.setCodigo(null);
+        row.setDescripcion(null);
+        row.setCie10(null);
+    }
+
+    private void setCodigoSinMatch(ConsultaDiagnostico row, String codigo) {
+        row.setCodigo(codigo);
+        row.setCie10(null);
+    }
+
+    private void applyCodigoLookupResult(ConsultaDiagnostico row, String codigoIngresado, Cie10 cie) {
+        if (cie != null) {
+            row.setCodigo(cie.getCodigo());
+            row.setDescripcion(cie.getDescripcion());
+            row.setCie10(cie);
+            LOG.info("<<< [AC-K-COD] blur AFTER MATCH codigo=[" + row.getCodigo() + "] desc=[" + row.getDescripcion() + "]");
+            return;
         }
 
-        FacesContext fc = FacesContext.getCurrentInstance();
-        String clientId = comp.getClientId(fc);
+        setCodigoSinMatch(row, codigoIngresado);
+        LOG.info("<<< [AC-K-COD] blur AFTER NO-MATCH keep codigo=[" + row.getCodigo() + "]");
+    }
 
-        String key = clientId + "_input";
-        String typed = fc.getExternalContext().getRequestParameterMap().get(key);
-
-        LOG.info("... [AC-TYPED] clientId=" + clientId + " param=" + key + " typed=[" + typed + "]");
-        return typed;
+    private Cie10 buscarMejorCie10PorDescripcion(String descripcion) {
+        try {
+            List<Cie10> candidatos = cie10Service.buscarPorDescripcionLike(descripcion, 20);
+            LOG.info("... [AC-K-DESC] candidatos.size=" + (candidatos == null ? "null" : candidatos.size()));
+            if (candidatos == null || candidatos.isEmpty()) {
+                return null;
+            }
+            return pickBestByDescripcion(candidatos, descripcion);
+        } catch (RuntimeException e) {
+            LOG.error("!!! [AC-K-DESC] error buscando candidatos para descripcion=[{}]", descripcion, e);
+            return null;
+        }
     }
 
     public void onKTipoChange(AjaxBehaviorEvent event) {
@@ -6032,13 +5997,12 @@ private void tryLoadCargoFromVista(FacesContext ctx) {
 
         LOG.info(">>> [K-TIPO] change ENTER idx=" + idx + " clientId=" + clientId);
 
-        if (idx == null || idx < 0 || listaDiag == null || idx >= listaDiag.size()) {
-            LOG.info("<<< [K-TIPO] change idx INVALID => " + idx);
+        ConsultaDiagnostico row = getDiagRow(idx, "K-TIPO change");
+        if (row == null) {
             return;
         }
 
-        ConsultaDiagnostico row = listaDiag.get(idx);
-        System.out.println("<<< [K-TIPO] AFTER idx=" + idx
+        LOG.info("<<< [K-TIPO] AFTER idx=" + idx
                 + " codigo=[" + row.getCodigo() + "]"
                 + " desc=[" + row.getDescripcion() + "]"
                 + " tipo=[" + row.getTipoDiag() + "]");
@@ -6069,12 +6033,12 @@ private void tryLoadCargoFromVista(FacesContext ctx) {
                 }
             }
 
-            System.out.println("!!! [REQ] AC typed NOT FOUND for base=" + base
+            LOG.warn("!!! [REQ] AC typed NOT FOUND for base=" + base
                     + " (tried _input, base, _hinput, _query)");
             return null;
 
-        } catch (Exception e) {
-            LOG.info("!!! [REQ] getAutoCompleteTypedRobusto ERROR: " + e.getMessage());
+        } catch (RuntimeException e) {
+            LOG.error("!!! [REQ] getAutoCompleteTypedRobusto ERROR: {}", e.getMessage(), e);
             return null;
         }
     }
@@ -6083,7 +6047,7 @@ private void tryLoadCargoFromVista(FacesContext ctx) {
         try {
             FacesContext fc = FacesContext.getCurrentInstance();
             return (fc != null && comp != null) ? comp.getClientId(fc) : "null";
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             return "err:" + e.getMessage();
         }
     }
@@ -6801,35 +6765,6 @@ private void tryLoadCargoFromVista(FacesContext ctx) {
 
     public void sethEnfermedad(String[] hEnfermedad) {
         this.hEnfermedad = hEnfermedad;
-    }
-
-    // ===========================
-    // Helpers: S/N desde boolean *Bool (reflexión) para no depender del getter en compile-time
-    // ===========================
-    private String snFromBoolProp(Object bean, String prop) {
-        if (bean == null || prop == null) {
-            return null;
-        }
-        try {
-            java.beans.PropertyDescriptor pd = new java.beans.PropertyDescriptor(prop, bean.getClass());
-            Object v = pd.getReadMethod().invoke(bean);
-            return Boolean.TRUE.equals(v) ? "S" : "N";
-        } catch (Exception ignore) {
-            return null; // si no existe la propiedad, no rompe
-        }
-    }
-
-    private String preferSn(String currentSn, Object bean, String boolProp) {
-        // Si ya viene "S" o "N" en el campo real, respétalo. Caso contrario intenta leer del *Bool.
-        if ("S".equalsIgnoreCase(currentSn) || "N".equalsIgnoreCase(currentSn)) {
-            return currentSn.toUpperCase();
-        }
-        String fromBool = snFromBoolProp(bean, boolProp);
-        return fromBool != null ? fromBool : "N";
-    }
-
-    private String markXFromSn(String sn) {
-        return "S".equalsIgnoreCase(sn) || "X".equalsIgnoreCase(sn) ? "X" : "";
     }
 
     void cargarAtencionPrioritaria(Map<String, String> rep) {
