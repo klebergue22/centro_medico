@@ -4214,22 +4214,21 @@ private void asegurarPersonaAuxPersistida() {
                 return new ArrayList<>();
             }
 
+            List<String> out = new ArrayList<>();
+
             List<Cie10> lista = cie10Service.buscarJerarquiaPorTerm(q);
             LOG.debug("... [AC-K-COD] service.buscarJerarquiaPorTerm(q={}) size={}", q,
                     (lista == null ? "null" : lista.size()));
 
-            List<String> out = new ArrayList<>();
+            agregarCoincidenciasCodigo(out, lista, q);
 
-            if (lista != null) {
-                for (Cie10 c : lista) {
-                    if (c == null || c.getCodigo() == null) {
-                        continue;
-                    }
-                    String codNorm = c.getCodigo().toUpperCase().replaceAll("[^A-Z0-9]", "");
-                    if (codNorm.startsWith(q)) {
-                        out.add(c.getCodigo());
-                    }
-                }
+            // Fallback: hay catálogos con códigos no normalizados (espacios/puntos).
+            // Si no hubo resultados por prefijo, ampliamos a búsqueda general.
+            if (out.isEmpty()) {
+                List<Cie10> alterna = cie10Service.buscarPorTermino(q, 20);
+                LOG.debug("... [AC-K-COD] fallback buscarPorTermino(q={}) size={}", q,
+                        (alterna == null ? "null" : alterna.size()));
+                agregarCoincidenciasCodigo(out, alterna, q);
             }
 
             LOG.info("<<< [AC-K-COD] RETURN out.size=" + out.size()
@@ -4239,6 +4238,36 @@ private void asegurarPersonaAuxPersistida() {
         } catch (Exception e) {
             LOG.error("!!! [AC-K-COD] ERROR {} : {}", e.getClass().getName(), e.getMessage(), e);
             return new ArrayList<>();
+        }
+    }
+
+    private void agregarCoincidenciasCodigo(List<String> out, List<Cie10> lista, String q) {
+        if (lista == null || out == null || q == null) {
+            return;
+        }
+
+        for (Cie10 c : lista) {
+            if (c == null || c.getCodigo() == null) {
+                continue;
+            }
+
+            String codigo = c.getCodigo().trim();
+            if (codigo.isEmpty()) {
+                continue;
+            }
+
+            String codNorm = codigo.toUpperCase().replaceAll("[^A-Z0-9]", "");
+            if (!codNorm.contains(q)) {
+                continue;
+            }
+
+            if (!out.contains(codigo)) {
+                out.add(codigo);
+            }
+
+            if (out.size() >= 20) {
+                return;
+            }
         }
     }
 
