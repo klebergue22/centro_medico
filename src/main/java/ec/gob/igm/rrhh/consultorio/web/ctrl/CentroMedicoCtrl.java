@@ -4223,12 +4223,20 @@ private void asegurarPersonaAuxPersistida() {
             agregarCoincidenciasCodigo(out, lista, q);
 
             // Fallback: hay catálogos con códigos no normalizados (espacios/puntos).
-            // Si no hubo resultados por prefijo, ampliamos a búsqueda general.
+            // Si no hubo resultados por prefijo, hacemos búsqueda tolerante por código.
             if (out.isEmpty()) {
-                List<Cie10> alterna = cie10Service.buscarPorTermino(q, 20);
-                LOG.debug("... [AC-K-COD] fallback buscarPorTermino(q={}) size={}", q,
+                List<Cie10> alterna = cie10Service.buscarPorCodigoAproximado(q, 20);
+                LOG.debug("... [AC-K-COD] fallback buscarPorCodigoAproximado(q={}) size={}", q,
                         (alterna == null ? "null" : alterna.size()));
                 agregarCoincidenciasCodigo(out, alterna, q);
+            }
+
+            // Último fallback: búsqueda general por término (código/descr.).
+            if (out.isEmpty()) {
+                List<Cie10> general = cie10Service.buscarPorTermino(q, 20);
+                LOG.debug("... [AC-K-COD] fallback buscarPorTermino(q={}) size={}", q,
+                        (general == null ? "null" : general.size()));
+                agregarCoincidenciasCodigo(out, general, q);
             }
 
             LOG.info("<<< [AC-K-COD] RETURN out.size=" + out.size()
