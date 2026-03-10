@@ -5867,6 +5867,31 @@ private void tryLoadCargoFromVista(FacesContext ctx) {
         applyCodigoLookupResult(row, codigoUp, cie);
     }
 
+    private void clearDiagnosticoRow(ConsultaDiagnostico row) {
+        row.setCodigo(null);
+        row.setDescripcion(null);
+        row.setCie10(null);
+    }
+
+    private void setCodigoSinMatch(ConsultaDiagnostico row, String codigoUp) {
+        row.setCodigo(codigoUp);
+        row.setDescripcion(null);
+        row.setCie10(null);
+    }
+
+    private void applyCodigoLookupResult(ConsultaDiagnostico row, String codigoUp, Cie10 cie) {
+        if (cie != null) {
+            row.setCodigo(cie.getCodigo());
+            row.setDescripcion(cie.getDescripcion());
+            row.setCie10(cie);
+            LOG.info("<<< [AC-K-COD] blur AFTER MATCH codigo=[" + row.getCodigo() + "] desc=[" + row.getDescripcion() + "]");
+            return;
+        }
+
+        setCodigoSinMatch(row, codigoUp);
+        LOG.info("<<< [AC-K-COD] blur AFTER NO-MATCH keep codigo=[" + row.getCodigo() + "]");
+    }
+
     public void onKDescSelect(SelectEvent<String> event) {
         String descripcion = event.getObject();
         UIComponent comp = event.getComponent();
