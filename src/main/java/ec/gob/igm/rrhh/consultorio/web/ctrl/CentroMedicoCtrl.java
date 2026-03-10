@@ -5930,13 +5930,16 @@ private void tryLoadCargoFromVista(FacesContext ctx) {
             return;
         }
 
-        Cie10 cie = buscarMejorCie10PorDescripcion(desc);
+        Cie10 cie = null;
+        try {
+            List<Cie10> candidatos = cie10Service.buscarPorDescripcionLike(desc, 20);
+            LOG.info("... [AC-K-DESC] candidatos.size=" + (candidatos == null ? "null" : candidatos.size()));
 
             if (candidatos != null && !candidatos.isEmpty()) {
                 cie = pickBestByDescripcion(candidatos, desc);
             }
-        } catch (Exception e) {
-            LOG.info("!!! [AC-K-DESC] error: " + e.getMessage());
+        } catch (RuntimeException e) {
+            LOG.error("!!! [AC-K-DESC] error: {}", e.getMessage(), e);
         }
 
         LOG.debug("... [AC-K-DESC] pickBest => "
