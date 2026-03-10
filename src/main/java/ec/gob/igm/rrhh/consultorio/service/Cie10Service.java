@@ -13,6 +13,7 @@ package ec.gob.igm.rrhh.consultorio.service;
 import ec.gob.igm.rrhh.consultorio.domain.model.Cie10;
 import jakarta.ejb.Stateless;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceException;
 import jakarta.persistence.PersistenceContext;
 import java.util.Collections;
 import java.util.List;
@@ -83,7 +84,7 @@ public class Cie10Service {
 
         int max = maxResults > 0 ? maxResults : 20;
 
-        return em.createQuery(
+        List<Cie10> lista = em.createQuery(
                 "SELECT c FROM Cie10 c " +
                 "WHERE UPPER(c.descripcion) LIKE :query " +
                 "ORDER BY c.descripcion",
@@ -91,6 +92,37 @@ public class Cie10Service {
             .setParameter("query", "%" + q.toUpperCase() + "%")
             .setMaxResults(max)
             .getResultList();
+
+        if (!lista.isEmpty()) {
+            return lista;
+        }
+
+        // Fallback para catálogos con tildes: "COLERA" debe encontrar "CÓLERA".
+        String from = "ÁÀÄÂÉÈËÊÍÌÏÎÓÒÖÔÚÙÜÛÑ";
+        String to = "AAAAEEEEIIIIOOOOUUUUN";
+        String qNorm = q.toUpperCase()
+                .replace('Á', 'A').replace('À', 'A').replace('Ä', 'A').replace('Â', 'A')
+                .replace('É', 'E').replace('È', 'E').replace('Ë', 'E').replace('Ê', 'E')
+                .replace('Í', 'I').replace('Ì', 'I').replace('Ï', 'I').replace('Î', 'I')
+                .replace('Ó', 'O').replace('Ò', 'O').replace('Ö', 'O').replace('Ô', 'O')
+                .replace('Ú', 'U').replace('Ù', 'U').replace('Ü', 'U').replace('Û', 'U')
+                .replace('Ñ', 'N');
+
+        try {
+            return em.createQuery(
+                    "SELECT c FROM Cie10 c " +
+                    "WHERE UPPER(FUNCTION('translate', c.descripcion, :from, :to)) LIKE :query " +
+                    "ORDER BY c.descripcion",
+                    Cie10.class)
+                .setParameter("from", from)
+                .setParameter("to", to)
+                .setParameter("query", "%" + qNorm + "%")
+                .setMaxResults(max)
+                .getResultList();
+        } catch (PersistenceException | IllegalArgumentException ex) {
+            // Si la BD no soporta translate, devolver el resultado base (vacío).
+            return lista;
+        }
     }
 
     /**
@@ -166,13 +198,25 @@ public class Cie10Service {
             throw new IllegalStateException("EntityManager no inyectado. Revisa persistence.xml y unitName='consultorioPU'.");
         }
 
-        return em.createQuery(
-                "SELECT c FROM Cie10 c " +
-                "WHERE UPPER(FUNCTION('replace', c.codigo, '.', '')) LIKE :term " +
-                "ORDER BY c.codigo",
-                Cie10.class)
-            .setParameter("term", norm + "%")
-            .setMaxResults(20)
-            .getResultList();
+        try {
+            return em.createQuery(
+                    "SELECT c FROM Cie10 c " +
+                    "WHERE UPPER(FUNCTION('replace', c.codigo, '.', '')) LIKE :term " +
+                    "ORDER BY c.codigo",
+                    Cie10.class)
+                .setParameter("term", norm + "%")
+                .setMaxResults(20)
+                .getResultList();
+        } catch (PersistenceException | IllegalArgumentException ex) {
+            // Fallback cuando la BD/JPA no soporta FUNCTION('replace', ...).
+            return em.createQuery(
+                    "SELECT c FROM Cie10 c " +
+                    "WHERE UPPER(c.codigo) LIKE :term " +
+                    "ORDER BY c.codigo",
+                    Cie10.class)
+                .setParameter("term", norm + "%")
+                .setMaxResults(20)
+                .getResultList();
+        }
     }
 }
