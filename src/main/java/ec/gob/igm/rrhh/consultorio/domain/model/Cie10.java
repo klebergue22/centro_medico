@@ -1,13 +1,5 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package ec.gob.igm.rrhh.consultorio.domain.model;
 
-/**
- *
- * @author GUERRA_KLEBER
- */
 
 
 import jakarta.persistence.*;
@@ -27,9 +19,7 @@ public class Cie10 implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    // =========================
     // PK (negocio) -> CODIGO
-    // =========================
     @Id
     @Column(name = "CODIGO", length = 10, nullable = false)
     private String codigo;
@@ -37,10 +27,8 @@ public class Cie10 implements Serializable {
     @Column(name = "DESCRIPCION", length = 500, nullable = false)
     private String descripcion;
 
-    // =========================
     // ID (técnico) -> UNIQUE
     // La BD lo llena con trigger + secuencia
-    // =========================
     @Column(name = "ID", nullable = false, unique = true)
     private Long id;
 
@@ -51,28 +39,16 @@ public class Cie10 implements Serializable {
     @Column(name = "ESTADO", length = 10, nullable = false)
     private String estado;
 
-    // =========================
     // Relación recursiva por ID
-    // =========================
-    /**
-     * Padre (join por ID_PARENT_ID -> ID). insertable=false/updatable=false
-     * porque el campo real que se persiste es idParentId.
-     */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "ID_PARENT_ID", referencedColumnName = "ID", insertable = false, updatable = false,
             foreignKey = @ForeignKey(name = "FK_CIE10_PARENT"))
     private Cie10 padre;
 
-    /**
-     * Hijos: registros cuyo ID_PARENT_ID = este.ID
-     */
     @OneToMany(fetch = FetchType.LAZY)
     @JoinColumn(name = "ID_PARENT_ID", referencedColumnName = "ID")
     private Set<Cie10> hijos = new HashSet<>();
 
-    // ==========================
-    // Constructores
-    // ==========================
     // Constructor vacío (requerido por JPA)
     // @Builder.Default se reemplaza inicializando 'hijos' aquí
     public Cie10() {
@@ -91,10 +67,7 @@ public class Cie10 implements Serializable {
         this.hijos = (hijos != null) ? hijos : new HashSet<>();
     }
 
-    // ==========================
-    // Equals y HashCode
     // Se basa solo en 'codigo' (@EqualsAndHashCode.Include)
-    // ==========================
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -112,10 +85,7 @@ public class Cie10 implements Serializable {
         return Objects.hash(codigo);
     }
 
-    // ==========================
-    // ToString
     // Incluye solo 'codigo' y 'descripcion' (@ToString.Include)
-    // ==========================
     @Override
     public String toString() {
         return "Cie10{"
@@ -124,9 +94,6 @@ public class Cie10 implements Serializable {
                 + '}';
     }
 
-    // ==========================
-    // Getters y Setters
-    // ==========================
     public String getCodigo() {
         return codigo;
     }

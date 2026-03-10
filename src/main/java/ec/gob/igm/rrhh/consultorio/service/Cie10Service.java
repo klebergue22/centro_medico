@@ -1,13 +1,5 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package ec.gob.igm.rrhh.consultorio.service;
 
-/**
- *
- * @author GUERRA_KLEBER
- */
 
 
 import ec.gob.igm.rrhh.consultorio.domain.model.Cie10;
@@ -25,11 +17,6 @@ public class Cie10Service {
     @PersistenceContext(unitName = "consultorioPU")
     private EntityManager em;
 
-    /**
-     * Busca por código:
-     *  1) exacto (case-insensitive)
-     *  2) normalizado sin puntos ni símbolos (ej: "T46.5" == "T465")
-     */
     public Cie10 buscarPorCodigo(String codigo) {
         if (codigo == null) return null;
 
@@ -70,9 +57,6 @@ public class Cie10Service {
         return normalizado.isEmpty() ? null : normalizado.get(0);
     }
 
-    /**
-     * Buscar por descripción que contenga...
-     */
     public List<Cie10> buscarPorDescripcionLike(String query, int maxResults) {
         if (query == null) return Collections.emptyList();
 
@@ -126,9 +110,6 @@ public class Cie10Service {
         }
     }
 
-    /**
-     * Buscar por código o descripción (LIKE).
-     */
     public List<Cie10> buscarPorCodigoODescripcion(String termino, int maxResults) {
         if (termino == null) return Collections.emptyList();
 
@@ -152,17 +133,10 @@ public class Cie10Service {
             .getResultList();
     }
 
-    /**
-     * Compatibilidad con llamadas existentes que usan el nombre genérico
-     * buscarPorTermino(...).
-     */
     public List<Cie10> buscarPorTermino(String termino, int maxResults) {
         return buscarPorCodigoODescripcion(termino, maxResults);
     }
 
-    /**
-     * Buscar primero por descripción exacta (case-insensitive).
-     */
     public Cie10 buscarPrimeroPorDescripcion(String descripcion) {
         if (descripcion == null) return null;
 
@@ -185,10 +159,6 @@ public class Cie10Service {
         return lista.isEmpty() ? null : lista.get(0);
     }
 
-    /**
-     * Búsqueda jerárquica (autocomplete por prefijo), ignorando puntos:
-     * term "T46.5" -> "T465%" sobre replace(codigo,'.','')
-     */
     public List<Cie10> buscarJerarquiaPorTerm(String termino) {
         if (termino == null) return Collections.emptyList();
 
@@ -221,10 +191,6 @@ public class Cie10Service {
         }
     }
 
-    /**
-     * Fallback tolerante para autocompletado de código cuando la BD no aplica
-     * correctamente normalizaciones (puntos, guiones, espacios).
-     */
     public List<Cie10> buscarPorCodigoAproximado(String termino, int maxResults) {
         if (termino == null) return Collections.emptyList();
 

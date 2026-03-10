@@ -5,22 +5,22 @@
                 xmlns:f="http://xmlns.jcp.org/jsf/core"
                 xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
 
-    <!-- ============================================ -->
-    <!-- TÍTULO DE LA PÁGINA                         -->
-    <!-- ============================================ -->
+
+
+
     <ui:define name="title">Contrataciones</ui:define>
 
-    <!-- ============================================ -->
-    <!-- CONTENIDO PRINCIPAL                         -->
-    <!-- ============================================ -->
+
+
+
     <ui:define name="content">
 
-        <!-- MENSAJES -->
+
         <p:messages id="msgsPage" closable="true" showIcon="true" showSummary="true"/>
 
-        <!-- ============================================ -->
-        <!-- BARRA DE HERRAMIENTAS                       -->
-        <!-- ============================================ -->
+
+
+
         <p:toolbar class="p-mb-2">
             <p:toolbarGroup>
                 <p:outputLabel for="filtroNoPersona" value="No Persona:" style="margin-right:6px"/>
@@ -50,13 +50,12 @@
                                  update="dlg dlgBody dlgMsgs msgsPage"
                                  oncomplete="if (!args.validationFailed) PF('dlgCont').show();"/>
 
-
             </p:toolbarGroup>
         </p:toolbar>
 
-        <!-- ============================================ -->
-        <!-- TABLA DE CONTRATACIONES                     -->
-        <!-- ============================================ -->
+
+
+
         <p:dataTable id="tbl"
                      value="#{contratacionController.lista}"
                      var="c"
@@ -103,13 +102,12 @@
                                  update="dlg dlgBody dlgMsgs msgsPage"
                                  oncomplete="PF('dlgCont').show();"/>
 
-
             </p:column>
         </p:dataTable>
 
-        <!-- ============================================ -->
-        <!-- DIÁLOGO DE EDICIÓN / NUEVO                  -->
-        <!-- ============================================ -->
+
+
+
         <p:dialog id="dlg"
                   widgetVar="dlgCont"
                   header="Contratación"
@@ -120,7 +118,6 @@
                   closeOnEscape="false">
 
             <p:messages id="dlgMsgs" showIcon="true" showDetail="true" closable="true"/>
-
 
             <p:outputPanel id="dlgBody" rendered="#{contratacionController.seleccionado ne null}">
                 <h:panelGrid columns="3" columnClasses="lab,fld,msg" style="width:100%">
@@ -138,7 +135,6 @@
                                        itemValue="#{e}"/>
                     </p:selectOneMenu>
                     <p:message for="estado"/>
-
 
                     <p:outputLabel for="tipoContrato" value="Tipo Contrato *"/>
                     <p:selectOneMenu id="tipoContrato"
@@ -216,7 +212,6 @@
                                  update="msgsPage tbl dlgBody dlgMsgs"
                                  oncomplete="if (args &amp;&amp; args.validationFailed) PF('dlgCont').show(); else PF('dlgCont').hide();"/>
 
-
                 <p:commandButton type="button"
                                  value="Cancelar"
                                  icon="pi pi-times"
@@ -226,9 +221,9 @@
 
         </p:dialog>
 
-        <!-- ============================================ -->
-        <!-- DIÁLOGO DE CREACIÓN (CUANDO NO HAY REGISTROS) -->
-        <!-- ============================================ -->
+
+
+
         <p:dialog id="dlgCrear"
                   widgetVar="dlgCrear"
                   header="Sin contratos"

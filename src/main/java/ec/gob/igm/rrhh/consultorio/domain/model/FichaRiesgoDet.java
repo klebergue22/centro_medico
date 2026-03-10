@@ -1,13 +1,5 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package ec.gob.igm.rrhh.consultorio.domain.model;
 
-/**
- *
- * @author GUERRA_KLEBER
- */
 
 
 
@@ -32,9 +24,7 @@ public class FichaRiesgoDet implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    // =========================
     // PK
-    // =========================
     @Id
     @SequenceGenerator(
         name = "SQ_FICHA_RIESGO_DET_GEN",
@@ -45,41 +35,32 @@ public class FichaRiesgoDet implements Serializable {
     @Column(name = "ID_FICHA_RIESGO_DET", nullable = false)
     private Long idFichaRiesgoDet;
 
-    // =========================
     // Relaciones
-    // =========================
 
-    /** Ficha ocupacional (padre) */
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "ID_FICHA", nullable = false)
     private FichaOcupacional ficha;
 
-    /** Encabezado de riesgos (opcional pero recomendado) */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "ID_FICHA_RIESGO")
     private FichaRiesgo fichaRiesgo;
 
-    // =========================
     // Datos del detalle
-    // =========================
     @Column(name = "GRUPO", length = 30, nullable = false)
-    private String grupo; 
+    private String grupo;
 
     @Column(name = "ITEM", length = 300, nullable = false)
     private String item;
 
     @Column(name = "ACTIVIDAD_NRO", nullable = false)
-    private Integer actividadNro; 
+    private Integer actividadNro;
 
     @Column(name = "MARCADO", length = 1, nullable = false)
-    private String marcado; 
+    private String marcado;
 
     @Column(name = "ORDEN")
     private Integer orden;
 
-    // =========================
-    // Auditoría
-    // =========================
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "F_CREACION")
     private Date fCreacion;
@@ -94,17 +75,14 @@ public class FichaRiesgoDet implements Serializable {
     @Column(name = "USR_ACTUALIZACION", length = 30)
     private String usrActualizacion;
 
-    // ==========================
-    // Constructores
-    // ==========================
 
     // Constructor vacío (requerido por JPA)
     public FichaRiesgoDet() {
     }
 
     // Constructor completo (Reemplaza @AllArgsConstructor)
-    public FichaRiesgoDet(Long idFichaRiesgoDet, FichaOcupacional ficha, FichaRiesgo fichaRiesgo, 
-                           String grupo, String item, Integer actividadNro, String marcado, Integer orden, 
+    public FichaRiesgoDet(Long idFichaRiesgoDet, FichaOcupacional ficha, FichaRiesgo fichaRiesgo,
+                           String grupo, String item, Integer actividadNro, String marcado, Integer orden,
                            Date fCreacion, String usrCreacion, Date fActualizacion, String usrActualizacion) {
         this.idFichaRiesgoDet = idFichaRiesgoDet;
         this.ficha = ficha;
@@ -120,9 +98,7 @@ public class FichaRiesgoDet implements Serializable {
         this.usrActualizacion = usrActualizacion;
     }
 
-    // =========================
     // Ciclo de vida JPA
-    // =========================
     @PrePersist
     public void prePersist() {
         if (marcado == null) marcado = "N";
@@ -134,10 +110,6 @@ public class FichaRiesgoDet implements Serializable {
         fActualizacion = new Date();
     }
 
-    // ==========================
-    // Equals y HashCode
-    // Basado en idFichaRiesgoDet (@EqualsAndHashCode.Include)
-    // ==========================
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -151,10 +123,7 @@ public class FichaRiesgoDet implements Serializable {
         return Objects.hash(idFichaRiesgoDet);
     }
 
-    // ==========================
-    // ToString
     // Excluye 'ficha' y 'fichaRiesgo' (@ToString(exclude = ...))
-    // ==========================
     @Override
     public String toString() {
         return "FichaRiesgoDet{" +
@@ -171,9 +140,6 @@ public class FichaRiesgoDet implements Serializable {
                 '}';
     }
 
-    // =========================
-    // Helpers para JSF
-    // =========================
     public boolean isMarcadoBool() {
         return "S".equalsIgnoreCase(marcado);
     }
@@ -182,9 +148,6 @@ public class FichaRiesgoDet implements Serializable {
         this.marcado = value ? "S" : "N";
     }
 
-    // ==========================
-    // Getters y Setters
-    // ==========================
     public Long getIdFichaRiesgoDet() {
         return idFichaRiesgoDet;
     }

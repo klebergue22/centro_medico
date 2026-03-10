@@ -1,13 +1,5 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package ec.gob.igm.rrhh.consultorio.service;
 
-/**
- *
- * @author GUERRA_KLEBER
- */
 
 
 import ec.gob.igm.rrhh.consultorio.domain.model.FichaRiesgo;
@@ -31,9 +23,6 @@ public class FichaRiesgoService {
         }
     }
 
-    /**
-     * Crear o actualizar una ficha de riesgos.
-     */
     public FichaRiesgo guardar(FichaRiesgo fr) {
         assertEm();
 
@@ -52,9 +41,6 @@ public class FichaRiesgoService {
         return merged;
     }
 
-    /**
-     * Buscar por ID.
-     */
     public FichaRiesgo buscarPorId(Long id) {
         assertEm();
 
@@ -64,10 +50,6 @@ public class FichaRiesgoService {
         return em.find(FichaRiesgo.class, id);
     }
 
-    /**
-     * Buscar riesgos por ID_FICHA.
-     * Nota: devuelve lista vacía si idFicha es null o no hay resultados.
-     */
     public List<FichaRiesgo> buscarPorFicha(Long idFicha) {
         assertEm();
 

@@ -11,7 +11,7 @@
     <load-on-startup>1</load-on-startup>
   </servlet>
 
-  <!-- URLs tipo /index.jsf -->
+
   <servlet-mapping>
     <servlet-name>Faces Servlet</servlet-name>
     <url-pattern>*.jsf</url-pattern>
@@ -22,7 +22,6 @@
 </servlet-mapping>
 
 
-  <!-- Tus páginas siguen siendo .xhtml -->
   <context-param>
     <param-name>jakarta.faces.FACELETS_SUFFIX</param-name>
     <param-value>.xhtml</param-value>

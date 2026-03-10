@@ -1,14 +1,6 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package ec.gob.igm.rrhh.consultorio.domain.model;
 
-/**
- *
- * @author GUERRA_KLEBER
- */
- 
+
 
 
 import jakarta.persistence.*;
@@ -84,7 +76,7 @@ public class PersonaAux implements Serializable {
     private Long noPersona;
 
     @Column(name = "ESTADO", length = 20)
-    private String estado; 
+    private String estado;
 
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "F_CREACION")
@@ -100,15 +92,11 @@ public class PersonaAux implements Serializable {
     @Column(name = "USR_ACTUALIZACION", length = 30)
     private String usrActualizacion;
 
-    // ==========================
     // Constructor (Requerido por JPA)
-    // ==========================
     public PersonaAux() {
     }
 
-    // ===========================
     // Lifecycle
-    // ===========================
     @PrePersist
     public void prePersist() {
         if (estado == null || estado.trim().isEmpty()) {
@@ -127,9 +115,7 @@ public class PersonaAux implements Serializable {
         sincronizarCamposCompuestos();
     }
 
-    // ==========================================
     // Sincroniza NOMBRES y APELLIDOS (compuestos)
-    // ==========================================
     private void sincronizarCamposCompuestos() {
         this.nombres = buildNombreCompleto(nombre1, nombre2);
         this.apellidos = buildNombreCompleto(apellido1, apellido2);
@@ -142,10 +128,6 @@ public class PersonaAux implements Serializable {
         return res.isEmpty() ? null : res;
     }
 
-    // ==========================
-    // Equals y HashCode
-    // Basado en idPersonaAux
-    // ==========================
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -159,9 +141,6 @@ public class PersonaAux implements Serializable {
         return Objects.hash(idPersonaAux);
     }
 
-    // ==========================
-    // Getters y Setters
-    // ==========================
     public Long getIdPersonaAux() {
         return idPersonaAux;
     }
@@ -289,7 +268,7 @@ public class PersonaAux implements Serializable {
     public void setUsrActualizacion(String usrActualizacion) {
         this.usrActualizacion = usrActualizacion;
     }
-    
+
     @Override
     public String toString() {
         return "PersonaAux{" +

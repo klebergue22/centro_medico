@@ -1,13 +1,5 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package ec.gob.igm.rrhh.consultorio.service;
 
-/**
- *
- * @author GUERRA_KLEBER
- */
 
 import ec.gob.igm.rrhh.consultorio.domain.model.PersonaAux;
 import jakarta.ejb.Stateless;
@@ -31,9 +23,7 @@ public class PersonaAuxService {
         }
     }
 
-    // =====================
     // BÁSICOS
-    // =====================
 
     public PersonaAux guardar(PersonaAux p) {
         assertEm();
@@ -79,18 +69,14 @@ public class PersonaAuxService {
         return em.find(PersonaAux.class, id);
     }
 
-    // =====================
     // CONSULTAS
-    // =====================
 
-    /** Lista completa (según NamedQuery PersonaAux.findAll). */
     public List<PersonaAux> listarTodos() {
         assertEm();
         return em.createNamedQuery("PersonaAux.findAll", PersonaAux.class)
                  .getResultList();
     }
 
-    /** Busca por cédula (devuelve null si no hay o si cédula está vacía). */
     public PersonaAux findByCedula(String cedula) {
         assertEm();
 
@@ -107,23 +93,19 @@ public class PersonaAuxService {
         return lst.isEmpty() ? null : lst.get(0);
     }
 
-    /** Solo registros en estado PENDIENTE. */
     public List<PersonaAux> listarPendientes() {
         assertEm();
         return em.createNamedQuery("PersonaAux.findPendientes", PersonaAux.class)
                  .getResultList();
     }
 
-    /** Solo registros ya vinculados (estado VINCULADO). */
     public List<PersonaAux> listarVinculados() {
         assertEm();
         return em.createNamedQuery("PersonaAux.findVinculados", PersonaAux.class)
                  .getResultList();
     }
 
-    // =====================
     // UTILITARIO
-    // =====================
 
     public PersonaAux crearDesdePantalla(String cedula,
                                          String nombres,

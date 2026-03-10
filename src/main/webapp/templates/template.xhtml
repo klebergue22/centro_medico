@@ -13,10 +13,10 @@
     <h:head>
         <title><ui:insert name="title">RRHH</ui:insert></title>
 
-        <!-- Primero se inserta lo que cada página agregue al head (theme, primeflex, etc.) -->
+
         <ui:insert name="head"/>
 
-        <!-- Luego tu CSS institucional para que sobrescriba al theme -->
+
         <h:outputStylesheet library="css" name="igm.css"/>
 
         <link rel="icon" type="image/png"
@@ -27,7 +27,7 @@
 
         <h:form id="layoutForm" prependId="false">
 
-            <!-- Dialog global de espera -->
+
             <p:dialog modal="true" widgetVar="statusDialog"
                       header="Por favor espere..."
                       draggable="false" closable="false" resizable="false"
@@ -71,7 +71,7 @@
             <ui:insert name="footer-scripts"/>
         </h:form>
 
-        <!-- Dialogs fuera del form principal -->
+
         <ui:insert name="dialogs"/>
 
     </h:body>

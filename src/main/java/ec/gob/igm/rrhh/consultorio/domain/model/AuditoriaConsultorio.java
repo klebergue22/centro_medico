@@ -1,14 +1,6 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package ec.gob.igm.rrhh.consultorio.domain.model;
 
-/**
- *
- * @author GUERRA_KLEBER
- */
- 
+
 
 
 
@@ -57,9 +49,6 @@ public class AuditoriaConsultorio implements Serializable {
     @Column(name = "PK_VALOR", length = 100)
     private String pkValor;
 
-    // ==========================
-    // Getters y Setters Manuales
-    // ==========================
 
     public Long getId() {
         return id;

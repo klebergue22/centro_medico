@@ -303,14 +303,10 @@ public class CentroMedicoPdfFacade implements Serializable {
     private java.util.List<String> examResultado = new ArrayList<>();
     private java.util.List<Date> examFecha = new ArrayList<>();
 
-    // ============================================================
 // D. ENFERMEDAD O PROBLEMA ACTUAL
-// ============================================================
     private String enfermedadActual;
 
-// ============================================================
 // F. EXAMEN FÍSICO REGIONAL
-// ============================================================
     private String exfPielCicatrices;
     private String exfOjosParpados;
     private String exfOjosConjuntivas;
@@ -2733,7 +2729,6 @@ public class CentroMedicoPdfFacade implements Serializable {
         corregirOtrosRiesgos(rep);        // si ya existe en tu ctrl, LLÁMALO AQUÍ
 
         // ✅ (si tu plantilla lo usa en ficha)
-        // === LOG DE VALORES EN EL MAPA (solo para depuración) ===
         LOG.debug("=== buildReemplazosFicha - valores en el mapa ===");
         LOG.debug("gineco_examen1 = {}", rep.get("gineco_examen1"));
         LOG.debug("gineco_tiempo1 = {}", rep.get("gineco_tiempo1"));
@@ -2759,7 +2754,6 @@ public class CentroMedicoPdfFacade implements Serializable {
         return rep;
     }
 
-// ========================= Métodos auxiliares =========================
     private void cargarExamenFisicoRegional(Map<String, String> rep) {
         rep.put("exf_piel_cicatrices", markX(exfPielCicatrices));
         rep.put("exf_ojos_parpados", markX(exfOjosParpados));
