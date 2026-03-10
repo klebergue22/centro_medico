@@ -4199,7 +4199,7 @@ private void asegurarPersonaAuxPersistida() {
 
     public List<String> completarCie10FilaPorCodigo(String query) {
         try {
-            jakarta.faces.context.FacesContext fc = jakarta.faces.context.FacesContext.getCurrentInstance();
+            FacesContext fc = FacesContext.getCurrentInstance();
             String viewId = (fc != null && fc.getViewRoot() != null) ? fc.getViewRoot().getViewId() : "null";
             LOG.info(">>> [AC-K-COD] complete ENTER query=[" + query + "] viewId=" + viewId);
 
@@ -4215,8 +4215,8 @@ private void asegurarPersonaAuxPersistida() {
             }
 
             List<Cie10> lista = cie10Service.buscarJerarquiaPorTerm(q);
-            System.out.println("... [AC-K-COD] service.buscarJerarquiaPorTerm(q=" + q + ") size="
-                    + (lista == null ? "null" : lista.size()));
+            LOG.debug("... [AC-K-COD] service.buscarJerarquiaPorTerm(q={}) size={}", q,
+                    (lista == null ? "null" : lista.size()));
 
             List<String> out = new ArrayList<>();
 
@@ -4232,20 +4232,19 @@ private void asegurarPersonaAuxPersistida() {
                 }
             }
 
-            System.out.println("<<< [AC-K-COD] RETURN out.size=" + out.size()
+            LOG.info("<<< [AC-K-COD] RETURN out.size=" + out.size()
                     + (out.isEmpty() ? "" : (" first=[" + out.get(0) + "]")));
             return out;
 
         } catch (Exception e) {
-            LOG.info("!!! [AC-K-COD] ERROR " + e.getClass().getName() + " : " + e.getMessage());
-            e.printStackTrace();
+            LOG.error("!!! [AC-K-COD] ERROR {} : {}", e.getClass().getName(), e.getMessage(), e);
             return new ArrayList<>();
         }
     }
 
     public List<String> completarCie10FilaPorDescripcion(String query) {
         try {
-            jakarta.faces.context.FacesContext fc = jakarta.faces.context.FacesContext.getCurrentInstance();
+            FacesContext fc = FacesContext.getCurrentInstance();
             String viewId = (fc != null && fc.getViewRoot() != null) ? fc.getViewRoot().getViewId() : "null";
             LOG.info(">>> [AC-K-DESC] complete ENTER query=[" + query + "] viewId=" + viewId);
 
@@ -4256,8 +4255,8 @@ private void asegurarPersonaAuxPersistida() {
             }
 
             List<Cie10> lista = cie10Service.buscarPorDescripcionLike(query, 20);
-            System.out.println("... [AC-K-DESC] service.buscarPorDescripcionLike size="
-                    + (lista == null ? "null" : lista.size()));
+            LOG.debug("... [AC-K-DESC] service.buscarPorDescripcionLike size={}",
+                    (lista == null ? "null" : lista.size()));
 
             if (lista != null) {
                 for (Cie10 c : lista) {
@@ -4267,13 +4266,12 @@ private void asegurarPersonaAuxPersistida() {
                 }
             }
 
-            System.out.println("<<< [AC-K-DESC] RETURN out.size=" + out.size()
+            LOG.info("<<< [AC-K-DESC] RETURN out.size=" + out.size()
                     + (out.isEmpty() ? "" : (" first=[" + out.get(0) + "]")));
             return out;
 
         } catch (Exception e) {
-            LOG.info("!!! [AC-K-DESC] ERROR " + e.getClass().getName() + " : " + e.getMessage());
-            e.printStackTrace();
+            LOG.error("!!! [AC-K-DESC] ERROR {} : {}", e.getClass().getName(), e.getMessage(), e);
             return new ArrayList<String>();
         }
     }
@@ -5740,7 +5738,7 @@ private void tryLoadCargoFromVista(FacesContext ctx) {
             value = in.getValue();
         }
 
-        System.out.println("... [VAL] compId=" + comp.getId()
+        LOG.debug("... [VAL] compId=" + comp.getId()
                 + " clientId=" + clientId
                 + " idxAttr=" + idxAttr
                 + " submitted=" + submitted
@@ -5773,7 +5771,7 @@ private void tryLoadCargoFromVista(FacesContext ctx) {
             clientId = String.valueOf(comp.getId());
         }
 
-        System.out.println("... [IDX] extraerIdx compId=" + comp.getId()
+        LOG.debug("... [IDX] extraerIdx compId=" + comp.getId()
                 + " clientId=" + clientId
                 + " idxAttr=" + idxObj);
 
@@ -5788,20 +5786,26 @@ private void tryLoadCargoFromVista(FacesContext ctx) {
         }
     }
 
+    private ConsultaDiagnostico getDiagRow(Integer idx, String contexto) {
+        if (idx == null || listaDiag == null || idx < 0 || idx >= listaDiag.size()) {
+            LOG.info("<<< [{}] idx INVALID => {}", contexto, idx);
+            return null;
+        }
+        return listaDiag.get(idx);
+    }
+
     public void onKCieCodigoSelect(SelectEvent<String> event) {
         UIComponent comp = (event != null ? event.getComponent() : null);
         Integer idx = extraerIdx(comp);
         String selected = (event != null ? event.getObject() : null);
 
-        System.out.println(">>> [AC-K-COD] itemSelect idx=" + idx
+        LOG.info(">>> [AC-K-COD] itemSelect idx=" + idx
                 + " selected=[" + selected + "] clientId=" + (comp != null ? comp.getClientId() : "null"));
 
-        if (idx == null || listaDiag == null || idx < 0 || idx >= listaDiag.size()) {
-            LOG.info("<<< [AC-K-COD] itemSelect idx INVALID");
+        ConsultaDiagnostico row = getDiagRow(idx, "AC-K-COD itemSelect");
+        if (row == null) {
             return;
         }
-
-        ConsultaDiagnostico row = listaDiag.get(idx);
 
         if (selected == null || selected.trim().isEmpty()) {
             LOG.info("<<< [AC-K-COD] itemSelect empty selection => no-op");
@@ -5835,12 +5839,10 @@ private void tryLoadCargoFromVista(FacesContext ctx) {
 
         LOG.info(">>> [AC-K-COD] blur idx=" + idx + " clientId=" + clientId + " typed=[" + typed + "]");
 
-        if (idx == null || listaDiag == null || idx < 0 || idx >= listaDiag.size()) {
-            LOG.info("<<< [AC-K-COD] blur idx INVALID => " + idx);
+        ConsultaDiagnostico row = getDiagRow(idx, "AC-K-COD blur");
+        if (row == null) {
             return;
         }
-
-        ConsultaDiagnostico row = listaDiag.get(idx);
 
         String codigo = typed != null ? typed.trim() : "";
         if (codigo.isEmpty()) {
@@ -5864,7 +5866,7 @@ private void tryLoadCargoFromVista(FacesContext ctx) {
 
         Cie10 cie = cie10Service.buscarPorCodigo(codigoUp);
 
-        System.out.println("... [AC-K-COD] buscarPorCodigo(" + codigoUp + ") => "
+        LOG.debug("... [AC-K-COD] buscarPorCodigo(" + codigoUp + ") => "
                 + (cie != null ? (cie.getCodigo() + " | " + cie.getDescripcion()) : "null"));
 
         if (cie != null) {
@@ -5887,12 +5889,11 @@ private void tryLoadCargoFromVista(FacesContext ctx) {
 
         LOG.info(">>> [AC-K-DESC] itemSelect ENTER desc=[" + descripcion + "] idx=" + idx);
 
-        if (idx == null || idx < 0 || idx >= listaDiag.size()) {
-            LOG.info("<<< [AC-K-DESC] itemSelect idx INVALID => " + idx);
+        ConsultaDiagnostico row = getDiagRow(idx, "AC-K-DESC itemSelect");
+        if (row == null) {
             return;
         }
 
-        ConsultaDiagnostico row = listaDiag.get(idx);
         row.setDescripcion(descripcion);
 
         if (descripcion != null && !descripcion.trim().isEmpty()) {
@@ -5908,7 +5909,7 @@ private void tryLoadCargoFromVista(FacesContext ctx) {
             }
         }
 
-        System.out.println("<<< [AC-K-DESC] itemSelect row AFTER idx=" + idx
+        LOG.info("<<< [AC-K-DESC] itemSelect row AFTER idx=" + idx
                 + " codigo=[" + row.getCodigo() + "] desc=[" + row.getDescripcion() + "]");
 
         syncCie10PrincipalFromK();
@@ -5923,12 +5924,10 @@ private void tryLoadCargoFromVista(FacesContext ctx) {
 
         LOG.info(">>> [AC-K-DESC] blur idx=" + idx + " clientId=" + clientId + " typed=[" + typed + "]");
 
-        if (idx == null || listaDiag == null || idx < 0 || idx >= listaDiag.size()) {
-            LOG.info("<<< [AC-K-DESC] blur idx INVALID => " + idx);
+        ConsultaDiagnostico row = getDiagRow(idx, "AC-K-DESC blur");
+        if (row == null) {
             return;
         }
-
-        ConsultaDiagnostico row = listaDiag.get(idx);
 
         String desc = typed != null ? typed.trim() : "";
         if (desc.isEmpty()) {
@@ -5959,7 +5958,7 @@ private void tryLoadCargoFromVista(FacesContext ctx) {
             LOG.info("!!! [AC-K-DESC] error: " + e.getMessage());
         }
 
-        System.out.println("... [AC-K-DESC] pickBest => "
+        LOG.debug("... [AC-K-DESC] pickBest => "
                 + (cie != null ? (cie.getCodigo() + " | " + cie.getDescripcion()) : "null"));
 
         if (cie != null) {
@@ -5974,21 +5973,6 @@ private void tryLoadCargoFromVista(FacesContext ctx) {
         }
     }
 
-    private String getAutoCompleteTyped(UIComponent comp) {
-        if (comp == null) {
-            return null;
-        }
-
-        FacesContext fc = FacesContext.getCurrentInstance();
-        String clientId = comp.getClientId(fc);
-
-        String key = clientId + "_input";
-        String typed = fc.getExternalContext().getRequestParameterMap().get(key);
-
-        LOG.info("... [AC-TYPED] clientId=" + clientId + " param=" + key + " typed=[" + typed + "]");
-        return typed;
-    }
-
     public void onKTipoChange(AjaxBehaviorEvent event) {
         UIComponent comp = (event != null ? event.getComponent() : null);
         Integer idx = extraerIdx(comp);
@@ -5997,13 +5981,12 @@ private void tryLoadCargoFromVista(FacesContext ctx) {
 
         LOG.info(">>> [K-TIPO] change ENTER idx=" + idx + " clientId=" + clientId);
 
-        if (idx == null || idx < 0 || listaDiag == null || idx >= listaDiag.size()) {
-            LOG.info("<<< [K-TIPO] change idx INVALID => " + idx);
+        ConsultaDiagnostico row = getDiagRow(idx, "K-TIPO change");
+        if (row == null) {
             return;
         }
 
-        ConsultaDiagnostico row = listaDiag.get(idx);
-        System.out.println("<<< [K-TIPO] AFTER idx=" + idx
+        LOG.info("<<< [K-TIPO] AFTER idx=" + idx
                 + " codigo=[" + row.getCodigo() + "]"
                 + " desc=[" + row.getDescripcion() + "]"
                 + " tipo=[" + row.getTipoDiag() + "]");
@@ -6034,7 +6017,7 @@ private void tryLoadCargoFromVista(FacesContext ctx) {
                 }
             }
 
-            System.out.println("!!! [REQ] AC typed NOT FOUND for base=" + base
+            LOG.warn("!!! [REQ] AC typed NOT FOUND for base=" + base
                     + " (tried _input, base, _hinput, _query)");
             return null;
 
