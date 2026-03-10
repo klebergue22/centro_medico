@@ -120,6 +120,14 @@ public class Cie10Service {
     }
 
     /**
+     * Compatibilidad con llamadas existentes que usan el nombre genérico
+     * buscarPorTermino(...).
+     */
+    public List<Cie10> buscarPorTermino(String termino, int maxResults) {
+        return buscarPorCodigoODescripcion(termino, maxResults);
+    }
+
+    /**
      * Buscar primero por descripción exacta (case-insensitive).
      */
     public Cie10 buscarPrimeroPorDescripcion(String descripcion) {
