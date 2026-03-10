@@ -40,6 +40,7 @@ import jakarta.faces.context.ResponseWriter;
 import jakarta.faces.event.AjaxBehaviorEvent;
 import jakarta.faces.view.ViewDeclarationLanguage;
 import jakarta.faces.view.ViewScoped;
+import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import jakarta.servlet.http.HttpSession;
 
@@ -80,6 +81,9 @@ import ec.gob.igm.rrhh.consultorio.service.FichaRiesgoService;
 import ec.gob.igm.rrhh.consultorio.service.PersonaAuxService;
 import ec.gob.igm.rrhh.consultorio.service.SignosVitalesService;
 import ec.gob.igm.rrhh.consultorio.service.Step1VitalSignsManager;
+import ec.gob.igm.rrhh.consultorio.web.audit.CentroMedicoAuditService;
+import ec.gob.igm.rrhh.consultorio.web.pdf.PdfTemplateEngine;
+import ec.gob.igm.rrhh.consultorio.web.session.PdfSessionStore;
 import ec.gob.igm.rrhh.consultorio.web.util.SnUtils;
 
 /**
@@ -385,6 +389,15 @@ public class CentroMedicoCtrl implements Serializable {
     private transient FichaExamenCompService fichaExamenCompService;
     @EJB
     private transient ExamenFisicoRegionalService examenFisicoRegionalService;
+
+    @EJB
+    private transient CentroMedicoAuditService centroMedicoAuditService;
+
+    @EJB
+    private transient PdfSessionStore pdfSessionStore;
+
+    @Inject
+    private transient PdfTemplateEngine pdfTemplateEngine;
 
     // JSF Lifecycle / Inicialización
     public void preRenderInit() {
@@ -963,20 +976,9 @@ public class CentroMedicoCtrl implements Serializable {
         s3("registrarAuditoria() accion=" + accion + " tabla=" + tabla + " campo=" + campo);
 
         try {
-            AuditoriaConsultorio aud = new AuditoriaConsultorio();
-            aud.setModulo("CENTRO_MEDICO");
-            aud.setUsuario("USR_APP");
-            aud.setFecha(new Date());
-            aud.setAccion(accion);
-            aud.setTablaAfecta(tabla);
-            aud.setCampoAfecta(campo);
-            aud.setObservaciones(observaciones);
-
-            auditoriaService.guardar(aud);
-
+            centroMedicoAuditService.registrar(accion, tabla, campo, observaciones);
             s3("registrarAuditoria() OK");
         } catch (RuntimeException e) {
-
             s3e("registrarAuditoria() FALLÓ", e);
         }
     }
@@ -2433,18 +2435,9 @@ private void asegurarPersonaAuxPersistida() {
         String html = construirHtmlFichaDesdePlantilla();
         byte[] bytes = renderizarPdf(html);
 
-        // ✅ 4) Guardar token en sesión (tu lógica actual)
+        // ✅ 4) Guardar token en sesión
         String token = "FICHA_" + UUID.randomUUID().toString().replace("-", "");
-        ExternalContext ec = ctx.getExternalContext();
-        HttpSession session = (HttpSession) ec.getSession(true);
-
-        @SuppressWarnings("unchecked")
-        Map<String, byte[]> pdfStore = (Map<String, byte[]>) session.getAttribute("PDF_STORE");
-        if (pdfStore == null) {
-            pdfStore = new HashMap<>();
-            session.setAttribute("PDF_STORE", pdfStore);
-        }
-        pdfStore.put(token, bytes);
+        pdfSessionStore.put(ctx, token, bytes);
 
         this.pdfTokenFicha = token;
         this.fichaPdfListo = true;
@@ -3512,18 +3505,9 @@ private void asegurarPersonaAuxPersistida() {
     }
 
     private String renderTemplate(String template, Map<String, String> rep) {
-        // 1) condicionales tipo {{#if key}} ... {{/if}}
-        template = applyIfBlocks(template, rep);
-
-        // 2) reemplazo simple {{token}}
-        for (Map.Entry<String, String> e : rep.entrySet()) {
-            String k = e.getKey();
-            String v = e.getValue() == null ? "" : e.getValue();
-            template = template.replace("{{" + k + "}}", v);
-        }
-        // 3) limpia tokens no resueltos
-        template = template.replaceAll("\\{\\{[^}]+\\}\\}", "");
-        return template;
+        String withIfBlocks = applyIfBlocks(template, rep);
+        String rendered = pdfTemplateEngine.render(withIfBlocks, rep);
+        return rendered.replaceAll("\\{\\{[^}]+\\}\\}", "");
     }
 
     private String applyIfBlocks(String template, Map<String, String> rep) {
@@ -3614,19 +3598,7 @@ private void asegurarPersonaAuxPersistida() {
     }
 
     private void storePdfBytesInPdfStore(FacesContext ctx, String token, byte[] bytes) {
-        if (ctx == null || token == null || bytes == null) {
-            return;
-        }
-        ExternalContext ec = ctx.getExternalContext();
-        HttpSession session = (HttpSession) ec.getSession(true);
-
-        @SuppressWarnings("unchecked")
-        Map<String, byte[]> pdfStore = (Map<String, byte[]>) session.getAttribute("PDF_STORE");
-        if (pdfStore == null) {
-            pdfStore = new HashMap<>();
-            session.setAttribute("PDF_STORE", pdfStore);
-        }
-        pdfStore.put(token, bytes);
+        pdfSessionStore.put(ctx, token, bytes);
     }
 
     private void cleanupPdfPreview(FacesContext ctx) {
@@ -3635,15 +3607,7 @@ private void asegurarPersonaAuxPersistida() {
             pdfObjectUrl = null;
             return;
         }
-        ExternalContext ec = ctx.getExternalContext();
-        HttpSession session = (HttpSession) ec.getSession(false);
-        if (session != null && pdfTokenCertificado != null) {
-            @SuppressWarnings("unchecked")
-            Map<String, byte[]> pdfStore = (Map<String, byte[]>) session.getAttribute("PDF_STORE");
-            if (pdfStore != null) {
-                pdfStore.remove(pdfTokenCertificado);
-            }
-        }
+        pdfSessionStore.remove(ctx, pdfTokenCertificado);
         pdfTokenCertificado = null;
         pdfObjectUrl = null;
     }
