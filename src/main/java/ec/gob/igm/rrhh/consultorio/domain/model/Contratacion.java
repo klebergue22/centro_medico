@@ -1,16 +1,8 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package ec.gob.igm.rrhh.consultorio.domain.model;
 
-/**
- *
- * @author GUERRA_KLEBER
- */
 
 
- 
+
 
 import ec.gob.igm.rrhh.consultorio.domain.enums.EstadoContrato;
 import jakarta.persistence.*;
@@ -40,7 +32,6 @@ public class Contratacion implements Serializable {
     @Column(name = "F_SALIDA")
     private Date fSalida;
 
-    // ====== GETTERS/SETTERS MANUALES (sin Lombok) ======
 
     public ContratacionId getId() {
         return id;

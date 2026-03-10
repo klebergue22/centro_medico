@@ -4,7 +4,7 @@
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
 
-    <!-- A. DATOS DEL ESTABLECIMIENTO / USUARIO -->
+
     <p:fieldset legend="A. DATOS DEL ESTABLECIMIENTO / USUARIO" toggleable="true">
 
         <p:panelGrid columns="4" layout="grid"
@@ -23,7 +23,7 @@
 
             <h:outputLabel value=" Puesto de Trabajo CIUO"/>
             <h:panelGroup styleClass="field-wrap">
-                
+
                 <p:inputTextarea value="#{centroMedicoCtrl.ficha.ciiu}" maxlength="20"/>
             </h:panelGroup>
 
@@ -64,7 +64,7 @@
 
         </p:panelGrid>
 
-        <!-- ATENCIÓN PRIORITARIA -->
+
         <p:fieldset legend="ATENCIÓN PRIORITARIA" styleClass="ap-fieldset" style="margin-top:.5rem;">
 
             <div class="ap-grid">
@@ -102,9 +102,7 @@
                 </div>
             </div>
 
-            <!-- =======================
-                 Discapacidad
-                 ======================= -->
+
             <p:outputPanel id="apDiscapPanel" style="margin-top:.75rem;">
                 <ui:fragment rendered="#{centroMedicoCtrl.apDiscapacidad}">
                     <p:panel header="Discapacidad">
@@ -128,12 +126,12 @@
                                 <h:outputLabel for="dis_porc" value="Porcentaje (%):" style="font-weight:bold; display:block; margin-bottom:4px;"/>
 
                                 <div style="display:flex; align-items:center; gap:12px; width:100%;">
-                                    <!-- input target del slider -->
+
                                     <p:inputText id="dis_porc" value="#{centroMedicoCtrl.discapPorc}" style="width:80px; text-align:center;">
                                         <f:convertNumber integerOnly="true" />
                                     </p:inputText>
 
-                                    <!-- slider -->
+
                                   <p:slider for="dis_porc" minValue="0" maxValue="100" step="1" style="flex:1;" styleClass="igmslider"/>
 
                                     <h:outputText value="%" style="font-weight:bold;"/>
@@ -156,9 +154,7 @@
                 </ui:fragment>
             </p:outputPanel>
 
-            <!-- =======================
-                 Catastrófica / Huérfana / Rara
-                 ======================= -->
+
             <p:outputPanel id="apCatasPanel" style="margin-top:.75rem;">
                 <ui:fragment rendered="#{centroMedicoCtrl.apCatastrofica}">
                     <p:panel header="Enfermedad Catastrófica, Huérfana y Rara">
@@ -191,7 +187,7 @@
 
         </p:fieldset>
 
-        <!-- BIO/IDENTIFICACIÓN -->
+
         <h:panelGrid columns="4"
                      columnClasses="w-15rem, w-35rem, w-15rem, w-35rem"
                      styleClass="ui-fluid" style="margin-top:.5rem">
@@ -206,8 +202,6 @@
                         process="@form"
                         update="sexoBlocks"/>
             </p:selectOneRadio>
-
-
 
             <h:outputLabel for="fecNac" value="Fecha de nacimiento"/>
 
@@ -233,8 +227,6 @@
             <h:outputLabel for="edad" value="Edad (años)"/>
             <p:inputText id="edad" value="#{centroMedicoCtrl.edad}" readonly="true"/>
 
-
-
             <h:outputLabel for="sangre" value="Grupo sanguíneo"/>
             <p:selectOneMenu id="sangre" value="#{centroMedicoCtrl.grupoSanguineo}">
                 <f:selectItem itemLabel="Seleccione" itemValue=""/>
@@ -259,7 +251,7 @@
 
     </p:fieldset>
 
-    <!-- B. MOTIVO DE CONSULTA -->
+
    <p:fieldset legend="B. MOTIVO DE CONSULTA" toggleable="true">
     <h:panelGrid columns="4"
                  columnClasses="w-15rem, w-35rem, w-15rem, w-35rem"
@@ -276,7 +268,7 @@
                     navigator="true"
                     showOn="button"/>
 
-        <!-- Selector de tipo de evaluación -->
+
         <h:panelGrid>
             <h:outputLabel for="tipoEval" value="Tipo Evaluación"/>
             <p:selectOneRadio id="tipoEval" value="#{centroMedicoCtrl.tipoEval}">
@@ -285,18 +277,18 @@
                 <f:selectItem itemLabel="Reintegro" itemValue="REINTEGRO"/>
                 <f:selectItem itemLabel="Retiro" itemValue="RETIRO"/>
 
-                <!-- Re-renderiza solo el bloque de fechas -->
+
                 <p:ajax listener="#{centroMedicoCtrl.syncTipoEvaluacion}"
                         process="@this"
                         update="fechasPanel"/>
             </p:selectOneRadio>
         </h:panelGrid>
 
-        <!-- Bloque que se re-renderiza con las fechas -->
+
         <h:panelGroup id="fechasPanel" layout="block">
             <h:panelGrid columns="2" styleClass="ui-fluid">
 
-                <!-- Fecha de ingreso: INGRESO / PERIODICO -->
+
                 <ui:fragment rendered="#{centroMedicoCtrl.tipoEval eq 'INGRESO' or centroMedicoCtrl.tipoEval eq 'PERIODICO'}">
                     <h:outputLabel for="fecIngreso" value="Fecha de ingreso"/>
                     <p:calendar id="fecIngreso"
@@ -305,7 +297,7 @@
                                 showOn="button"/>
                 </ui:fragment>
 
-                <!-- Fecha de reintegro: solo REINTEGRO -->
+
                 <ui:fragment rendered="#{centroMedicoCtrl.tipoEval eq 'REINTEGRO'}">
                     <h:outputLabel for="fecReintegro" value="Fecha de reintegro"/>
                     <p:calendar id="fecReintegro"
@@ -314,7 +306,7 @@
                                 showOn="button"/>
                 </ui:fragment>
 
-                <!-- Último día laboral: solo RETIRO -->
+
                 <ui:fragment rendered="#{centroMedicoCtrl.tipoEval eq 'RETIRO'}">
                     <h:outputLabel for="fecRetiro" value="Último día laboral"/>
                     <p:calendar id="fecRetiro"
@@ -335,7 +327,7 @@
     </h:panelGrid>
 </p:fieldset>
 
-    <!-- C. ANTECEDENTES PERSONALES -->
+
     <p:fieldset legend="C. ANTECEDENTES PERSONALES" toggleable="true">
         <h:panelGrid columns="2" columnClasses="w-20rem," styleClass="ui-fluid">
             <h:outputLabel value="Antecedentes clínicos y quirúrgicos"/>
@@ -364,7 +356,7 @@
         </h:panelGrid>
         <p:outputPanel id="sexoBlocks" layout="block"  style="margin-top:8px">
 
-            <!-- Condicional: REPRODUCTIVOS MASCULINOS -->
+
             <h:panelGroup id="panelReproMas"
                           rendered="#{centroMedicoCtrl.sexo eq 'M'}"
                           layout="block"
@@ -383,7 +375,7 @@
                 </p:fieldset>
             </h:panelGroup>
 
-            <!-- Condicional: GINECO OBSTÉTRICOS (MUJER) -->
+
             <h:panelGroup id="panelGineObst"
                           rendered="#{centroMedicoCtrl.sexo eq 'F'}"
                           layout="block"
@@ -412,9 +404,9 @@
                                 </tr>
                             </thead>
 
-                            <!-- Fila de captura -->
+
                             <tr>
-                                <!-- FUM -->
+
                                 <td colspan="2">
                                     <p:calendar value="#{centroMedicoCtrl.fum}"
                                                 pattern="dd/MM/yyyy"
@@ -422,7 +414,7 @@
                                                 styleClass="obst-cal obst-fit"/>
                                 </td>
 
-                                <!-- Números -->
+
                                 <td class="txt-c">
                                     <p:inputNumber value="#{centroMedicoCtrl.gestas}" decimalPlaces="0" minValue="0" styleClass="obst-fit"/>
                                 </td>
@@ -436,7 +428,7 @@
                                     <p:inputNumber value="#{centroMedicoCtrl.abortos}" decimalPlaces="0" minValue="0" styleClass="obst-fit"/>
                                 </td>
 
-                                <!-- MPF: usa planificacion String (SI/NO/NR) -->
+
                                 <td class="txt-c">
                                     <p:selectOneRadio id="mpf"
                                                       value="#{centroMedicoCtrl.planificacion}"
@@ -472,7 +464,7 @@
                                 </td>
                             </tr>
 
-                            <!-- Cabecera Exámenes -->
+
                             <tr>
                                 <th colspan="2">EXÁMENES REALIZADOS ¿CUÁL?</th>
                                 <th>TIEMPO<br/><span style="font-weight:400">(años)</span></th>
@@ -485,7 +477,7 @@
                                 </td>
                             </tr>
 
-                            <!-- Fila 1 -->
+
                             <tr>
                                 <td colspan="2">
                                     <p:inputText value="#{centroMedicoCtrl.ginecoExamen1}" styleClass="obst-fit"/>
@@ -501,7 +493,7 @@
                                 </td>
                             </tr>
 
-                            <!-- Fila 2 -->
+
                             <tr>
                                 <td colspan="2">
                                     <p:inputText value="#{centroMedicoCtrl.ginecoExamen2}" styleClass="obst-fit"/>
@@ -517,7 +509,7 @@
                                 </td>
                             </tr>
 
-                            <!-- Observación -->
+
                             <tr>
                                 <th colspan="3">Observación</th>
                                 <td colspan="7">
@@ -531,8 +523,6 @@
                 </p:fieldset>
 
             </h:panelGroup>
-
-
 
         </p:outputPanel>
 
@@ -580,9 +570,9 @@
                     </thead>
 
                     <tbody>
-                        <!-- Fila 1 -->
+
                         <tr>
-                            <!-- CONSUMO -->
+
                             <td>TABACO</td>
                             <td>
                                 <p:inputNumber value="#{centroMedicoCtrl.consTiempoConsumo[0]}"
@@ -599,7 +589,7 @@
                                 <p:selectBooleanCheckbox value="#{centroMedicoCtrl.consNoConsume[0]}"/>
                             </td>
 
-                            <!-- ESTILO DE VIDA -->
+
                             <td rowspan="3" class="txt-c">ACTIVIDAD FÍSICA</td>
                             <td>
                                 <p:inputText id="af_cual_1" value="#{centroMedicoCtrl.afCual[0]}"
@@ -610,7 +600,7 @@
                                              styleClass="cons-fit" placeholder="Ej.: 1 h por día / 3 veces"/>
                             </td>
 
-                            <!-- CONDICIÓN PREEXISTENTE -->
+
                             <td rowspan="3" class="txt-c">MEDICACIÓN HABITUAL</td>
                             <td>
                                 <p:inputText id="med_cual_1" value="#{centroMedicoCtrl.medCual[0]}"
@@ -622,9 +612,9 @@
                             </td>
                         </tr>
 
-                        <!-- Fila 2 -->
+
                         <tr>
-                            <!-- CONSUMO -->
+
                             <td>ALCOHOL</td>
                             <td>
                                 <p:inputNumber value="#{centroMedicoCtrl.consTiempoConsumo[1]}"
@@ -641,7 +631,7 @@
                                 <p:selectBooleanCheckbox value="#{centroMedicoCtrl.consNoConsume[1]}"/>
                             </td>
 
-                            <!-- ESTILO DE VIDA -->
+
                             <td>
                                 <p:inputText id="af_cual_2" value="#{centroMedicoCtrl.afCual[1]}"
                                              styleClass="cons-fit" placeholder="Actividad"/>
@@ -651,7 +641,7 @@
                                              styleClass="cons-fit" placeholder="Tiempo"/>
                             </td>
 
-                            <!-- CONDICIÓN -->
+
                             <td>
                                 <p:inputText id="med_cual_2" value="#{centroMedicoCtrl.medCual[1]}"
                                              styleClass="cons-fit" placeholder="Fármaco"/>
@@ -662,9 +652,9 @@
                             </td>
                         </tr>
 
-                        <!-- Fila 3 -->
+
                         <tr>
-                            <!-- CONSUMO -->
+
                             <td>OTRAS: <span class="c-sub">¿cuál?</span></td>
                             <td>
                                 <p:inputNumber value="#{centroMedicoCtrl.consTiempoConsumo[2]}"
@@ -681,7 +671,7 @@
                                 <p:selectBooleanCheckbox value="#{centroMedicoCtrl.consNoConsume[2]}"/>
                             </td>
 
-                            <!-- ESTILO DE VIDA -->
+
                             <td>
                                 <p:inputText id="af_cual_3" value="#{centroMedicoCtrl.afCual[2]}"
                                              styleClass="cons-fit" placeholder="Actividad"/>
@@ -691,7 +681,7 @@
                                              styleClass="cons-fit" placeholder="Tiempo"/>
                             </td>
 
-                            <!-- CONDICIÓN -->
+
                             <td>
                                 <p:inputText id="med_cual_3" value="#{centroMedicoCtrl.medCual[2]}"
                                              styleClass="cons-fit" placeholder="Fármaco"/>
@@ -702,7 +692,7 @@
                             </td>
                         </tr>
 
-                        <!-- Observación -->
+
                         <tr>
                             <th colspan="2">Observación</th>
                             <td colspan="9">
@@ -719,7 +709,7 @@
 
     </p:fieldset>
 
-    <!-- D. ENFERMEDAD O PROBLEMA ACTUAL -->
+
     <p:fieldset legend="D. ENFERMEDAD O PROBLEMA ACTUAL" toggleable="true">
         <p:inputTextarea
             value="#{centroMedicoCtrl.ficha.enfermedadProbActual}"
@@ -729,7 +719,7 @@
             placeholder="Ficha médica actual"/>
     </p:fieldset>
 
-    <!-- E. CONSTANTES VITALES Y ANTROPOMETRÍA -->
+
     <p:fieldset legend="E. CONSTANTES VITALES Y ANTROPOMETRÍA" toggleable="true">
         <h:panelGrid columns="10" styleClass="ui-fluid vit-grid">
 
@@ -775,7 +765,6 @@
                            thousandSeparator=""
                            readonly="true"/>
 
-
             <h:outputText value="Perímetro abd (cm)"/>
             <p:inputNumber id="perimetroAbd" value="#{centroMedicoCtrl.perimetroAbd}" decimalPlaces="1"/>
         </h:panelGrid>
@@ -798,7 +787,6 @@
     </p:fieldset>
 
 
-    <!-- "F. EXAMEN FÍSICO REGIONAL" -->
     <p:fieldset legend="F. EXAMEN FÍSICO REGIONAL"
                 toggleable="true"
                 styleClass="fieldset-encaps">
@@ -806,7 +794,7 @@
         <table class="f-grid4">
             <tbody>
 
-                <!-- fila 1: 1..4 -->
+
                 <tr>
                     <td>
                         <div class="f-title">1. Piel</div>
@@ -855,7 +843,7 @@
                     </td>
                 </tr>
 
-                <!-- fila 2: 5..8 -->
+
                 <tr>
                     <td>
                         <div class="f-title">5. Nariz</div>
@@ -894,7 +882,7 @@
                     </td>
                 </tr>
 
-                <!-- fila 3: 9..12 -->
+
                 <tr>
                     <td>
                         <div class="f-title">9. Abdomen</div>
@@ -933,7 +921,7 @@
                     </td>
                 </tr>
 
-                <!-- fila 4: 13 + 3 vacíos -->
+
                 <tr>
                     <td>
                         <div class="f-title">13. Neurológico</div>

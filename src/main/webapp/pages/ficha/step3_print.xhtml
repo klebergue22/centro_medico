@@ -4,11 +4,11 @@
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
 
-    <!-- ===================== -->
-    <!-- STEP 1: H -->
-    <!-- ===================== -->
 
-    <!-- H -->
+
+
+
+
     <p:fieldset legend="H. Actividad laboral / incidentes / accidentes / enfermedades ocupacionales"
                 toggleable="true" collapsed="false" styleClass="hx-fieldset">
 
@@ -106,9 +106,6 @@
     </p:fieldset>
 
 
-
-
-    <!-- I -->
     <p:fieldset legend="I. Actividades extralaborales"
                 toggleable="true" collapsed="true">
 
@@ -154,7 +151,6 @@
     </p:fieldset>
 
 
-    <!--J -->
     <p:fieldset legend="J. Resultados de exámenes generales y específicos según riesgo/puesto"
                 toggleable="true" collapsed="true">
         <h:panelGroup layout="block" styleClass="ui-fluid panel-scroll">
@@ -205,7 +201,7 @@
         </h:panelGroup>
     </p:fieldset>
 
-    <!--      K    -->
+
     <p:fieldset legend="K. Diagnóstico — PRE: Presuntivo  DEF: Definitivo"
                 toggleable="true" collapsed="true"
                 styleClass="k-fieldset">
@@ -244,22 +240,22 @@
                                    varStatus="st">
 
                             <tr>
-                                <!-- CIE-10 -->
+
                                 <td>
                                     <h:outputText value="#{d.codigo}" />
                                 </td>
 
-                                <!-- DESCRIPCIÓN -->
+
                                 <td>
                                     <h:outputText value="#{d.descripcion}" />
                                 </td>
 
-                                <!-- PRE -->
+
                                 <td class="txt-c">
                                     <h:outputText value="#{(d.tipoDiag eq 'PRE' or d.tipoDiag eq 'P') ? 'X' : ''}" />
                                 </td>
 
-                                <!-- DEF -->
+
                                 <td class="txt-c">
                                     <h:outputText value="#{(d.tipoDiag eq 'DEF' or d.tipoDiag eq 'D') ? 'X' : ''}" />
                                 </td>
@@ -276,33 +272,10 @@
     </p:fieldset>
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    <!--  L  -->
     <p:fieldset legend="L. APTITUD MÉDICA PARA EL TRABAJO" toggleable="true">
         <h:panelGroup layout="block" styleClass="ui-fluid">
 
-            <!-- Radio REAL (oculto) -->
+
             <h:outputText value="#{fichaPrintCtrl.cm.aptitudSel}" />
 
             <table class="l-grid">
@@ -349,19 +322,19 @@
         </h:panelGroup>
     </p:fieldset>
 
-    <!--  M  -->
+
     <p:fieldset legend="M. Recomendaciones y/o tratamiento" toggleable="true" collapsed="true">
         <h:outputText value="#{fichaPrintCtrl.cm.recomendaciones}" />
     </p:fieldset>
 
-    <!-- N -->
+
     <p:fieldset legend="N. RETIRO (evaluación)" toggleable="true">
         <h:panelGroup layout="block" styleClass="ui-fluid">
 
-            <!-- Radio 1: SE REALIZA LA EVALUACIÓN -->
+
             <h:outputText value="#{fichaPrintCtrl.cm.NRealizaEvaluacion}" />
 
-            <!-- Radio 2: RELACIONADA CON EL TRABAJO -->
+
             <h:outputText value="#{fichaPrintCtrl.cm.NRelacionTrabajo}" />
 
             <table class="n-grid">
@@ -398,7 +371,7 @@
         </h:panelGroup>
     </p:fieldset>
 
-    <!-- O -->
+
     <p:fieldset legend="O. Datos del profesional" toggleable="true" collapsed="true">
         <h:panelGrid columns="4" styleClass="ui-fluid">
 

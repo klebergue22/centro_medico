@@ -4,11 +4,11 @@
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
 
-    <!-- ===================== -->
-    <!-- STEP 1: H -->
-    <!-- ===================== -->
 
-    <!-- H -->
+
+
+
+
     <p:fieldset legend="H. Actividad laboral / incidentes / accidentes / enfermedades ocupacionales"
                 toggleable="true" collapsed="false" styleClass="hx-fieldset">
 
@@ -139,9 +139,6 @@
     </p:fieldset>
 
 
-
-
-    <!-- I -->
     <p:fieldset legend="I. Actividades extralaborales"
                 toggleable="true" collapsed="true">
 
@@ -202,7 +199,6 @@
     </p:fieldset>
 
 
-    <!--J -->
     <p:fieldset legend="J. Resultados de exámenes generales y específicos según riesgo/puesto"
                 toggleable="true" collapsed="true">
         <h:panelGroup layout="block" styleClass="ui-fluid panel-scroll">
@@ -271,7 +267,7 @@
         </h:panelGroup>
     </p:fieldset>
 
-    <!--      K    -->
+
     <p:fieldset legend="K. Diagnóstico — PRE: Presuntivo  DEF: Definitivo"
                 toggleable="true" collapsed="true"
                 styleClass="k-fieldset">
@@ -310,7 +306,7 @@
                                    varStatus="st">
 
                             <tr>
-                                <!-- CIE-10 -->
+
                                 <td>
                                     <p:autoComplete id="kCie"
                                                     value="#{d.codigo}"
@@ -339,11 +335,10 @@
                                                 process="@this"
                                                 update="@([id$=kPanel])"/>
 
-
                                     </p:autoComplete>
                                 </td>
 
-                                <!-- DESCRIPCIÓN -->
+
                                 <td>
                                     <p:autoComplete id="kDesc"
                                                     value="#{d.descripcion}"
@@ -372,11 +367,10 @@
                                                 process="@this"
                                                 update="@([id$=kPanel])"/>
 
-
                                     </p:autoComplete>
                                 </td>
 
-                                <!-- PRE / DEF -->
+
                                 <td class="txt-c">
                                     <p:selectOneRadio id="kTipo" value="#{d.tipoDiag}" layout="custom">
                                         <f:selectItem itemLabel="PRE" itemValue="P"/>
@@ -401,33 +395,10 @@
     </p:fieldset>
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    <!--  L  -->
     <p:fieldset legend="L. APTITUD MÉDICA PARA EL TRABAJO" toggleable="true">
         <h:panelGroup layout="block" styleClass="ui-fluid">
 
-            <!-- Radio REAL (oculto) -->
+
             <p:selectOneRadio id="aptitud" layout="custom"
                               value="#{centroMedicoCtrl.aptitudSel}">
                 <f:selectItem itemLabel="APTO" itemValue="APTO"/>
@@ -485,25 +456,25 @@
         </h:panelGroup>
     </p:fieldset>
 
-    <!--  M  -->
+
     <p:fieldset legend="M. Recomendaciones y/o tratamiento" toggleable="true" collapsed="true">
         <p:inputTextarea id="i_rec" rows="3" style="width:100%" value="#{centroMedicoCtrl.recomendaciones}"/>
     </p:fieldset>
 
-    <!-- N -->
+
     <p:outputPanel id="panelRetiro" layout="block">
         <ui:fragment rendered="#{centroMedicoCtrl.tipoEval eq 'RETIRO'}">
             <p:fieldset legend="N. RETIRO (evaluación)" toggleable="true">
                 <h:panelGroup layout="block" styleClass="ui-fluid">
 
-                    <!-- Radio 1: SE REALIZA LA EVALUACIÓN -->
+
                     <p:selectOneRadio id="n_realiza_eval" layout="custom"
                                       value="#{centroMedicoCtrl.NRealizaEvaluacion}">
                         <f:selectItem itemLabel="SI" itemValue="S"/>
                         <f:selectItem itemLabel="NO" itemValue="N"/>
                     </p:selectOneRadio>
 
-                    <!-- Radio 2: RELACIONADA CON EL TRABAJO -->
+
                     <p:selectOneRadio id="n_relacion_trabajo" layout="custom"
                                       value="#{centroMedicoCtrl.NRelacionTrabajo}">
                         <f:selectItem itemLabel="SI" itemValue="S"/>
@@ -550,7 +521,7 @@
         </ui:fragment>
     </p:outputPanel>
 
-    <!-- O -->
+
     <p:fieldset legend="O. Datos del profesional" toggleable="true" collapsed="true">
         <h:panelGrid columns="4" styleClass="ui-fluid">
 

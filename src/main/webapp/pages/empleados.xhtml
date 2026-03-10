@@ -9,19 +9,18 @@
         <f:viewAction action="#{empleadoController.preRenderView}" onPostback="false"/>
     </f:metadata>
 
-
     <ui:define name="title">Empleados</ui:define>
 
     <ui:define name="content">
-        <!-- Mensajes GLOBALes -->
+
         <p:messages id="msgsEmpl" globalOnly="true" showIcon="true" closable="true"/>
 
-        <!-- ===== Toolbar ===== -->
+
         <p:toolbar class="p-mb-2">
             <p:toolbarGroup>
-               
 
-                <!-- NUEVO -->
+
+
                 <p:commandButton value="Nuevo" icon="pi pi-plus"
                                  action="#{empleadoController.nuevo}"
                                  process="@this"
@@ -30,7 +29,7 @@
                                  onstart="PF('statusDialog').show()"
                                  oncomplete="PF('statusDialog').hide(); PF('dlgEmp').show();"/>
 
-               
+
             </p:toolbarGroup>
 
             <p:toolbarGroup align="right">
@@ -39,7 +38,7 @@
             </p:toolbarGroup>
         </p:toolbar>
 
-        <!-- ===== Tabla ===== -->
+
         <p:dataTable id="tbl" value="#{empleadoController.lista}" var="e"
                      widgetVar="tblWV" paginator="true" rows="20"
                      rowsPerPageTemplate="10,20,50,100"
@@ -74,7 +73,7 @@
             </p:column>
 
             <p:column headerText="Acciones" style="width:220px" exportable="false" filterable="false">
-                <!-- EDITAR -->
+
                 <p:commandButton value="Editar" icon="pi pi-pencil" styleClass="p-button-text"
                                  process="@this"
                                  update=":layoutForm:dialogZone"
@@ -83,7 +82,7 @@
                     <f:setPropertyActionListener target="#{empleadoController.seleccionado}" value="#{e}"/>
                 </p:commandButton>
 
-                <!-- ELIMINAR -->
+
                 <p:commandButton value="Eliminar" icon="pi pi-trash" styleClass="p-button-text p-ml-2"
                                  process="@this"
                                  actionListener="#{empleadoController.eliminar(e.noPersona)}"
@@ -92,21 +91,21 @@
             </p:column>
         </p:dataTable>
 
-        <!-- ===== Diálogo (tiene su propio <h:form>) ===== -->
+
         <p:outputPanel id="dialogZone" layout="block">
             <p:dialog id="dlg" widgetVar="dlgEmp" header="Empleado"
                       modal="true" appendTo="@(body)" width="860" resizable="true"
                       dynamic="true" closeOnEscape="false" styleClass="dlgEmp-scroll">
 
-                <!-- FORM DEL DIÁLOGO -->
+
                 <h:form id="dlgForm">
-                    <!-- Mensajes dentro del diálogo -->
+
                     <p:messages id="dlgMsgs" showIcon="true" showDetail="true" closable="true"/>
 
-                    <!-- Grid de campos (mantén tu CSS emp-6col) -->
+
                     <p:panelGrid id="empForm" styleClass="emp-6col ui-fluid">
 
-                        <!-- Fila 1 -->
+
                         <p:row>
                             <p:column styleClass="lab"><p:outputLabel for="cedula" value="Cédula *"/></p:column>
                             <p:column styleClass="fld">
@@ -132,7 +131,7 @@
                             <p:column styleClass="msg"><p:message for="fNac" display="icon"/></p:column>
                         </p:row>
 
-                        <!-- Fila 2 -->
+
                         <p:row>
                             <p:column styleClass="lab"><p:outputLabel for="priApellido" value="Primer Apellido *"/></p:column>
                             <p:column styleClass="fld">
@@ -149,7 +148,7 @@
                             <p:column styleClass="msg"><p:message for="segApellido" display="icon"/></p:column>
                         </p:row>
 
-                        <!-- Fila 3 -->
+
                         <p:row>
                             <p:column styleClass="lab"><p:outputLabel for="nombre" value="Nombres *"/></p:column>
                             <p:column styleClass="fld">
@@ -162,14 +161,14 @@
                             <p:column styleClass="fld">
                                 <p:inputText id="codigo" value="#{empleadoController.seleccionado.codigo}">
                                     <p:keyFilter mask="num"/>
-                                    <!-- permite 1 a 10 dígitos; ajusta si debe ser exacto 10 -->
+
                                     <f:validateRegex pattern="\d{1,10}"/>
                                 </p:inputText>
                             </p:column>
                             <p:column styleClass="msg"><p:message for="codigo" display="icon"/></p:column>
                         </p:row>
 
-                        <!-- Fila 4 (ENUMS sin converters) -->
+
                         <p:row>
                             <p:column styleClass="lab"><p:outputLabel for="gSangre" value="Grupo sanguíneo *"/></p:column>
                             <p:column styleClass="fld">
@@ -196,7 +195,7 @@
                             <p:column styleClass="msg"><p:message for="sexo" display="icon"/></p:column>
                         </p:row>
 
-                        <!-- Fila 5 (ENUM) + Email -->
+
                         <p:row>
                             <p:column styleClass="lab"><p:outputLabel for="estCivil" value="Estado civil *"/></p:column>
                             <p:column styleClass="fld">
@@ -217,7 +216,7 @@
                             <p:column styleClass="msg"><p:message for="email" display="icon"/></p:column>
                         </p:row>
 
-                        <!-- Fila 6 -->
+
                         <p:row>
                             <p:column styleClass="lab"><p:outputLabel for="emailInst" value="Email Institucional"/></p:column>
                             <p:column styleClass="fld">
@@ -231,9 +230,9 @@
                         </p:row>
                     </p:panelGrid>
 
-                    <!-- Footer del diálogo -->
+
                     <f:facet name="footer">
-                        <!-- DEBUG: sin validación -->
+
                         <p:commandButton value="Guardar (DEBUG)" icon="pi pi-bug"
                                          actionListener="#{empleadoController.debugLog}"
                                          process="@this"
@@ -241,17 +240,17 @@
                                          immediate="true"/>
 
                     </f:facet>
-                    <!-- Guardar REAL: valida todo el form del diálogo -->
+
                     <p:commandButton value="Guardar" icon="pi pi-check"
                                      action="#{empleadoController.guardar}"
                                      process="@form"
                                      update="@form :layoutForm:tbl :layoutForm:msgsEmpl"
                                      onstart="PF('statusDialog').show()"
-                                     oncomplete="PF('statusDialog').hide(); 
-                                     if (args &amp;&amp; args.validationFailed) { 
-                                     PF('dlgEmp').show(); 
-                                     } else { 
-                                     PF('dlgEmp').hide(); 
+                                     oncomplete="PF('statusDialog').hide();
+                                     if (args &amp;&amp; args.validationFailed) {
+                                     PF('dlgEmp').show();
+                                     } else {
+                                     PF('dlgEmp').hide();
                                      }"/>
 
                     <p:commandButton value="Cancelar" icon="pi pi-times" type="button"

@@ -1,13 +1,5 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package ec.gob.igm.rrhh.consultorio.service;
 
-/**
- *
- * @author GUERRA_KLEBER
- */
 import ec.gob.igm.rrhh.consultorio.domain.model.ConsultaDiagnostico;
 import ec.gob.igm.rrhh.consultorio.domain.model.FichaDiagnostico;
 import ec.gob.igm.rrhh.consultorio.domain.model.FichaOcupacional;
@@ -48,13 +40,6 @@ public class FichaDiagnosticoService {
                 .executeUpdate();
     }
 
-    /**
-     * Guardado simple: - INSERT si PK es null - UPDATE si PK no es null
-     *
-     * ⚠️ AJUSTA el getter/setter del ID según tu entidad FichaDiagnostico: - Si
-     * es idFichaDiag -> usa getIdFichaDiag() - Si es id -> usa getId() - Si es
-     * EmbeddedId -> usa getId() (objeto) y valida null
-     */
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public FichaDiagnostico guardar(FichaDiagnostico d) {
         assertEm();
@@ -62,7 +47,6 @@ public class FichaDiagnosticoService {
             return null;
         }
 
-        // ===== AJUSTA AQUÍ =====
         // Ejemplo si tu PK es Long idFichaDiag:
         // if (d.getIdFichaDiag() == null) { em.persist(d); return d; }
         //
@@ -91,10 +75,6 @@ public class FichaDiagnosticoService {
                 .getResultList();
     }
 
-    /**
-     * Guarda diagnósticos de una ficha a partir de diagnósticos de consulta.
-     * Estrategia: elimina existentes y vuelve a insertar.
-     */
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public void guardarDiagnosticosDeFicha(Long idFicha,
             List<ConsultaDiagnostico> diagnosticos,
@@ -149,7 +129,6 @@ public class FichaDiagnosticoService {
             fd.setOrden(orden++);
             fd.setEstado("A");
 
-            // Auditoría (según tus campos)
             fd.setFechaCreacion(now);
             fd.setUsrCreacion(usr);
             fd.setFechaActualizacion(null);

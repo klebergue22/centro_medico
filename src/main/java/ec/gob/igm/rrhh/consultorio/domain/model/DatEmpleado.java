@@ -1,14 +1,6 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package ec.gob.igm.rrhh.consultorio.domain.model;
 
-/**
- *
- * @author GUERRA_KLEBER
- */
- 
+
 
 import ec.gob.igm.rrhh.consultorio.domain.enums.EstadoCivil;
 import ec.gob.igm.rrhh.consultorio.domain.enums.GrupoSangre;
@@ -256,7 +248,6 @@ public class DatEmpleado implements Serializable {
     @Column(name = "ESTADO", length = 10)
     private String estado;
 
-    // ===== Campo derivado (NO persistente) =====
     @Transient
     public String getApellidos() {
         String a1 = priApellido == null ? "" : priApellido;
@@ -272,33 +263,30 @@ public class DatEmpleado implements Serializable {
         if (emailInstitucional != null) emailInstitucional = emailInstitucional.trim().toLowerCase();
     }
 
-    // ==========================
-    // Constructores
-    // ==========================
-    
+
     // Constructor vacío (requerido por JPA)
     public DatEmpleado() {
     }
 
     // Constructor completo (Reemplaza @AllArgsConstructor)
-    public DatEmpleado(Integer noPersona, Integer noRelig, Integer noSeg, Long noProveedor, 
-                       String codigo, String noCedula, String priApellido, String segApellido, 
-                       String nombres, String nombreC, String libMilitar, String seguroSocial, 
-                       Sexo sexo, EstadoCivil estCivil, GrupoSangre grupoSangre, Date fNacimiento, 
-                       Date fMuerte, Integer noLicencia, Integer noProfesion, String direccion, 
-                       String telefono, String tipo, String foto, String colorPiel, String colorCabello, 
-                       String colorOjos, BigDecimal estatura, BigDecimal peso, BigDecimal tallaCamisa, 
-                       BigDecimal tallaPantalon, Integer noCalzado, Date fIngreso, String telefono2, 
-                       Integer lVivPropia, String alergia, Integer noLocNace, Integer noLocDir, 
-                       BigDecimal noCabeza, Integer lUsaLentes, String comisariato, Date fReingreso, 
-                       String aliasBaseDatos, String pieFirma, String noDirec, Integer nivel, 
-                       String cargoLossca, BigDecimal patronal, BigDecimal personal, BigDecimal iece, 
-                       String proceso, String subproceso, String partidaPresupuestaria, String gestion, 
-                       String unidad, String email, Integer lDiscapacidad, String noConadis, 
-                       Integer idNacionalidad, String autoidentificacionEtnica, String nacionalidadIndigena, 
-                       Integer lCatastrofica, String noConadisCatastrofica, String calleSecundaria, 
-                       String referencia, String extension, String contactoApellidos, 
-                       String contactoNombres, String contactoTelefono, String contactoCelular, 
+    public DatEmpleado(Integer noPersona, Integer noRelig, Integer noSeg, Long noProveedor,
+                       String codigo, String noCedula, String priApellido, String segApellido,
+                       String nombres, String nombreC, String libMilitar, String seguroSocial,
+                       Sexo sexo, EstadoCivil estCivil, GrupoSangre grupoSangre, Date fNacimiento,
+                       Date fMuerte, Integer noLicencia, Integer noProfesion, String direccion,
+                       String telefono, String tipo, String foto, String colorPiel, String colorCabello,
+                       String colorOjos, BigDecimal estatura, BigDecimal peso, BigDecimal tallaCamisa,
+                       BigDecimal tallaPantalon, Integer noCalzado, Date fIngreso, String telefono2,
+                       Integer lVivPropia, String alergia, Integer noLocNace, Integer noLocDir,
+                       BigDecimal noCabeza, Integer lUsaLentes, String comisariato, Date fReingreso,
+                       String aliasBaseDatos, String pieFirma, String noDirec, Integer nivel,
+                       String cargoLossca, BigDecimal patronal, BigDecimal personal, BigDecimal iece,
+                       String proceso, String subproceso, String partidaPresupuestaria, String gestion,
+                       String unidad, String email, Integer lDiscapacidad, String noConadis,
+                       Integer idNacionalidad, String autoidentificacionEtnica, String nacionalidadIndigena,
+                       Integer lCatastrofica, String noConadisCatastrofica, String calleSecundaria,
+                       String referencia, String extension, String contactoApellidos,
+                       String contactoNombres, String contactoTelefono, String contactoCelular,
                        String emailInstitucional, String estado) {
         this.noPersona = noPersona;
         this.noRelig = noRelig;
@@ -373,10 +361,6 @@ public class DatEmpleado implements Serializable {
         this.estado = estado;
     }
 
-    // ==========================
-    // Equals y HashCode
-    // Basado en noPersona (@EqualsAndHashCode.Include)
-    // ==========================
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -390,10 +374,6 @@ public class DatEmpleado implements Serializable {
         return Objects.hash(noPersona);
     }
 
-    // ==========================
-    // ToString
-    // Solo incluye noPersona (@ToString.Include)
-    // ==========================
     @Override
     public String toString() {
         return "DatEmpleado{" +
@@ -401,9 +381,6 @@ public class DatEmpleado implements Serializable {
                 '}';
     }
 
-    // ==========================
-    // Getters y Setters
-    // ==========================
     public Integer getNoPersona() {
         return noPersona;
     }

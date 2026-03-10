@@ -312,14 +312,10 @@ public class CentroMedicoCtrl implements Serializable {
     private java.util.List<String> examResultado = new ArrayList<>();
     private java.util.List<Date> examFecha = new ArrayList<>();
 
-    // ============================================================
 // D. ENFERMEDAD O PROBLEMA ACTUAL
-// ============================================================
     private String enfermedadActual;
 
-// ============================================================
 // F. EXAMEN FÍSICO REGIONAL
-// ============================================================
     private String exfPielCicatrices;
     private String exfOjosParpados;
     private String exfOjosConjuntivas;
@@ -390,9 +386,7 @@ public class CentroMedicoCtrl implements Serializable {
     @EJB
     private transient ExamenFisicoRegionalService examenFisicoRegionalService;
 
-    // =====================================================
     // JSF Lifecycle / Inicialización
-    // =====================================================
     public void preRenderInit() {
         try {
             FacesContext fc = FacesContext.getCurrentInstance();
@@ -1412,9 +1406,7 @@ private void asegurarPersonaAuxPersistida() {
         }
     }
 
-    // =====================================================
     // Wizard - Guardado Step 1
-    // =====================================================
     public void guardarStep1() {
         FacesContext ctx = FacesContext.getCurrentInstance();
         try {
@@ -1449,8 +1441,8 @@ private void asegurarPersonaAuxPersistida() {
         final SignosVitales savedSv = upsertVitalSigns(now, user);
 
         saveDraftOccupationalRecord(now, user);
-        
-        
+
+
 
         auditStep1(savedSv);
     }
@@ -1593,9 +1585,7 @@ private void asegurarPersonaAuxPersistida() {
     if (ficha.getEnfermedadProbActual() != null) {
         ficha.setEnfermedadProbActual(ficha.getEnfermedadProbActual().trim());
     }
-    // =====================================================
     // Discapacidad (solo si AP_DISCAPACIDAD = S)
-    // =====================================================
     if (apDiscapacidad) {
         ficha.setDisTipo(trimToNull(discapTipo));
         ficha.setDisDescripcion(trimToNull(discapDesc));
@@ -1606,9 +1596,7 @@ private void asegurarPersonaAuxPersistida() {
         ficha.setDisPorcentaje(null);
     }
 
-    // =====================================================
     // Catastrófica / Huérfana / Rara (solo si AP_CATASTROFICA = S)
-    // =====================================================
     if (apCatastrofica) {
         ficha.setCatDiagnostico(trimToNull(catasDiagnostico));
         ficha.setCatCalificada(Boolean.TRUE.equals(catasCalificada) ? "S" : "N");
@@ -1618,10 +1606,8 @@ private void asegurarPersonaAuxPersistida() {
         ficha.setCatCalificada(null);
     }
 
-    // =====================================================
     // Panel N. Retiro (solo si tipo evaluación = RETIRO)
     // ✅ FIX ORA-01407: N_RET_EVAL NO puede ser NULL -> usar "N" por defecto
-    // =====================================================
     String tipo = trimToNull(tipoEval);
 
     if ("RETIRO".equalsIgnoreCase(tipo)) {
@@ -1763,9 +1749,7 @@ private void asegurarPersonaAuxPersistida() {
         return valido;
     }
 
-    // =====================================================
     // Wizard - Guardado Step 2
-    // =====================================================
     public void guardarStep2() {
         FacesContext ctx = FacesContext.getCurrentInstance();
         try {
@@ -1976,9 +1960,7 @@ private void asegurarPersonaAuxPersistida() {
         return valido;
     }
 
-    // =====================================================
     // Wizard - Guardado Step 3
-    // =====================================================
     public void guardarStep3() {
         FacesContext ctx = FacesContext.getCurrentInstance();
         try {
@@ -2417,9 +2399,7 @@ private void asegurarPersonaAuxPersistida() {
         return true;
     }
 
-    // =====================================================
     // PDF - Ficha Ocupacional
-    // =====================================================
     private void recargarFichaDesdeBdParaImpresion() {
     if (this.ficha == null || this.ficha.getIdFicha() == null) {
         return;
@@ -2968,7 +2948,6 @@ private void asegurarPersonaAuxPersistida() {
         corregirOtrosRiesgos(rep);        // si ya existe en tu ctrl, LLÁMALO AQUÍ
 
         // ✅ (si tu plantilla lo usa en ficha)
-        // === LOG DE VALORES EN EL MAPA (solo para depuración) ===
         LOG.info("=== buildReemplazosFicha - valores en el mapa ===");
         LOG.info("gineco_examen1 = " + rep.get("gineco_examen1"));
         LOG.info("gineco_tiempo1 = " + rep.get("gineco_tiempo1"));
@@ -2994,7 +2973,6 @@ private void asegurarPersonaAuxPersistida() {
         return rep;
     }
 
-// ========================= Métodos auxiliares =========================
     private void cargarExamenFisicoRegional(Map<String, String> rep) {
         rep.put("exf_piel_cicatrices", markX(exfPielCicatrices));
         rep.put("exf_ojos_parpados", markX(exfOjosParpados));
@@ -3682,9 +3660,7 @@ private void asegurarPersonaAuxPersistida() {
         pdfObjectUrl = null;
     }
 
-    // =====================================================
     // PDF - Certificado Médico
-    // =====================================================
     public void prepararVistaPreviaCertificado() {
         FacesContext ctx = FacesContext.getCurrentInstance();
 
@@ -4336,9 +4312,7 @@ private void asegurarPersonaAuxPersistida() {
         PrimeFaces.current().executeScript("PF('dlgPersonaAux').show();");
     }
 
-    // =====================================================
     // Persona Auxiliar - Registro y Selección
-    // =====================================================
     public void guardarPersonaAuxYUsar() {
 
         LOG.info(String.valueOf("INGRESA AL METODO DE GUARDAR "));
@@ -4445,12 +4419,8 @@ private void asegurarPersonaAuxPersistida() {
         }
     }
 
-    // =====================================================
     // Búsqueda de Cédula / DiáLOGo Inicial
-    // =====================================================
-    // =====================================================
     // Búsqueda de Cédula / Diálogo Inicial
-    // =====================================================
     public void buscarCedula() {
         FacesContext ctx = FacesContext.getCurrentInstance();
         PrimeFaces pf = PrimeFaces.current();
@@ -6804,14 +6774,12 @@ private void tryLoadCargoFromVista(FacesContext ctx) {
 
     void cargarAtencionPrioritaria(Map<String, String> rep) {
 
-        // --- Marca SI/NO (lo que ya tenías) ---
         rep.put("apCatastrofica_sn", apCatastrofica ? "SI" : "NO");
         rep.put("apDiscapacidad_sn", apDiscapacidad ? "SI" : "NO");
         rep.put("apEmbarazada_sn", apEmbarazada ? "SI" : "NO");
         rep.put("apLactancia_sn", apLactancia ? "SI" : "NO");
         rep.put("apAdultoMayor_sn", apAdultoMayor ? "SI" : "NO");
 
-        // --- Para PDF: decide “aplica” usando la ficha (si existe), si no usa el checkbox ---
         boolean aplicaDis = false;
         boolean aplicaCat = false;
 
@@ -6827,14 +6795,12 @@ private void tryLoadCargoFromVista(FacesContext ctx) {
         rep.put("apDiscapacidad_style", aplicaDis ? "" : "display:none;");
         rep.put("apCatastrofica_style", aplicaCat ? "" : "display:none;");
 
-        // --- Discapacidad (DIS_*) ---
         rep.put("disTipo", safe(ficha != null ? ficha.getDisTipo() : null));
         rep.put("disDescripcion", safe(ficha != null ? ficha.getDisDescripcion() : null));
 
         Integer porc = (ficha != null ? ficha.getDisPorcentaje() : null);
         rep.put("disPorcentaje", porc == null ? "" : String.valueOf(porc)); // la plantilla le pone “%” si quieres
 
-        // --- Catastrófica (CAT_*) ---
         rep.put("catDiagnostico", safe(ficha != null ? ficha.getCatDiagnostico() : null));
 
         String catCal = safe(ficha != null ? ficha.getCatCalificada() : null);
@@ -6874,9 +6840,6 @@ private void tryLoadCargoFromVista(FacesContext ctx) {
         }
     }
 
-    // =====================================================
-    // Helpers para PDF (Ficha): observaciones y "Otros" riesgos
-    // =====================================================
     /**
      * Retorna el primer String no nulo y no vacío (trim).
      */
@@ -6934,13 +6897,13 @@ private void tryLoadCargoFromVista(FacesContext ctx) {
             catasCalificada = null;
         }
     }
-    
+
     /**
-     * PARA MANEJAR LA GENERACION Y REGENERACION 
-     * @return 
+     * PARA MANEJAR LA GENERACION Y REGENERACION
+     * @return
      */
-    
-    
+
+
     public void reloadFichaDesdeBd() {
     if (this.ficha == null || this.ficha.getIdFicha() == null) {
         return;
