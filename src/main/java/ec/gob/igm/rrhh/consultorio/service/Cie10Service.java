@@ -15,6 +15,7 @@ import jakarta.ejb.Stateless;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceException;
 import jakarta.persistence.PersistenceContext;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -218,5 +219,57 @@ public class Cie10Service {
                 .setMaxResults(20)
                 .getResultList();
         }
+    }
+
+    /**
+     * Fallback tolerante para autocompletado de código cuando la BD no aplica
+     * correctamente normalizaciones (puntos, guiones, espacios).
+     */
+    public List<Cie10> buscarPorCodigoAproximado(String termino, int maxResults) {
+        if (termino == null) return Collections.emptyList();
+
+        String norm = normalizarCodigo(termino);
+        if (norm.isEmpty()) return Collections.emptyList();
+
+        if (em == null) {
+            throw new IllegalStateException("EntityManager no inyectado. Revisa persistence.xml y unitName='consultorioPU'.");
+        }
+
+        int max = maxResults > 0 ? maxResults : 20;
+
+        // Trae un conjunto acotado por la primera letra y filtra en memoria normalizado.
+        List<Cie10> candidatos = em.createQuery(
+                "SELECT c FROM Cie10 c " +
+                "WHERE UPPER(c.codigo) LIKE :head " +
+                "ORDER BY c.codigo",
+                Cie10.class)
+            .setParameter("head", norm.substring(0, 1) + "%")
+            .setMaxResults(Math.max(200, max * 10))
+            .getResultList();
+
+        List<Cie10> out = new ArrayList<>();
+        for (Cie10 c : candidatos) {
+            if (c == null || c.getCodigo() == null) {
+                continue;
+            }
+
+            String codNorm = normalizarCodigo(c.getCodigo());
+            if (!codNorm.contains(norm)) {
+                continue;
+            }
+
+            out.add(c);
+            if (out.size() >= max) {
+                break;
+            }
+        }
+
+        return out;
+    }
+
+    private String normalizarCodigo(String codigo) {
+        return codigo == null
+                ? ""
+                : codigo.trim().toUpperCase().replaceAll("[^A-Z0-9]", "");
     }
 }
