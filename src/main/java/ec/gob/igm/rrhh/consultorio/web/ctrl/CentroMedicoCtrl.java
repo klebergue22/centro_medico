@@ -5846,7 +5846,9 @@ private void tryLoadCargoFromVista(FacesContext ctx) {
 
         String codigo = typed != null ? typed.trim() : "";
         if (codigo.isEmpty()) {
-            clearDiagnosticoRow(row);
+            row.setCodigo(null);
+            row.setDescripcion(null);
+            row.setCie10(null);
             LOG.info("<<< [AC-K-COD] blur empty => cleared row");
             return;
         }
@@ -5854,7 +5856,9 @@ private void tryLoadCargoFromVista(FacesContext ctx) {
         String codigoUp = codigo.toUpperCase();
 
         if (codigoUp.length() < 3) {
-            setCodigoSinMatch(row, codigoUp);
+            row.setCodigo(codigoUp);
+            row.setDescripcion(null);
+            row.setCie10(null);
             LOG.info("<<< [AC-K-COD] blur partial [" + codigoUp + "] => keep, no exact lookup");
             return;
         }
@@ -5863,23 +5867,6 @@ private void tryLoadCargoFromVista(FacesContext ctx) {
 
         LOG.debug("... [AC-K-COD] buscarPorCodigo(" + codigoUp + ") => "
                 + (cie != null ? (cie.getCodigo() + " | " + cie.getDescripcion()) : "null"));
-
-        applyCodigoLookupResult(row, codigoUp, cie);
-    }
-
-    private void clearDiagnosticoRow(ConsultaDiagnostico row) {
-        row.setCodigo(null);
-        row.setDescripcion(null);
-        row.setCie10(null);
-    }
-
-    private void setCodigoSinMatch(ConsultaDiagnostico row, String codigoUp) {
-        row.setCodigo(codigoUp);
-        row.setDescripcion(null);
-        row.setCie10(null);
-    }
-
-    private void applyCodigoLookupResult(ConsultaDiagnostico row, String codigoUp, Cie10 cie) {
         if (cie != null) {
             row.setCodigo(cie.getCodigo());
             row.setDescripcion(cie.getDescripcion());
@@ -5888,7 +5875,9 @@ private void tryLoadCargoFromVista(FacesContext ctx) {
             return;
         }
 
-        setCodigoSinMatch(row, codigoUp);
+        row.setCodigo(codigoUp);
+        row.setDescripcion(null);
+        row.setCie10(null);
         LOG.info("<<< [AC-K-COD] blur AFTER NO-MATCH keep codigo=[" + row.getCodigo() + "]");
     }
 
