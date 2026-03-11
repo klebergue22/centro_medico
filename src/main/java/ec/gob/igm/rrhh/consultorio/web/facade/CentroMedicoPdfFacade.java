@@ -31,6 +31,7 @@ import ec.gob.igm.rrhh.consultorio.service.FichaRiesgoService;
 import ec.gob.igm.rrhh.consultorio.service.PersonaAuxService;
 import ec.gob.igm.rrhh.consultorio.service.SignosVitalesService;
 import ec.gob.igm.rrhh.consultorio.service.Step1VitalSignsManager;
+import ec.gob.igm.rrhh.consultorio.web.service.Step2RiskOrchestratorService;
 import jakarta.annotation.PostConstruct;
 import jakarta.ejb.EJB;
 import jakarta.faces.application.FacesMessage;
@@ -390,6 +391,8 @@ public class CentroMedicoPdfFacade implements Serializable {
     private transient FichaActLaboralService fichaActLaboralService;
     @EJB
     private transient FichaRiesgoDetService fichaRiesgoDetService;
+    @EJB
+    private transient Step2RiskOrchestratorService step2RiskOrchestratorService;
 
     @EJB
     private transient FichaExamenCompService fichaExamenCompService;
@@ -1111,135 +1114,6 @@ public class CentroMedicoPdfFacade implements Serializable {
                 new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", msg));
     }
 
-    private String construirMedidas(List<String> medidas) {
-        if (medidas == null || medidas.isEmpty()) {
-            return null;
-        }
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < medidas.size(); i++) {
-            String m = medidas.get(i);
-            if (!isBlank(m)) {
-                if (sb.length() > 0) {
-                    sb.append(" | ");
-                }
-                sb.append("M").append(i + 1).append(": ").append(m.trim());
-            }
-        }
-        return sb.length() == 0 ? null : sb.toString();
-    }
-
-    private RiskKey parseRiskKey(String key) {
-        if (isBlank(key)) {
-            return null;
-        }
-        String k = key.trim();
-        int last = k.lastIndexOf('_');
-        if (last < 0) {
-            return null;
-        }
-        String actStr = k.substring(last + 1);
-        Integer act;
-        try {
-            act = Integer.valueOf(actStr);
-        } catch (NumberFormatException ex) {
-            return null;
-        }
-        // prefijo de 3 letras (FIS/SEG/QUI/BIO/ERG/PSI)
-        if (k.length() < 3) {
-            return null;
-        }
-        String prefRaw = k.substring(0, 3);
-        String grupo = grupoFromPrefix(prefRaw);
-        String item = k.substring(0, last).replace('_', ' ');
-        String prefWithSpace = prefRaw + " ";
-        if (item.startsWith(prefWithSpace)) {
-            item = item.substring(prefWithSpace.length());
-        }
-        return new RiskKey(grupo, item, act);
-    }
-
-    private RiskKey parseRiskKeyOtros(String key) {
-        if (isBlank(key)) {
-            return null;
-        }
-        String k = key.trim();
-        int last = k.lastIndexOf('_');
-        if (last < 0) {
-            return null;
-        }
-        String actStr = k.substring(last + 1);
-        Integer act;
-        try {
-            act = Integer.valueOf(actStr);
-        } catch (NumberFormatException ex) {
-            return null;
-        }
-        if (k.length() < 3) {
-            return null;
-        }
-        String prefRaw = k.substring(0, 3);
-        String grupo = grupoFromPrefix(prefRaw);
-        return new RiskKey(grupo, "OTROS", act);
-    }
-
-    private String grupoFromPrefix(String pref) {
-        switch (pref) {
-            case "FIS":
-                return "FISICO";
-            case "SEG":
-                return "SEGURIDAD";
-            case "QUI":
-                return "QUIMICO";
-            case "BIO":
-                return "BIOLOGICO";
-            case "ERG":
-                return "ERGONOMICO";
-            case "PSI":
-                return "PSICOSOCIAL";
-            default:
-                return "OTROS";
-        }
-    }
-
-    /**
-     * Prefijo (tal como se usa en la plantilla) a partir del grupo guardado en
-     * BD. Nota: la plantilla usa minúsculas (fis/seg/qui/bio/erg/psi).
-     */
-    private String prefixFromGrupoLower(String grupo) {
-        if (grupo == null) {
-            return "otr";
-        }
-        switch (grupo.toUpperCase()) {
-            case "FISICO":
-                return "fis";
-            case "SEGURIDAD":
-                return "seg";
-            case "QUIMICO":
-                return "qui";
-            case "BIOLOGICO":
-                return "bio";
-            case "ERGONOMICO":
-                return "erg";
-            case "PSICOSOCIAL":
-                return "psi";
-            default:
-                return "otr";
-        }
-    }
-
-    private static class RiskKey {
-
-        final String grupo;
-        final String item;
-        final Integer actividad;
-
-        RiskKey(String grupo, String item, Integer actividad) {
-            this.grupo = grupo;
-            this.item = item;
-            this.actividad = actividad;
-        }
-    }
-
     private boolean esVacio(String s) {
         return s == null || s.trim().isEmpty();
     }
@@ -1618,121 +1492,21 @@ public class CentroMedicoPdfFacade implements Serializable {
     }
 
     private void saveStep2() {
-        final Date now = new Date();
-        final String user = usuarioReal();
+        final Step2RiskOrchestratorService.Step2RiskCommand command = new Step2RiskOrchestratorService.Step2RiskCommand(
+                ficha,
+                fichaRiesgo,
+                actividadesLab,
+                medidasPreventivas,
+                riesgos,
+                otrosRiesgos,
+                new Date(),
+                usuarioReal()
+        );
 
-        ensureFichaSavedOrThrow();
-        upsertRiskHeader(now, user);
-        replaceRiskDetails(user);
+        fichaRiesgo = step2RiskOrchestratorService.save(command);
 
         registrarAuditoria("GUARDAR_STEP2", "FICHA_RIESGO / FICHA_RIESGO_DET", "*",
                 "Step 2 guardado. ID_FICHA=" + ficha.getIdFicha());
-    }
-
-    private void ensureFichaSavedOrThrow() {
-        if (ficha == null || ficha.getIdFicha() == null) {
-            throw new BusinessValidationException("Primero debe existir y estar guardada la ficha (ID_FICHA).");
-        }
-    }
-
-    private void upsertRiskHeader(Date now, String user) {
-        if (fichaRiesgo == null) {
-            fichaRiesgo = new FichaRiesgo();
-        }
-        fichaRiesgo.setFicha(ficha);
-
-        mapRiskActivitiesToHeader();
-        fichaRiesgo.setMedidasPreventivas(construirMedidas(medidasPreventivas));
-
-        stampAuditFieldsForRiskHeader(fichaRiesgo, now, user);
-
-        fichaRiesgo = fichaRiesgoService.guardar(fichaRiesgo);
-    }
-
-    private void mapRiskActivitiesToHeader() {
-        fichaRiesgo.setActividad1(getSafe(actividadesLab, 0));
-        fichaRiesgo.setActividad2(getSafe(actividadesLab, 1));
-        fichaRiesgo.setActividad3(getSafe(actividadesLab, 2));
-        fichaRiesgo.setActividad4(getSafe(actividadesLab, 3));
-        fichaRiesgo.setActividad5(getSafe(actividadesLab, 4));
-        fichaRiesgo.setActividad6(getSafe(actividadesLab, 5));
-        fichaRiesgo.setActividad7(getSafe(actividadesLab, 6));
-    }
-
-    private void stampAuditFieldsForRiskHeader(FichaRiesgo fr, Date now, String user) {
-        if (fr.getIdFichaRiesgo() == null) {
-            fr.setEstado("BORRADOR");
-            fr.setFCreacion(now);
-            fr.setUsrCreacion(user);
-        } else {
-            fr.setFActualizacion(now);
-            fr.setUsrActualizacion(user);
-        }
-    }
-
-    private void replaceRiskDetails(String user) {
-
-        fichaRiesgoDetService.eliminarPorFicha(ficha.getIdFicha());
-
-        persistCheckedRiskItems(user);
-        persistOtherRiskItems(user);
-    }
-
-    private void persistCheckedRiskItems(String user) {
-        if (riesgos == null || riesgos.isEmpty()) {
-            return;
-        }
-        int orden = 1;
-
-        for (Map.Entry<String, Boolean> e : riesgos.entrySet()) {
-            if (!Boolean.TRUE.equals(e.getValue())) {
-                continue;
-            }
-
-            RiskKey rk = parseRiskKey(e.getKey());
-            if (rk == null) {
-                continue;
-            }
-
-            FichaRiesgoDet det = new FichaRiesgoDet();
-            det.setFicha(ficha);
-            det.setGrupo(rk.grupo);
-            det.setItem(rk.item);
-            det.setActividadNro(rk.actividad);
-            det.setMarcado("S");
-            det.setOrden(orden++);
-
-            fichaRiesgoDetService.guardar(det, user);
-        }
-    }
-
-    private void persistOtherRiskItems(String user) {
-        if (otrosRiesgos == null || otrosRiesgos.isEmpty()) {
-            return;
-        }
-        int ordenOtros = 10000;
-
-        for (Map.Entry<String, String> e : otrosRiesgos.entrySet()) {
-            String val = e.getValue();
-            if (isBlank(val)) {
-                continue;
-            }
-
-            RiskKey rk = parseRiskKeyOtros(e.getKey());
-            if (rk == null) {
-                continue;
-            }
-
-            FichaRiesgoDet det = new FichaRiesgoDet();
-            det.setFicha(ficha);
-            det.setGrupo(rk.grupo);
-            det.setItem("OTROS: " + val.trim());
-            det.setActividadNro(rk.actividad);
-            det.setMarcado("S");
-            det.setOrden(ordenOtros++);
-
-            fichaRiesgoDetService.guardar(det, user);
-        }
     }
 
     private boolean validarStep3() {
