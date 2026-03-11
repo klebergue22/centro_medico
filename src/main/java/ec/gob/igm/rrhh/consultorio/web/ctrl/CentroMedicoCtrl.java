@@ -71,6 +71,9 @@ import ec.gob.igm.rrhh.consultorio.web.pdf.PdfRenderer;
 import ec.gob.igm.rrhh.consultorio.web.service.CedulaDialogUiCoordinator;
 import ec.gob.igm.rrhh.consultorio.web.service.CedulaSearchService;
 import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoFormInitializer;
+import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoLifecycleService;
+import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoStepValidationService;
+import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoUiSupportService;
 import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoWizardService;
 import ec.gob.igm.rrhh.consultorio.web.service.FichaPdfValidationService;
 import ec.gob.igm.rrhh.consultorio.web.service.JsfFaceletRenderService;
@@ -79,9 +82,6 @@ import ec.gob.igm.rrhh.consultorio.web.service.Step3OrchestratorService;
 import ec.gob.igm.rrhh.consultorio.web.session.PdfSessionStorage;
 import ec.gob.igm.rrhh.consultorio.web.util.SnUtils;
 import ec.gob.igm.rrhh.consultorio.web.validation.FichaCompletaValidator;
-import ec.gob.igm.rrhh.consultorio.web.validation.Step1Validator;
-import ec.gob.igm.rrhh.consultorio.web.validation.Step2Validator;
-import ec.gob.igm.rrhh.consultorio.web.validation.Step3Validator;
 import ec.gob.igm.rrhh.consultorio.web.validation.ValidationResult;
 
 /**
@@ -127,9 +127,6 @@ public class CentroMedicoCtrl implements Serializable {
     private static final int CONSUMO_ROWS = 3;
     private static final int DIAG_ROWS = 6;
 
-    private final Step1Validator step1Validator = new Step1Validator();
-    private final Step2Validator step2Validator = new Step2Validator();
-    private final Step3Validator step3Validator = new Step3Validator();
     private final FichaCompletaValidator fichaCompletaValidator = new FichaCompletaValidator();
 
     private String activeStep = "step1";
@@ -420,6 +417,15 @@ public class CentroMedicoCtrl implements Serializable {
     private transient CentroMedicoFormInitializer centroMedicoFormInitializer;
 
     @Inject
+    private transient CentroMedicoLifecycleService centroMedicoLifecycleService;
+
+    @Inject
+    private transient CentroMedicoStepValidationService centroMedicoStepValidationService;
+
+    @Inject
+    private transient CentroMedicoUiSupportService centroMedicoUiSupportService;
+
+    @Inject
     private transient CedulaSearchService cedulaSearchService;
 
     @Inject
@@ -432,28 +438,23 @@ public class CentroMedicoCtrl implements Serializable {
             if (fc == null) {
                 return;
             }
-            final boolean postback = fc.isPostback();
+            CentroMedicoLifecycleService.LifecycleState state = centroMedicoLifecycleService.resolve(
+                    activeStep,
+                    empleadoSel != null,
+                    preRenderDone);
 
-            if (!"step1".equals(activeStep)) {
-                mostrarDlgCedula = false;
-            } else {
+            mostrarDlgCedula = state.mostrarDlgCedula();
 
-                mostrarDlgCedula = (empleadoSel == null);
-            }
-
-            if (!preRenderDone) {
+            if (state.requiereInicializacion()) {
                 centroMedicoFormInitializer.initExamenes(this, 5);
-                ensureActLabSize();
-                centroMedicoFormInitializer.ensureDiagSize(this, 6);
                 preRenderDone = true;
-            } else {
-
-                ensureActLabSize();
-                centroMedicoFormInitializer.ensureDiagSize(this, 6);
             }
+
+            ensureActLabSize();
+            centroMedicoFormInitializer.ensureDiagSize(this, 6);
 
             LOG.info("GET? {} activeStep={} empleadoSel={} mostrarDlgCedula={}",
-                    !FacesContext.getCurrentInstance().isPostback(),
+                    !fc.isPostback(),
                     activeStep,
                     (empleadoSel == null),
                     mostrarDlgCedula);
@@ -551,14 +552,14 @@ public class CentroMedicoCtrl implements Serializable {
 
     public void onFechaNacimientoSelect(SelectEvent e) {
         this.fechaNacimiento = (java.util.Date) e.getObject();
-        this.edad = calcularEdad(this.fechaNacimiento);
+        this.edad = centroMedicoUiSupportService.calcularEdad(this.fechaNacimiento);
         FacesContext.getCurrentInstance().addMessage(null,
                 new FacesMessage(FacesMessage.SEVERITY_INFO, "Cálculo de edad",
                         "Edad calculada: " + (edad == null ? "(sin fecha)" : edad + " años")));
     }
 
     public void onFechaNacimientoChange() {
-        this.edad = calcularEdad(this.fechaNacimiento);
+        this.edad = centroMedicoUiSupportService.calcularEdad(this.fechaNacimiento);
         FacesContext.getCurrentInstance().addMessage(null,
                 new FacesMessage(FacesMessage.SEVERITY_INFO, "Cálculo de edad",
                         "Edad calculada: " + (edad == null ? "(sin fecha)" : edad + " años")));
@@ -570,7 +571,7 @@ public class CentroMedicoCtrl implements Serializable {
 
     public void setFechaNacimiento(Date f) {
         this.fechaNacimiento = f;
-        this.edad = calcularEdad(f);
+        this.edad = centroMedicoUiSupportService.calcularEdad(f);
     }
 
     /**
@@ -595,7 +596,7 @@ public class CentroMedicoCtrl implements Serializable {
      * Metodo que se usa en la vista
      */
     public void calcularEdad() {
-        this.edad = calcularEdad(this.fechaNacimiento);
+        this.edad = centroMedicoUiSupportService.calcularEdad(this.fechaNacimiento);
     }
 
     /**
@@ -604,34 +605,6 @@ public class CentroMedicoCtrl implements Serializable {
      * @param fechaNacimiento
      * @return
      */
-    private Integer calcularEdad(Date fechaNacimiento) {
-        if (fechaNacimiento == null) {
-            return null;
-        }
-
-        Calendar hoy = Calendar.getInstance();
-        Calendar nac = Calendar.getInstance();
-        nac.setTime(fechaNacimiento);
-
-        limpiarHora(hoy);
-        limpiarHora(nac);
-
-        if (nac.after(hoy)) {
-            return null;
-        }
-
-        int years = hoy.get(Calendar.YEAR) - nac.get(Calendar.YEAR);
-
-        int mesHoy = hoy.get(Calendar.MONTH);
-        int mesNac = nac.get(Calendar.MONTH);
-
-        if (mesHoy < mesNac || (mesHoy == mesNac && hoy.get(Calendar.DAY_OF_MONTH) < nac.get(Calendar.DAY_OF_MONTH))) {
-            years--;
-        }
-
-        return years;
-    }
-
     /**
      * limpia la hora
      *
@@ -675,12 +648,7 @@ public class CentroMedicoCtrl implements Serializable {
      * calculo del Indice de masa corporal
      */
     public void recalcularIMC() {
-        if (peso != null && tallaCm != null && tallaCm > 0) {
-            double m = tallaCm / 100.0;
-            this.imc = Math.round((peso / (m * m)) * 100.0) / 100.0;
-        } else {
-            this.imc = null;
-        }
+        this.imc = centroMedicoUiSupportService.calcularImc(peso, tallaCm);
     }
 
     private boolean isBlank(String s) {
@@ -688,7 +656,7 @@ public class CentroMedicoCtrl implements Serializable {
     }
 
     private void addMsg(FacesMessage.Severity sev, String summary, String detail) {
-        FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(sev, summary, detail));
+        centroMedicoUiSupportService.addMessage(sev, summary, detail);
     }
 
     private void registrarAuditoria(String accion, String tabla, String campo, String observaciones) {
@@ -786,7 +754,7 @@ private void asegurarPersonaAuxPersistida() {
 
 
     private boolean validarStep1() {
-        ValidationResult result = step1Validator.validate(
+        ValidationResult result = centroMedicoStepValidationService.validarStep1(
                 apellido1,
                 apellido2,
                 nombre1,
@@ -800,28 +768,19 @@ private void asegurarPersonaAuxPersistida() {
     }
 
     private void addValidationMessages(String step, ValidationResult result) {
-        FacesContext ctx = FacesContext.getCurrentInstance();
-        if (ctx == null || result == null || result.isValid()) {
-            return;
-        }
-        for (String error : result.getErrors()) {
-            ctx.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, step, error));
-        }
+        centroMedicoStepValidationService.addValidationMessages(step, result);
     }
 
     private void warn(String msg) {
-        FacesContext.getCurrentInstance().addMessage(null,
-                new FacesMessage(FacesMessage.SEVERITY_WARN, "Step 1", msg));
+        centroMedicoUiSupportService.warn(msg);
     }
 
     private void info(String msg) {
-        FacesContext.getCurrentInstance().addMessage(null,
-                new FacesMessage(FacesMessage.SEVERITY_INFO, "Step 1", msg));
+        centroMedicoUiSupportService.info(msg);
     }
 
     private void error(String msg) {
-        FacesContext.getCurrentInstance().addMessage(null,
-                new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", msg));
+        centroMedicoUiSupportService.error(msg);
     }
 
     private boolean esVacio(String s) {
@@ -952,7 +911,7 @@ private void asegurarPersonaAuxPersistida() {
 
 
     private boolean validarStep2() {
-        ValidationResult result = step2Validator.validate(fichaRiesgo, actividadesLab, medidasPreventivas);
+        ValidationResult result = centroMedicoStepValidationService.validarStep2(fichaRiesgo, actividadesLab, medidasPreventivas);
         addValidationMessages("Step 2", result);
         return result.isValid();
     }
@@ -1008,7 +967,7 @@ private void asegurarPersonaAuxPersistida() {
 
     private boolean validarStep3() {
         s3("validarStep3() INICIO");
-        ValidationResult result = step3Validator.validate(listaDiag, aptitudSel, recomendaciones, medicoNombre, medicoCodigo);
+        ValidationResult result = centroMedicoStepValidationService.validarStep3(listaDiag, aptitudSel, recomendaciones, medicoNombre, medicoCodigo);
         if (!result.isValid()) {
             for (String error : result.getErrors()) {
                 s3("validarStep3() FAIL: " + error);
