@@ -303,7 +303,7 @@
     <td>N° Archivo</td><td colspan="3"><span class="cell-input-display">{{noArchivo}}</span></td>
   </tr>
   
-  <!-- MODIFICACIÓN: Apellidos en una fila, Nombres en otra fila para mayor visibilidad -->
+  <!-- MODIFICACIÓN: Apellidos y Nombres en filas separadas -->
   <tr>
     <td>Primer apellido</td><td colspan="3"><span class="cell-input-display">{{apellido1}}</span></td>
     <td>Segundo apellido</td><td colspan="3"><span class="cell-input-display">{{apellido2}}</span></td>
@@ -312,7 +312,6 @@
     <td>Primer nombre</td><td colspan="3"><span class="cell-input-display">{{nombre1}}</span></td>
     <td>Segundo nombre</td><td colspan="3"><span class="cell-input-display">{{nombre2}}</span></td>
   </tr>
-  <!-- FIN MODIFICACIÓN -->
 
   <tr>
     <td>Sexo</td><td><span class="cell-input-display">{{sexo}}</span></td>
@@ -366,17 +365,29 @@
   </tr>
 </table>
 
+<!-- SECCIÓN B MEJORADA: Distribución en filas para claridad -->
 <table class="tbl">
   <tr><th colspan="8" class="sec">B. MOTIVO DE CONSULTA</th></tr>
   <tr>
-    <td>Tipo Evaluación</td><td><span class="cell-input-display">{{tipoEval}}</span></td>
-    <td>Fecha de atención</td><td><span class="cell-input-display">{{fechaAtencion}}</span></td>
-    <td>Fecha ingreso</td><td><span class="cell-input-display">{{fecIngreso}}</span></td>
-    <td>Fecha reintegro</td><td><span class="cell-input-display">{{fecReintegro}}</span></td>
+    <td style="width:25%;">Tipo Evaluación</td>
+    <td colspan="3"><span class="cell-input-display">{{tipoEval}}</span></td>
+    <td style="width:25%;">Fecha de atención</td>
+    <td colspan="3"><span class="cell-input-display">{{fechaAtencion}}</span></td>
   </tr>
   <tr>
-    <td>Fecha retiro</td><td><span class="cell-input-display">{{fecRetiro}}</span></td>
-    <td>Observación</td><td colspan="5"><span class="cell-input-display">{{motivoObs}}</span></td>
+    <td>Fecha ingreso</td>
+    <td colspan="3"><span class="cell-input-display">{{fecIngreso}}</span></td>
+    <td>Fecha reintegro</td>
+    <td colspan="3"><span class="cell-input-display">{{fecReintegro}}</span></td>
+  </tr>
+  <tr>
+    <td>Fecha retiro</td>
+    <td colspan="3"><span class="cell-input-display">{{fecRetiro}}</span></td>
+    <td colspan="4"></td>
+  </tr>
+  <tr>
+    <td>Observación</td>
+    <td colspan="7"><span class="cell-input-display">{{motivoObs}}</span></td>
   </tr>
 </table>
 
@@ -815,7 +826,7 @@
         <tr><td>Cortes</td>                                     <td class="c">{{seg_mec_cortes_1}}</td><td class="c">{{seg_mec_cortes_2}}</td><td class="c">{{seg_mec_cortes_3}}</td><td class="c">{{seg_mec_cortes_4}}</td><td class="c">{{seg_mec_cortes_5}}</td><td class="c">{{seg_mec_cortes_6}}</td><td class="c">{{seg_mec_cortes_7}}</td></tr>
         <tr><td>Choques / colisión vehicular</td>               <td class="c">{{seg_mec_colision_1}}</td><td class="c">{{seg_mec_colision_2}}</td><td class="c">{{seg_mec_colision_3}}</td><td class="c">{{seg_mec_colision_4}}</td><td class="c">{{seg_mec_colision_5}}</td><td class="c">{{seg_mec_colision_6}}</td><td class="c">{{seg_mec_colision_7}}</td></tr>
         <tr><td>Atropellamientos por vehículos</td>             <td class="c">{{seg_mec_atropello_1}}</td><td class="c">{{seg_mec_atropello_2}}</td><td class="c">{{seg_mec_atropello_3}}</td><td class="c">{{seg_mec_atropello_4}}</td><td class="c">{{seg_mec_atropello_5}}</td><td class="c">{{seg_mec_atropello_6}}</td><td class="c">{{seg_mec_atropello_7}}</td></tr>
-        <tr><td>Proyección de fluids</td>                      <td class="c">{{seg_mec_proy_fluidos_1}}</td><td class="c">{{seg_mec_proy_fluidos_2}}</td><td class="c">{{seg_mec_proy_fluidos_3}}</td><td class="c">{{seg_mec_proy_fluidos_4}}</td><td class="c">{{seg_mec_proy_fluidos_5}}</td><td class="c">{{seg_mec_proy_fluidos_6}}</td><td class="c">{{seg_mec_proy_fluidos_7}}</td></tr>
+        <tr><td>Proyección de fluidos</td>                      <td class="c">{{seg_mec_proy_fluidos_1}}</td><td class="c">{{seg_mec_proy_fluidos_2}}</td><td class="c">{{seg_mec_proy_fluidos_3}}</td><td class="c">{{seg_mec_proy_fluidos_4}}</td><td class="c">{{seg_mec_proy_fluidos_5}}</td><td class="c">{{seg_mec_proy_fluidos_6}}</td><td class="c">{{seg_mec_proy_fluidos_7}}</td></tr>
         <tr><td>Proyección de partículas – fragmentos</td>      <td class="c">{{seg_mec_proy_part_1}}</td><td class="c">{{seg_mec_proy_part_2}}</td><td class="c">{{seg_mec_proy_part_3}}</td><td class="c">{{seg_mec_proy_part_4}}</td><td class="c">{{seg_mec_proy_part_5}}</td><td class="c">{{seg_mec_proy_part_6}}</td><td class="c">{{seg_mec_proy_part_7}}</td></tr>
         <tr><td>Contacto con superficies de trabajo</td>        <td class="c">{{seg_mec_superficies_1}}</td><td class="c">{{seg_mec_superficies_2}}</td><td class="c">{{seg_mec_superficies_3}}</td><td class="c">{{seg_mec_superficies_4}}</td><td class="c">{{seg_mec_superficies_5}}</td><td class="c">{{seg_mec_superficies_6}}</td><td class="c">{{seg_mec_superficies_7}}</td></tr>
         <tr><td><strong>ELÉCTRICOS</strong> — Contacto eléctrico</td><td class="c">{{seg_elec_contacto_1}}</td><td class="c">{{seg_elec_contacto_2}}</td><td class="c">{{seg_elec_contacto_3}}</td><td class="c">{{seg_elec_contacto_4}}</td><td class="c">{{seg_elec_contacto_5}}</td><td class="c">{{seg_elec_contacto_6}}</td><td class="c">{{seg_elec_contacto_7}}</td></tr>
@@ -833,7 +844,7 @@
         <tr><td>Polvos</td>       <td class="c">{{qui_polvos_1}}</td><td class="c">{{qui_polvos_2}}</td><td class="c">{{qui_polvos_3}}</td><td class="c">{{qui_polvos_4}}</td><td class="c">{{qui_polvos_5}}</td><td class="c">{{qui_polvos_6}}</td><td class="c">{{qui_polvos_7}}</td></tr>
         <tr><td>Sólidos</td>      <td class="c">{{qui_solidos_1}}</td><td class="c">{{qui_solidos_2}}</td><td class="c">{{qui_solidos_3}}</td><td class="c">{{qui_solidos_4}}</td><td class="c">{{qui_solidos_5}}</td><td class="c">{{qui_solidos_6}}</td><td class="c">{{qui_solidos_7}}</td></tr>
         <tr><td>Humos</td>        <td class="c">{{qui_humos_1}}</td><td class="c">{{qui_humos_2}}</td><td class="c">{{qui_humos_3}}</td><td class="c">{{qui_humos_4}}</td><td class="c">{{qui_humos_5}}</td><td class="c">{{qui_humos_6}}</td><td class="c">{{qui_humos_7}}</td></tr>
-        <tr><td>Líquidos</td>     <td class="c">{{qui_liquidos_1}}</td><td class="c">{{qui_liquidos_2}}</td><td class="c">{{qui_liquidos_3}}</td><td class="c">{{qui_liquidos_4}}</td><td class="c">{{qui_liquidos_5}}</td><td class="c">{{qui_liquidos_6}}</td><td class="c">{{qui_liquidos_7}}</td></tr>
+        <tr><td>Líquidos</td>     <td class="c">{{qui_liquidos_1}}</td><td class="c">{{qui_liquidos_2}}</td><td class="c">{{qui_liquidos_3}}</td><td class="c">{{qui_liquids_4}}</td><td class="c">{{qui_liquidos_5}}</td><td class="c">{{qui_liquidos_6}}</td><td class="c">{{qui_liquidos_7}}</td></tr>
         <tr><td>Vapores</td>      <td class="c">{{qui_vapores_1}}</td><td class="c">{{qui_vapores_2}}</td><td class="c">{{qui_vapores_3}}</td><td class="c">{{qui_vapores_4}}</td><td class="c">{{qui_vapores_5}}</td><td class="c">{{qui_vapores_6}}</td><td class="c">{{qui_vapores_7}}</td></tr>
         <tr><td>Aerosoles</td>    <td class="c">{{qui_aerosoles_1}}</td><td class="c">{{qui_aerosoles_2}}</td><td class="c">{{qui_aerosoles_3}}</td><td class="c">{{qui_aerosoles_4}}</td><td class="c">{{qui_aerosoles_5}}</td><td class="c">{{qui_aerosoles_6}}</td><td class="c">{{qui_aerosoles_7}}</td></tr>
         <tr><td>Neblinas</td>     <td class="c">{{qui_neblinas_1}}</td><td class="c">{{qui_neblinas_2}}</td><td class="c">{{qui_neblinas_3}}</td><td class="c">{{qui_neblinas_4}}</td><td class="c">{{qui_neblinas_5}}</td><td class="c">{{qui_neblinas_6}}</td><td class="c">{{qui_neblinas_7}}</td></tr>
