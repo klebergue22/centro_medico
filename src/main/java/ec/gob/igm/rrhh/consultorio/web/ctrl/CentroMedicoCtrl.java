@@ -77,6 +77,7 @@ import ec.gob.igm.rrhh.consultorio.service.Step1VitalSignsManager;
 import ec.gob.igm.rrhh.consultorio.web.audit.CentroMedicoAuditService;
 import ec.gob.igm.rrhh.consultorio.web.pdf.PdfTemplateEngine;
 import ec.gob.igm.rrhh.consultorio.web.pdf.PdfRenderer;
+import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoWizardService;
 import ec.gob.igm.rrhh.consultorio.web.session.PdfSessionStorage;
 import ec.gob.igm.rrhh.consultorio.web.util.SnUtils;
 
@@ -391,6 +392,9 @@ public class CentroMedicoCtrl implements Serializable {
 
     @Inject
     private transient PdfTemplateEngine pdfTemplateEngine;
+
+    @Inject
+    private transient CentroMedicoWizardService centroMedicoWizardService;
 
     // JSF Lifecycle / Inicialización
     public void preRenderInit() {
@@ -980,50 +984,51 @@ public class CentroMedicoCtrl implements Serializable {
      * guarda el step actual
      */
     public void guardarStepActual() {
-    LOG.info(">>> ENTRO A guardarStepActual, step=" + activeStep);
-    FacesContext ctx = FacesContext.getCurrentInstance();
+        LOG.info(">>> ENTRO A guardarStepActual, step={}", activeStep);
+        FacesContext ctx = FacesContext.getCurrentInstance();
 
-    try {
-        final String next = saveCurrentStepAndGetNext();
+        try {
+            final String next = centroMedicoWizardService.guardarStepActual(
+                    activeStep,
+                    this::guardarStep1,
+                    this::guardarStep2,
+                    this::guardarStep3,
+                    this::onEnterStep4AutoRegenerar);
 
-        if (ctx != null && !ctx.isValidationFailed() && next != null) {
-            activeStep = next;
+            if (ctx != null && !ctx.isValidationFailed() && next != null) {
+                activeStep = next;
 
-            // ✅ Aquí sí o sí: cada vez que llegas a Step4 regenera ambos PDFs
-            if ("step4".equals(next)) {
-                onEnterStep4AutoRegenerar();
+                if ("step4".equals(next)) {
+                    PrimeFaces.current().ajax().update("@([id$=wdzFicha])");
+                }
+            }
 
-                // ✅ refresca el wizard para que el <object> tome el nuevo token
-                PrimeFaces.current().ajax().update("@([id$=wdzFicha])");
+        } catch (RuntimeException ex) {
+            handleUnexpected("guardarStepActual", ex);
+            if (ctx != null) {
+                ctx.validationFailed();
             }
         }
+    }
 
-    } catch (RuntimeException ex) {
-        handleUnexpected("guardarStepActual", ex);
-        if (ctx != null) {
-            ctx.validationFailed();
+    private void onEnterStep4AutoRegenerar() {
+        try {
+            if (this.ficha == null || this.ficha.getIdFicha() == null) {
+                return;
+            }
+
+            this.fichaPdfListo = false;
+            this.certificadoListo = false;
+            this.pdfTokenFicha = null;
+            this.pdfTokenCertificado = null;
+
+            prepararVistaPreviaFicha();
+            prepararVistaPreviaCertificado();
+
+        } catch (Exception ex) {
+            LOG.warn("Auto-regeneración Step4 falló", ex);
         }
     }
-}
-private void onEnterStep4AutoRegenerar() {
-    try {
-        if (this.ficha == null || this.ficha.getIdFicha() == null) {
-            return;
-        }
-
-        // ✅ fuerza render y evita “quedarse pegado”
-        this.fichaPdfListo = false;
-        this.certificadoListo = false;
-        this.pdfTokenFicha = null;
-        this.pdfTokenCertificado = null;
-
-        prepararVistaPreviaFicha();
-        prepararVistaPreviaCertificado();
-
-    } catch (Exception ex) {
-        LOG.warn("Auto-regeneración Step4 falló", ex);
-    }
-}
 private void asegurarPersonaAuxPersistida() {
 
     // 1) Solo aplica para ingreso manual
@@ -1053,31 +1058,10 @@ private void asegurarPersonaAuxPersistida() {
         ficha.setPersonaAux(saved);
     }
 }
-    private String saveCurrentStepAndGetNext() {
-        if ("step1".equals(activeStep)) {
-            guardarStep1();
-            return "step2";
-        }
-        if ("step2".equals(activeStep)) {
-            guardarStep2();
-            return "step3";
-        }
-        if ("step3".equals(activeStep)) {
-            guardarStep3();
-            return "step4";
-        }
-        return null;
+    public void retrocederStep() {
+        activeStep = centroMedicoWizardService.retrocederStep(activeStep);
     }
 
-    public void retrocederStep() {
-        if ("step2".equals(activeStep)) {
-            activeStep = "step1";
-        } else if ("step3".equals(activeStep)) {
-            activeStep = "step2";
-        } else if ("step4".equals(activeStep)) {
-            activeStep = "step3";
-        }
-    }
 
     private boolean validarStep1() {
         FacesContext ctx = FacesContext.getCurrentInstance();
