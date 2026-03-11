@@ -4,8 +4,6 @@ package ec.gob.igm.rrhh.consultorio.web.facade;
  *
  * @author GUERRA_KLEBER
  */
-import com.lowagie.text.DocumentException;
-import com.lowagie.text.pdf.BaseFont;
 import ec.gob.igm.rrhh.consultorio.domain.model.AuditoriaConsultorio;
 import ec.gob.igm.rrhh.consultorio.domain.model.Cie10;
 import ec.gob.igm.rrhh.consultorio.domain.model.ConsultaDiagnostico;
@@ -32,6 +30,9 @@ import ec.gob.igm.rrhh.consultorio.service.PersonaAuxService;
 import ec.gob.igm.rrhh.consultorio.service.SignosVitalesService;
 import ec.gob.igm.rrhh.consultorio.service.Step1VitalSignsManager;
 import ec.gob.igm.rrhh.consultorio.web.service.Step2RiskOrchestratorService;
+import ec.gob.igm.rrhh.consultorio.web.pdf.PdfRenderer;
+import ec.gob.igm.rrhh.consultorio.web.pdf.PdfTemplateEngine;
+import ec.gob.igm.rrhh.consultorio.web.session.PdfSessionStore;
 import jakarta.annotation.PostConstruct;
 import jakarta.ejb.EJB;
 import jakarta.faces.application.FacesMessage;
@@ -48,8 +49,6 @@ import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Named;
 import jakarta.servlet.http.HttpSession;
 import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -78,7 +77,6 @@ import org.primefaces.event.FlowEvent;
 import org.primefaces.event.SelectEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.xhtmlrenderer.pdf.ITextRenderer;
 
 
 @Named("centroMedicoPdfFacade")
@@ -393,6 +391,15 @@ public class CentroMedicoPdfFacade implements Serializable {
     private transient FichaRiesgoDetService fichaRiesgoDetService;
     @EJB
     private transient Step2RiskOrchestratorService step2RiskOrchestratorService;
+
+    @jakarta.inject.Inject
+    private transient PdfTemplateEngine pdfTemplateEngine;
+
+    @jakarta.inject.Inject
+    private transient PdfRenderer pdfRenderer;
+
+    @jakarta.inject.Inject
+    private transient PdfSessionStore pdfSessionStore;
 
     @EJB
     private transient FichaExamenCompService fichaExamenCompService;
@@ -1986,16 +1993,7 @@ public class CentroMedicoPdfFacade implements Serializable {
             byte[] bytes = renderizarPdf(html);
 
             String token = "FICHA_" + UUID.randomUUID().toString().replace("-", "");
-            ExternalContext ec = ctx.getExternalContext();
-            HttpSession session = (HttpSession) ec.getSession(true);
-
-            @SuppressWarnings("unchecked")
-            Map<String, byte[]> pdfStore = (Map<String, byte[]>) session.getAttribute("PDF_STORE");
-            if (pdfStore == null) {
-                pdfStore = new HashMap<>();
-                session.setAttribute("PDF_STORE", pdfStore);
-            }
-            pdfStore.put(token, bytes);
+            pdfSessionStore.put(ctx, token, bytes);
 
             this.pdfTokenFicha = token;
             this.fichaPdfListo = true;
@@ -3032,41 +3030,7 @@ rep.put("condicionEspecial", safe(condicionEspecial));
     }
 
     private String renderTemplate(String template, Map<String, String> rep) {
-        // 1) condicionales tipo {{#if key}} ... {{/if}}
-        template = applyIfBlocks(template, rep);
-
-        // 2) reemplazo simple {{token}}
-        for (Map.Entry<String, String> e : rep.entrySet()) {
-            String k = e.getKey();
-            String v = e.getValue() == null ? "" : e.getValue();
-            template = template.replace("{{" + k + "}}", v);
-        }
-        // 3) limpia tokens no resueltos
-        template = template.replaceAll("\\{\\{[^}]+\\}\\}", "");
-        return template;
-    }
-
-    private String applyIfBlocks(String template, Map<String, String> rep) {
-        // Soporta: {{#if sexoM}} ... {{/if}}
-        // Si rep.get("sexoM") es "true"/"1"/"X" => deja el bloque, caso contrario lo elimina
-        final java.util.regex.Pattern p = java.util.regex.Pattern.compile(
-                "\\{\\{#if\\s+([a-zA-Z0-9_]+)\\}\\}([\\s\\S]*?)\\{\\{\\/if\\}\\}",
-                java.util.regex.Pattern.MULTILINE
-        );
-
-        java.util.regex.Matcher m = p.matcher(template);
-        StringBuffer out = new StringBuffer();
-        while (m.find()) {
-            String key = m.group(1);
-            String body = m.group(2);
-
-            String val = rep.getOrDefault(key, "");
-            boolean on = "true".equalsIgnoreCase(val) || "1".equals(val) || "X".equalsIgnoreCase(val) || "SI".equalsIgnoreCase(val);
-
-            m.appendReplacement(out, java.util.regex.Matcher.quoteReplacement(on ? body : ""));
-        }
-        m.appendTail(out);
-        return out.toString();
+        return pdfTemplateEngine.render(template, rep);
     }
 
     private String construirHtmlFichaDesdePrintFacelets() {
@@ -3134,19 +3098,7 @@ rep.put("condicionEspecial", safe(condicionEspecial));
     }
 
     private void storePdfBytesInPdfStore(FacesContext ctx, String token, byte[] bytes) {
-        if (ctx == null || token == null || bytes == null) {
-            return;
-        }
-        ExternalContext ec = ctx.getExternalContext();
-        HttpSession session = (HttpSession) ec.getSession(true);
-
-        @SuppressWarnings("unchecked")
-        Map<String, byte[]> pdfStore = (Map<String, byte[]>) session.getAttribute("PDF_STORE");
-        if (pdfStore == null) {
-            pdfStore = new HashMap<>();
-            session.setAttribute("PDF_STORE", pdfStore);
-        }
-        pdfStore.put(token, bytes);
+        pdfSessionStore.put(ctx, token, bytes);
     }
 
     private void cleanupPdfPreview(FacesContext ctx) {
@@ -3155,14 +3107,8 @@ rep.put("condicionEspecial", safe(condicionEspecial));
             pdfObjectUrl = null;
             return;
         }
-        ExternalContext ec = ctx.getExternalContext();
-        HttpSession session = (HttpSession) ec.getSession(false);
-        if (session != null && pdfTokenCertificado != null) {
-            @SuppressWarnings("unchecked")
-            Map<String, byte[]> pdfStore = (Map<String, byte[]>) session.getAttribute("PDF_STORE");
-            if (pdfStore != null) {
-                pdfStore.remove(pdfTokenCertificado);
-            }
+        if (pdfTokenCertificado != null) {
+            pdfSessionStore.remove(ctx, pdfTokenCertificado);
         }
         pdfTokenCertificado = null;
         pdfObjectUrl = null;
@@ -3265,7 +3211,7 @@ rep.put("condicionEspecial", safe(condicionEspecial));
         }
     }
 
-    private byte[] renderizarPdf(String xhtml) throws DocumentException, IOException {
+    private byte[] renderizarPdf(String xhtml) throws IOException {
 
         if (xhtml == null || xhtml.trim().isEmpty()) {
             log.error("renderizarPdf: El string HTML recibido es NULO o VACÍO.");
@@ -3278,39 +3224,12 @@ rep.put("condicionEspecial", safe(condicionEspecial));
 
         final String xhtmlOk = sanitizeXhtmlForPdf(xhtml);
 
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        ITextRenderer renderer = new ITextRenderer();
-
-        String baseURL = FacesContext.getCurrentInstance()
-                .getExternalContext()
-                .getResource("/")
-                .toExternalForm();
-
         try {
-            String fontsBase = FacesContext.getCurrentInstance()
-                    .getExternalContext().getRealPath("/resources/fonts/");
-            if (fontsBase != null) {
-                renderer.getFontResolver().addFont(
-                        fontsBase + File.separator + "DejaVuSans.ttf",
-                        BaseFont.IDENTITY_H, true
-                );
-            }
-        } catch (DocumentException | IOException e) {
-            log.debug("Skipping optional font registration for PDF rendering.", e);
-        }
-
-        try {
-            renderer.setDocumentFromString(xhtmlOk, baseURL);
+            return pdfRenderer.render(xhtmlOk);
         } catch (RuntimeException ex) {
             dumpXhtmlDebug("fichaPrint_debug.xhtml", xhtmlOk, ex);
             throw ex;
         }
-
-        renderer.layout();
-        renderer.createPDF(baos);
-        renderer.finishPDF();
-
-        return baos.toByteArray();
     }
 
     private String construirHtmlDesdePlantilla() throws IOException {
