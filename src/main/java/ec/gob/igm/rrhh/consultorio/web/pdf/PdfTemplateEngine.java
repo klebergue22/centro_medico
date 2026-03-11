@@ -48,7 +48,7 @@ public class PdfTemplateEngine {
             if (key == null) {
                 continue;
             }
-            String val = e.getValue() == null ? "" : e.getValue();
+            String val = escapeHtml(e.getValue() == null ? "" : e.getValue());
             html = html.replace("{{" + key + "}}", val);
         }
 
@@ -86,5 +86,14 @@ public class PdfTemplateEngine {
             // si no existe en el map, deja vacío
             rep.putIfAbsent(key, "");
         }
+    }
+
+    private String escapeHtml(String value) {
+        return value
+                .replace("&", "&amp;")
+                .replace("<", "&lt;")
+                .replace(">", "&gt;")
+                .replace("\"", "&quot;")
+                .replace("'", "&#39;");
     }
 }

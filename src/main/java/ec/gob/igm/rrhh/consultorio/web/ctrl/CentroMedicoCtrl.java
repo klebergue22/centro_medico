@@ -79,7 +79,7 @@ import ec.gob.igm.rrhh.consultorio.web.service.FichaPdfValidationService;
 import ec.gob.igm.rrhh.consultorio.web.service.JsfFaceletRenderService;
 import ec.gob.igm.rrhh.consultorio.web.service.Step2RiskOrchestratorService;
 import ec.gob.igm.rrhh.consultorio.web.service.Step3OrchestratorService;
-import ec.gob.igm.rrhh.consultorio.web.session.PdfSessionStorage;
+import ec.gob.igm.rrhh.consultorio.web.session.PdfSessionStore;
 import ec.gob.igm.rrhh.consultorio.web.util.SnUtils;
 import ec.gob.igm.rrhh.consultorio.web.validation.FichaCompletaValidator;
 import ec.gob.igm.rrhh.consultorio.web.validation.ValidationResult;
@@ -390,7 +390,7 @@ public class CentroMedicoCtrl implements Serializable {
     private transient CentroMedicoAuditService centroMedicoAuditService;
 
     @Inject
-    private transient PdfSessionStorage pdfSessionStore;
+    private transient PdfSessionStore pdfSessionStore;
 
     @Inject
     private transient PdfRenderer pdfRenderer;
