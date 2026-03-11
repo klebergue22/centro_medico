@@ -29,26 +29,31 @@ public class Step1Validator {
             result.addError("Debe seleccionar el tipo de evaluación (Ingreso, Periódica, etc.).");
         }
 
-        if (signos == null) {
-            result.addError("Debe registrar los signos vitales.");
-            return result;
-        }
+        boolean tienePaPersistida = signos != null
+                && signos.getPaSistolica() != null
+                && signos.getPaDiastolica() != null;
+        boolean tieneFcPersistida = signos != null && signos.getFrecuenciaCard() != null;
+        boolean tienePesoPersistido = signos != null && signos.getPesoKg() != null;
+        boolean tieneTallaPersistida = signos != null && signos.getTallaM() != null;
 
-        if (isBlank(paStr)
-                && (signos.getPaSistolica() == null || signos.getPaDiastolica() == null)) {
+        if (isBlank(paStr) && !tienePaPersistida) {
             result.addError("Debe ingresar la presión arterial completa (PA sistólica y diastólica).");
         }
 
-        if (fc == null && signos.getFrecuenciaCard() == null) {
+        if (fc == null && !tieneFcPersistida) {
             result.addError("Debe ingresar la frecuencia cardíaca (FC).");
         }
 
-        if (peso == null && signos.getPesoKg() == null) {
+        if (peso == null && !tienePesoPersistido) {
             result.addError("Debe ingresar el peso (kg).");
         }
 
-        if (tallaCm == null && signos.getTallaM() == null) {
+        if (tallaCm == null && !tieneTallaPersistida) {
             result.addError("Debe ingresar la talla (en metros o convertir desde cm).");
+        }
+
+        if (fichaRiesgo == null || isBlank(fichaRiesgo.getPuestoTrabajo())) {
+            result.addError("Debe ingresar el puesto de trabajo.");
         }
 
         return result;
