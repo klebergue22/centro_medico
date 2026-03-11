@@ -8,6 +8,7 @@ public class Step1Validator {
     public ValidationResult validate(String apellido1, String apellido2,
             String nombre1, String nombre2,
             String sexo, String tipoEval,
+            String paStr, Integer fc, Double peso, Double tallaCm,
             SignosVitales signos, FichaRiesgo fichaRiesgo) {
 
         ValidationResult result = new ValidationResult();
@@ -33,24 +34,21 @@ public class Step1Validator {
             return result;
         }
 
-        if (signos.getPaSistolica() == null || signos.getPaDiastolica() == null) {
+        if (isBlank(paStr)
+                && (signos.getPaSistolica() == null || signos.getPaDiastolica() == null)) {
             result.addError("Debe ingresar la presión arterial completa (PA sistólica y diastólica).");
         }
 
-        if (signos.getFrecuenciaCard() == null) {
+        if (fc == null && signos.getFrecuenciaCard() == null) {
             result.addError("Debe ingresar la frecuencia cardíaca (FC).");
         }
 
-        if (signos.getPesoKg() == null) {
+        if (peso == null && signos.getPesoKg() == null) {
             result.addError("Debe ingresar el peso (kg).");
         }
 
-        if (signos.getTallaM() == null) {
+        if (tallaCm == null && signos.getTallaM() == null) {
             result.addError("Debe ingresar la talla (en metros o convertir desde cm).");
-        }
-
-        if (fichaRiesgo == null || isBlank(fichaRiesgo.getPuestoTrabajo())) {
-            result.addError("Debe ingresar el puesto de trabajo.");
         }
 
         return result;
