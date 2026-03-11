@@ -1605,6 +1605,12 @@ public class CentroMedicoPdfFacade implements Serializable {
                 "Step 3 guardado. ID_FICHA=" + ficha.getIdFicha());
     }
 
+    private void ensureFichaSavedOrThrow() {
+        if (ficha == null || ficha.getIdFicha() == null) {
+            throw new BusinessValidationException("Primero debe existir y estar guardada la ficha (ID_FICHA).");
+        }
+    }
+
     private void persistStep3Blocks(Date now, String user) {
         FacesContext ctx = FacesContext.getCurrentInstance();
 
