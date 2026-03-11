@@ -5,9 +5,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.PrintWriter;
 import java.io.Serializable;
-import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -31,13 +29,9 @@ import jakarta.ejb.EJB;
 import jakarta.faces.application.FacesMessage;
 import jakarta.faces.component.UIComponent;
 import jakarta.faces.component.UIInput;
-import jakarta.faces.component.UIViewRoot;
 import jakarta.faces.context.ExternalContext;
 import jakarta.faces.context.FacesContext;
-import jakarta.faces.context.PartialViewContext;
-import jakarta.faces.context.ResponseWriter;
 import jakarta.faces.event.AjaxBehaviorEvent;
-import jakarta.faces.view.ViewDeclarationLanguage;
 import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
@@ -78,6 +72,9 @@ import ec.gob.igm.rrhh.consultorio.web.pdf.PdfRenderer;
 import ec.gob.igm.rrhh.consultorio.web.service.CedulaDialogUiCoordinator;
 import ec.gob.igm.rrhh.consultorio.web.service.CedulaSearchService;
 import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoWizardService;
+import ec.gob.igm.rrhh.consultorio.web.service.FichaPdfValidationService;
+import ec.gob.igm.rrhh.consultorio.web.service.JsfFaceletRenderService;
+import ec.gob.igm.rrhh.consultorio.web.service.Step2RiskOrchestratorService;
 import ec.gob.igm.rrhh.consultorio.web.service.Step3OrchestratorService;
 import ec.gob.igm.rrhh.consultorio.web.session.PdfSessionStorage;
 import ec.gob.igm.rrhh.consultorio.web.util.SnUtils;
@@ -406,6 +403,15 @@ public class CentroMedicoCtrl implements Serializable {
 
     @EJB
     private transient Step3OrchestratorService step3OrchestratorService;
+
+    @EJB
+    private transient Step2RiskOrchestratorService step2RiskOrchestratorService;
+
+    @EJB
+    private transient FichaPdfValidationService fichaPdfValidationService;
+
+    @Inject
+    private transient JsfFaceletRenderService jsfFaceletRenderService;
 
     @Inject
     private transient CentroMedicoWizardService centroMedicoWizardService;
@@ -1122,135 +1128,6 @@ private void asegurarPersonaAuxPersistida() {
                 new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", msg));
     }
 
-    private String construirMedidas(List<String> medidas) {
-        if (medidas == null || medidas.isEmpty()) {
-            return null;
-        }
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < medidas.size(); i++) {
-            String m = medidas.get(i);
-            if (!isBlank(m)) {
-                if (sb.length() > 0) {
-                    sb.append(" | ");
-                }
-                sb.append("M").append(i + 1).append(": ").append(m.trim());
-            }
-        }
-        return sb.length() == 0 ? null : sb.toString();
-    }
-
-    private RiskKey parseRiskKey(String key) {
-        if (isBlank(key)) {
-            return null;
-        }
-        String k = key.trim();
-        int last = k.lastIndexOf('_');
-        if (last < 0) {
-            return null;
-        }
-        String actStr = k.substring(last + 1);
-        Integer act;
-        try {
-            act = Integer.valueOf(actStr);
-        } catch (NumberFormatException ex) {
-            return null;
-        }
-        // prefijo de 3 letras (FIS/SEG/QUI/BIO/ERG/PSI)
-        if (k.length() < 3) {
-            return null;
-        }
-        String prefRaw = k.substring(0, 3);
-        String grupo = grupoFromPrefix(prefRaw);
-        String item = k.substring(0, last).replace('_', ' ');
-        String prefWithSpace = prefRaw + " ";
-        if (item.startsWith(prefWithSpace)) {
-            item = item.substring(prefWithSpace.length());
-        }
-        return new RiskKey(grupo, item, act);
-    }
-
-    private RiskKey parseRiskKeyOtros(String key) {
-        if (isBlank(key)) {
-            return null;
-        }
-        String k = key.trim();
-        int last = k.lastIndexOf('_');
-        if (last < 0) {
-            return null;
-        }
-        String actStr = k.substring(last + 1);
-        Integer act;
-        try {
-            act = Integer.valueOf(actStr);
-        } catch (NumberFormatException ex) {
-            return null;
-        }
-        if (k.length() < 3) {
-            return null;
-        }
-        String prefRaw = k.substring(0, 3);
-        String grupo = grupoFromPrefix(prefRaw);
-        return new RiskKey(grupo, "OTROS", act);
-    }
-
-    private String grupoFromPrefix(String pref) {
-        switch (pref) {
-            case "FIS":
-                return "FISICO";
-            case "SEG":
-                return "SEGURIDAD";
-            case "QUI":
-                return "QUIMICO";
-            case "BIO":
-                return "BIOLOGICO";
-            case "ERG":
-                return "ERGONOMICO";
-            case "PSI":
-                return "PSICOSOCIAL";
-            default:
-                return "OTROS";
-        }
-    }
-
-    /**
-     * Prefijo (tal como se usa en la plantilla) a partir del grupo guardado en
-     * BD. Nota: la plantilla usa minúsculas (fis/seg/qui/bio/erg/psi).
-     */
-    private String prefixFromGrupoLower(String grupo) {
-        if (grupo == null) {
-            return "otr";
-        }
-        switch (grupo.toUpperCase()) {
-            case "FISICO":
-                return "fis";
-            case "SEGURIDAD":
-                return "seg";
-            case "QUIMICO":
-                return "qui";
-            case "BIOLOGICO":
-                return "bio";
-            case "ERGONOMICO":
-                return "erg";
-            case "PSICOSOCIAL":
-                return "psi";
-            default:
-                return "otr";
-        }
-    }
-
-    private static class RiskKey {
-
-        final String grupo;
-        final String item;
-        final Integer actividad;
-
-        RiskKey(String grupo, String item, Integer actividad) {
-            this.grupo = grupo;
-            this.item = item;
-            this.actividad = actividad;
-        }
-    }
-
     private boolean esVacio(String s) {
         return s == null || s.trim().isEmpty();
     }
@@ -1416,121 +1293,21 @@ private void asegurarPersonaAuxPersistida() {
     }
 
     private void saveStep2() {
-        final Date now = new Date();
-        final String user = usuarioReal();
+        final Step2RiskOrchestratorService.Step2RiskCommand command = new Step2RiskOrchestratorService.Step2RiskCommand(
+                ficha,
+                fichaRiesgo,
+                actividadesLab,
+                medidasPreventivas,
+                riesgos,
+                otrosRiesgos,
+                new Date(),
+                usuarioReal()
+        );
 
-        ensureFichaSavedOrThrow();
-        upsertRiskHeader(now, user);
-        replaceRiskDetails(user);
+        fichaRiesgo = step2RiskOrchestratorService.save(command);
 
         registrarAuditoria("GUARDAR_STEP2", "FICHA_RIESGO / FICHA_RIESGO_DET", "*",
                 "Step 2 guardado. ID_FICHA=" + ficha.getIdFicha());
-    }
-
-    private void ensureFichaSavedOrThrow() {
-        if (ficha == null || ficha.getIdFicha() == null) {
-            throw new BusinessValidationException("Primero debe existir y estar guardada la ficha (ID_FICHA).");
-        }
-    }
-
-    private void upsertRiskHeader(Date now, String user) {
-        if (fichaRiesgo == null) {
-            fichaRiesgo = new FichaRiesgo();
-        }
-        fichaRiesgo.setFicha(ficha);
-
-        mapRiskActivitiesToHeader();
-        fichaRiesgo.setMedidasPreventivas(construirMedidas(medidasPreventivas));
-
-        stampAuditFieldsForRiskHeader(fichaRiesgo, now, user);
-
-        fichaRiesgo = fichaRiesgoService.guardar(fichaRiesgo);
-    }
-
-    private void mapRiskActivitiesToHeader() {
-        fichaRiesgo.setActividad1(getSafe(actividadesLab, 0));
-        fichaRiesgo.setActividad2(getSafe(actividadesLab, 1));
-        fichaRiesgo.setActividad3(getSafe(actividadesLab, 2));
-        fichaRiesgo.setActividad4(getSafe(actividadesLab, 3));
-        fichaRiesgo.setActividad5(getSafe(actividadesLab, 4));
-        fichaRiesgo.setActividad6(getSafe(actividadesLab, 5));
-        fichaRiesgo.setActividad7(getSafe(actividadesLab, 6));
-    }
-
-    private void stampAuditFieldsForRiskHeader(FichaRiesgo fr, Date now, String user) {
-        if (fr.getIdFichaRiesgo() == null) {
-            fr.setEstado("BORRADOR");
-            fr.setFCreacion(now);
-            fr.setUsrCreacion(user);
-        } else {
-            fr.setFActualizacion(now);
-            fr.setUsrActualizacion(user);
-        }
-    }
-
-    private void replaceRiskDetails(String user) {
-
-        fichaRiesgoDetService.eliminarPorFicha(ficha.getIdFicha());
-
-        persistCheckedRiskItems(user);
-        persistOtherRiskItems(user);
-    }
-
-    private void persistCheckedRiskItems(String user) {
-        if (riesgos == null || riesgos.isEmpty()) {
-            return;
-        }
-        int orden = 1;
-
-        for (Map.Entry<String, Boolean> e : riesgos.entrySet()) {
-            if (!Boolean.TRUE.equals(e.getValue())) {
-                continue;
-            }
-
-            RiskKey rk = parseRiskKey(e.getKey());
-            if (rk == null) {
-                continue;
-            }
-
-            FichaRiesgoDet det = new FichaRiesgoDet();
-            det.setFicha(ficha);
-            det.setGrupo(rk.grupo);
-            det.setItem(rk.item);
-            det.setActividadNro(rk.actividad);
-            det.setMarcado("S");
-            det.setOrden(orden++);
-
-            fichaRiesgoDetService.guardar(det, user);
-        }
-    }
-
-    private void persistOtherRiskItems(String user) {
-        if (otrosRiesgos == null || otrosRiesgos.isEmpty()) {
-            return;
-        }
-        int ordenOtros = 10000;
-
-        for (Map.Entry<String, String> e : otrosRiesgos.entrySet()) {
-            String val = e.getValue();
-            if (isBlank(val)) {
-                continue;
-            }
-
-            RiskKey rk = parseRiskKeyOtros(e.getKey());
-            if (rk == null) {
-                continue;
-            }
-
-            FichaRiesgoDet det = new FichaRiesgoDet();
-            det.setFicha(ficha);
-            det.setGrupo(rk.grupo);
-            det.setItem("OTROS: " + val.trim());
-            det.setActividadNro(rk.actividad);
-            det.setMarcado("S");
-            det.setOrden(ordenOtros++);
-
-            fichaRiesgoDetService.guardar(det, user);
-        }
     }
 
     private boolean validarStep3() {
@@ -1744,79 +1521,13 @@ private void asegurarPersonaAuxPersistida() {
     }
 
     private boolean verificarFichaParaPdfFicha() {
-        StringBuilder sb = new StringBuilder();
         debugObjetosAntesDeImprimir();
-
-        if (ficha == null) {
-            sb.append("- No existe ficha en memoria.\n");
-        } else {
-
-            // 1) Determinar "modo auxiliar" sin depender solo de permitirIngresoManual
-            //    Si hay personaAux en controller o en ficha, asumimos ingreso manual.
-            boolean modoAux = permitirIngresoManual
-                    || (this.personaAux != null)
-                    || (ficha.getPersonaAux() != null);
-
-            // 2) Validación de empleado / persona auxiliar
-            boolean tieneEmpleado = (empleadoSel != null) || (ficha.getEmpleado() != null);
-
-            boolean tienePersonaAux = false;
-
-            // 2.1) Primero con el objeto del controller (no proxy)
-            if (this.personaAux != null
-                    && this.personaAux.getCedula() != null
-                    && !this.personaAux.getCedula().trim().isEmpty()) {
-                tienePersonaAux = true;
+        List<String> errores = fichaPdfValidationService.validar(ficha, empleadoSel, personaAux, permitirIngresoManual);
+        if (!errores.isEmpty()) {
+            StringBuilder sb = new StringBuilder();
+            for (String error : errores) {
+                sb.append("- ").append(error).append("\n");
             }
-
-            // 2.2) Fallback: si existe relación en ficha, NO tocar getters lazy si no está loaded
-            if (!tienePersonaAux && ficha.getPersonaAux() != null) {
-                try {
-                    boolean loaded = jakarta.persistence.Persistence.getPersistenceUtil().isLoaded(ficha.getPersonaAux());
-                    if (loaded) {
-                        String ced = ficha.getPersonaAux().getCedula();
-                        tienePersonaAux = (ced != null && !ced.trim().isEmpty());
-                    } else {
-                        // existe relación, pero es proxy lazy -> no leer campos
-                        tienePersonaAux = true;
-                    }
-                } catch (RuntimeException ex) {
-                    LOG.warn("No se pudo validar PersonaAux por LAZY/proxy. Se omite lectura para evitar LazyInitializationException.", ex);
-                    tienePersonaAux = true;
-                }
-            }
-
-            // 3) Reglas según modo
-            if (!tieneEmpleado && !tienePersonaAux) {
-                sb.append("- Debe seleccionar un empleado o registrar una persona auxiliar.\n");
-            } else if (modoAux) {
-                // En modo auxiliar, NO exijas empleado
-                if (!tienePersonaAux) {
-                    sb.append("- En modo ingreso manual: falta registrar la persona auxiliar.\n");
-                }
-            } else {
-                // En modo empleado, exiges empleado
-                if (!tieneEmpleado) {
-                    sb.append("- Falta seleccionar el empleado.\n");
-                }
-            }
-
-            // 4) Validaciones generales
-            if (ficha.getFechaEvaluacion() == null) {
-                sb.append("- Falta la fecha de evaluación.\n");
-            }
-            if (ficha.getTipoEvaluacion() == null || ficha.getTipoEvaluacion().trim().isEmpty()) {
-                sb.append("- Falta el tipo de evaluación.\n");
-            }
-            if (ficha.getSignos() == null) {
-                sb.append("- Falta registrar signos vitales (Step 3).\n");
-            }
-            if (ficha.getIdFicha() == null) {
-                sb.append("- La ficha aún no se ha guardado.\n");
-            }
-        }
-
-        if (sb.length() > 0) {
             FacesContext.getCurrentInstance().addMessage(null,
                     new FacesMessage(FacesMessage.SEVERITY_ERROR,
                             "Validación antes de generar la ficha",
@@ -1828,7 +1539,7 @@ private void asegurarPersonaAuxPersistida() {
 
     private String construirHtmlFichaDesdeFacelet() {
 
-        String html = renderFaceletToHtml("/pages/ficha/fichaPrint.xhtml");
+        String html = jsfFaceletRenderService.renderFaceletToHtml("/pages/ficha/fichaPrint.xhtml");
 
         return normalizarXhtmlPdf(html);
     }
@@ -1901,75 +1612,6 @@ private void asegurarPersonaAuxPersistida() {
         }
 
         return html.replace("\u00A0", " ");
-    }
-
-    private String renderFaceletToHtml(String viewId) {
-        FacesContext fc = FacesContext.getCurrentInstance();
-        if (fc == null) {
-            throw new IllegalStateException("FacesContext es null. Solo dentro de request JSF.");
-        }
-
-        LOG.info("FichaPrint: renderFaceletToHtml START viewId={}", viewId);
-
-        UIViewRoot originalViewRoot = fc.getViewRoot();
-        ResponseWriter originalWriter = fc.getResponseWriter();
-
-        PartialViewContext pvc = fc.getPartialViewContext();
-        boolean hadPvc = (pvc != null);
-        boolean oldRenderAll = false;
-        if (hadPvc) {
-            try {
-                oldRenderAll = pvc.isRenderAll();
-                pvc.setRenderAll(true);
-            } catch (Exception ignore) {
-            }
-        }
-
-        try {
-            ViewDeclarationLanguage vdl = fc.getApplication()
-                    .getViewHandler()
-                    .getViewDeclarationLanguage(fc, viewId);
-
-            UIViewRoot tempViewRoot = vdl.createView(fc, viewId);
-            tempViewRoot.setLocale(fc.getViewRoot() != null ? fc.getViewRoot().getLocale() : fc.getApplication().getDefaultLocale());
-            tempViewRoot.setRenderKitId(fc.getApplication().getViewHandler().calculateRenderKitId(fc));
-
-            vdl.buildView(fc, tempViewRoot);
-
-            StringWriter sw = new StringWriter(128 * 1024);
-            ResponseWriter rw = fc.getRenderKit()
-                    .createResponseWriter(new PrintWriter(sw), "text/html", "UTF-8");
-
-            fc.setViewRoot(tempViewRoot);
-            fc.setResponseWriter(rw);
-
-            fc.getApplication().getViewHandler().renderView(fc, tempViewRoot);
-            rw.flush();
-
-            String html = sw.toString();
-            LOG.info("FichaPrint: renderFaceletToHtml END viewId={} htmlLen={}", viewId, html != null ? html.length() : -1);
-            return html;
-
-        } catch (Exception e) {
-            LOG.error("FichaPrint: renderFaceletToHtml ERROR viewId={}", viewId, e);
-            throw new RuntimeException("Error renderizando facelet " + viewId, e);
-
-        } finally {
-            try {
-                fc.setResponseWriter(originalWriter);
-            } catch (Exception ignore) {
-            }
-            try {
-                fc.setViewRoot(originalViewRoot);
-            } catch (Exception ignore) {
-            }
-            if (hadPvc) {
-                try {
-                    pvc.setRenderAll(oldRenderAll);
-                } catch (Exception ignore) {
-                }
-            }
-        }
     }
 
     private String construirHtmlFichaDesdePlantilla() {
@@ -2770,7 +2412,7 @@ private void asegurarPersonaAuxPersistida() {
             LOG.warn("No se pudo colocar centroMedicoPrint en sesión.", e);
         }
 
-        String html = renderFaceletToHtml("/pages/ficha/fichaPrint.xhtml");
+        String html = jsfFaceletRenderService.renderFaceletToHtml("/pages/ficha/fichaPrint.xhtml");
         if (html != null) {
             html = html.replace("\u00A0", " ");
         }
