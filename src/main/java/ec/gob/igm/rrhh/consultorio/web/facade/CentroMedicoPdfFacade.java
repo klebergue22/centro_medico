@@ -1208,6 +1208,13 @@ public class CentroMedicoPdfFacade implements Serializable {
     public void guardarStep1() {
         FacesContext ctx = FacesContext.getCurrentInstance();
         try {
+            if (!validarStep1()) {
+                if (ctx != null) {
+                    ctx.validationFailed();
+                }
+                return;
+            }
+
             saveStep1();
             info("Step 1 guardado correctamente (BORRADOR).");
         } catch (BusinessValidationException ex) {
