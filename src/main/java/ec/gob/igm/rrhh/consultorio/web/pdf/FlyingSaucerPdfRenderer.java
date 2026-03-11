@@ -46,8 +46,12 @@ public class FlyingSaucerPdfRenderer implements PdfRenderer {
 
         renderer.setDocumentFromString(xhtml, baseURL);
         renderer.layout();
-        renderer.createPDF(baos);
-        renderer.finishPDF();
+        try {
+            renderer.createPDF(baos);
+            renderer.finishPDF();
+        } catch (DocumentException e) {
+            throw new IOException("No fue posible generar el PDF.", e);
+        }
 
         return baos.toByteArray();
     }
