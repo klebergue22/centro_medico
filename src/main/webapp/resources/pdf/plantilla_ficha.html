@@ -374,16 +374,28 @@
   </tr>
 </table>
 
+<!-- SECCIÓN C MODIFICADA: Fila por fila para mejor visualización -->
 <table class="tbl">
   <tr><th colspan="8" class="sec">C. ANTECEDENTES PERSONALES</th></tr>
   <tr>
-    <td>Antecedentes clínicos y quirúrgicos</td><td colspan="3"><span class="cell-input-display">{{antClinicoQuirurgico}}</span></td>
-    <td>Antecedentes familiares</td><td colspan="3"><span class="cell-input-display">{{antFamiliares}}</span></td>
+    <td style="width:25%;">Antecedentes clínicos y quirúrgicos</td>
+    <td colspan="7"><span class="cell-input-display">{{antClinicoQuirurgico}}</span></td>
   </tr>
   <tr>
-    <td>Condición especial (urgencias / emergencia / tx)</td><td colspan="3"><span class="cell-input-display">{{condicionEspecial}}</span></td>
-    <td>Autoriza transfusiones</td><td><span class="cell-input-display">{{autorizaTransfusion}}</span></td>
-    <td>Tratamiento hormonal</td><td><span class="cell-input-display">{{tratamientoHormonal}} {{tratamientoHormonalCual}}</span></td>
+    <td>Antecedentes familiares</td>
+    <td colspan="7"><span class="cell-input-display">{{antFamiliares}}</span></td>
+  </tr>
+  <tr>
+    <td>Condición especial (urgencias / emergencia / tx)</td>
+    <td colspan="7"><span class="cell-input-display">{{condicionEspecial}}</span></td>
+  </tr>
+  <tr>
+    <td>Autoriza transfusiones</td>
+    <td colspan="7"><span class="cell-input-display">{{autorizaTransfusion}}</span></td>
+  </tr>
+  <tr>
+    <td>Tratamiento hormonal</td>
+    <td colspan="7"><span class="cell-input-display">{{tratamientoHormonal}} {{tratamientoHormonalCual}}</span></td>
   </tr>
 </table>
 
@@ -621,7 +633,7 @@
     <td class="exf-val"><span class="box">{{exf_nariz_cornetes}}</span></td>
 
     <td class="exf-lbl">b. Movilidad</td>
-    <td class="exf-val"><span class="box">{{exf_cuello_movilidad}}</span></td>
+    <td class="exf-val"><span class="box">{{exf_cuello_movilidade}}</span></td>
 
     <td class="exf-lbl">&#160;</td><td class="exf-val"><span class="box">&#160;</span></td>
 
@@ -1160,6 +1172,7 @@
   <div class="cell-input-display" style="white-space:pre-wrap;">{{recomendaciones}}</div>
 </div>
 
+{{#if esRetiro}}
 <div class="blk">
   <div class="sec">N. RETIRO (EVALUACIÓN)</div>
   <table class="n-grid">
@@ -1184,6 +1197,7 @@
     <div class="cell-input-display" style="white-space:pre-wrap;">{{n_obs_retiro}}</div>
   </div>
 </div>
+{{/if}}
 
 <div class="sign-wrap">
   <table class="sign-table">
