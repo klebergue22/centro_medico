@@ -13,7 +13,6 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -71,6 +70,7 @@ import ec.gob.igm.rrhh.consultorio.web.pdf.PdfTemplateEngine;
 import ec.gob.igm.rrhh.consultorio.web.pdf.PdfRenderer;
 import ec.gob.igm.rrhh.consultorio.web.service.CedulaDialogUiCoordinator;
 import ec.gob.igm.rrhh.consultorio.web.service.CedulaSearchService;
+import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoFormInitializer;
 import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoWizardService;
 import ec.gob.igm.rrhh.consultorio.web.service.FichaPdfValidationService;
 import ec.gob.igm.rrhh.consultorio.web.service.JsfFaceletRenderService;
@@ -417,6 +417,9 @@ public class CentroMedicoCtrl implements Serializable {
     private transient CentroMedicoWizardService centroMedicoWizardService;
 
     @Inject
+    private transient CentroMedicoFormInitializer centroMedicoFormInitializer;
+
+    @Inject
     private transient CedulaSearchService cedulaSearchService;
 
     @Inject
@@ -439,14 +442,14 @@ public class CentroMedicoCtrl implements Serializable {
             }
 
             if (!preRenderDone) {
-                initExamenes(5);
+                centroMedicoFormInitializer.initExamenes(this, 5);
                 ensureActLabSize();
-                ensureDiagSize(6);
+                centroMedicoFormInitializer.ensureDiagSize(this, 6);
                 preRenderDone = true;
             } else {
 
                 ensureActLabSize();
-                ensureDiagSize(6);
+                centroMedicoFormInitializer.ensureDiagSize(this, 6);
             }
 
             LOG.info("GET? {} activeStep={} empleadoSel={} mostrarDlgCedula={}",
@@ -461,159 +464,13 @@ public class CentroMedicoCtrl implements Serializable {
         }
     }
 
-    private void initExamenes(int n) {
-
-        examNombre = new ArrayList<>(java.util.Collections.nCopies(n, ""));
-        examFecha = new ArrayList<>(java.util.Collections.nCopies(n, null));
-        examResultado = new ArrayList<>(java.util.Collections.nCopies(n, ""));
-    }
-
-    private void initActLab(int n) {
-        actLabRows = new ArrayList<>();
-        for (int i = 0; i < n; i++) {
-            actLabRows.add(String.valueOf(i + 1));
-        }
-
-        actLabCentroTrabajo = new ArrayList<>(java.util.Collections.nCopies(n, ""));
-        actLabActividad = new ArrayList<>(java.util.Collections.nCopies(n, ""));
-        actLabIncidente = new ArrayList<>(java.util.Collections.nCopies(n, ""));
-        actLabFecha = new ArrayList<>(java.util.Collections.nCopies(n, null));
-        actLabTiempo = new ArrayList<>(java.util.Collections.nCopies(n, ""));
-
-        actLabTrabajoAnterior = new ArrayList<>(java.util.Collections.nCopies(n, Boolean.FALSE));
-        actLabTrabajoActual = new ArrayList<>(java.util.Collections.nCopies(n, Boolean.FALSE));
-        actLabIncidenteChk = new ArrayList<>(java.util.Collections.nCopies(n, Boolean.FALSE));
-        actLabAccidenteChk = new ArrayList<>(java.util.Collections.nCopies(n, Boolean.FALSE));
-        actLabEnfermedadChk = new ArrayList<>(java.util.Collections.nCopies(n, Boolean.FALSE));
-
-        actLabObservaciones = new ArrayList<>(java.util.Collections.nCopies(n, ""));
-
-        iessSi = new ArrayList<>(java.util.Collections.nCopies(n, Boolean.FALSE));
-        iessNo = new ArrayList<>(java.util.Collections.nCopies(n, Boolean.FALSE));
-        iessFecha = new ArrayList<>(java.util.Collections.nCopies(n, null));
-        iessEspecificar = new ArrayList<>(java.util.Collections.nCopies(n, ""));
-    }
-
-    private void initActividadesExtra(int n) {
-        fechaAct = new ArrayList<>(java.util.Collections.nCopies(n, null));
-        tipoAct = new ArrayList<>(java.util.Collections.nCopies(n, ""));
-        descAct = new ArrayList<>(java.util.Collections.nCopies(n, ""));
-    }
-
     @PostConstruct
     public void init() {
-        initUiDefaults();
-        initDomainDefaults();
-        initStep2Defaults();
-        initStep3Defaults();
-    }
-
-    private void initUiDefaults() {
-        mostrarDlgCedula = true;
-        fechaAtencion = new Date();
-
-        initActLab(3);
-        initActividadesExtra(3);
-
-        tipoEval = "INGRESO";
-        sexo = "M";
-        grupoSanguineo = "";
-        lateralidad = "";
-        examenReproMasculino = "";
+        centroMedicoFormInitializer.initUiDefaults(this);
 
         FacesContext fc = FacesContext.getCurrentInstance();
         if (fc != null && fc.getViewRoot() != null) {
             fc.getViewRoot().setLocale(new Locale("es", "EC"));
-        }
-
-        institucion = "Instituto Geográfico Militar";
-        institucion = institucion.toUpperCase();
-        ruc = "1768007200001";
-    }
-
-    private void initDomainDefaults() {
-        ficha = new FichaOcupacional();
-
-        ficha.setNoHistoriaClinica(null);
-        ficha.setInstSistema(institucion);
-
-        signos = new SignosVitales();
-
-        consulta = new ConsultaMedica();
-        listaDiag = new ArrayList<ConsultaDiagnostico>();
-
-        fichaRiesgo = new FichaRiesgo();
-        fichaRiesgo.setFicha(ficha);
-        fichaRiesgo.setEstado("BORRADOR");
-
-        personaAux = new PersonaAux();
-
-        if (medidasPreventivas == null) {
-            medidasPreventivas = new ArrayList<String>();
-        }
-
-        if (empleadoSel != null) {
-            ficha.setEmpleado(empleadoSel);
-            consulta.setEmpleado(empleadoSel);
-        }
-
-        if (ficha.getRucEstablecimiento() == null || ficha.getRucEstablecimiento().isBlank()) {
-            ficha.setRucEstablecimiento(ruc);
-
-        }
-
-        ficha.setFechaEvaluacion(fechaAtencion);
-        ficha.setTipoEvaluacion(tipoEval);
-
-        initDefaultDiagnosisRows();
-    }
-
-    private void initDefaultDiagnosisRows() {
-        listaDiag = new ArrayList<>();
-        for (int i = 0; i < 6; i++) {
-            ConsultaDiagnostico cd = new ConsultaDiagnostico();
-            cd.setTipoDiag(null);
-            cd.setCie10(null);
-            cd.setCodigo(null);
-            cd.setDescripcion(null);
-            listaDiag.add(cd);
-        }
-    }
-
-    private void initStep2Defaults() {
-
-        if (ficha == null) {
-            ficha = new FichaOcupacional();
-        }
-
-        if (fichaRiesgo == null) {
-            fichaRiesgo = new FichaRiesgo();
-            fichaRiesgo.setFicha(ficha);
-            fichaRiesgo.setEstado("BORRADOR");
-        }
-
-        if (actividadesLab == null) {
-            actividadesLab = new ArrayList<String>();
-        }
-        while (actividadesLab.size() < 7) {
-            actividadesLab.add(null);
-        }
-
-        if (medidasPreventivas == null) {
-            medidasPreventivas = new ArrayList<String>();
-        }
-        while (medidasPreventivas.size() < 7) {
-            medidasPreventivas.add(null);
-        }
-
-        if (riesgos == null) {
-            riesgos = new LinkedHashMap<String, Boolean>();
-        }
-        if (otrosRiesgos == null) {
-            otrosRiesgos = new LinkedHashMap<String, String>();
-        }
-        if (fichaRiesgo == null) {
-            fichaRiesgo = new FichaRiesgo();
         }
 
         if (STATIC_RISK_COLS == null || STATIC_RISK_COLS.isEmpty()) {
@@ -623,156 +480,10 @@ public class CentroMedicoCtrl implements Serializable {
                 STATIC_RISK_COLS.add(String.valueOf(i));
             }
         }
-
-        this.riskCols = STATIC_RISK_COLS;
-    }
-
-    private void initStep3Defaults() {
-
-        ginecoExamen1 = "";
-        ginecoTiempo1 = "";
-        ginecoResultado1 = "";
-        ginecoExamen2 = "";
-        ginecoTiempo2 = "";
-        ginecoResultado2 = "";
-        ginecoObservacion = "";
-        // Inicializar enfermedad actual
-        enfermedadActual = "";
-
-// Inicializar examen físico
-        exfPielCicatrices = "";
-        exfOjosParpados = "";
-        exfOjosConjuntivas = "";
-        exfOjosPupilas = "";
-        exfOjosCornea = "";
-        exfOjosMotilidad = "";
-        exfOidoConducto = "";
-        exfOidoPabellon = "";
-        exfOidoTimpanos = "";
-        exfOroLabios = "";
-        exfOroLengua = "";
-        exfOroFaringe = "";
-        exfOroAmigdalas = "";
-        exfOroDentadura = "";
-        exfNarizTabique = "";
-        exfNarizCornetes = "";
-        exfNarizMucosas = "";
-        exfNarizSenos = "";
-        exfCuelloTiroides = "";
-        exfCuelloMovilidad = "";
-        exfToraxMamas = "";
-        exfToraxPulmones = "";
-        exfToraxCorazon = "";
-        exfToraxParrilla = "";
-        exfAbdomenVisceras = "";
-        exfAbdomenPared = "";
-        exfColumnaFlexibilidad = "";
-        exfColumnaDesviacion = "";
-        exfColumnaDolor = "";
-        exfPelvisPelvis = "";
-        exfPelvisGenitales = "";
-        exfExtVascular = "";
-        exfExtSup = "";
-        exfExtInf = "";
-        exfNeuroFuerza = "";
-        exfNeuroSensibilidad = "";
-        exfNeuroMarcha = "";
-        exfNeuroReflejos = "";
-        obsExamenFisico = "";
-
-        if (examFecha == null) {
-            examFecha = new ArrayList<Date>();
-        } else {
-            examFecha.clear();
-        }
-        for (int i = 0; i < 5; i++) {
-            examFecha.add(null);
-        }
-
-        if (examNombre == null) {
-            examNombre = new ArrayList<String>();
-        } else {
-            examNombre.clear();
-        }
-        for (int i = 0; i < 5; i++) {
-            examNombre.add("");
-        }
-
-        if (examResultado == null) {
-            examResultado = new ArrayList<String>();
-        } else {
-            examResultado.clear();
-        }
-        for (int i = 0; i < 5; i++) {
-            examResultado.add("");
-        }
-
-        if (obsJ == null) {
-            obsJ = "";
-        }
-
-        hCentroTrabajo = new String[H_ROWS];
-        hActividad = new String[H_ROWS];
-        hIncidente = new Boolean[H_ROWS];
-        hAccidente = new Boolean[H_ROWS];
-        hTiempo = new Integer[H_ROWS];
-        hEnfOcupacional = new Boolean[H_ROWS];
-        hEnfComun = new Boolean[H_ROWS];
-        hEnfProfesional = new Boolean[H_ROWS];
-        hOtros = new Boolean[H_ROWS];
-        hOtrosCual = new String[H_ROWS];
-        hFecha = new Date[H_ROWS];
-        hEspecificacion = new String[H_ROWS];
-        hObservacion = new String[H_ROWS];
-
-        consTiempoConsumoMeses = new Integer[]{0, 0, 0};
-        consTiempoAbstinenciaMeses = new Integer[]{0, 0, 0};
-
-        consExConsumidor = new Boolean[]{false, false, false};
-        consNoConsume = new Boolean[]{false, false, false};
-
-        afCual = new String[3];
-        afTiempo = new String[3];
-
-        medCual = new String[3];
-        medCant = new Integer[3];
-
-        consOtrasCual = null;
-        consumoVidaCondObs = null;
-
-        if (tipoAct == null) {
-            tipoAct = new ArrayList<String>();
-        } else {
-            tipoAct.clear();
-        }
-        if (fechaAct == null) {
-            fechaAct = new ArrayList<Date>();
-        } else {
-            fechaAct.clear();
-        }
-        if (descAct == null) {
-            descAct = new ArrayList<String>();
-        } else {
-            descAct.clear();
-        }
-        for (int i = 0; i < 3; i++) {
-            tipoAct.add("");
-            fechaAct.add(null);
-            descAct.add("");
-        }
-
-        actLabRows = Arrays.asList("1", "2", "3", "4");
-        initActLab(H_ROWS);
+        centroMedicoFormInitializer.initDomainDefaults(this);
+        centroMedicoFormInitializer.initStep2Defaults(this, STATIC_RISK_COLS);
+        centroMedicoFormInitializer.initStep3Defaults(this, H_ROWS, DIAG_ROWS);
         ensureActLabSize();
-
-        ensureDiagSize(DIAG_ROWS);
-
-        initConsumoVidaCond();
-
-        if (personaAux == null) {
-            personaAux = new PersonaAux();
-        }
-        permitirIngresoManual = false;
     }
 
     public void onNoConsumeChange(int idx) {
@@ -785,21 +496,6 @@ public class CentroMedicoCtrl implements Serializable {
 
     public void onDlgCedulaShown() {
         mostrarDlgCedula = false;
-    }
-
-    private void ensureDiagSize(int size) {
-        if (size <= 0) {
-            return;
-        }
-        if (listaDiag == null) {
-            listaDiag = new ArrayList<ConsultaDiagnostico>();
-        }
-        while (listaDiag.size() < size) {
-            ConsultaDiagnostico d = new ConsultaDiagnostico();
-
-            d.setTipoDiag("P");
-            listaDiag.add(d);
-        }
     }
 
     private ConsultaDiagnostico ensureDiag(int index) {
@@ -3654,6 +3350,10 @@ private void asegurarPersonaAuxPersistida() {
         if (consumoVidaCondObs == null) {
             consumoVidaCondObs = "";
         }
+    }
+
+    public void initConsumoVidaCondDefaults() {
+        initConsumoVidaCond();
     }
 
     public Integer[] getConsTiempoConsumo() {
