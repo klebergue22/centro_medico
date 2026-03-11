@@ -51,7 +51,6 @@ import org.slf4j.LoggerFactory;
 
 import ec.gob.igm.rrhh.consultorio.domain.dto.EmpleadoCargoDTO;
 
-import ec.gob.igm.rrhh.consultorio.domain.model.AuditoriaConsultorio;
 import ec.gob.igm.rrhh.consultorio.domain.model.Cie10;
 import ec.gob.igm.rrhh.consultorio.domain.model.ConsultaDiagnostico;
 import ec.gob.igm.rrhh.consultorio.domain.model.ConsultaMedica;
@@ -63,7 +62,6 @@ import ec.gob.igm.rrhh.consultorio.domain.model.FichaRiesgo;
 import ec.gob.igm.rrhh.consultorio.domain.model.FichaRiesgoDet;
 import ec.gob.igm.rrhh.consultorio.domain.model.PersonaAux;
 import ec.gob.igm.rrhh.consultorio.domain.model.SignosVitales;
-import ec.gob.igm.rrhh.consultorio.service.AuditoriaConsultorioService;
 import ec.gob.igm.rrhh.consultorio.service.Cie10Service;
 import ec.gob.igm.rrhh.consultorio.service.EmpleadoRhService;
 import ec.gob.igm.rrhh.consultorio.service.EmpleadoService;
@@ -75,7 +73,6 @@ import ec.gob.igm.rrhh.consultorio.service.FichaOcupacionalService;
 import ec.gob.igm.rrhh.consultorio.service.FichaRiesgoDetService;
 import ec.gob.igm.rrhh.consultorio.service.FichaRiesgoService;
 import ec.gob.igm.rrhh.consultorio.service.PersonaAuxService;
-import ec.gob.igm.rrhh.consultorio.service.SignosVitalesService;
 import ec.gob.igm.rrhh.consultorio.service.Step1VitalSignsManager;
 import ec.gob.igm.rrhh.consultorio.web.audit.CentroMedicoAuditService;
 import ec.gob.igm.rrhh.consultorio.web.pdf.PdfTemplateEngine;
@@ -364,8 +361,6 @@ public class CentroMedicoCtrl implements Serializable {
     @EJB
     private transient FichaOcupacionalService fichaService;
     @EJB
-    private transient SignosVitalesService signosService;
-    @EJB
     private transient Step1VitalSignsManager step1VitalSignsManager;
     @EJB
     private transient FichaRiesgoService fichaRiesgoService;
@@ -375,8 +370,6 @@ public class CentroMedicoCtrl implements Serializable {
     private transient EmpleadoService empleadoService;
     @EJB
     private transient PersonaAuxService personaAuxService;
-    @EJB
-    private transient AuditoriaConsultorioService auditoriaService;
     @EJB
     private transient FichaActLaboralService fichaActLaboralService;
     @EJB
@@ -1630,21 +1623,6 @@ private void asegurarPersonaAuxPersistida() {
 
     mapConsumoVidaCondToFicha(ficha);
 }
-
-    /**
-     * Normaliza entradas tipo "SI/NO", "S/N", "true/false" a "S" o "N".
-     */
-    private String normalizeSn(String v) {
-        String x = trimToNull(v);
-        if (x == null) {
-            return "N";
-        }
-        x = x.trim().toUpperCase();
-        if ("S".equals(x) || "SI".equals(x) || "1".equals(x) || "TRUE".equals(x)) {
-            return "S";
-        }
-        return "N";
-    }
 
     private SignosVitales upsertVitalSigns(Date now, String user) {
         SignosVitales current = (ficha.getSignos() != null) ? ficha.getSignos() : this.signos;
@@ -6379,14 +6357,6 @@ private void tryLoadCargoFromVista(FacesContext ctx) {
         this.fichaService = fichaService;
     }
 
-    public SignosVitalesService getSignosService() {
-        return signosService;
-    }
-
-    public void setSignosService(SignosVitalesService signosService) {
-        this.signosService = signosService;
-    }
-
     public FichaRiesgoService getFichaRiesgoService() {
         return fichaRiesgoService;
     }
@@ -6417,14 +6387,6 @@ private void tryLoadCargoFromVista(FacesContext ctx) {
 
     public void setPersonaAuxService(PersonaAuxService personaAuxService) {
         this.personaAuxService = personaAuxService;
-    }
-
-    public AuditoriaConsultorioService getAuditoriaService() {
-        return auditoriaService;
-    }
-
-    public void setAuditoriaService(AuditoriaConsultorioService auditoriaService) {
-        this.auditoriaService = auditoriaService;
     }
 
     public FichaActLaboralService getFichaActLaboralService() {
