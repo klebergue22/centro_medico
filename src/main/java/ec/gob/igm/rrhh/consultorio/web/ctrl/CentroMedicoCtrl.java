@@ -73,7 +73,7 @@ import ec.gob.igm.rrhh.consultorio.service.FichaOcupacionalService;
 import ec.gob.igm.rrhh.consultorio.service.FichaRiesgoDetService;
 import ec.gob.igm.rrhh.consultorio.service.FichaRiesgoService;
 import ec.gob.igm.rrhh.consultorio.service.PersonaAuxService;
-import ec.gob.igm.rrhh.consultorio.service.Step1VitalSignsManager;
+import ec.gob.igm.rrhh.consultorio.service.Step1FichaService;
 import ec.gob.igm.rrhh.consultorio.web.audit.CentroMedicoAuditService;
 import ec.gob.igm.rrhh.consultorio.web.pdf.PdfTemplateEngine;
 import ec.gob.igm.rrhh.consultorio.web.pdf.PdfRenderer;
@@ -362,7 +362,7 @@ public class CentroMedicoCtrl implements Serializable {
     @EJB
     private transient FichaOcupacionalService fichaService;
     @EJB
-    private transient Step1VitalSignsManager step1VitalSignsManager;
+    private transient Step1FichaService step1FichaService;
     @EJB
     private transient FichaRiesgoService fichaRiesgoService;
     @EJB
@@ -1308,74 +1308,6 @@ private void asegurarPersonaAuxPersistida() {
         return list;
     }
 
-    private void mapConsumoVidaCondToFicha(FichaOcupacional ficha) {
-        if (ficha == null) {
-            return;
-        }
-
-        if (consTiempoConsumoMeses == null || consTiempoConsumoMeses.length < 3) {
-            consTiempoConsumoMeses = new Integer[3];
-        }
-
-        if (consExConsumidor == null || consExConsumidor.length < 3) {
-            consExConsumidor = new Boolean[3];
-        }
-
-        if (consTiempoAbstinenciaMeses == null || consTiempoAbstinenciaMeses.length < 3) {
-            consTiempoAbstinenciaMeses = new Integer[3];
-        }
-
-        if (consNoConsume == null || consNoConsume.length < 3) {
-            consNoConsume = new Boolean[3];
-        }
-
-        if (afCual == null || afCual.length < 3) {
-            afCual = new String[3];
-        }
-        if (afTiempo == null || afTiempo.length < 3) {
-            afTiempo = new String[3];
-        }
-
-        if (medCual == null || medCual.length < 3) {
-            medCual = new String[3];
-        }
-        if (medCant == null || medCant.length < 3) {
-            medCant = new Integer[3];
-        }
-
-        ficha.setTabConsMeses(consTiempoConsumoMeses[0]);
-        ficha.setTabExCons(sn(consExConsumidor[0]));
-        ficha.setTabAbsMeses(consTiempoAbstinenciaMeses[0]);
-        ficha.setTabNoCons(sn(consNoConsume[0]));
-
-        ficha.setAlcConsMeses(consTiempoConsumoMeses[1]);
-        ficha.setAlcExCons(sn(consExConsumidor[1]));
-        ficha.setAlcAbsMeses(consTiempoAbstinenciaMeses[1]);
-        ficha.setAlcNoCons(sn(consNoConsume[1]));
-
-        ficha.setOtrCual(consOtrasCual);
-        ficha.setOtrConsMeses(consTiempoConsumoMeses[2]);
-        ficha.setOtrExCons(sn(consExConsumidor[2]));
-        ficha.setOtrAbsMeses(consTiempoAbstinenciaMeses[2]);
-        ficha.setOtrNoCons(sn(consNoConsume[2]));
-
-        ficha.setAfCual1(afCual[0]);
-        ficha.setAfTiempo1(afTiempo[0]);
-        ficha.setAfCual2(afCual[1]);
-        ficha.setAfTiempo2(afTiempo[1]);
-        ficha.setAfCual3(afCual[2]);
-        ficha.setAfTiempo3(afTiempo[2]);
-
-        ficha.setMedCual1(medCual[0]);
-        ficha.setMedCant1(medCant[0]);
-        ficha.setMedCual2(medCual[1]);
-        ficha.setMedCant2(medCant[1]);
-        ficha.setMedCual3(medCual[2]);
-        ficha.setMedCant3(medCant[2]);
-
-        ficha.setObsConsumoVidaCond(consumoVidaCondObs);
-    }
-
     private String usuarioReal() {
         try {
 
@@ -1405,36 +1337,77 @@ private void asegurarPersonaAuxPersistida() {
     }
 
     private void saveStep1() {
-        final Date now = new Date();
-        final String user = usuarioReal();
+        Step1FichaService.Step1Command command = new Step1FichaService.Step1Command(
+                ficha,
+                empleadoSel,
+                personaAux,
+                signos,
+                noPersonaSel,
+                fechaAtencion,
+                tipoEval,
+                paStr,
+                temp,
+                fc,
+                fr,
+                satO2,
+                peso,
+                tallaCm,
+                perimetroAbd,
+                apEmbarazada,
+                apDiscapacidad,
+                apCatastrofica,
+                apLactancia,
+                apAdultoMayor,
+                antClinicoQuirurgico,
+                antFamiliares,
+                condicionEspecial,
+                autorizaTransfusion,
+                tratamientoHormonal,
+                tratamientoHormonalCual,
+                examenReproMasculino,
+                tiempoReproMasculino,
+                ginecoExamen1,
+                ginecoTiempo1,
+                ginecoResultado1,
+                ginecoExamen2,
+                ginecoTiempo2,
+                ginecoResultado2,
+                ginecoObservacion,
+                fum,
+                gestas,
+                partos,
+                cesareas,
+                abortos,
+                planificacion,
+                planificacionCual,
+                discapTipo,
+                discapDesc,
+                discapPorc,
+                catasDiagnostico,
+                catasCalificada,
+                nRealizaEvaluacion,
+                nRelacionTrabajo,
+                nObsRetiro,
+                consTiempoConsumoMeses,
+                consExConsumidor,
+                consTiempoAbstinenciaMeses,
+                consNoConsume,
+                consOtrasCual,
+                afCual,
+                afTiempo,
+                medCual,
+                medCant,
+                consumoVidaCondObs,
+                usuarioReal());
 
-        ensureFichaInitialized();
-        resolveSelectedEmployeeIfNeeded();
-
-        validateStep1InputsOrThrow();
-
-        final String patientId = assignPatientAndHistory(now, user);
-
-        mapStep1ToOccupationalRecord(now, user, patientId);
-
-        final SignosVitales savedSv = upsertVitalSigns(now, user);
-
-        saveDraftOccupationalRecord(now, user);
-
-
-
-        auditStep1(savedSv);
-    }
-
-    private void ensureFichaInitialized() {
-        if (ficha == null) {
-            ficha = new FichaOcupacional();
-        }
-    }
-
-    private void resolveSelectedEmployeeIfNeeded() {
-        if (empleadoSel == null && noPersonaSel != null) {
-            empleadoSel = empleadoService.buscarPorId(noPersonaSel);
+        try {
+            Step1FichaService.Step1Result result = step1FichaService.guardar(command);
+            ficha = result.ficha();
+            empleadoSel = result.empleadoSel();
+            personaAux = result.personaAux();
+            signos = result.signos();
+        } catch (Step1FichaService.Step1ValidationException ex) {
+            throw new BusinessValidationException(ex.getMessage());
         }
     }
 
@@ -1460,207 +1433,6 @@ private void asegurarPersonaAuxPersistida() {
         }
     }
 
-    private void validateStep1InputsOrThrow() {
-        if (fechaAtencion == null) {
-            fail("Debe ingresar la fecha de atención.");
-        }
-        if (esVacio(tipoEval)) {
-            fail("Debe seleccionar el tipo de evaluación.");
-        }
-        validatePatientOrThrow();
-        validateVitalSignsInputsOrThrow();
-    }
-
-    private void validatePatientOrThrow() {
-        if (empleadoSel != null) {
-            return;
-        }
-        if (personaAux == null || esVacio(personaAux.getCedula())) {
-            fail("Debe seleccionar un empleado de RRHH o registrar una persona auxiliar (cédula obligatoria).");
-        }
-        if (esVacio(personaAux.getApellido1()) || esVacio(personaAux.getNombre1()) || esVacio(personaAux.getSexo())) {
-            fail("En Persona Auxiliar: primer apellido, primer nombre y sexo son obligatorios.");
-        }
-    }
-
-    private void validateVitalSignsInputsOrThrow() {
-        if (esVacio(paStr)) {
-            fail("Debe ingresar la presión arterial (PA) en formato 120/80.");
-        }
-        if (fc == null) {
-            fail("Debe ingresar la frecuencia cardíaca (FC).");
-        }
-        if (peso == null || peso <= 0) {
-            fail("Debe ingresar el peso (kg).");
-        }
-        if (tallaCm == null) {
-            fail("Debe ingresar la talla (cm).");
-        }
-    }
-
-    private String assignPatientAndHistory(Date now, String user) {
-        String cedulaPaciente;
-
-        if (empleadoSel != null) {
-            ficha.setEmpleado(empleadoSel);
-            ficha.setPersonaAux(null);
-            cedulaPaciente = empleadoSel.getNoCedula();
-        } else {
-            if (personaAux.getIdPersonaAux() == null) {
-                personaAux.setFechaCreacion(now);
-                personaAux.setUsrCreacion(user);
-                personaAux = personaAuxService.guardar(personaAux);
-            }
-            ficha.setPersonaAux(personaAux);
-            ficha.setEmpleado(null);
-            cedulaPaciente = personaAux.getCedula();
-        }
-
-        ficha.setNoHistoriaClinica(cedulaPaciente);
-        ficha.setNoArchivo(cedulaPaciente);
-        return cedulaPaciente;
-    }
-
-    private void mapStep1ToOccupationalRecord(Date now, String user, String patientId) {
-
-    ficha.setFechaEvaluacion(fechaAtencion);
-    ficha.setTipoEvaluacion(tipoEval);
-
-    ficha.setGinecoExamen1(ginecoExamen1);
-    ficha.setGinecoTiempo1(ginecoTiempo1);
-    ficha.setGinecoResultado1(ginecoResultado1);
-    ficha.setGinecoExamen2(ginecoExamen2);
-    ficha.setGinecoTiempo2(ginecoTiempo2);
-    ficha.setGinecoResultado2(ginecoResultado2);
-    ficha.setGinecoObservacion(ginecoObservacion);
-
-    ficha.setApEmbarazada(sn(apEmbarazada));
-    ficha.setApDiscapacidad(sn(apDiscapacidad));
-    ficha.setApCatastrofica(sn(apCatastrofica));
-    ficha.setApLactancia(sn(apLactancia));
-    ficha.setApAdultoMayor(sn(apAdultoMayor));
-
-    ficha.setAntClinicoQuir(antClinicoQuirurgico);
-    ficha.setAntFamiliares(antFamiliares);
-    ficha.setCondicionEspecial(condicionEspecial);
-
-    ficha.setAutorizaTransfusion(autorizaTransfusion);
-    ficha.setTratHormonal(tratamientoHormonal);
-    ficha.setTratHormonalCual(tratamientoHormonalCual);
-
-    ficha.setExamReproMasc(examenReproMasculino);
-    ficha.setTiempoReproMasc(tiempoReproMasculino);
-
-    ficha.setFum(fum);
-    ficha.setGestas(gestas);
-    ficha.setPartos(partos);
-    ficha.setCesareas(cesareas);
-    ficha.setAbortos(abortos);
-    ficha.setPlanificacion(planificacion);
-    ficha.setPlanificacionCual(planificacionCual);
-
-    // D. ENFERMEDAD O PROBLEMA ACTUAL (Step 1)
-    //ficha.setEnfermedadProbActual(trimToNull(enfermedadActual));
-    if (ficha.getEnfermedadProbActual() != null) {
-        ficha.setEnfermedadProbActual(ficha.getEnfermedadProbActual().trim());
-    }
-    // Discapacidad (solo si AP_DISCAPACIDAD = S)
-    if (apDiscapacidad) {
-        ficha.setDisTipo(trimToNull(discapTipo));
-        ficha.setDisDescripcion(trimToNull(discapDesc));
-        ficha.setDisPorcentaje(discapPorc);
-    } else {
-        ficha.setDisTipo(null);
-        ficha.setDisDescripcion(null);
-        ficha.setDisPorcentaje(null);
-    }
-
-    // Catastrófica / Huérfana / Rara (solo si AP_CATASTROFICA = S)
-    if (apCatastrofica) {
-        ficha.setCatDiagnostico(trimToNull(catasDiagnostico));
-        ficha.setCatCalificada(Boolean.TRUE.equals(catasCalificada) ? "S" : "N");
-    } else {
-        ficha.setCatDiagnostico(null);
-        // Si no aplica, evita NULL si tu columna es NOT NULL; si permite null, puedes dejar null
-        ficha.setCatCalificada(null);
-    }
-
-    // Panel N. Retiro (solo si tipo evaluación = RETIRO)
-    // ✅ FIX ORA-01407: N_RET_EVAL NO puede ser NULL -> usar "N" por defecto
-    String tipo = trimToNull(tipoEval);
-
-    if ("RETIRO".equalsIgnoreCase(tipo)) {
-
-        String realiza = trimToNull(nRealizaEvaluacion);
-        String relTrab = trimToNull(nRelacionTrabajo);
-
-        ficha.setnRetEval(realiza != null ? realiza : "N");
-        ficha.setnRetRelTrab(relTrab != null ? relTrab : "N");
-        ficha.setnRetObs(trimToNull(nObsRetiro));
-
-    } else {
-        // ⚠️ NO NULL porque la columna N_RET_EVAL es NOT NULL
-        ficha.setnRetEval("N");
-        ficha.setnRetRelTrab("N");  // recomendado para consistencia
-        ficha.setnRetObs(null);
-    }
-
-    mapConsumoVidaCondToFicha(ficha);
-}
-
-    private SignosVitales upsertVitalSigns(Date now, String user) {
-        SignosVitales current = (ficha.getSignos() != null) ? ficha.getSignos() : this.signos;
-
-        try {
-            SignosVitales sv = step1VitalSignsManager.upsertVitalSigns(
-                    current,
-                    paStr,
-                    temp,
-                    fc,
-                    fr,
-                    satO2,
-                    peso,
-                    tallaCm,
-                    perimetroAbd,
-                    now,
-                    user);
-
-            this.signos = sv;
-            ficha.setSignos(sv);
-            return sv;
-        } catch (IllegalArgumentException ex) {
-            throw new BusinessValidationException(ex.getMessage());
-        }
-    }
-
-    private void saveDraftOccupationalRecord(Date now, String user) {
-        ficha.setEstado("BORRADOR");
-
-        if (ficha.getFechaEmision() == null) {
-            ficha.setFechaEmision(now);
-        }
-
-        stampAuditFieldsForFicha(ficha, now, user);
-        asegurarPersonaAuxPersistida();
-        ficha = fichaService.guardar(ficha);
-    }
-
-    private void stampAuditFieldsForFicha(FichaOcupacional f, Date now, String user) {
-        if (f.getIdFicha() == null) {
-            f.setFechaCreacion(now);
-            f.setUsrCreacion(user);
-        } else {
-            f.setFechaActualizacion(now);
-            f.setUsrActualizacion(user);
-        }
-    }
-
-    private void auditStep1(SignosVitales sv) {
-        registrarAuditoria("GUARDAR_STEP1", "FICHA_OCUPACIONAL", "*",
-                "Step 1 guardado. ID_FICHA=" + ficha.getIdFicha());
-        registrarAuditoria("GUARDAR_STEP1", "SIGNOS_VITALES", "*",
-                "Signos guardados. ID_SIGNOS=" + sv.getIdSignos());
-    }
 
     private boolean validarStep2() {
         FacesContext ctx = FacesContext.getCurrentInstance();
