@@ -49,8 +49,6 @@ import org.primefaces.event.SelectEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import ec.gob.igm.rrhh.consultorio.domain.dto.EmpleadoCargoDTO;
-
 import ec.gob.igm.rrhh.consultorio.domain.model.Cie10;
 import ec.gob.igm.rrhh.consultorio.domain.model.ConsultaDiagnostico;
 import ec.gob.igm.rrhh.consultorio.domain.model.ConsultaMedica;
@@ -77,6 +75,8 @@ import ec.gob.igm.rrhh.consultorio.service.Step1FichaService;
 import ec.gob.igm.rrhh.consultorio.web.audit.CentroMedicoAuditService;
 import ec.gob.igm.rrhh.consultorio.web.pdf.PdfTemplateEngine;
 import ec.gob.igm.rrhh.consultorio.web.pdf.PdfRenderer;
+import ec.gob.igm.rrhh.consultorio.web.service.CedulaDialogUiCoordinator;
+import ec.gob.igm.rrhh.consultorio.web.service.CedulaSearchService;
 import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoWizardService;
 import ec.gob.igm.rrhh.consultorio.web.session.PdfSessionStorage;
 import ec.gob.igm.rrhh.consultorio.web.util.SnUtils;
@@ -395,6 +395,12 @@ public class CentroMedicoCtrl implements Serializable {
 
     @Inject
     private transient CentroMedicoWizardService centroMedicoWizardService;
+
+    @Inject
+    private transient CedulaSearchService cedulaSearchService;
+
+    @Inject
+    private transient CedulaDialogUiCoordinator cedulaDialogUiCoordinator;
 
     // JSF Lifecycle / Inicialización
     public void preRenderInit() {
@@ -1412,24 +1418,11 @@ private void asegurarPersonaAuxPersistida() {
     }
 
     public void onBuscarPorCedulaRh() {
-        FacesContext ctx = FacesContext.getCurrentInstance();
-        PrimeFaces pf = PrimeFaces.current();
-
         try {
-            // 1) Búsqueda normal (ya te llena empleadoSel/personaAux y cierra diálogo si aplica)
             buscarCedula();
-
-            // 2) Cargar cargo vigente desde la vista RRHH y setearlo en ficha.ciiu
-            tryLoadCargoFromVista(ctx);
-
-            // 3) Refrescar UI (panel principal + mensajes)
-            pf.ajax().update(":msgs", "@([id$=wdzFicha])");
-
         } catch (RuntimeException ex) {
             handleUnexpected("onBuscarPorCedulaRh", ex);
-            addCedulaDiaLOGMessage(ctx, FacesMessage.SEVERITY_ERROR, "Error",
-                    "Ocurrió un error al consultar datos de RRHH.");
-            pf.ajax().update(":msgs");
+            cedulaDialogUiCoordinator.onRhError();
         }
     }
 
@@ -4060,232 +4053,72 @@ private void asegurarPersonaAuxPersistida() {
         }
     }
 
-    // Búsqueda de Cédula / DiáLOGo Inicial
     // Búsqueda de Cédula / Diálogo Inicial
     public void buscarCedula() {
-        FacesContext ctx = FacesContext.getCurrentInstance();
-        PrimeFaces pf = PrimeFaces.current();
-
         try {
-            final CedulaSearchOutcome outcome = searchCedulaAndPrepareUi();
+            CedulaSearchService.CedulaSearchResult result = cedulaSearchService.search(cedulaBusqueda, ficha, personaAux);
+            applyCedulaSearchResult(result);
 
-            if (outcome.isEncontrado()) {
-                tryLoadCargoFromVista(ctx);
-            } else {
-                // si no se encontró, limpia el campo en la ficha (para que no se quede “pegado”)
-                if (this.ficha != null) {
-                    this.ficha.setCiiu(null); // o "" si prefieres vacío
-                }
+            if (result.isFound()) {
+                tryLoadCargoFromVista();
+                cedulaDialogUiCoordinator.onFound(result);
+            } else if (result.isShowManual()) {
+                cedulaDialogUiCoordinator.onManualEnabled(result);
             }
 
-            if (outcome.isEncontrado() || outcome.isMostrarManual()) {
+            if (result.isFound() || result.isShowManual()) {
                 mostrarDlgCedula = false;
             }
 
-            pushCedulaDiaLOGCallbackParams(pf, outcome);
-
-            updateCedulaDiaLOG(pf);
-
-            // ✅ refresca mensajes + wizard (y el campo cargo si lo tienes en step1)
-            pf.ajax().update(":msgs", "@([id$=wdzFicha])");
-
-        } catch (BusinessValidationException ex) {
-            addCedulaDiaLOGMessage(ctx, FacesMessage.SEVERITY_WARN, "Búsqueda", ex.getMessage());
-
-            pushCedulaDiaLOGCallbackParams(pf, CedulaSearchOutcome.notFoundNoManual());
-
-            updateCedulaDiaLOG(pf);
-            pf.ajax().update(":msgs");
-
+            cedulaDialogUiCoordinator.refreshMainViews();
+        } catch (CedulaSearchService.CedulaValidationException ex) {
+            cedulaDialogUiCoordinator.onValidationWarning(ex.getMessage());
         } catch (RuntimeException ex) {
             handleUnexpected("buscarCedula", ex);
-            addCedulaDiaLOGMessage(ctx, FacesMessage.SEVERITY_ERROR, "Error", "Ocurrió un error al buscar la cédula.");
-
-            pushCedulaDiaLOGCallbackParams(pf, CedulaSearchOutcome.notFoundNoManual());
-
-            updateCedulaDiaLOG(pf);
-            pf.ajax().update(":msgs");
+            cedulaDialogUiCoordinator.onSearchError();
         }
     }
 
-private void tryLoadCargoFromVista(FacesContext ctx) {
+    private void tryLoadCargoFromVista() {
+        CedulaSearchService.CargoLookupResult cargo = cedulaSearchService.lookupCargo(cedulaBusqueda);
 
-    // Usa la misma cédula que ya tienes en tu flujo
-    String ced = SnUtils.trimToNull(this.cedulaBusqueda); // ajusta si tu variable se llama distinto
-    if (ced == null) {
-        if (this.ficha != null) {
-            this.ficha.setCiiu(null);
-        }
-        return;
-    }
-
-    EmpleadoCargoDTO dto = empleadoRhService.buscarPorCedulaEnVista(ced);
-
-    // Si no hay cargo vigente -> deja en blanco y muestra mensaje
-    if (dto == null || SnUtils.trimToNull(dto.getCargoDescrip()) == null) {
-        if (this.ficha != null) {
-            this.ficha.setCiiu(null); // o "" si prefieres
-        }
-
-        addCedulaDiaLOGMessage(ctx,
-            FacesMessage.SEVERITY_WARN,
-            "Cargo",
-            "El empleado no registra cargo vigente en RRHH.");
-        return;
-    }
-
-    // ✅ AQUÍ está el punto: se setea el campo que está en la pantalla
-    if (this.ficha != null) {
-        this.ficha.setCiiu(dto.getCargoDescrip()); // <-- se refleja en Puesto de Trabajo CIUO
-    }
-}
-    private static final String CEDULA_MSG_CLIENT_ID = "dlgCedulaForm:cedulaBusqueda";
-
-    private static class CedulaSearchOutcome {
-
-        final boolean found;
-        final boolean showManual;
-
-        CedulaSearchOutcome(boolean found, boolean showManual) {
-            this.found = found;
-            this.showManual = showManual;
-        }
-
-        boolean isEncontrado() {
-            return found;
-        }
-
-        boolean isMostrarManual() {
-            return showManual;
-        }
-
-        static CedulaSearchOutcome found() {
-            return new CedulaSearchOutcome(true, false);
-        }
-
-        static CedulaSearchOutcome notFoundManual() {
-            return new CedulaSearchOutcome(false, true);
-        }
-
-        static CedulaSearchOutcome notFoundNoManual() {
-            return new CedulaSearchOutcome(false, false);
-        }
-    }
-
-    private CedulaSearchOutcome searchCedulaAndPrepareUi() {
-        PrimeFaces pf = PrimeFaces.current();
-
-        permitirIngresoManual = false;
-
-        final String cedula = normalizeCedulaOrThrow();
-        ensureWizardStateForSearch(cedula);
-
-        DatEmpleado emp = empleadoService.buscarPorCedula(cedula);
-
-        if (emp != null) {
-            loadEmployeeFromRrhh(emp);
-            showPersonaAuxDiaLOG(false);
-            addCedulaDiaLOGInfoMessage();
-            pf.ajax().update(":wdzFicha", ":msgs");
-            updateCedulaDiaLOG(pf);
-            return CedulaSearchOutcome.found();
-        }
-
-        prepareManualEntry(cedula);
-        showPersonaAuxDiaLOG(true);
-        addCedulaDiaLOGWarnMessage();
-        pf.ajax().update(":wdzFicha", ":msgs",
-                ":dlgPersonaAuxForm:cedManual", ":dlgPersonaAuxForm:gridManual", ":dlgPersonaAuxForm:msgPersonaAux");
-        updateCedulaDiaLOG(pf);
-        return CedulaSearchOutcome.notFoundManual();
-    }
-
-    private String normalizeCedulaOrThrow() {
-        if (cedulaBusqueda == null || cedulaBusqueda.trim().isEmpty()) {
-            throw new BusinessValidationException("Ingrese una cédula para realizar la búsqueda.");
-        }
-        return cedulaBusqueda.trim();
-    }
-
-    private void ensureWizardStateForSearch(String cedula) {
         if (ficha == null) {
-            ficha = new FichaOcupacional();
-        }
-        if (personaAux == null) {
-            personaAux = new PersonaAux();
+            return;
         }
 
-        personaAux.setCedula(cedula);
-    }
-
-    private void loadEmployeeFromRrhh(DatEmpleado emp) {
-        empleadoSel = emp;
-        noPersonaSel = emp.getNoPersona();
-
-        apellido1 = emp.getPriApellido();
-        apellido2 = emp.getSegApellido();
-        nombre1 = emp.getNombres();
-        nombre2 = null;
-
-        sexo = (emp.getSexo() != null) ? emp.getSexo().getCodigo() : null;
-        fechaNacimiento = emp.getfNacimiento();
-        edad = calcularEdad(fechaNacimiento);
-
-        ficha.setNoHistoriaClinica(emp.getNoCedula());
-        ficha.setNoArchivo(emp.getNoCedula());
-        ficha.setEmpleado(emp);
-        ficha.setPersonaAux(null);
-
-        permitirIngresoManual = false;
-        mostrarDlgCedula = false;
-    }
-
-    private void prepareManualEntry(String cedula) {
-        empleadoSel = null;
-        noPersonaSel = null;
-
-        personaAux.setApellido1(null);
-        personaAux.setApellido2(null);
-        personaAux.setNombre1(null);
-        personaAux.setNombre2(null);
-        personaAux.setSexo(null);
-        personaAux.setFechaNac(null);
-
-        ficha.setNoHistoriaClinica(cedula);
-        ficha.setNoArchivo(cedula);
-
-        permitirIngresoManual = true;
-        mostrarDlgCedula = true;
-    }
-
-    private void showPersonaAuxDiaLOG(boolean show) {
-
-    }
-
-    private void addCedulaDiaLOGInfoMessage() {
-        FacesContext ctx = FacesContext.getCurrentInstance();
-        addCedulaDiaLOGMessage(ctx, FacesMessage.SEVERITY_INFO, "Búsqueda", "Información cargada desde RRHH.");
-    }
-
-    private void addCedulaDiaLOGWarnMessage() {
-        FacesContext ctx = FacesContext.getCurrentInstance();
-        addCedulaDiaLOGMessage(ctx, FacesMessage.SEVERITY_WARN, "Búsqueda",
-                "No se encontró la cédula. Puede ingresar los datos manualmente.");
-    }
-
-    private void addCedulaDiaLOGMessage(FacesContext ctx, FacesMessage.Severity sev, String summary, String detail) {
-        if (ctx != null) {
-            ctx.addMessage(CEDULA_MSG_CLIENT_ID, new FacesMessage(sev, summary, detail));
+        if (cargo.isEmptyCedula()) {
+            ficha.setCiiu(null);
+            return;
         }
+
+        if (!cargo.isFound()) {
+            ficha.setCiiu(null);
+            cedulaDialogUiCoordinator.showCargoMissing();
+            return;
+        }
+
+        ficha.setCiiu(cargo.getCargoDescripcion());
     }
 
-    private void updateCedulaDiaLOG(PrimeFaces pf) {
-        pf.ajax().update(":dlgCedulaForm:msgCedula", ":dlgCedulaForm:panelBtnManualWrap");
-    }
+    private void applyCedulaSearchResult(CedulaSearchService.CedulaSearchResult result) {
+        this.cedulaBusqueda = result.getCedula();
+        this.ficha = result.getFicha();
+        this.personaAux = result.getPersonaAux();
+        this.empleadoSel = result.getEmpleadoSel();
+        this.noPersonaSel = result.getNoPersonaSel();
 
-    private void pushCedulaDiaLOGCallbackParams(PrimeFaces pf, CedulaSearchOutcome outcome) {
-        pf.ajax().addCallbackParam("encontrado", outcome.found);
-        pf.ajax().addCallbackParam("mostrarManual", outcome.showManual);
+        if (result.isFound()) {
+            this.apellido1 = result.getApellido1();
+            this.apellido2 = result.getApellido2();
+            this.nombre1 = result.getNombre1();
+            this.nombre2 = result.getNombre2();
+            this.sexo = result.getSexo();
+            this.fechaNacimiento = result.getFechaNacimiento();
+            this.edad = result.getEdad();
+            this.permitirIngresoManual = false;
+        } else {
+            this.permitirIngresoManual = result.isShowManual();
+        }
     }
 
     private void safeUpdate(String clientId) {
