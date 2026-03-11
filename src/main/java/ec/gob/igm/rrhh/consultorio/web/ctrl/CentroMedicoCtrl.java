@@ -1088,6 +1088,12 @@ private void asegurarPersonaAuxPersistida() {
                 "Step 3 guardado. ID_FICHA=" + ficha.getIdFicha());
     }
 
+    private void ensureFichaSavedOrThrow() {
+        if (ficha == null || ficha.getIdFicha() == null) {
+            throw new BusinessValidationException("Primero debe existir y estar guardada la ficha (ID_FICHA).");
+        }
+    }
+
     private String nullToDash(String s) {
         return (s == null || s.trim().isEmpty()) ? "-" : s.trim();
     }
@@ -3098,6 +3104,10 @@ private void asegurarPersonaAuxPersistida() {
         return personaAux;
     }
 
+    public void setPersonaAux(PersonaAux personaAux) {
+        this.personaAux = personaAux;
+    }
+
     public String getStepActual() {
         return activeStep;
     }
@@ -3448,6 +3458,166 @@ private void asegurarPersonaAuxPersistida() {
     public List<String> getRiskCols() {
 
         return STATIC_RISK_COLS;
+    }
+
+    public void setRiskCols(List<String> riskCols) {
+        // método de compatibilidad para el inicializador; la UI usa STATIC_RISK_COLS
+    }
+
+    public void setEnfermedadActual(String enfermedadActual) {
+        this.enfermedadActual = enfermedadActual;
+    }
+
+    public void setExfPielCicatrices(String exfPielCicatrices) {
+        this.exfPielCicatrices = exfPielCicatrices;
+    }
+
+    public void setExfOjosParpados(String exfOjosParpados) {
+        this.exfOjosParpados = exfOjosParpados;
+    }
+
+    public void setExfOjosConjuntivas(String exfOjosConjuntivas) {
+        this.exfOjosConjuntivas = exfOjosConjuntivas;
+    }
+
+    public void setExfOjosPupilas(String exfOjosPupilas) {
+        this.exfOjosPupilas = exfOjosPupilas;
+    }
+
+    public void setExfOjosCornea(String exfOjosCornea) {
+        this.exfOjosCornea = exfOjosCornea;
+    }
+
+    public void setExfOjosMotilidad(String exfOjosMotilidad) {
+        this.exfOjosMotilidad = exfOjosMotilidad;
+    }
+
+    public void setExfOidoConducto(String exfOidoConducto) {
+        this.exfOidoConducto = exfOidoConducto;
+    }
+
+    public void setExfOidoPabellon(String exfOidoPabellon) {
+        this.exfOidoPabellon = exfOidoPabellon;
+    }
+
+    public void setExfOidoTimpanos(String exfOidoTimpanos) {
+        this.exfOidoTimpanos = exfOidoTimpanos;
+    }
+
+    public void setExfOroLabios(String exfOroLabios) {
+        this.exfOroLabios = exfOroLabios;
+    }
+
+    public void setExfOroLengua(String exfOroLengua) {
+        this.exfOroLengua = exfOroLengua;
+    }
+
+    public void setExfOroFaringe(String exfOroFaringe) {
+        this.exfOroFaringe = exfOroFaringe;
+    }
+
+    public void setExfOroAmigdalas(String exfOroAmigdalas) {
+        this.exfOroAmigdalas = exfOroAmigdalas;
+    }
+
+    public void setExfOroDentadura(String exfOroDentadura) {
+        this.exfOroDentadura = exfOroDentadura;
+    }
+
+    public void setExfNarizTabique(String exfNarizTabique) {
+        this.exfNarizTabique = exfNarizTabique;
+    }
+
+    public void setExfNarizCornetes(String exfNarizCornetes) {
+        this.exfNarizCornetes = exfNarizCornetes;
+    }
+
+    public void setExfNarizMucosas(String exfNarizMucosas) {
+        this.exfNarizMucosas = exfNarizMucosas;
+    }
+
+    public void setExfNarizSenos(String exfNarizSenos) {
+        this.exfNarizSenos = exfNarizSenos;
+    }
+
+    public void setExfCuelloTiroides(String exfCuelloTiroides) {
+        this.exfCuelloTiroides = exfCuelloTiroides;
+    }
+
+    public void setExfCuelloMovilidad(String exfCuelloMovilidad) {
+        this.exfCuelloMovilidad = exfCuelloMovilidad;
+    }
+
+    public void setExfToraxMamas(String exfToraxMamas) {
+        this.exfToraxMamas = exfToraxMamas;
+    }
+
+    public void setExfToraxPulmones(String exfToraxPulmones) {
+        this.exfToraxPulmones = exfToraxPulmones;
+    }
+
+    public void setExfToraxCorazon(String exfToraxCorazon) {
+        this.exfToraxCorazon = exfToraxCorazon;
+    }
+
+    public void setExfToraxParrilla(String exfToraxParrilla) {
+        this.exfToraxParrilla = exfToraxParrilla;
+    }
+
+    public void setExfAbdomenVisceras(String exfAbdomenVisceras) {
+        this.exfAbdomenVisceras = exfAbdomenVisceras;
+    }
+
+    public void setExfAbdomenPared(String exfAbdomenPared) {
+        this.exfAbdomenPared = exfAbdomenPared;
+    }
+
+    public void setExfColumnaFlexibilidad(String exfColumnaFlexibilidad) {
+        this.exfColumnaFlexibilidad = exfColumnaFlexibilidad;
+    }
+
+    public void setExfColumnaDesviacion(String exfColumnaDesviacion) {
+        this.exfColumnaDesviacion = exfColumnaDesviacion;
+    }
+
+    public void setExfColumnaDolor(String exfColumnaDolor) {
+        this.exfColumnaDolor = exfColumnaDolor;
+    }
+
+    public void setExfPelvisPelvis(String exfPelvisPelvis) {
+        this.exfPelvisPelvis = exfPelvisPelvis;
+    }
+
+    public void setExfPelvisGenitales(String exfPelvisGenitales) {
+        this.exfPelvisGenitales = exfPelvisGenitales;
+    }
+
+    public void setExfExtVascular(String exfExtVascular) {
+        this.exfExtVascular = exfExtVascular;
+    }
+
+    public void setExfExtSup(String exfExtSup) {
+        this.exfExtSup = exfExtSup;
+    }
+
+    public void setExfExtInf(String exfExtInf) {
+        this.exfExtInf = exfExtInf;
+    }
+
+    public void setExfNeuroFuerza(String exfNeuroFuerza) {
+        this.exfNeuroFuerza = exfNeuroFuerza;
+    }
+
+    public void setExfNeuroSensibilidad(String exfNeuroSensibilidad) {
+        this.exfNeuroSensibilidad = exfNeuroSensibilidad;
+    }
+
+    public void setExfNeuroMarcha(String exfNeuroMarcha) {
+        this.exfNeuroMarcha = exfNeuroMarcha;
+    }
+
+    public void setExfNeuroReflejos(String exfNeuroReflejos) {
+        this.exfNeuroReflejos = exfNeuroReflejos;
     }
 
     public Integer getAbortos() {
