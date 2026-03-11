@@ -9,7 +9,7 @@ public class Step1Validator {
             String nombre1, String nombre2,
             String sexo, String tipoEval,
             String paStr, Integer fc, Double peso, Double tallaCm,
-            SignosVitales signos, FichaRiesgo fichaRiesgo) {
+            SignosVitales signos, String puestoTrabajoCiuo, FichaRiesgo fichaRiesgo) {
 
         ValidationResult result = new ValidationResult();
 
@@ -52,7 +52,10 @@ public class Step1Validator {
             result.addError("Debe ingresar la talla (en metros o convertir desde cm).");
         }
 
-        if (fichaRiesgo == null || isBlank(fichaRiesgo.getPuestoTrabajo())) {
+        boolean tienePuestoTrabajo = !isBlank(puestoTrabajoCiuo)
+                || (fichaRiesgo != null && !isBlank(fichaRiesgo.getPuestoTrabajo()));
+
+        if (!tienePuestoTrabajo) {
             result.addError("Debe ingresar el puesto de trabajo.");
         }
 

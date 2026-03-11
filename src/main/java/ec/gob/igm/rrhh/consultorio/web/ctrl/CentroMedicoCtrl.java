@@ -774,6 +774,7 @@ private void asegurarPersonaAuxPersistida() {
                 peso,
                 tallaCm,
                 signos,
+                (ficha != null ? ficha.getCiiu() : null),
                 fichaRiesgo);
         addValidationMessages("Step 1", result);
         return result.isValid();
