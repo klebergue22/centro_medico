@@ -993,6 +993,17 @@ private void asegurarPersonaAuxPersistida() {
     public void guardarStep3() {
         FacesContext ctx = FacesContext.getCurrentInstance();
         try {
+            boolean step1Valido = validarStep1();
+            boolean step2Valido = validarStep2();
+            boolean step3Valido = validarStep3();
+
+            if (!step1Valido || !step2Valido || !step3Valido) {
+                if (ctx != null) {
+                    ctx.validationFailed();
+                }
+                return;
+            }
+
             saveStep3();
 
             if (ctx != null) {
