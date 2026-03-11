@@ -258,6 +258,10 @@ public class CentroMedicoCtrl implements Serializable {
     private String codCie10Ppal;
     private String descCie10Ppal;
 
+    private Integer dialogDiagnosticoIdx;
+    private String dialogDiagnosticoCodigo;
+    private String dialogDiagnosticoDescripcion;
+
     private java.util.List<ConsultaDiagnostico> listaDiag = new ArrayList<>();
 
     private String[] hCentroTrabajo;
@@ -2734,6 +2738,14 @@ private void asegurarPersonaAuxPersistida() {
         }
     }
 
+    public List<String> completarCie10DialogoPorCodigo(String query) {
+        return completarCie10FilaPorCodigo(query);
+    }
+
+    public List<String> completarCie10DialogoPorDescripcion(String query) {
+        return completarCie10FilaPorDescripcion(query);
+    }
+
     public List<String> completarCie10FilaPorDescripcion(String query) {
         try {
             FacesContext fc = FacesContext.getCurrentInstance();
@@ -4288,6 +4300,64 @@ private void asegurarPersonaAuxPersistida() {
         return listaDiag.get(idx);
     }
 
+    public void abrirDialogoDiagnostico(AjaxBehaviorEvent event) {
+        UIComponent comp = event != null ? event.getComponent() : null;
+        Integer idx = extraerIdx(comp);
+        ConsultaDiagnostico row = getDiagRow(idx, "K-DIALOG open");
+        if (row == null) {
+            return;
+        }
+
+        dialogDiagnosticoIdx = idx;
+        dialogDiagnosticoCodigo = row.getCodigo();
+        dialogDiagnosticoDescripcion = row.getDescripcion();
+
+        PrimeFaces.current().ajax().update("@([id$=kDiagDialogContent])");
+        PrimeFaces.current().executeScript("PF('kDiagDialogWv').show();");
+    }
+
+    public void aceptarDialogoDiagnostico() {
+        ConsultaDiagnostico row = getDiagRow(dialogDiagnosticoIdx, "K-DIALOG accept");
+        if (row == null) {
+            return;
+        }
+
+        String codigo = dialogDiagnosticoCodigo != null ? dialogDiagnosticoCodigo.trim() : "";
+        String descripcion = dialogDiagnosticoDescripcion != null ? dialogDiagnosticoDescripcion.trim() : "";
+
+        if (codigo.isEmpty() && descripcion.isEmpty()) {
+            row.setCodigo(null);
+            row.setDescripcion(null);
+            row.setCie10(null);
+        } else {
+            Cie10 cie = null;
+            if (!codigo.isEmpty()) {
+                cie = cie10Service.buscarPorCodigo(codigo.toUpperCase());
+            }
+            if (cie == null && !descripcion.isEmpty()) {
+                cie = cie10Service.buscarPrimeroPorDescripcion(descripcion);
+            }
+
+            if (cie != null) {
+                row.setCodigo(cie.getCodigo());
+                row.setDescripcion(cie.getDescripcion());
+                row.setCie10(cie);
+            } else {
+                row.setCodigo(codigo.isEmpty() ? null : codigo.toUpperCase());
+                row.setDescripcion(descripcion.isEmpty() ? null : descripcion);
+                row.setCie10(null);
+            }
+        }
+
+        syncCie10PrincipalFromK();
+        PrimeFaces.current().ajax().update("@([id$=kPanel])", "@([id$=kDiagDialogContent])");
+        PrimeFaces.current().executeScript("PF('kDiagDialogWv').hide();");
+    }
+
+    public void cerrarDialogoDiagnostico() {
+        PrimeFaces.current().executeScript("PF('kDiagDialogWv').hide();");
+    }
+
     public void onKCieCodigoSelect(SelectEvent<String> event) {
         UIComponent comp = (event != null ? event.getComponent() : null);
         Integer idx = extraerIdx(comp);
@@ -4798,6 +4868,31 @@ private void asegurarPersonaAuxPersistida() {
     public void setDescCie10Ppal(String descCie10Ppal) {
         this.descCie10Ppal = descCie10Ppal;
     }
+
+    public Integer getDialogDiagnosticoIdx() {
+        return dialogDiagnosticoIdx;
+    }
+
+    public void setDialogDiagnosticoIdx(Integer dialogDiagnosticoIdx) {
+        this.dialogDiagnosticoIdx = dialogDiagnosticoIdx;
+    }
+
+    public String getDialogDiagnosticoCodigo() {
+        return dialogDiagnosticoCodigo;
+    }
+
+    public void setDialogDiagnosticoCodigo(String dialogDiagnosticoCodigo) {
+        this.dialogDiagnosticoCodigo = dialogDiagnosticoCodigo;
+    }
+
+    public String getDialogDiagnosticoDescripcion() {
+        return dialogDiagnosticoDescripcion;
+    }
+
+    public void setDialogDiagnosticoDescripcion(String dialogDiagnosticoDescripcion) {
+        this.dialogDiagnosticoDescripcion = dialogDiagnosticoDescripcion;
+    }
+
 
     public String[] gethCentroTrabajo() {
         return hCentroTrabajo;

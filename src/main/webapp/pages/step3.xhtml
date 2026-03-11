@@ -323,6 +323,12 @@
 
                                         <f:attribute name="idx" value="#{st.index}"/>
 
+                                        <p:ajax event="focus"
+                                                global="false"
+                                                listener="#{centroMedicoCtrl.abrirDialogoDiagnostico}"
+                                                process="@this"
+                                                update="@([id$=kDiagDialogContent])"/>
+
                                         <p:ajax event="itemSelect"
                                                 global="false"
                                                 listener="#{centroMedicoCtrl.onKCieCodigoSelect}"
@@ -393,6 +399,63 @@
         </h:panelGroup>
 
     </p:fieldset>
+            <p:dialog id="kDiagDialog"
+                      widgetVar="kDiagDialogWv"
+                      modal="true"
+                      appendTo="@(body)"
+                      closable="false"
+                      resizable="false"
+                      header="Diagnóstico CIE-10"
+                      width="700">
+
+                <p:outputPanel id="kDiagDialogContent" styleClass="ui-fluid">
+                    <h:panelGrid columns="1" style="width:100%; gap:8px;">
+
+                        <h:outputLabel for="kDiagCodDialog" value="Código CIE-10"/>
+                        <p:autoComplete id="kDiagCodDialog"
+                                        value="#{centroMedicoCtrl.dialogDiagnosticoCodigo}"
+                                        completeMethod="#{centroMedicoCtrl.completarCie10DialogoPorCodigo}"
+                                        dropdown="true"
+                                        dropdownMode="current"
+                                        cache="false"
+                                        minQueryLength="1"
+                                        queryDelay="200"
+                                        forceSelection="false"
+                                        appendTo="@(body)">
+                            <p:ajax event="itemSelect" process="@this" update="kDiagDialogContent"/>
+                        </p:autoComplete>
+
+                        <h:outputLabel for="kDiagDescDialog" value="Descripción"/>
+                        <p:autoComplete id="kDiagDescDialog"
+                                        value="#{centroMedicoCtrl.dialogDiagnosticoDescripcion}"
+                                        completeMethod="#{centroMedicoCtrl.completarCie10DialogoPorDescripcion}"
+                                        dropdown="true"
+                                        dropdownMode="current"
+                                        cache="false"
+                                        minQueryLength="1"
+                                        queryDelay="200"
+                                        forceSelection="false"
+                                        appendTo="@(body)">
+                            <p:ajax event="itemSelect" process="@this" update="kDiagDialogContent"/>
+                        </p:autoComplete>
+
+                        <h:panelGroup layout="block" style="text-align:right; margin-top:10px;">
+                            <p:commandButton value="Aceptar"
+                                             actionListener="#{centroMedicoCtrl.aceptarDialogoDiagnostico}"
+                                             process="kDiagDialogContent"
+                                             update="@([id$=kPanel]) @([id$=kDiagDialogContent])"
+                                             icon="pi pi-check"/>
+                            <p:spacer width="8"/>
+                            <p:commandButton value="Cerrar"
+                                             actionListener="#{centroMedicoCtrl.cerrarDialogoDiagnostico}"
+                                             process="@this"
+                                             update="@none"
+                                             styleClass="ui-button-secondary"
+                                             icon="pi pi-times"/>
+                        </h:panelGroup>
+                    </h:panelGrid>
+                </p:outputPanel>
+            </p:dialog>
 
 
     <p:fieldset legend="L. APTITUD MÉDICA PARA EL TRABAJO" toggleable="true">
