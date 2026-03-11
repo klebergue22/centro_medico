@@ -26,9 +26,9 @@ public class CentroMedicoStepValidationService implements Serializable {
 
     public ValidationResult validarStep1(String apellido1, String apellido2, String nombre1, String nombre2,
                                          String sexo, String tipoEval, String paStr, Integer fc, Double peso, Double tallaCm,
-                                         SignosVitales signos, FichaRiesgo fichaRiesgo) {
+                                         SignosVitales signos, String puestoTrabajoCiuo, FichaRiesgo fichaRiesgo) {
         return step1Validator.validate(apellido1, apellido2, nombre1, nombre2, sexo, tipoEval,
-                paStr, fc, peso, tallaCm, signos, fichaRiesgo);
+                paStr, fc, peso, tallaCm, signos, puestoTrabajoCiuo, fichaRiesgo);
     }
 
     public ValidationResult validarStep2(FichaRiesgo fichaRiesgo, List<String> actividadesLab, List<String> medidasPreventivas) {
