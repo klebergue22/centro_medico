@@ -1001,6 +1001,10 @@ private void asegurarPersonaAuxPersistida() {
     public void guardarStep3() {
         FacesContext ctx = FacesContext.getCurrentInstance();
         try {
+            if (!validarStep3()) {
+                throw new BusinessValidationException("Revise los campos obligatorios del Step 3 antes de continuar.");
+            }
+
             saveStep3();
 
             if (ctx != null) {
