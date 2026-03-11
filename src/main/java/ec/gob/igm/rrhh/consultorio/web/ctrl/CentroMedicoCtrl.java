@@ -761,6 +761,10 @@ private void asegurarPersonaAuxPersistida() {
                 nombre2,
                 sexo,
                 tipoEval,
+                paStr,
+                fc,
+                peso,
+                tallaCm,
                 signos,
                 fichaRiesgo);
         addValidationMessages("Step 1", result);
