@@ -302,12 +302,18 @@
     <td>N° Historia clínica</td><td colspan="3"><span class="cell-input-display">{{noHistoria}}</span></td>
     <td>N° Archivo</td><td colspan="3"><span class="cell-input-display">{{noArchivo}}</span></td>
   </tr>
+  
+  <!-- MODIFICACIÓN: Apellidos en una fila, Nombres en otra fila para mayor visibilidad -->
   <tr>
-    <td>Primer apellido</td><td><span class="cell-input-display">{{apellido1}}</span></td>
-    <td>Segundo apellido</td><td><span class="cell-input-display">{{apellido2}}</span></td>
-    <td>Primer nombre</td><td><span class="cell-input-display">{{nombre1}}</span></td>
-    <td>Segundo nombre</td><td><span class="cell-input-display">{{nombre2}}</span></td>
+    <td>Primer apellido</td><td colspan="3"><span class="cell-input-display">{{apellido1}}</span></td>
+    <td>Segundo apellido</td><td colspan="3"><span class="cell-input-display">{{apellido2}}</span></td>
   </tr>
+  <tr>
+    <td>Primer nombre</td><td colspan="3"><span class="cell-input-display">{{nombre1}}</span></td>
+    <td>Segundo nombre</td><td colspan="3"><span class="cell-input-display">{{nombre2}}</span></td>
+  </tr>
+  <!-- FIN MODIFICACIÓN -->
+
   <tr>
     <td>Sexo</td><td><span class="cell-input-display">{{sexo}}</span></td>
     <td>Fecha de nacimiento</td><td><span class="cell-input-display">{{fechaNacimiento}}</span></td>
@@ -374,7 +380,7 @@
   </tr>
 </table>
 
-<!-- SECCIÓN C MODIFICADA: Fila por fila para mejor visualización -->
+<!-- SECCIÓN C MODIFICADA: Fila por fila -->
 <table class="tbl">
   <tr><th colspan="8" class="sec">C. ANTECEDENTES PERSONALES</th></tr>
   <tr>
@@ -809,7 +815,7 @@
         <tr><td>Cortes</td>                                     <td class="c">{{seg_mec_cortes_1}}</td><td class="c">{{seg_mec_cortes_2}}</td><td class="c">{{seg_mec_cortes_3}}</td><td class="c">{{seg_mec_cortes_4}}</td><td class="c">{{seg_mec_cortes_5}}</td><td class="c">{{seg_mec_cortes_6}}</td><td class="c">{{seg_mec_cortes_7}}</td></tr>
         <tr><td>Choques / colisión vehicular</td>               <td class="c">{{seg_mec_colision_1}}</td><td class="c">{{seg_mec_colision_2}}</td><td class="c">{{seg_mec_colision_3}}</td><td class="c">{{seg_mec_colision_4}}</td><td class="c">{{seg_mec_colision_5}}</td><td class="c">{{seg_mec_colision_6}}</td><td class="c">{{seg_mec_colision_7}}</td></tr>
         <tr><td>Atropellamientos por vehículos</td>             <td class="c">{{seg_mec_atropello_1}}</td><td class="c">{{seg_mec_atropello_2}}</td><td class="c">{{seg_mec_atropello_3}}</td><td class="c">{{seg_mec_atropello_4}}</td><td class="c">{{seg_mec_atropello_5}}</td><td class="c">{{seg_mec_atropello_6}}</td><td class="c">{{seg_mec_atropello_7}}</td></tr>
-        <tr><td>Proyección de fluidos</td>                      <td class="c">{{seg_mec_proy_fluidos_1}}</td><td class="c">{{seg_mec_proy_fluidos_2}}</td><td class="c">{{seg_mec_proy_fluidos_3}}</td><td class="c">{{seg_mec_proy_fluidos_4}}</td><td class="c">{{seg_mec_proy_fluidos_5}}</td><td class="c">{{seg_mec_proy_fluidos_6}}</td><td class="c">{{seg_mec_proy_fluidos_7}}</td></tr>
+        <tr><td>Proyección de fluids</td>                      <td class="c">{{seg_mec_proy_fluidos_1}}</td><td class="c">{{seg_mec_proy_fluidos_2}}</td><td class="c">{{seg_mec_proy_fluidos_3}}</td><td class="c">{{seg_mec_proy_fluidos_4}}</td><td class="c">{{seg_mec_proy_fluidos_5}}</td><td class="c">{{seg_mec_proy_fluidos_6}}</td><td class="c">{{seg_mec_proy_fluidos_7}}</td></tr>
         <tr><td>Proyección de partículas – fragmentos</td>      <td class="c">{{seg_mec_proy_part_1}}</td><td class="c">{{seg_mec_proy_part_2}}</td><td class="c">{{seg_mec_proy_part_3}}</td><td class="c">{{seg_mec_proy_part_4}}</td><td class="c">{{seg_mec_proy_part_5}}</td><td class="c">{{seg_mec_proy_part_6}}</td><td class="c">{{seg_mec_proy_part_7}}</td></tr>
         <tr><td>Contacto con superficies de trabajo</td>        <td class="c">{{seg_mec_superficies_1}}</td><td class="c">{{seg_mec_superficies_2}}</td><td class="c">{{seg_mec_superficies_3}}</td><td class="c">{{seg_mec_superficies_4}}</td><td class="c">{{seg_mec_superficies_5}}</td><td class="c">{{seg_mec_superficies_6}}</td><td class="c">{{seg_mec_superficies_7}}</td></tr>
         <tr><td><strong>ELÉCTRICOS</strong> — Contacto eléctrico</td><td class="c">{{seg_elec_contacto_1}}</td><td class="c">{{seg_elec_contacto_2}}</td><td class="c">{{seg_elec_contacto_3}}</td><td class="c">{{seg_elec_contacto_4}}</td><td class="c">{{seg_elec_contacto_5}}</td><td class="c">{{seg_elec_contacto_6}}</td><td class="c">{{seg_elec_contacto_7}}</td></tr>
