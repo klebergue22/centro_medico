@@ -70,6 +70,7 @@ import ec.gob.igm.rrhh.consultorio.web.pdf.PdfTemplateEngine;
 import ec.gob.igm.rrhh.consultorio.web.pdf.PdfRenderer;
 import ec.gob.igm.rrhh.consultorio.web.service.CedulaDialogUiCoordinator;
 import ec.gob.igm.rrhh.consultorio.web.service.CedulaSearchService;
+import ec.gob.igm.rrhh.consultorio.web.service.DiagnosticoDialogService;
 import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoFormInitializer;
 import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoLifecycleService;
 import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoStepValidationService;
@@ -434,6 +435,9 @@ public class CentroMedicoCtrl implements Serializable {
 
     @Inject
     private transient CedulaDialogUiCoordinator cedulaDialogUiCoordinator;
+
+    @Inject
+    private transient DiagnosticoDialogService diagnosticoDialogService;
 
     // JSF Lifecycle / Inicialización
     public void preRenderInit() {
@@ -2738,14 +2742,6 @@ private void asegurarPersonaAuxPersistida() {
         }
     }
 
-    public List<String> completarCie10DialogoPorCodigo(String query) {
-        return completarCie10FilaPorCodigo(query);
-    }
-
-    public List<String> completarCie10DialogoPorDescripcion(String query) {
-        return completarCie10FilaPorDescripcion(query);
-    }
-
     public List<String> completarCie10FilaPorDescripcion(String query) {
         try {
             FacesContext fc = FacesContext.getCurrentInstance();
@@ -4308,9 +4304,10 @@ private void asegurarPersonaAuxPersistida() {
             return;
         }
 
-        dialogDiagnosticoIdx = idx;
-        dialogDiagnosticoCodigo = row.getCodigo();
-        dialogDiagnosticoDescripcion = row.getDescripcion();
+        DiagnosticoDialogService.DiagnosticoDialogState estado = diagnosticoDialogService.construirEstado(idx, row);
+        dialogDiagnosticoIdx = estado.idx();
+        dialogDiagnosticoCodigo = estado.codigo();
+        dialogDiagnosticoDescripcion = estado.descripcion();
 
         PrimeFaces.current().ajax().update("@([id$=kDiagDialogContent])");
         PrimeFaces.current().executeScript("PF('kDiagDialogWv').show();");
@@ -4322,32 +4319,7 @@ private void asegurarPersonaAuxPersistida() {
             return;
         }
 
-        String codigo = dialogDiagnosticoCodigo != null ? dialogDiagnosticoCodigo.trim() : "";
-        String descripcion = dialogDiagnosticoDescripcion != null ? dialogDiagnosticoDescripcion.trim() : "";
-
-        if (codigo.isEmpty() && descripcion.isEmpty()) {
-            row.setCodigo(null);
-            row.setDescripcion(null);
-            row.setCie10(null);
-        } else {
-            Cie10 cie = null;
-            if (!codigo.isEmpty()) {
-                cie = cie10Service.buscarPorCodigo(codigo.toUpperCase());
-            }
-            if (cie == null && !descripcion.isEmpty()) {
-                cie = cie10Service.buscarPrimeroPorDescripcion(descripcion);
-            }
-
-            if (cie != null) {
-                row.setCodigo(cie.getCodigo());
-                row.setDescripcion(cie.getDescripcion());
-                row.setCie10(cie);
-            } else {
-                row.setCodigo(codigo.isEmpty() ? null : codigo.toUpperCase());
-                row.setDescripcion(descripcion.isEmpty() ? null : descripcion);
-                row.setCie10(null);
-            }
-        }
+        diagnosticoDialogService.aplicarSeleccion(row, dialogDiagnosticoCodigo, dialogDiagnosticoDescripcion);
 
         syncCie10PrincipalFromK();
         PrimeFaces.current().ajax().update("@([id$=kPanel])", "@([id$=kDiagDialogContent])");
