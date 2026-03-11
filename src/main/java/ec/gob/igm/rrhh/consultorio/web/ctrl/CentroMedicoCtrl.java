@@ -78,6 +78,7 @@ import ec.gob.igm.rrhh.consultorio.web.pdf.PdfRenderer;
 import ec.gob.igm.rrhh.consultorio.web.service.CedulaDialogUiCoordinator;
 import ec.gob.igm.rrhh.consultorio.web.service.CedulaSearchService;
 import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoWizardService;
+import ec.gob.igm.rrhh.consultorio.web.service.Step3OrchestratorService;
 import ec.gob.igm.rrhh.consultorio.web.session.PdfSessionStorage;
 import ec.gob.igm.rrhh.consultorio.web.util.SnUtils;
 import ec.gob.igm.rrhh.consultorio.web.validation.FichaCompletaValidator;
@@ -402,6 +403,9 @@ public class CentroMedicoCtrl implements Serializable {
 
     @Inject
     private transient PdfTemplateEngine pdfTemplateEngine;
+
+    @EJB
+    private transient Step3OrchestratorService step3OrchestratorService;
 
     @Inject
     private transient CentroMedicoWizardService centroMedicoWizardService;
@@ -1552,7 +1556,7 @@ private void asegurarPersonaAuxPersistida() {
                 ctx.addMessage(null, new FacesMessage(
                         FacesMessage.SEVERITY_INFO, "OK", "Step 3 guardado correctamente."));
             }
-        } catch (BusinessValidationException ex) {
+        } catch (BusinessValidationException | IllegalArgumentException ex) {
             warn(ex.getMessage());
             if (ctx != null) {
                 ctx.validationFailed();
@@ -1571,259 +1575,44 @@ private void asegurarPersonaAuxPersistida() {
         final Date now = new Date();
         final String user = usuarioReal();
 
-        persistStep3Blocks(now, user);
+        Step3OrchestratorService.Step3SaveCommand command = new Step3OrchestratorService.Step3SaveCommand(
+                ficha,
+                codCie10Ppal,
+                obsExamenFisico,
+                aptitudSel,
+                detalleObservaciones,
+                recomendaciones,
+                nObsRetiro,
+                medicoNombre,
+                medicoCodigo,
+                fechaEmision,
+                now,
+                user,
+                this::asegurarPersonaAuxPersistida,
+                this::ensureActLabSize,
+                actLabCentroTrabajo,
+                actLabActividad,
+                actLabTiempo,
+                actLabTrabajoAnterior,
+                actLabTrabajoActual,
+                actLabIncidenteChk,
+                actLabAccidenteChk,
+                actLabEnfermedadChk,
+                iessFecha,
+                iessEspecificar,
+                actLabObservaciones,
+                tipoAct,
+                fechaAct,
+                descAct,
+                examNombre,
+                examFecha,
+                examResultado,
+                listaDiag);
+
+        ficha = step3OrchestratorService.saveStep3(command);
 
         registrarAuditoria("GUARDAR_STEP3", "FICHA_OCUPACIONAL / H / I / J / K", "*",
                 "Step 3 guardado. ID_FICHA=" + ficha.getIdFicha());
-    }
-
-    private void persistStep3Blocks(Date now, String user) {
-        FacesContext ctx = FacesContext.getCurrentInstance();
-
-        guardarStep3_FichaGeneral(ctx, now, user);
-        guardarStep3_H_ActividadLaboral(now, user);
-        guardarStep3_I_Extralaborales(now, user);
-        guardarStep3_J_Examenes(now, user);
-        guardarStep3_K_Diagnosticos(now, user);
-    }
-
-    private void guardarStep3_FichaGeneral(FacesContext ctx, Date ahora, String usuario) {
-
-        LOG.info(String.valueOf("STEP3-A: Guardando datos generales en FICHA_OCUPACIONAL"));
-
-        if (!isBlank(codCie10Ppal)) {
-            Cie10 cie = cie10Service.buscarPorCodigo(codCie10Ppal.trim());
-            if (cie == null) {
-                ctx.addMessage(null, new FacesMessage(
-                        FacesMessage.SEVERITY_WARN,
-                        "Validación",
-                        "El código CIE10 principal no existe: " + codCie10Ppal
-                ));
-                ctx.validationFailed();
-                throw new IllegalStateException("CIE10 principal no existe: " + codCie10Ppal);
-            }
-            ficha.setCie10Principal(cie);
-        } else {
-            ficha.setCie10Principal(null);
-        }
-
-        // Enfermedad actual (viene directamente del formulario en ficha.enfermedadProbActual)
-        ficha.setEnfermedadProbActual(trimToNull(ficha.getEnfermedadProbActual()));
-
-// Examen físico regional (SOLID: lógica centralizada en servicio)
-        examenFisicoRegionalService.aplicarExamenFisicoRegional(ficha);
-        // OBS_EXAMEN_FISICO_REG: no sobreescribir con null si la UI está enlazada directo a ficha.obsExamenFisicoReg
-        String _obsExf = trimToNull(obsExamenFisico);
-        if (_obsExf == null) {
-            _obsExf = trimToNull(ficha.getObsExamenFisicoReg());
-        }
-        ficha.setObsExamenFisicoReg(_obsExf);
-
-        ficha.setAptitudSel(aptitudSel);
-        ficha.setDetalleObs(detalleObservaciones);
-        ficha.setRecomendaciones(recomendaciones);
-
-        examenFisicoRegionalService.aplicarRetiro(ficha);
-        ficha.setnRetObs(nObsRetiro);
-
-        ficha.setMedicoNombre(medicoNombre);
-        ficha.setMedicoCodigo(medicoCodigo);
-
-        ficha.setFechaEmision(fechaEmision != null ? fechaEmision : ahora);
-
-        ficha.setFechaActualizacion(ahora);
-        ficha.setUsrActualizacion(usuario);
-        asegurarPersonaAuxPersistida();
-        ficha = fichaService.guardar(ficha);
-
-        LOG.info(String.valueOf("STEP3-A-OK: FICHA_OCUPACIONAL actualizada. ID_FICHA=" + ficha.getIdFicha()));
-    }
-
-    private void guardarStep3_H_ActividadLaboral(Date ahora, String usuario) {
-
-        LOG.info(String.valueOf("STEP3-H: Procesando Actividad Laboral (FICHA_ACT_LABORAL)"));
-
-        ensureActLabSize();
-
-        for (int i = 0; i < H_ROWS; i++) {
-
-            int nroFila = i + 1;
-
-            boolean filaTieneDatos
-                    = !isBlank(getSafe(actLabCentroTrabajo, i))
-                    || !isBlank(getSafe(actLabActividad, i))
-                    || !isBlank(getSafe(actLabTiempo, i))
-                    || isTrue(getSafe(actLabTrabajoAnterior, i))
-                    || isTrue(getSafe(actLabTrabajoActual, i))
-                    || isTrue(getSafe(actLabIncidenteChk, i))
-                    || isTrue(getSafe(actLabAccidenteChk, i))
-                    || isTrue(getSafe(actLabEnfermedadChk, i))
-                    || getSafe(iessFecha, i) != null
-                    || !isBlank(getSafe(iessEspecificar, i))
-                    || !isBlank(getSafe(actLabObservaciones, i));
-
-            if (!filaTieneDatos) {
-
-                fichaActLaboralService.eliminarPorFichaYFila(ficha.getIdFicha(), nroFila);
-                continue;
-            }
-
-            FichaActLaboral fal = fichaActLaboralService.buscarPorFichaYFila(ficha.getIdFicha(), nroFila);
-
-            if (fal == null) {
-                fal = new FichaActLaboral();
-                fal.setFicha(ficha);
-                fal.setNroFila(nroFila);
-                fal.setFCreacion(ahora);
-                fal.setUsrCreacion(usuario);
-            } else {
-                fal.setFActualizacion(ahora);
-                fal.setUsrActualizacion(usuario);
-            }
-
-            fal.setCentroTrabajo(getSafe(actLabCentroTrabajo, i));
-            fal.setActividad(getSafe(actLabActividad, i));
-            fal.setTiempo(getSafe(actLabTiempo, i));
-
-            fal.setEsAnterior(sn(getSafe(actLabTrabajoAnterior, i)));
-            fal.setEsActual(sn(getSafe(actLabTrabajoActual, i)));
-            fal.setIncidente(sn(getSafe(actLabIncidenteChk, i)));
-            fal.setAccidente(sn(getSafe(actLabAccidenteChk, i)));
-            fal.setEnfOcupacional(sn(getSafe(actLabEnfermedadChk, i)));
-
-            fal.setFechaEvento(toDate(getSafe(iessFecha, i)));
-
-            fal.setEspecificar(getSafe(iessEspecificar, i));
-            fal.setObservaciones(getSafe(actLabObservaciones, i));
-
-            fichaActLaboralService.guardar(fal);
-        }
-
-        LOG.info(String.valueOf("STEP3-H-OK"));
-    }
-
-    private void guardarStep3_I_Extralaborales(Date ahora, String usuario) {
-
-        LOG.info(String.valueOf("STEP3-I: Procesando Actividades Extralaborales (SERIALIZADO EN FICHA)"));
-
-        if (tipoAct == null || fechaAct == null || descAct == null) {
-            LOG.info(String.valueOf("STEP3-I: Listas I null -> no se guarda (no rompe)"));
-            return;
-        }
-
-        StringBuilder sb = new StringBuilder();
-        Date ultimaFecha = null;
-
-        for (int i = 0; i < tipoAct.size(); i++) {
-
-            String t = getSafe(tipoAct, i);
-            Object rawF = ((java.util.List) fechaAct).get(i);
-            Date f = toDate(rawF);
-            String d = getSafe(descAct, i);
-
-            boolean filaTieneDatos = !isBlank(t) || f != null || !isBlank(d);
-            if (!filaTieneDatos) {
-                continue;
-            }
-
-            sb.append(i + 1).append(") ")
-                    .append(nullToDash(t)).append(" | ")
-                    .append(f != null ? new java.text.SimpleDateFormat("yyyy/MM/dd").format(f) : "----/--/--")
-                    .append(" | ")
-                    .append(nullToDash(d))
-                    .append("\n");
-
-            if (f != null) {
-                ultimaFecha = f;
-            }
-        }
-
-        ficha.setExtraLabDesc(sb.length() == 0 ? null : sb.toString().trim());
-        ficha.setExtraLabFecha(ultimaFecha);
-
-        ficha.setFechaActualizacion(ahora);
-        ficha.setUsrActualizacion(usuario);
-
-        ficha = fichaService.guardar(ficha);
-
-        LOG.info(String.valueOf("STEP3-I-OK"));
-    }
-
-    private void guardarStep3_J_Examenes(Date ahora, String usuario) {
-
-        LOG.info(String.valueOf("STEP3-J: Procesando Exámenes (FICHA_EXAMEN_COMP)"));
-
-        if (examNombre == null || examFecha == null || examResultado == null) {
-            LOG.info(String.valueOf("STEP3-J: Listas J null -> no se guarda J"));
-            return;
-        }
-
-        int filas = Math.min(examNombre.size(), Math.min(examFecha.size(), examResultado.size()));
-
-        for (int i = 0; i < filas; i++) {
-
-            int nroFila = i + 1;
-
-            String nombre = getSafe(examNombre, i);
-            Object rawFecha = ((java.util.List) examFecha).get(i);
-            Date fecha = toDate(rawFecha);
-            String resultado = getSafe(examResultado, i);
-
-            boolean filaTieneDatos
-                    = !isBlank(nombre)
-                    || fecha != null
-                    || !isBlank(resultado);
-
-            if (!filaTieneDatos) {
-
-                int del = fichaExamenCompService.eliminarPorFichaYFila(ficha.getIdFicha(), nroFila);
-                LOG.info(String.valueOf("STEP3-J-FILA " + nroFila + ": vacía -> delete=" + del));
-                continue;
-            }
-
-            FichaExamenComp ex = fichaExamenCompService.buscarPorFichaYFila(ficha.getIdFicha(), nroFila);
-
-            if (ex == null) {
-                ex = new FichaExamenComp();
-                ex.setFicha(ficha);
-                ex.setNroFila(nroFila);
-
-                LOG.info(String.valueOf("STEP3-J-FILA " + nroFila + ": INSERT"));
-            } else {
-                LOG.info(String.valueOf("STEP3-J-FILA " + nroFila + ": UPDATE id=" + ex.getIdFichaExamen()));
-            }
-
-            ex.setNombreExamen(nombre);
-            ex.setFechaExamen(fecha);
-            ex.setResultado(resultado);
-
-            fichaExamenCompService.guardar(ex, usuario);
-        }
-
-        LOG.info(String.valueOf("STEP3-J-OK"));
-    }
-
-    private void guardarStep3_K_Diagnosticos(Date ahora, String usuario) {
-
-        LOG.info(String.valueOf("STEP3-K: Procesando Diagnósticos"));
-
-        if (listaDiag == null || listaDiag.isEmpty()) {
-            LOG.info(String.valueOf("STEP3-K: listaDiag vacía -> OK"));
-            return;
-        }
-
-        if (fichaDiagnosticoService == null) {
-            LOG.info(String.valueOf("STEP3-K: fichaDiagnosticoService null -> no se guarda K"));
-            return;
-        }
-
-        try {
-            fichaDiagnosticoService.guardarDiagnosticosDeFicha(ficha.getIdFicha(), listaDiag, ahora, usuario);
-            LOG.info(String.valueOf("STEP3-K-OK (service)"));
-        } catch (NoSuchMethodError | RuntimeException ex) {
-            LOG.info(String.valueOf("STEP3-K: Tu service no tiene guardarDiagnosticosDeFicha(...) -> no se guarda K"));
-
-        }
     }
 
     private String nullToDash(String s) {
