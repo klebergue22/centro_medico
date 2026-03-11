@@ -80,6 +80,11 @@ import ec.gob.igm.rrhh.consultorio.web.service.CedulaSearchService;
 import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoWizardService;
 import ec.gob.igm.rrhh.consultorio.web.session.PdfSessionStorage;
 import ec.gob.igm.rrhh.consultorio.web.util.SnUtils;
+import ec.gob.igm.rrhh.consultorio.web.validation.FichaCompletaValidator;
+import ec.gob.igm.rrhh.consultorio.web.validation.Step1Validator;
+import ec.gob.igm.rrhh.consultorio.web.validation.Step2Validator;
+import ec.gob.igm.rrhh.consultorio.web.validation.Step3Validator;
+import ec.gob.igm.rrhh.consultorio.web.validation.ValidationResult;
 
 /**
  *
@@ -123,6 +128,11 @@ public class CentroMedicoCtrl implements Serializable {
     private static final int H_ROWS = 4;
     private static final int CONSUMO_ROWS = 3;
     private static final int DIAG_ROWS = 6;
+
+    private final Step1Validator step1Validator = new Step1Validator();
+    private final Step2Validator step2Validator = new Step2Validator();
+    private final Step3Validator step3Validator = new Step3Validator();
+    private final FichaCompletaValidator fichaCompletaValidator = new FichaCompletaValidator();
 
     private String activeStep = "step1";
     private boolean cedulaDlgAutoOpened = false;
@@ -1070,90 +1080,27 @@ private void asegurarPersonaAuxPersistida() {
 
 
     private boolean validarStep1() {
+        ValidationResult result = step1Validator.validate(
+                apellido1,
+                apellido2,
+                nombre1,
+                nombre2,
+                sexo,
+                tipoEval,
+                signos,
+                fichaRiesgo);
+        addValidationMessages("Step 1", result);
+        return result.isValid();
+    }
+
+    private void addValidationMessages(String step, ValidationResult result) {
         FacesContext ctx = FacesContext.getCurrentInstance();
-        boolean valido = true;
-
-        if (isBlank(apellido1) && isBlank(apellido2)) {
-            ctx.addMessage(null, new FacesMessage(
-                    FacesMessage.SEVERITY_ERROR,
-                    "Step 1",
-                    "Debe ingresar al menos un apellido."));
-            valido = false;
+        if (ctx == null || result == null || result.isValid()) {
+            return;
         }
-
-        if (isBlank(nombre1) && isBlank(nombre2)) {
-            ctx.addMessage(null, new FacesMessage(
-                    FacesMessage.SEVERITY_ERROR,
-                    "Step 1",
-                    "Debe ingresar al menos un nombre."));
-            valido = false;
+        for (String error : result.getErrors()) {
+            ctx.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, step, error));
         }
-
-        if (isBlank(sexo)) {
-            ctx.addMessage(null, new FacesMessage(
-                    FacesMessage.SEVERITY_ERROR,
-                    "Step 1",
-                    "Debe seleccionar el sexo del paciente."));
-            valido = false;
-        }
-
-        if (isBlank(tipoEval)) {
-            ctx.addMessage(null, new FacesMessage(
-                    FacesMessage.SEVERITY_ERROR,
-                    "Step 1",
-                    "Debe seleccionar el tipo de evaluación (Ingreso, Periódica, etc.)."));
-            valido = false;
-        }
-
-        if (signos == null) {
-            ctx.addMessage(null, new FacesMessage(
-                    FacesMessage.SEVERITY_ERROR,
-                    "Step 1",
-                    "Debe registrar los signos vitales."));
-            return false;
-        }
-
-        if (signos.getPaSistolica() == null || signos.getPaDiastolica() == null) {
-            ctx.addMessage(null, new FacesMessage(
-                    FacesMessage.SEVERITY_ERROR,
-                    "Step 1",
-                    "Debe ingresar la presión arterial completa (PA sistólica y diastólica)."));
-            valido = false;
-        }
-
-        if (signos.getFrecuenciaCard() == null) {
-            ctx.addMessage(null, new FacesMessage(
-                    FacesMessage.SEVERITY_ERROR,
-                    "Step 1",
-                    "Debe ingresar la frecuencia cardíaca (FC)."));
-            valido = false;
-        }
-
-        if (signos.getPesoKg() == null) {
-            ctx.addMessage(null, new FacesMessage(
-                    FacesMessage.SEVERITY_ERROR,
-                    "Step 1",
-                    "Debe ingresar el peso (kg)."));
-            valido = false;
-        }
-
-        if (signos.getTallaM() == null) {
-            ctx.addMessage(null, new FacesMessage(
-                    FacesMessage.SEVERITY_ERROR,
-                    "Step 1",
-                    "Debe ingresar la talla (en metros o convertir desde cm)."));
-            valido = false;
-        }
-
-        if (fichaRiesgo == null || isBlank(fichaRiesgo.getPuestoTrabajo())) {
-            ctx.addMessage(null, new FacesMessage(
-                    FacesMessage.SEVERITY_ERROR,
-                    "Step 1",
-                    "Debe ingresar el puesto de trabajo."));
-            valido = false;
-        }
-
-        return valido;
     }
 
     private void warn(String msg) {
@@ -1428,54 +1375,9 @@ private void asegurarPersonaAuxPersistida() {
 
 
     private boolean validarStep2() {
-        FacesContext ctx = FacesContext.getCurrentInstance();
-        boolean valido = true;
-
-        if (this == null) {
-
-            throw new NullPointerException("El controlador 'centroMedicoCtrl' es nulo. Recargue la página.");
-        }
-
-        if (fichaRiesgo == null || isBlank(fichaRiesgo.getPuestoTrabajo())) {
-            ctx.addMessage(null, new FacesMessage(
-                    FacesMessage.SEVERITY_ERROR, "Step 2",
-                    "Debe ingresar el puesto de trabajo."));
-            valido = false;
-        }
-
-        boolean hayActividad = false;
-        if (actividadesLab != null) {
-            for (String a : actividadesLab) {
-                if (!isBlank(a)) {
-                    hayActividad = true;
-                    break;
-                }
-            }
-        }
-        if (!hayActividad) {
-            ctx.addMessage(null, new FacesMessage(
-                    FacesMessage.SEVERITY_ERROR, "Step 2",
-                    "Debe registrar al menos una actividad laboral."));
-            valido = false;
-        }
-
-        boolean hayMedida = false;
-        if (medidasPreventivas != null) {
-            for (String m : medidasPreventivas) {
-                if (!isBlank(m)) {
-                    hayMedida = true;
-                    break;
-                }
-            }
-        }
-        if (!hayMedida) {
-            ctx.addMessage(null, new FacesMessage(
-                    FacesMessage.SEVERITY_ERROR, "Step 2",
-                    "Debe registrar al menos una medida preventiva."));
-            valido = false;
-        }
-
-        return valido;
+        ValidationResult result = step2Validator.validate(fichaRiesgo, actividadesLab, medidasPreventivas);
+        addValidationMessages("Step 2", result);
+        return result.isValid();
     }
 
     // Wizard - Guardado Step 2
@@ -1628,65 +1530,16 @@ private void asegurarPersonaAuxPersistida() {
     }
 
     private boolean validarStep3() {
-        FacesContext ctx = FacesContext.getCurrentInstance();
         s3("validarStep3() INICIO");
-
-        boolean valido = true;
-
-        boolean hayDiagnostico = false;
-        if (listaDiag != null) {
-            for (int i = 0; i < listaDiag.size(); i++) {
-                ConsultaDiagnostico d = listaDiag.get(i);
-                if (d == null) {
-                    continue;
-                }
-
-                boolean tiene = !isBlank(d.getCodigo()) || !isBlank(d.getDescripcion()) || d.getCie10() != null;
-                if (tiene) {
-                    hayDiagnostico = true;
-                    s3("validarStep3(): diagnóstico encontrado en fila " + (i + 1)
-                            + " codigo=" + d.getCodigo() + " cie=" + (d.getCie10() != null));
-                    break;
-                }
+        ValidationResult result = step3Validator.validate(listaDiag, aptitudSel, recomendaciones, medicoNombre, medicoCodigo);
+        if (!result.isValid()) {
+            for (String error : result.getErrors()) {
+                s3("validarStep3() FAIL: " + error);
             }
         }
-        if (!hayDiagnostico) {
-            s3("validarStep3() FAIL: no hay diagnósticos");
-            ctx.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR,
-                    "Step 3", "Debe registrar al menos un diagnóstico (CIE10)."));
-            valido = false;
-        }
-
-        if (isBlank(aptitudSel)) {
-            s3("validarStep3() FAIL: aptitudSel vacío");
-            ctx.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR,
-                    "Step 3", "Debe seleccionar la aptitud médica."));
-            valido = false;
-        }
-
-        if (isBlank(recomendaciones)) {
-            s3("validarStep3() FAIL: recomendaciones vacío");
-            ctx.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR,
-                    "Step 3", "Debe ingresar al menos una recomendación."));
-            valido = false;
-        }
-
-        if (isBlank(medicoNombre)) {
-            s3("validarStep3() FAIL: medicoNombre vacío");
-            ctx.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR,
-                    "Step 3", "Debe ingresar el nombre del profesional."));
-            valido = false;
-        }
-
-        if (isBlank(medicoCodigo)) {
-            s3("validarStep3() FAIL: medicoCodigo vacío");
-            ctx.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR,
-                    "Step 3", "Debe ingresar el código del médico."));
-            valido = false;
-        }
-
-        s3("validarStep3() FIN -> " + valido);
-        return valido;
+        addValidationMessages("Step 3", result);
+        s3("validarStep3() FIN -> " + result.isValid());
+        return result.isValid();
     }
 
     // Wizard - Guardado Step 3
@@ -1994,138 +1847,27 @@ private void asegurarPersonaAuxPersistida() {
     }
 
     private boolean verificarFichaCompleta() {
-        StringBuilder sb = new StringBuilder();
+        ValidationResult result = fichaCompletaValidator.validate(
+                ficha,
+                permitirIngresoManual,
+                personaAux,
+                empleadoSel,
+                aptitudSel,
+                fechaEmision,
+                this::inferCie10PrincipalFromListaK);
 
-        if (ficha == null || ficha.getIdFicha() == null) {
-            sb.append("- La ficha ocupacional aún no se ha guardado (Steps 1 y 3).\n");
-        }
-
-        if (ficha != null) {
-
-            // 0) Detectar modo auxiliar SIN depender solo de permitirIngresoManual
-            //    (si hay personaAux en controller o en ficha, entonces es modo auxiliar)
-            boolean modoAux = permitirIngresoManual
-                    || (this.personaAux != null)
-                    || (ficha.getPersonaAux() != null);
-
-            // 1) Sincronizar paciente
-            if (modoAux) {
-                if (this.personaAux != null
-                        && this.personaAux.getCedula() != null
-                        && !this.personaAux.getCedula().trim().isEmpty()) {
-                    ficha.setPersonaAux(this.personaAux);
-                }
-                ficha.setEmpleado(null);
-            } else {
-                if (this.empleadoSel != null) {
-                    ficha.setEmpleado(this.empleadoSel);
-                }
-                // si estás 100% seguro que no aplica personaAux cuando hay empleado, puedes limpiar:
-                // ficha.setPersonaAux(null);
+        if (!result.isValid()) {
+            StringBuilder sb = new StringBuilder();
+            for (String error : result.getErrors()) {
+                sb.append("- ").append(error).append("\n");
             }
-
-            // 2) Completar aptitud desde variable del controlador si en ficha viene vacío
-            if (ficha.getAptitudSel() == null || ficha.getAptitudSel().trim().isEmpty()) {
-                if (this.aptitudSel != null && !this.aptitudSel.trim().isEmpty()) {
-                    ficha.setAptitudSel(this.aptitudSel);
-                }
-            }
-
-            // 3) Completar fecha de emisión del certificado
-            if (ficha.getFechaEmision() == null) {
-                ficha.setFechaEmision(this.fechaEmision != null ? this.fechaEmision : new java.util.Date());
-            }
-
-            // 4) Validación empleado/persona auxiliar (sin LAZY)
-            boolean tieneEmpleado = (this.empleadoSel != null) || (ficha.getEmpleado() != null);
-
-            boolean tienePersonaAux = false;
-
-            // 4.1) Primero por controller (no proxy)
-            if (this.personaAux != null
-                    && this.personaAux.getCedula() != null
-                    && !this.personaAux.getCedula().trim().isEmpty()) {
-                tienePersonaAux = true;
-            }
-
-            // 4.2) Fallback por ficha sin disparar proxy
-            if (!tienePersonaAux && ficha.getPersonaAux() != null) {
-                try {
-                    boolean loaded = jakarta.persistence.Persistence.getPersistenceUtil().isLoaded(ficha.getPersonaAux());
-                    if (loaded) {
-                        String ced = ficha.getPersonaAux().getCedula();
-                        tienePersonaAux = (ced != null && !ced.trim().isEmpty());
-                    } else {
-                        // existe relación pero es proxy lazy: no leer campos
-                        tienePersonaAux = true;
-                    }
-                } catch (RuntimeException ex) {
-                    LOG.warn("No se pudo validar PersonaAux.cedula por LAZY/proxy. Se omite lectura.", ex);
-                    tienePersonaAux = true;
-                }
-            }
-
-            // 4.3) Aplicar regla por modo
-            if (!tieneEmpleado && !tienePersonaAux) {
-                sb.append("- Debe seleccionar un empleado o registrar una persona auxiliar.\n");
-            } else if (modoAux) {
-                if (!tienePersonaAux) {
-                    sb.append("- En modo ingreso manual: falta registrar la persona auxiliar.\n");
-                }
-            } else {
-                if (!tieneEmpleado) {
-                    sb.append("- Falta seleccionar el empleado.\n");
-                }
-            }
-
-            // 5) Validaciones generales
-            if (ficha.getFechaEvaluacion() == null) {
-                sb.append("- Falta la fecha de evaluación.\n");
-            }
-            if (ficha.getTipoEvaluacion() == null || ficha.getTipoEvaluacion().trim().isEmpty()) {
-                sb.append("- Falta el tipo de evaluación (INGRESO/PERÍODICA/etc.).\n");
-            }
-            if (ficha.getAptitudSel() == null || ficha.getAptitudSel().trim().isEmpty()) {
-                sb.append("- Debe seleccionar la aptitud médica.\n");
-            }
-
-            // 6) CIE10 principal
-            if (ficha.getCie10Principal() == null
-                    || ficha.getCie10Principal().getCodigo() == null
-                    || ficha.getCie10Principal().getCodigo().trim().isEmpty()) {
-
-                Cie10 inferido = inferCie10PrincipalFromListaK();
-                if (inferido != null && inferido.getCodigo() != null && !inferido.getCodigo().trim().isEmpty()) {
-                    ficha.setCie10Principal(inferido);
-                }
-            }
-
-            if (ficha.getCie10Principal() == null
-                    || ficha.getCie10Principal().getCodigo() == null
-                    || ficha.getCie10Principal().getCodigo().trim().isEmpty()) {
-                sb.append("- Debe registrar un diagnóstico CIE10 principal.\n");
-            }
-
-            // 7) Signos vitales
-            if (ficha.getSignos() == null) {
-                sb.append("- Debe registrar signos vitales (peso/talla) en Step 3.\n");
-            }
-
-            // 8) Fecha emisión
-            if (ficha.getFechaEmision() == null) {
-                sb.append("- Falta la fecha de emisión del certificado.\n");
-            }
-        }
-
-        if (sb.length() > 0) {
             FacesContext.getCurrentInstance().addMessage(null,
                     new FacesMessage(FacesMessage.SEVERITY_ERROR,
                             "Validación antes de generar el certificado",
                             sb.toString()));
-            return false;
         }
 
-        return true;
+        return result.isValid();
     }
 
     // PDF - Ficha Ocupacional
