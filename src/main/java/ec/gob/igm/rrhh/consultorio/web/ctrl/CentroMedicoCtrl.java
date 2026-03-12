@@ -79,6 +79,8 @@ import ec.gob.igm.rrhh.consultorio.web.pdf.PdfRenderer;
 import ec.gob.igm.rrhh.consultorio.web.service.CedulaDialogUiCoordinator;
 import ec.gob.igm.rrhh.consultorio.web.service.CedulaSearchService;
 import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoWizardService;
+import ec.gob.igm.rrhh.consultorio.web.service.Step3OrchestratorService;
+import ec.gob.igm.rrhh.consultorio.web.service.Step3OrchestratorService.Step3SaveCommand;
 import ec.gob.igm.rrhh.consultorio.web.session.PdfSessionStore;
 import ec.gob.igm.rrhh.consultorio.web.util.SnUtils;
 import ec.gob.igm.rrhh.consultorio.web.validation.FichaCompletaValidator;
@@ -415,6 +417,9 @@ public class CentroMedicoCtrl implements Serializable {
 
     @Inject
     private transient CedulaDialogUiCoordinator cedulaDialogUiCoordinator;
+
+    @EJB
+    private transient Step3OrchestratorService step3OrchestratorService;
 
     // JSF Lifecycle / Inicialización
     public void preRenderInit() {
@@ -1580,7 +1585,43 @@ private void asegurarPersonaAuxPersistida() {
         final Date now = new Date();
         final String user = usuarioReal();
 
-        persistStep3Blocks(now, user);
+        try {
+            ficha = step3OrchestratorService.saveStep3(new Step3SaveCommand(
+                    ficha,
+                    codCie10Ppal,
+                    obsExamenFisico,
+                    aptitudSel,
+                    detalleObservaciones,
+                    recomendaciones,
+                    nObsRetiro,
+                    medicoNombre,
+                    medicoCodigo,
+                    fechaEmision,
+                    now,
+                    user,
+                    this::asegurarPersonaAuxPersistida,
+                    this::ensureActLabSize,
+                    actLabCentroTrabajo,
+                    actLabActividad,
+                    actLabTiempo,
+                    actLabTrabajoAnterior,
+                    actLabTrabajoActual,
+                    actLabIncidenteChk,
+                    actLabAccidenteChk,
+                    actLabEnfermedadChk,
+                    iessFecha,
+                    iessEspecificar,
+                    actLabObservaciones,
+                    tipoAct,
+                    fechaAct,
+                    descAct,
+                    examNombre,
+                    examFecha,
+                    examResultado,
+                    listaDiag));
+        } catch (IllegalArgumentException ex) {
+            fail(ex.getMessage());
+        }
 
         registrarAuditoria("GUARDAR_STEP3", "FICHA_OCUPACIONAL / H / I / J / K", "*",
                 "Step 3 guardado. ID_FICHA=" + ficha.getIdFicha());
