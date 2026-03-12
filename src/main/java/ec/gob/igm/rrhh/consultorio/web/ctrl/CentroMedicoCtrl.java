@@ -1779,11 +1779,18 @@ public class CentroMedicoCtrl implements Serializable {
             return null;
         }
 
-        if (!"otros".equals(parts[1])) {
-            return null;
+        // Soporta ambos formatos recibidos desde UI/datos:
+        // 1) SEG_OTROS_1  -> otros_seg_1
+        // 2) OTROS_SEG_1  -> otros_seg_1
+        if ("otros".equals(parts[0])) {
+            return keyLower;
         }
 
-        return "otros_" + parts[0] + "_" + parts[2];
+        if ("otros".equals(parts[1])) {
+            return "otros_" + parts[0] + "_" + parts[2];
+        }
+
+        return null;
     }
 
     /**
