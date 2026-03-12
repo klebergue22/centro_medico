@@ -73,6 +73,10 @@ import ec.gob.igm.rrhh.consultorio.web.service.CedulaDialogUiCoordinator;
 import ec.gob.igm.rrhh.consultorio.web.service.CedulaSearchService;
 import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoFormInitializer;
 import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoWizardService;
+import ec.gob.igm.rrhh.consultorio.web.service.FichaPdfDataMapper;
+import ec.gob.igm.rrhh.consultorio.web.service.FichaPdfMappedData;
+import ec.gob.igm.rrhh.consultorio.web.service.FichaPdfPlaceholderBuilder;
+import ec.gob.igm.rrhh.consultorio.web.service.FichaPdfPreparationService;
 import ec.gob.igm.rrhh.consultorio.web.service.Step3OrchestratorService;
 import ec.gob.igm.rrhh.consultorio.web.service.Step3OrchestratorService.Step3SaveCommand;
 import ec.gob.igm.rrhh.consultorio.web.session.PdfSessionStore;
@@ -420,6 +424,15 @@ public class CentroMedicoCtrl implements Serializable {
 
     @EJB
     private transient Step3OrchestratorService step3OrchestratorService;
+
+    @EJB
+    private transient FichaPdfPreparationService fichaPdfPreparationService;
+
+    @EJB
+    private transient FichaPdfDataMapper fichaPdfDataMapper;
+
+    @EJB
+    private transient FichaPdfPlaceholderBuilder fichaPdfPlaceholderBuilder;
 
     // JSF Lifecycle / Inicialización
     public void preRenderInit() {
@@ -1611,40 +1624,36 @@ public class CentroMedicoCtrl implements Serializable {
     }
 
     // PDF - Ficha Ocupacional
-    private void recargarFichaDesdeBdParaImpresion() {
-        if (this.ficha == null || this.ficha.getIdFicha() == null) {
-            return;
-        }
-
-        FichaOcupacional fresh = fichaService.reloadById(this.ficha.getIdFicha());
-        if (fresh != null) {
-            this.ficha = fresh;
-        }
-    }
 
     public void prepararVistaPreviaFicha() {
         FacesContext ctx = FacesContext.getCurrentInstance();
 
         try {
-            if (!verificarFichaParaPdfFicha()) {
+            FichaPdfPreparationService.FichaPdfPrepareResult result = fichaPdfPreparationService.preparar(
+                    ficha,
+                    empleadoSel,
+                    personaAux,
+                    permitirIngresoManual,
+                    this::asegurarPersonaAuxPersistida,
+                    this::construirHtmlFichaDesdePlantilla,
+                    centroMedicoPdfFacade);
+
+            if (!result.valid) {
+                StringBuilder sb = new StringBuilder();
+                for (String error : result.errores) {
+                    sb.append("- ").append(error).append("\n");
+                }
+                ctx.addMessage(null,
+                        new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                                "Validación antes de generar la ficha",
+                                sb.toString()));
                 fichaPdfListo = false;
                 return;
             }
 
-            // En ingreso manual, PersonaAux debe estar persistida.
-            asegurarPersonaAuxPersistida();
-
-            // Persistir cambios y recargar estado desde base.
-            ficha = fichaService.actualizar(ficha);
-            recargarFichaDesdeBdParaImpresion();
-
-            CentroMedicoPdfFacade.PdfPreviewResult result = centroMedicoPdfFacade.prepararPreviewDesdeHtml(
-                    null,
-                    this::construirHtmlFichaDesdePlantilla,
-                    "FICHA_");
-
-            this.pdfTokenFicha = result.getToken();
-            this.fichaPdfListo = result.isListo();
+            ficha = result.ficha;
+            this.pdfTokenFicha = result.token;
+            this.fichaPdfListo = result.listo;
 
             if (!fichaPdfListo) {
                 return;
@@ -1696,89 +1705,6 @@ public class CentroMedicoCtrl implements Serializable {
             // LOG.info("[PRINT] empleadoSel.sexo=" + empleadoSel.getSexo());
             // LOG.info("[PRINT] empleadoSel.fechaNac=" + empleadoSel.getFechaNacimiento());
         }
-    }
-
-    private boolean verificarFichaParaPdfFicha() {
-        StringBuilder sb = new StringBuilder();
-        debugObjetosAntesDeImprimir();
-
-        if (ficha == null) {
-            sb.append("- No existe ficha en memoria.\n");
-        } else {
-
-            // 1) Determinar "modo auxiliar" sin depender solo de permitirIngresoManual
-            //    Si hay personaAux en controller o en ficha, asumimos ingreso manual.
-            boolean modoAux = permitirIngresoManual
-                    || (this.personaAux != null)
-                    || (ficha.getPersonaAux() != null);
-
-            // 2) Validación de empleado / persona auxiliar
-            boolean tieneEmpleado = (empleadoSel != null) || (ficha.getEmpleado() != null);
-
-            boolean tienePersonaAux = false;
-
-            // 2.1) Primero con el objeto del controller (no proxy)
-            if (this.personaAux != null
-                    && this.personaAux.getCedula() != null
-                    && !this.personaAux.getCedula().trim().isEmpty()) {
-                tienePersonaAux = true;
-            }
-
-            // 2.2) Fallback: si existe relación en ficha, NO tocar getters lazy si no está loaded
-            if (!tienePersonaAux && ficha.getPersonaAux() != null) {
-                try {
-                    boolean loaded = jakarta.persistence.Persistence.getPersistenceUtil().isLoaded(ficha.getPersonaAux());
-                    if (loaded) {
-                        String ced = ficha.getPersonaAux().getCedula();
-                        tienePersonaAux = (ced != null && !ced.trim().isEmpty());
-                    } else {
-                        // existe relación, pero es proxy lazy -> no leer campos
-                        tienePersonaAux = true;
-                    }
-                } catch (RuntimeException ex) {
-                    LOG.warn("No se pudo validar PersonaAux por LAZY/proxy. Se omite lectura para evitar LazyInitializationException.", ex);
-                    tienePersonaAux = true;
-                }
-            }
-
-            // 3) Reglas según modo
-            if (!tieneEmpleado && !tienePersonaAux) {
-                sb.append("- Debe seleccionar un empleado o registrar una persona auxiliar.\n");
-            } else if (modoAux) {
-                // En modo auxiliar, NO exijas empleado
-                if (!tienePersonaAux) {
-                    sb.append("- En modo ingreso manual: falta registrar la persona auxiliar.\n");
-                }
-            } else {
-                // En modo empleado, exiges empleado
-                if (!tieneEmpleado) {
-                    sb.append("- Falta seleccionar el empleado.\n");
-                }
-            }
-
-            // 4) Validaciones generales
-            if (ficha.getFechaEvaluacion() == null) {
-                sb.append("- Falta la fecha de evaluación.\n");
-            }
-            if (ficha.getTipoEvaluacion() == null || ficha.getTipoEvaluacion().trim().isEmpty()) {
-                sb.append("- Falta el tipo de evaluación.\n");
-            }
-            if (ficha.getSignos() == null) {
-                sb.append("- Falta registrar signos vitales (Step 3).\n");
-            }
-            if (ficha.getIdFicha() == null) {
-                sb.append("- La ficha aún no se ha guardado.\n");
-            }
-        }
-
-        if (sb.length() > 0) {
-            FacesContext.getCurrentInstance().addMessage(null,
-                    new FacesMessage(FacesMessage.SEVERITY_ERROR,
-                            "Validación antes de generar la ficha",
-                            sb.toString()));
-            return false;
-        }
-        return true;
     }
 
     private String construirHtmlFichaDesdeFacelet() {
@@ -1863,23 +1789,25 @@ public class CentroMedicoCtrl implements Serializable {
 
     private String construirHtmlFichaDesdePlantilla() {
         try {
-            final String template = cargarRecursoComoString("plantilla_ficha.html");
-
-            // IMPORTANTÍSIMO: antes de construir reemplazos, sincroniza desde objetos
-            syncCamposDesdeObjetos();
-
-            Map<String, String> rep = buildReemplazosFicha();
-            String html = centroMedicoPdfFacade.aplicarReemplazos(template, rep);
-
-            // Si tienes bloques {{#if sexoM}} / {{#if sexoF}} en la plantilla:
-            html = centroMedicoPdfFacade.aplicarBloquesSexo(html, rep.get("sexo"));
-            html = centroMedicoPdfFacade.aplicarBloquesTipoEvaluacion(html, obtenerTipoEvaluacionPdf());
-
-            return html;
-
-        } catch (IOException e) {
+            return fichaPdfPlaceholderBuilder.construirHtmlFichaDesdePlantilla(
+                    () -> {
+                        try {
+                            return cargarRecursoComoString("plantilla_ficha.html");
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
+                    },
+                    this::syncCamposDesdeObjetos,
+                    this::buildReemplazosFicha,
+                    this::obtenerTipoEvaluacionPdf,
+                    centroMedicoPdfFacade);
+        } catch (RuntimeException ex) {
+            Throwable cause = ex.getCause() != null ? ex.getCause() : ex;
+            LOG.error("[FICHA] Error cargando plantilla_ficha.html", cause);
+            return "<html><body><h3>Error cargando plantilla_ficha.html</h3><pre>"
+                    + safe(cause.getMessage()) + "</pre></body></html>";
+        } catch (Exception e) {
             LOG.error("[FICHA] Error cargando plantilla_ficha.html", e);
-            // Devuelve HTML mínimo para que veas el error en PDF/preview
             return "<html><body><h3>Error cargando plantilla_ficha.html</h3><pre>"
                     + safe(e.getMessage()) + "</pre></body></html>";
         }
@@ -1904,99 +1832,35 @@ public class CentroMedicoCtrl implements Serializable {
     }
 
     private void syncCamposDesdeObjetos() {
-
-        // 1) Desde FICHA (objeto persistido)
-        if (ficha != null) {
-            institucion = ficha.getInstSistema();
-            ruc = ficha.getRucEstablecimiento();
-            centroTrabajo = ficha.getEstablecimientoCt();
-            ciiu = ficha.getCiiu();
-            noHistoria = ficha.getNoHistoriaClinica();
-            noArchivo = ficha.getNoArchivo();
-            this.ginecoExamen1 = ficha.getGinecoExamen1();
-            this.ginecoTiempo1 = ficha.getGinecoTiempo1();
-            this.ginecoResultado1 = ficha.getGinecoResultado1();
-            this.ginecoExamen2 = ficha.getGinecoExamen2();
-            this.ginecoTiempo2 = ficha.getGinecoTiempo2();
-            this.ginecoResultado2 = ficha.getGinecoResultado2();
-            this.ginecoObservacion = ficha.getGinecoObservacion();
-
-            // Enfermedad actual
-            this.enfermedadActual = ficha.getEnfermedadProbActual();
-
-// Examen físico
-            this.exfPielCicatrices = ficha.getExfPielCicatrices();
-            this.exfOjosParpados = ficha.getExfOjosParpados();
-            this.exfOjosConjuntivas = ficha.getExfOjosConjuntivas();
-            this.exfOjosPupilas = ficha.getExfOjosPupilas();
-            this.exfOjosCornea = ficha.getExfOjosCornea();
-            this.exfOjosMotilidad = ficha.getExfOjosMotilidad();
-            this.exfOidoConducto = ficha.getExfOidoConducto();
-            this.exfOidoPabellon = ficha.getExfOidoPabellon();
-            this.exfOidoTimpanos = ficha.getExfOidoTimpanos();
-            this.exfOroLabios = ficha.getExfOroLabios();
-            this.exfOroLengua = ficha.getExfOroLengua();
-            this.exfOroFaringe = ficha.getExfOroFaringe();
-            this.exfOroAmigdalas = ficha.getExfOroAmigdalas();
-            this.exfOroDentadura = ficha.getExfOroDentadura();
-            this.exfNarizTabique = ficha.getExfNarizTabique();
-            this.exfNarizCornetes = ficha.getExfNarizCornetes();
-            this.exfNarizMucosas = ficha.getExfNarizMucosas();
-            this.exfNarizSenos = ficha.getExfNarizSenosParanasa(); // Ajuste
-            this.exfCuelloTiroides = ficha.getExfCuelloTiroidesMasas(); // Ajuste
-            this.exfCuelloMovilidad = ficha.getExfCuelloMovilidad();
-            this.exfToraxMamas = ficha.getExfToraxMamas();
-            this.exfToraxPulmones = ficha.getExfToraxPulmones();
-            this.exfToraxCorazon = ficha.getExfToraxCorazon();
-            this.exfToraxParrilla = ficha.getExfToraxParrillaCostal(); // Ajuste
-            this.exfAbdomenVisceras = ficha.getExfAbdVisceras(); // Ajuste
-            this.exfAbdomenPared = ficha.getExfAbdParedAbdominal(); // Ajuste
-            this.exfColumnaFlexibilidad = ficha.getExfColFlexibilidad(); // Ajuste
-            this.exfColumnaDesviacion = ficha.getExfColDesviacion(); // Ajuste
-            this.exfColumnaDolor = ficha.getExfColDolor(); // Ajuste
-            this.exfPelvisPelvis = ficha.getExfPelvisPelvis();
-            this.exfPelvisGenitales = ficha.getExfPelvisGenitales();
-            this.exfExtVascular = ficha.getExfExtVascular();
-            this.exfExtSup = ficha.getExfExtMiembrosSup(); // Ajuste
-            this.exfExtInf = ficha.getExfExtMiembrosInf(); // Ajuste
-            this.exfNeuroFuerza = ficha.getExfNeuroFuerza();
-            this.exfNeuroSensibilidad = ficha.getExfNeuroSensibilidad();
-            this.exfNeuroMarcha = ficha.getExfNeuroMarcha();
-            this.exfNeuroReflejos = ficha.getExfNeuroReflejos();
-            this.obsExamenFisico = ficha.getObsExamenFisicoRegional(); // o getObsExamenFisicoReg() según tu preferencia
-
-            // Si estos valores están en ficha, úsalo; si no, se llenarán desde empleadoSel
-            // grupoSanguineo = ficha.getGrupoSanguineo();   (si existe)
-            // lateralidad    = ficha.getLateralidad();      (si existe)
+        FichaPdfMappedData data = fichaPdfDataMapper.map(ficha, empleadoSel, fechaNacimiento);
+        this.institucion = data.institucion;
+        this.ruc = data.ruc;
+        this.centroTrabajo = data.centroTrabajo;
+        this.ciiu = data.ciiu;
+        this.noHistoria = data.noHistoria;
+        this.noArchivo = data.noArchivo;
+        this.ginecoExamen1 = data.ginecoExamen1;
+        this.ginecoTiempo1 = data.ginecoTiempo1;
+        this.ginecoResultado1 = data.ginecoResultado1;
+        this.ginecoExamen2 = data.ginecoExamen2;
+        this.ginecoTiempo2 = data.ginecoTiempo2;
+        this.ginecoResultado2 = data.ginecoResultado2;
+        this.ginecoObservacion = data.ginecoObservacion;
+        this.enfermedadActual = data.enfermedadActual;
+        if (data.apellido1 != null) {
+            this.apellido1 = data.apellido1;
         }
-
-        // 2) Desde EMPLEADO (objeto seleccionado)
-        if (empleadoSel != null) {
-            apellido1 = empleadoSel.getPriApellido();
-            apellido2 = empleadoSel.getSegApellido();
-
-            // Si "getNombres()" trae "KLEBER DAVID", separa:
-            String nombres = empleadoSel.getNombres();
-            if (nombres != null) {
-                String[] parts = nombres.trim().split("\\s+", 2);
-                nombre1 = parts.length > 0 ? parts[0] : "";
-                nombre2 = parts.length > 1 ? parts[1] : "";
-            }
-
-            // Ajusta estos getters a los REALES de tu entidad empleadoSel:
-            // sexo = empleadoSel.getSexo();                 // "M" o "F"
-            // fechaNacimiento = empleadoSel.getFechaNacimiento(); // Date
-            // grupoSanguineo = empleadoSel.getGrupoSanguineo();
-            // lateralidad = empleadoSel.getLateralidad();
-            // Si no sabes el nombre exacto, imprime en LOG:
-            // LOG.info("empleadoSel class = {}", empleadoSel.getClass());
+        if (data.apellido2 != null) {
+            this.apellido2 = data.apellido2;
         }
-
-        // 3) Edad si tienes fechaNacimiento
-        if (fechaNacimiento != null) {
-            java.time.LocalDate fn = fechaNacimiento.toInstant()
-                    .atZone(java.time.ZoneId.systemDefault()).toLocalDate();
-            edad = java.time.Period.between(fn, java.time.LocalDate.now()).getYears();
+        if (data.nombre1 != null) {
+            this.nombre1 = data.nombre1;
+        }
+        if (data.nombre2 != null) {
+            this.nombre2 = data.nombre2;
+        }
+        if (data.edad != null) {
+            this.edad = data.edad;
         }
     }
 
