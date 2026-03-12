@@ -762,12 +762,14 @@ private void asegurarPersonaAuxPersistida() {
 
 
     private boolean validarStep1() {
-        String puestoTrabajoCiuoActual = null;
-        if (ficha != null) {
-            puestoTrabajoCiuoActual = ficha.getCiiu();
-        }
-        if (esVacio(puestoTrabajoCiuoActual)) {
-            puestoTrabajoCiuoActual = ciiu;
+        String puestoTrabajoCiuoActual = firstNonBlank(
+                ficha != null ? ficha.getCiiu() : null,
+                ciiu,
+                getSubmittedValue("puestoTrabajoCiuoA"),
+                getSubmittedValue("puestoTrabajoCiuoB"));
+
+        if (ficha != null && esVacio(ficha.getCiiu()) && !esVacio(puestoTrabajoCiuoActual)) {
+            ficha.setCiiu(puestoTrabajoCiuoActual);
         }
 
         ValidationResult result = centroMedicoStepValidationService.validarStep1(
@@ -786,6 +788,38 @@ private void asegurarPersonaAuxPersistida() {
                 fichaRiesgo);
         addValidationMessages("Step 1", result);
         return result.isValid();
+    }
+
+
+    private String getSubmittedValue(String componentId) {
+        FacesContext ctx = FacesContext.getCurrentInstance();
+        if (ctx == null || esVacio(componentId)) {
+            return null;
+        }
+
+        Map<String, String> params = ctx.getExternalContext().getRequestParameterMap();
+        for (Map.Entry<String, String> entry : params.entrySet()) {
+            String key = entry.getKey();
+            if (key == null) {
+                continue;
+            }
+            if (key.equals(componentId) || key.endsWith(":" + componentId)) {
+                return entry.getValue();
+            }
+        }
+        return null;
+    }
+
+    private String firstNonBlank(String... values) {
+        if (values == null) {
+            return null;
+        }
+        for (String value : values) {
+            if (!esVacio(value)) {
+                return value;
+            }
+        }
+        return null;
     }
 
     private void addValidationMessages(String step, ValidationResult result) {
