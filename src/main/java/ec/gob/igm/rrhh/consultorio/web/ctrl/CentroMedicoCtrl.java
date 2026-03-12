@@ -3569,8 +3569,9 @@ private void asegurarPersonaAuxPersistida() {
                 return new ArrayList<>();
             }
 
-            String q = query.trim().toUpperCase().replaceAll("[^A-Z0-9]", "");
-            if (q.isEmpty()) {
+            String qRaw = query.trim().toUpperCase();
+            String q = qRaw.replaceAll("[^A-Z0-9]", "");
+            if (q.isEmpty() && qRaw.isEmpty()) {
                 LOG.info("<<< [AC-K-COD] q empty after normalize => return empty");
                 return new ArrayList<>();
             }
@@ -3581,7 +3582,7 @@ private void asegurarPersonaAuxPersistida() {
             LOG.debug("... [AC-K-COD] service.buscarJerarquiaPorTerm(q={}) size={}", q,
                     (lista == null ? "null" : lista.size()));
 
-            agregarCoincidenciasCodigo(out, lista, q);
+            agregarCoincidenciasCodigo(out, lista, q, qRaw);
 
             // Fallback: hay catálogos con códigos no normalizados (espacios/puntos).
             // Si no hubo resultados por prefijo, hacemos búsqueda tolerante por código.
@@ -3589,7 +3590,7 @@ private void asegurarPersonaAuxPersistida() {
                 List<Cie10> alterna = cie10Service.buscarPorCodigoAproximado(q, 20);
                 LOG.debug("... [AC-K-COD] fallback buscarPorCodigoAproximado(q={}) size={}", q,
                         (alterna == null ? "null" : alterna.size()));
-                agregarCoincidenciasCodigo(out, alterna, q);
+                agregarCoincidenciasCodigo(out, alterna, q, qRaw);
             }
 
             // Último fallback: búsqueda general por término (código/descr.).
@@ -3597,7 +3598,7 @@ private void asegurarPersonaAuxPersistida() {
                 List<Cie10> general = cie10Service.buscarPorTermino(q, 20);
                 LOG.debug("... [AC-K-COD] fallback buscarPorTermino(q={}) size={}", q,
                         (general == null ? "null" : general.size()));
-                agregarCoincidenciasCodigo(out, general, q);
+                agregarCoincidenciasCodigo(out, general, q, qRaw);
             }
 
             LOG.info("<<< [AC-K-COD] RETURN out.size=" + out.size()
@@ -3610,10 +3611,13 @@ private void asegurarPersonaAuxPersistida() {
         }
     }
 
-    private void agregarCoincidenciasCodigo(List<String> out, List<Cie10> lista, String q) {
-        if (lista == null || out == null || q == null) {
+    private void agregarCoincidenciasCodigo(List<String> out, List<Cie10> lista, String qCodigo, String qTexto) {
+        if (lista == null || out == null) {
             return;
         }
+
+        String qCodigoNorm = (qCodigo == null) ? "" : qCodigo.trim();
+        String qTextoNorm = (qTexto == null) ? "" : qTexto.trim().toUpperCase();
 
         for (Cie10 c : lista) {
             if (c == null || c.getCodigo() == null) {
@@ -3626,7 +3630,13 @@ private void asegurarPersonaAuxPersistida() {
             }
 
             String codNorm = codigo.toUpperCase().replaceAll("[^A-Z0-9]", "");
-            if (!codNorm.contains(q)) {
+            boolean coincideCodigo = !qCodigoNorm.isEmpty() && codNorm.contains(qCodigoNorm);
+            String desc = c.getDescripcion();
+            boolean coincideDescripcion = !qTextoNorm.isEmpty()
+                    && desc != null
+                    && desc.toUpperCase().contains(qTextoNorm);
+
+            if (!coincideCodigo && !coincideDescripcion) {
                 continue;
             }
 
