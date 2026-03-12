@@ -62,10 +62,6 @@ import ec.gob.igm.rrhh.consultorio.domain.model.SignosVitales;
 import ec.gob.igm.rrhh.consultorio.service.Cie10Service;
 import ec.gob.igm.rrhh.consultorio.service.EmpleadoRhService;
 import ec.gob.igm.rrhh.consultorio.service.EmpleadoService;
-import ec.gob.igm.rrhh.consultorio.service.ExamenFisicoRegionalService;
-import ec.gob.igm.rrhh.consultorio.service.FichaActLaboralService;
-import ec.gob.igm.rrhh.consultorio.service.FichaDiagnosticoService;
-import ec.gob.igm.rrhh.consultorio.service.FichaExamenCompService;
 import ec.gob.igm.rrhh.consultorio.service.FichaOcupacionalService;
 import ec.gob.igm.rrhh.consultorio.service.FichaRiesgoDetService;
 import ec.gob.igm.rrhh.consultorio.service.FichaRiesgoService;
@@ -380,20 +376,11 @@ public class CentroMedicoCtrl implements Serializable {
     @EJB
     private transient FichaRiesgoService fichaRiesgoService;
     @EJB
-    private transient FichaDiagnosticoService fichaDiagnosticoService;
-    @EJB
     private transient EmpleadoService empleadoService;
     @EJB
     private transient PersonaAuxService personaAuxService;
     @EJB
-    private transient FichaActLaboralService fichaActLaboralService;
-    @EJB
     private transient FichaRiesgoDetService fichaRiesgoDetService;
-
-    @EJB
-    private transient FichaExamenCompService fichaExamenCompService;
-    @EJB
-    private transient ExamenFisicoRegionalService examenFisicoRegionalService;
 
     @EJB
     private transient CentroMedicoAuditService centroMedicoAuditService;
@@ -5625,13 +5612,6 @@ private void asegurarPersonaAuxPersistida() {
         this.fichaRiesgoService = fichaRiesgoService;
     }
 
-    public FichaDiagnosticoService getFichaDiagnosticoService() {
-        return fichaDiagnosticoService;
-    }
-
-    public void setFichaDiagnosticoService(FichaDiagnosticoService fichaDiagnosticoService) {
-        this.fichaDiagnosticoService = fichaDiagnosticoService;
-    }
 
     public EmpleadoService getEmpleadoService() {
         return empleadoService;
@@ -5649,13 +5629,6 @@ private void asegurarPersonaAuxPersistida() {
         this.personaAuxService = personaAuxService;
     }
 
-    public FichaActLaboralService getFichaActLaboralService() {
-        return fichaActLaboralService;
-    }
-
-    public void setFichaActLaboralService(FichaActLaboralService fichaActLaboralService) {
-        this.fichaActLaboralService = fichaActLaboralService;
-    }
 
     public FichaRiesgoDetService getFichaRiesgoDetService() {
         return fichaRiesgoDetService;
@@ -5665,13 +5638,6 @@ private void asegurarPersonaAuxPersistida() {
         this.fichaRiesgoDetService = fichaRiesgoDetService;
     }
 
-    public FichaExamenCompService getFichaExamenCompService() {
-        return fichaExamenCompService;
-    }
-
-    public void setFichaExamenCompService(FichaExamenCompService fichaExamenCompService) {
-        this.fichaExamenCompService = fichaExamenCompService;
-    }
 
     public void onDlgCedulaHide() {
         mostrarDlgCedula = false;
