@@ -1,6 +1,11 @@
 package ec.gob.igm.rrhh.consultorio.web.servlet;
 
-import ec.gob.igm.rrhh.consultorio.web.session.PdfSessionStore;
+/**
+ *
+ * @author GUERRA_KLEBER
+ */
+
+import ec.gob.igm.rrhh.consultorio.web.pdf.PdfSessionStore;
 import jakarta.enterprise.inject.spi.CDI;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -22,7 +27,11 @@ public class PdfServlet extends HttpServlet {
     @Override
     public void init() throws ServletException {
         super.init();
-        this.pdfSessionStore = CDI.current().select(PdfSessionStore.class).get();
+        try {
+            pdfSessionStore = CDI.current().select(PdfSessionStore.class).get();
+        } catch (Exception ex) {
+            throw new ServletException("No se pudo inicializar PdfSessionStore", ex);
+        }
     }
 
     @Override
@@ -56,11 +65,11 @@ public class PdfServlet extends HttpServlet {
         resp.setContentLength(bytes.length);
 
         final boolean download = "1".equals(req.getParameter("download"))
-                              || "true".equalsIgnoreCase(req.getParameter("download"));
+                || "true".equalsIgnoreCase(req.getParameter("download"));
 
         final String filename = token.startsWith("FICHA_") ? "Ficha.pdf"
-                             : token.startsWith("CERT_")  ? "Certificado.pdf"
-                             : "Documento.pdf";
+                : token.startsWith("CERT_") ? "Certificado.pdf"
+                : "Documento.pdf";
 
         final String disposition = download ? "attachment" : "inline";
         resp.setHeader("Content-Disposition", disposition + "; filename=\"" + filename + "\"");
@@ -69,5 +78,8 @@ public class PdfServlet extends HttpServlet {
             out.write(bytes);
             out.flush();
         }
+
+        // Si quieres token “de un solo uso”, descomenta:
+        // session.removeAttribute(token);
     }
 }
