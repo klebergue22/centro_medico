@@ -23,6 +23,8 @@ public class Step1FichaService {
     @EJB
     private Step1VitalSignsManager step1VitalSignsManager;
     @EJB
+    private ExamenFisicoRegionalService examenFisicoRegionalService;
+    @EJB
     private CentroMedicoAuditService centroMedicoAuditService;
 
     public Step1Result guardar(Step1Command cmd) {
@@ -39,6 +41,7 @@ public class Step1FichaService {
         personaAux = assignment.personaAux();
 
         mapStep1ToOccupationalRecord(ficha, cmd);
+        examenFisicoRegionalService.aplicarExamenFisicoRegional(ficha);
 
         SignosVitales sv = upsertVitalSigns(ficha, cmd, now, user);
         ficha = saveDraftOccupationalRecord(ficha, personaAux, now, user);
