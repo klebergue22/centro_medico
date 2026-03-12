@@ -263,6 +263,9 @@ public class CentroMedicoCtrl implements Serializable {
 
     private String codCie10Ppal;
     private String descCie10Ppal;
+    private String dialogDiagnosticoCodigo;
+    private String dialogDiagnosticoDescripcion;
+    private Integer dialogDiagnosticoIdx;
 
     private java.util.List<ConsultaDiagnostico> listaDiag = new ArrayList<>();
 
@@ -5114,6 +5117,55 @@ private void asegurarPersonaAuxPersistida() {
         LOG.info("<<< [AC-K-COD] itemSelect AFTER codigo=[" + row.getCodigo() + "] desc=[" + row.getDescripcion() + "]");
     }
 
+    public void abrirDialogoDiagnostico(AjaxBehaviorEvent event) {
+        UIComponent comp = (event != null ? event.getComponent() : null);
+        Integer idx = extraerIdx(comp);
+        ConsultaDiagnostico row = getDiagRow(idx, "K-DLG abrir");
+        if (row == null) {
+            return;
+        }
+
+        dialogDiagnosticoIdx = idx;
+        dialogDiagnosticoCodigo = row.getCodigo();
+        dialogDiagnosticoDescripcion = row.getDescripcion();
+        PrimeFaces.current().executeScript("PF('kDiagDialogWv').show();");
+    }
+
+    public void aceptarDialogoDiagnostico() {
+        ConsultaDiagnostico row = getDiagRow(dialogDiagnosticoIdx, "K-DLG aceptar");
+        if (row == null) {
+            return;
+        }
+
+        String codigo = dialogDiagnosticoCodigo != null ? dialogDiagnosticoCodigo.trim().toUpperCase() : "";
+        String descripcion = dialogDiagnosticoDescripcion != null ? dialogDiagnosticoDescripcion.trim() : "";
+
+        Cie10 cie = null;
+        if (!codigo.isEmpty()) {
+            cie = cie10Service.buscarPorCodigo(codigo);
+        }
+        if (cie == null && !descripcion.isEmpty()) {
+            cie = cie10Service.buscarPrimeroPorDescripcion(descripcion);
+        }
+
+        if (cie != null) {
+            row.setCodigo(cie.getCodigo());
+            row.setDescripcion(cie.getDescripcion());
+            row.setCie10(cie);
+        } else {
+            row.setCodigo(codigo.isEmpty() ? null : codigo);
+            row.setDescripcion(descripcion.isEmpty() ? null : descripcion);
+            row.setCie10(null);
+        }
+
+        syncCie10PrincipalFromK();
+        PrimeFaces.current().executeScript("PF('kDiagDialogWv').hide();");
+    }
+
+    public void cerrarDialogoDiagnostico() {
+        PrimeFaces.current().executeScript("PF('kDiagDialogWv').hide();");
+    }
+
     public void onKCieCodigoBlur(AjaxBehaviorEvent event) {
         UIComponent comp = event != null ? event.getComponent() : null;
         Integer idx = extraerIdx(comp);
@@ -5383,6 +5435,22 @@ private void asegurarPersonaAuxPersistida() {
 
     public boolean isCedulaDlgAutoOpened() {
         return cedulaDlgAutoOpened;
+    }
+
+    public String getDialogDiagnosticoCodigo() {
+        return dialogDiagnosticoCodigo;
+    }
+
+    public void setDialogDiagnosticoCodigo(String dialogDiagnosticoCodigo) {
+        this.dialogDiagnosticoCodigo = dialogDiagnosticoCodigo;
+    }
+
+    public String getDialogDiagnosticoDescripcion() {
+        return dialogDiagnosticoDescripcion;
+    }
+
+    public void setDialogDiagnosticoDescripcion(String dialogDiagnosticoDescripcion) {
+        this.dialogDiagnosticoDescripcion = dialogDiagnosticoDescripcion;
     }
 
     public void setCedulaDlgAutoOpened(boolean cedulaDlgAutoOpened) {
