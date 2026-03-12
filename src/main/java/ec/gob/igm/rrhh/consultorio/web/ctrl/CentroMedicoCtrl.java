@@ -771,6 +771,9 @@ private void asegurarPersonaAuxPersistida() {
         if (ficha != null && esVacio(ficha.getCiiu()) && !esVacio(puestoTrabajoCiuoActual)) {
             ficha.setCiiu(puestoTrabajoCiuoActual);
         }
+        if (esVacio(puestoTrabajoCiuoActual) && fichaRiesgo != null) {
+            puestoTrabajoCiuoActual = fichaRiesgo.getPuestoTrabajo();
+        }
 
         ValidationResult result = centroMedicoStepValidationService.validarStep1(
                 apellido1,
