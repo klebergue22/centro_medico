@@ -743,35 +743,39 @@ public class CentroMedicoCtrl implements Serializable {
             LOG.warn("Auto-regeneración Step4 falló", ex);
         }
     }
-private void asegurarPersonaAuxPersistida() {
+    private void asegurarPersonaAuxPersistida() {
 
-    // 1) Solo aplica para ingreso manual
-    if (!permitirIngresoManual) {
-        return;
-    }
-
-    // 2) Debe existir personaAux
-    if (personaAux == null) {
-        return;
-    }
-
-    // 3) Si ya está persistida, solo asegurar relación
-    if (personaAux.getIdPersonaAux() != null) {
-        if (ficha != null) {
-            ficha.setPersonaAux(personaAux);
+        // Si NO es ingreso manual, la ficha no debe conservar referencia a PersonaAux.
+        if (!permitirIngresoManual) {
+            if (ficha != null) {
+                ficha.setPersonaAux(null);
+            }
+            personaAux = null;
+            return;
         }
-        return;
+
+        // Debe existir personaAux en flujo manual.
+        if (personaAux == null) {
+            return;
+        }
+
+        // Si ya está persistida, solo asegurar relación.
+        if (personaAux.getIdPersonaAux() != null) {
+            if (ficha != null) {
+                ficha.setPersonaAux(personaAux);
+            }
+            return;
+        }
+
+        // Persistir PersonaAux primero.
+        PersonaAux saved = personaAuxService.guardar(personaAux);
+
+        this.personaAux = saved;
+
+        if (ficha != null) {
+            ficha.setPersonaAux(saved);
+        }
     }
-
-    // 4) Persistir PersonaAux primero
-    PersonaAux saved = personaAuxService.guardar(personaAux);  // <-- tu service real
-
-    this.personaAux = saved;
-
-    if (ficha != null) {
-        ficha.setPersonaAux(saved);
-    }
-}
     public void retrocederStep() {
         activeStep = centroMedicoWizardService.retrocederStep(activeStep);
     }
@@ -3607,6 +3611,10 @@ private void asegurarPersonaAuxPersistida() {
             this.fechaNacimiento = result.getFechaNacimiento();
             this.edad = result.getEdad();
             this.permitirIngresoManual = false;
+            this.personaAux = null;
+            if (this.ficha != null) {
+                this.ficha.setPersonaAux(null);
+            }
         } else {
             this.permitirIngresoManual = result.isShowManual();
         }
