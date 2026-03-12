@@ -413,7 +413,7 @@
 
                         <h:outputLabel for="kDiagCodDialog" value="Código CIE-10"/>
                         <p:autoComplete id="kDiagCodDialog"
-                                        value="#{centroMedicoCtrl.dialogDiagnosticoCodigo}"
+                                        value="#{centroMedicoCtrl.codCie10Ppal}"
                                         completeMethod="#{centroMedicoCtrl.completarCie10FilaPorCodigo}"
                                         dropdown="true"
                                         dropdownMode="current"
@@ -427,7 +427,7 @@
 
                         <h:outputLabel for="kDiagDescDialog" value="Descripción"/>
                         <p:autoComplete id="kDiagDescDialog"
-                                        value="#{centroMedicoCtrl.dialogDiagnosticoDescripcion}"
+                                        value="#{centroMedicoCtrl.descCie10Ppal}"
                                         completeMethod="#{centroMedicoCtrl.completarCie10FilaPorDescripcion}"
                                         dropdown="true"
                                         dropdownMode="current"
