@@ -42,6 +42,7 @@ import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import jakarta.servlet.http.HttpSession;
+import com.lowagie.text.DocumentException;
 
 import org.primefaces.PrimeFaces;
 import org.primefaces.event.FlowEvent;
@@ -3154,7 +3155,7 @@ private void asegurarPersonaAuxPersistida() {
         }
     }
 
-    private byte[] renderizarPdf(String xhtml) throws IOException {
+    private byte[] renderizarPdf(String xhtml) throws IOException, DocumentException {
 
         if (xhtml == null || xhtml.trim().isEmpty()) {
             LOG.error("renderizarPdf: El string HTML recibido es NULO o VACÍO.");
