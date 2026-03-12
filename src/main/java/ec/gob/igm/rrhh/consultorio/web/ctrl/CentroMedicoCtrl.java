@@ -77,6 +77,8 @@ import ec.gob.igm.rrhh.consultorio.web.service.FichaPdfDataMapper;
 import ec.gob.igm.rrhh.consultorio.web.service.FichaPdfMappedData;
 import ec.gob.igm.rrhh.consultorio.web.service.FichaPdfPlaceholderBuilder;
 import ec.gob.igm.rrhh.consultorio.web.service.FichaPdfPreparationService;
+import ec.gob.igm.rrhh.consultorio.web.service.FichaPdfViewModelBuilder;
+import ec.gob.igm.rrhh.consultorio.web.service.FichaPdfViewModelBuilder.FichaPdfViewModelContext;
 import ec.gob.igm.rrhh.consultorio.web.service.Step3OrchestratorService;
 import ec.gob.igm.rrhh.consultorio.web.service.Step3OrchestratorService.Step3SaveCommand;
 import ec.gob.igm.rrhh.consultorio.web.session.PdfSessionStore;
@@ -433,6 +435,9 @@ public class CentroMedicoCtrl implements Serializable {
 
     @EJB
     private transient FichaPdfPlaceholderBuilder fichaPdfPlaceholderBuilder;
+
+    @EJB
+    private transient FichaPdfViewModelBuilder fichaPdfViewModelBuilder;
 
     // JSF Lifecycle / Inicialización
     public void preRenderInit() {
@@ -1635,26 +1640,15 @@ public class CentroMedicoCtrl implements Serializable {
         Map<String, String> rep = new LinkedHashMap<>();
 
         cargarLogos(rep);
-        cargarDatosCabecera(rep);
-        cargarDatosPersonales(rep);
         cargarAtencionPrioritaria(rep);
         cargarFechaActual(rep);
         cargarActividadLaboralArrays(rep);
         cargarAntecedentes(rep);
         cargarRiesgos(rep);
-        cargarConsumo(rep);
         recalcularIMC();
-        cargarCamposDirectosFaltantes(rep);
-        // ✅ FALTABA: D. Enfermedad actual
-        rep.put("enfermedad_actual", safe(ficha != null ? ficha.getEnfermedadProbActual() : enfermedadActual));
 
-        // ✅ FALTABA: F. Examen físico regional (todos los exf_*)
-        cargarExamenFisicoRegional(rep);  // (creas este método abajo)
+        rep.putAll(fichaPdfViewModelBuilder.buildReemplazosFicha(buildFichaPdfViewModelContext()));
 
-        // ✅ FALTABA: “Otros (Físico/Seguridad/...)”
-        corregirOtrosRiesgos(rep);        // si ya existe en tu ctrl, LLÁMALO AQUÍ
-
-        // ✅ (si tu plantilla lo usa en ficha)
         LOG.info("=== buildReemplazosFicha - valores en el mapa ===");
         LOG.info("gineco_examen1 = " + rep.get("gineco_examen1"));
         LOG.info("gineco_tiempo1 = " + rep.get("gineco_tiempo1"));
@@ -1680,46 +1674,116 @@ public class CentroMedicoCtrl implements Serializable {
         return rep;
     }
 
-    private void cargarExamenFisicoRegional(Map<String, String> rep) {
-        rep.put("exf_piel_cicatrices", markX(exfPielCicatrices));
-        rep.put("exf_ojos_parpados", markX(exfOjosParpados));
-        rep.put("exf_ojos_conjuntivas", markX(exfOjosConjuntivas));
-        rep.put("exf_ojos_pupilas", markX(exfOjosPupilas));
-        rep.put("exf_ojos_cornea", markX(exfOjosCornea));
-        rep.put("exf_ojos_motilidad", markX(exfOjosMotilidad));
-        rep.put("exf_oido_conducto", markX(exfOidoConducto));
-        rep.put("exf_oido_pabellon", markX(exfOidoPabellon));
-        rep.put("exf_oido_timpanos", markX(exfOidoTimpanos));
-        rep.put("exf_oro_labios", markX(exfOroLabios));
-        rep.put("exf_oro_lengua", markX(exfOroLengua));
-        rep.put("exf_oro_faringe", markX(exfOroFaringe));
-        rep.put("exf_oro_amigdalas", markX(exfOroAmigdalas));
-        rep.put("exf_oro_dentadura", markX(exfOroDentadura));
-        rep.put("exf_nariz_tabique", markX(exfNarizTabique));
-        rep.put("exf_nariz_cornetes", markX(exfNarizCornetes));
-        rep.put("exf_nariz_mucosas", markX(exfNarizMucosas));
-        rep.put("exf_nariz_senos", markX(exfNarizSenos));
-        rep.put("exf_cuello_tiroides", markX(exfCuelloTiroides));
-        rep.put("exf_cuello_movilidad", markX(exfCuelloMovilidad));
-        rep.put("exf_torax_mamas", markX(exfToraxMamas));
-        rep.put("exf_torax_pulmones", markX(exfToraxPulmones));
-        rep.put("exf_torax_corazon", markX(exfToraxCorazon));
-        rep.put("exf_torax_parrilla", markX(exfToraxParrilla));
-        rep.put("exf_abdomen_visceras", markX(exfAbdomenVisceras));
-        rep.put("exf_abdomen_pared", markX(exfAbdomenPared));
-        rep.put("exf_columna_flexibilidad", markX(exfColumnaFlexibilidad));
-        rep.put("exf_columna_desviacion", markX(exfColumnaDesviacion));
-        rep.put("exf_columna_dolor", markX(exfColumnaDolor));
-        rep.put("exf_pelvis_pelvis", markX(exfPelvisPelvis));
-        rep.put("exf_pelvis_genitales", markX(exfPelvisGenitales));
-        rep.put("exf_ext_vascular", markX(exfExtVascular));
-        rep.put("exf_ext_sup", markX(exfExtSup));
-        rep.put("exf_ext_inf", markX(exfExtInf));
-        rep.put("exf_neuro_fuerza", markX(exfNeuroFuerza));
-        rep.put("exf_neuro_sensibilidad", markX(exfNeuroSensibilidad));
-        rep.put("exf_neuro_marcha", markX(exfNeuroMarcha));
-        rep.put("exf_neuro_reflejos", markX(exfNeuroReflejos));
-        rep.put("obs_examen_fisico", safe(trimToNull(obsExamenFisico) != null ? trimToNull(obsExamenFisico) : (ficha != null ? trimToNull(ficha.getObsExamenFisicoReg()) : null)));
+    private FichaPdfViewModelContext buildFichaPdfViewModelContext() {
+        FichaPdfViewModelContext ctx = new FichaPdfViewModelContext();
+        ctx.ficha = ficha;
+        ctx.fichaRiesgo = fichaRiesgo;
+        ctx.empleadoSel = empleadoSel;
+        ctx.personaAux = personaAux;
+        ctx.cedulaBusqueda = cedulaBusqueda;
+        ctx.institucion = institucion;
+        ctx.ruc = ruc;
+        ctx.centroTrabajo = centroTrabajo;
+        ctx.ciiu = ciiu;
+        ctx.noHistoria = noHistoria;
+        ctx.noArchivo = noArchivo;
+        ctx.apellido1 = apellido1;
+        ctx.apellido2 = apellido2;
+        ctx.nombre1 = nombre1;
+        ctx.nombre2 = nombre2;
+        ctx.sexo = sexo;
+        ctx.fechaNacimiento = fechaNacimiento;
+        ctx.edad = edad;
+        ctx.grupoSanguineo = grupoSanguineo;
+        ctx.lateralidad = lateralidad;
+        ctx.consTiempoConsumoMeses = consTiempoConsumoMeses;
+        ctx.consExConsumidor = consExConsumidor;
+        ctx.consTiempoAbstinenciaMeses = consTiempoAbstinenciaMeses;
+        ctx.consNoConsume = consNoConsume;
+        ctx.consOtrasCual = consOtrasCual;
+        ctx.afCual = afCual;
+        ctx.afTiempo = afTiempo;
+        ctx.medCual = medCual;
+        ctx.medCant = medCant;
+        ctx.consumoVidaCondObs = consumoVidaCondObs;
+        ctx.recomendaciones = recomendaciones;
+        ctx.fechaAtencion = fechaAtencion;
+        ctx.fecIngreso = fecIngreso;
+        ctx.fecReintegro = fecReintegro;
+        ctx.fecRetiro = fecRetiro;
+        ctx.motivoObs = motivoObs;
+        ctx.condicionEspecial = condicionEspecial;
+        ctx.autorizaTransfusion = autorizaTransfusion;
+        ctx.tratamientoHormonal = tratamientoHormonal;
+        ctx.tratamientoHormonalCual = tratamientoHormonalCual;
+        ctx.examenReproMasculino = examenReproMasculino;
+        ctx.tiempoReproMasculino = tiempoReproMasculino;
+        ctx.fum = fum;
+        ctx.gestas = gestas;
+        ctx.cesareas = cesareas;
+        ctx.partos = partos;
+        ctx.abortos = abortos;
+        ctx.planificacion = planificacion;
+        ctx.planificacionCual = planificacionCual;
+        ctx.temp = temp;
+        ctx.paStr = paStr;
+        ctx.fc = fc;
+        ctx.fr = fr;
+        ctx.satO2 = satO2;
+        ctx.peso = peso;
+        ctx.tallaCm = tallaCm;
+        ctx.imc = imc;
+        ctx.perimetroAbd = perimetroAbd;
+        ctx.ginecoExamen1 = ginecoExamen1;
+        ctx.ginecoTiempo1 = ginecoTiempo1;
+        ctx.ginecoResultado1 = ginecoResultado1;
+        ctx.ginecoExamen2 = ginecoExamen2;
+        ctx.ginecoTiempo2 = ginecoTiempo2;
+        ctx.ginecoResultado2 = ginecoResultado2;
+        ctx.ginecoObservacion = ginecoObservacion;
+        ctx.tipoEval = tipoEval;
+        ctx.enfermedadActual = enfermedadActual;
+        ctx.otrosRiesgos = otrosRiesgos;
+        ctx.exfPielCicatrices = exfPielCicatrices;
+        ctx.exfOjosParpados = exfOjosParpados;
+        ctx.exfOjosConjuntivas = exfOjosConjuntivas;
+        ctx.exfOjosPupilas = exfOjosPupilas;
+        ctx.exfOjosCornea = exfOjosCornea;
+        ctx.exfOjosMotilidad = exfOjosMotilidad;
+        ctx.exfOidoConducto = exfOidoConducto;
+        ctx.exfOidoPabellon = exfOidoPabellon;
+        ctx.exfOidoTimpanos = exfOidoTimpanos;
+        ctx.exfOroLabios = exfOroLabios;
+        ctx.exfOroLengua = exfOroLengua;
+        ctx.exfOroFaringe = exfOroFaringe;
+        ctx.exfOroAmigdalas = exfOroAmigdalas;
+        ctx.exfOroDentadura = exfOroDentadura;
+        ctx.exfNarizTabique = exfNarizTabique;
+        ctx.exfNarizCornetes = exfNarizCornetes;
+        ctx.exfNarizMucosas = exfNarizMucosas;
+        ctx.exfNarizSenos = exfNarizSenos;
+        ctx.exfCuelloTiroides = exfCuelloTiroides;
+        ctx.exfCuelloMovilidad = exfCuelloMovilidad;
+        ctx.exfToraxMamas = exfToraxMamas;
+        ctx.exfToraxPulmones = exfToraxPulmones;
+        ctx.exfToraxCorazon = exfToraxCorazon;
+        ctx.exfToraxParrilla = exfToraxParrilla;
+        ctx.exfAbdomenVisceras = exfAbdomenVisceras;
+        ctx.exfAbdomenPared = exfAbdomenPared;
+        ctx.exfColumnaFlexibilidad = exfColumnaFlexibilidad;
+        ctx.exfColumnaDesviacion = exfColumnaDesviacion;
+        ctx.exfColumnaDolor = exfColumnaDolor;
+        ctx.exfPelvisPelvis = exfPelvisPelvis;
+        ctx.exfPelvisGenitales = exfPelvisGenitales;
+        ctx.exfExtVascular = exfExtVascular;
+        ctx.exfExtSup = exfExtSup;
+        ctx.exfExtInf = exfExtInf;
+        ctx.exfNeuroFuerza = exfNeuroFuerza;
+        ctx.exfNeuroSensibilidad = exfNeuroSensibilidad;
+        ctx.exfNeuroMarcha = exfNeuroMarcha;
+        ctx.exfNeuroReflejos = exfNeuroReflejos;
+        ctx.obsExamenFisico = obsExamenFisico;
+        return ctx;
     }
 
     private void cargarLogos(Map<String, String> rep) {
@@ -1735,32 +1799,6 @@ public class CentroMedicoCtrl implements Serializable {
             LOG.warn("[FICHA] No se pudo cargar LOGo MIDENA", ex);
             rep.put("LOGO_MIDENA_DATAURI", "");
         }
-    }
-
-    private void cargarDatosCabecera(Map<String, String> rep) {
-        rep.put("institucion", safe(institucion));
-        rep.put("ruc", safe(ruc));
-        rep.put("centroTrabajo", safe(centroTrabajo));
-        rep.put("ciiu", safe(ciiu));
-        rep.put("noHistoria", safe(noHistoria));
-        rep.put("noArchivo", safe(noArchivo));
-        rep.put("num_formulario", safe(noHistoria));
-        rep.put("no_historia_clinica", safe(noHistoria));
-        rep.put("no_archivo", safe(noArchivo));
-    }
-
-    private void cargarDatosPersonales(Map<String, String> rep) {
-        rep.put("apellido1", safe(apellido1));
-        rep.put("apellido2", safe(apellido2));
-        rep.put("nombre1", safe(nombre1));
-        rep.put("nombre2", safe(nombre2));
-        rep.put("sexo", safe(sexo));
-        rep.put("fechaNacimiento", fmtDate(fechaNacimiento));
-        rep.put("edad", (edad == null) ? "" : String.valueOf(edad));
-        rep.put("grupoSanguineo", safe(grupoSanguineo));
-        rep.put("lateralidad", safe(lateralidad));
-        rep.put("cedula", safe(resolveCedulaForPdf()));
-        rep.put("email", "");
     }
 
     private void cargarFechaActual(Map<String, String> rep) {
@@ -1789,115 +1827,6 @@ public class CentroMedicoCtrl implements Serializable {
             }
         }
         // Nota: otrosRiesgos se corrige más adelante en corregirOtrosRiesgos()
-    }
-
-    private void cargarConsumo(Map<String, String> rep) {
-        putBoolArray0Based(rep, "cons_ex_consumidor_", consExConsumidor);
-        putBoolArray0Based(rep, "cons_no_consume_", consNoConsume);
-        putIntArray0Based(rep, "cons_tiempo_consumo_", consTiempoConsumoMeses);
-        putIntArray0Based(rep, "cons_tiempo_abstinencia_", consTiempoAbstinenciaMeses);
-        putStringArray0Based(rep, "af_cual_", afCual);
-        putStringArray0Based(rep, "af_tiempo_", afTiempo);
-        putStringArray0Based(rep, "med_cual_", medCual);
-        putIntArray0Based(rep, "med_cant_", medCant);
-        rep.put("consumo_observacion", safe(trimToNull(consumoVidaCondObs) != null ? trimToNull(consumoVidaCondObs) : (ficha != null ? trimToNull(ficha.getObsConsumoVidaCond()) : null)));
-        rep.put("consumo_vida_cond_obs", safe(consumoVidaCondObs));
-        rep.put("cons_otras_cual", safe(consOtrasCual));
-    }
-
-    private void cargarCamposDirectosFaltantes(Map<String, String> rep) {
-
-        rep.put("recomendaciones", safe(recomendaciones));
-        rep.put("fechaAtencion", fmtDate(fechaAtencion));
-        rep.put("fecIngreso", fmtDate(fecIngreso));
-        rep.put("fecReintegro", fmtDate(fecReintegro));
-        rep.put("fecRetiro", fmtDate(fecRetiro));
-        rep.put("motivoObs", safe(motivoObs));
-        rep.put("condicionEspecial", safe(condicionEspecial));
-        rep.put("autorizaTransfusion", safe(autorizaTransfusion));
-        rep.put("tratamientoHormonal", safe(tratamientoHormonal));
-        rep.put("tratamientoHormonalCual", safe(tratamientoHormonalCual));
-        rep.put("examenReproMasculino", safe(examenReproMasculino));
-        rep.put("tiempoReproMasculino", (tiempoReproMasculino == null) ? "" : String.valueOf(tiempoReproMasculino));
-        rep.put("fum", fmtDate(fum));
-        rep.put("gestas", (gestas == null) ? "" : String.valueOf(gestas));
-        rep.put("cesareas", (cesareas == null) ? "" : String.valueOf(cesareas));
-        rep.put("partos", (partos == null) ? "" : String.valueOf(partos));
-        rep.put("abortos", (abortos == null) ? "" : String.valueOf(abortos));
-        rep.put("planificacion", safe(planificacion));
-        rep.put("planificacionCual", safe(planificacionCual));
-        rep.put("temp", (temp == null) ? "" : String.valueOf(temp));
-        rep.put("paStr", safe(paStr));
-        rep.put("fc", (fc == null) ? "" : String.valueOf(fc));
-        rep.put("fr", (fr == null) ? "" : String.valueOf(fr));
-        rep.put("satO2", (satO2 == null) ? "" : String.valueOf(satO2));
-        rep.put("peso", (peso == null) ? "" : String.valueOf(peso));
-        rep.put("tallaCm", (tallaCm == null) ? "" : String.valueOf(tallaCm));
-        rep.put("imc", (imc == null) ? "" : String.valueOf(imc));
-        rep.put("perimetroAbd", (perimetroAbd == null) ? "" : String.valueOf(perimetroAbd));
-        rep.put("gineco_examen1", safe(ginecoExamen1));
-        rep.put("gineco_tiempo1", safe(ginecoTiempo1));
-        rep.put("gineco_resultado1", safe(ginecoResultado1));
-        rep.put("gineco_examen2", safe(ginecoExamen2));
-        rep.put("gineco_tiempo2", safe(ginecoTiempo2));
-        rep.put("gineco_resultado2", safe(ginecoResultado2));
-        rep.put("gineco_observacion", safe(ginecoObservacion));
-        if (fichaRiesgo != null) {
-            rep.put("puestoTrabajo", safe(fichaRiesgo.getPuestoTrabajo()));
-            // Garantiza que nunca queden {{otros_*}} en el HTML aunque no hayan datos
-            for (int i = 1; i <= 7; i++) {
-                // En UI a veces las llaves vienen con convenciones distintas; cubrimos variantes
-                rep.putIfAbsent("otros_fis_" + i, safe(firstNonEmpty(
-                        otrosRiesgos.get("otros_fis_" + i),
-                        otrosRiesgos.get("FIS_OTROS_" + i),
-                        otrosRiesgos.get("fis_otros_" + i),
-                        otrosRiesgos.get("otrosFis" + i),
-                        otrosRiesgos.get("otrosFis_" + i)
-                )));
-                rep.putIfAbsent("otros_seg_" + i, safe(firstNonEmpty(
-                        otrosRiesgos.get("otros_seg_" + i),
-                        otrosRiesgos.get("SEG_OTROS_" + i),
-                        otrosRiesgos.get("seg_otros_" + i),
-                        otrosRiesgos.get("otrosSeg" + i),
-                        otrosRiesgos.get("otrosSeg_" + i)
-                )));
-                rep.putIfAbsent("otros_qui_" + i, safe(firstNonEmpty(
-                        otrosRiesgos.get("otros_qui_" + i),
-                        otrosRiesgos.get("QUI_OTROS_" + i),
-                        otrosRiesgos.get("qui_otros_" + i),
-                        otrosRiesgos.get("otrosQui" + i),
-                        otrosRiesgos.get("otrosQui_" + i)
-                )));
-                rep.putIfAbsent("otros_bio_" + i, safe(firstNonEmpty(
-                        otrosRiesgos.get("otros_bio_" + i),
-                        otrosRiesgos.get("BIO_OTROS_" + i),
-                        otrosRiesgos.get("bio_otros_" + i),
-                        otrosRiesgos.get("otrosBio" + i),
-                        otrosRiesgos.get("otrosBio_" + i)
-                )));
-                rep.putIfAbsent("otros_erg_" + i, safe(firstNonEmpty(
-                        otrosRiesgos.get("otros_erg_" + i),
-                        otrosRiesgos.get("ERG_OTROS_" + i),
-                        otrosRiesgos.get("erg_otros_" + i),
-                        otrosRiesgos.get("otrosErg" + i),
-                        otrosRiesgos.get("otrosErg_" + i)
-                )));
-                rep.putIfAbsent("otros_psi_" + i, safe(firstNonEmpty(
-                        otrosRiesgos.get("otros_psi_" + i),
-                        otrosRiesgos.get("PSI_OTROS_" + i),
-                        otrosRiesgos.get("psi_otros_" + i),
-                        otrosRiesgos.get("otrosPsi" + i),
-                        otrosRiesgos.get("otrosPsi_" + i)
-                )));
-            }
-
-        } else {
-            rep.put("puestoTrabajo", "");
-        }
-        rep.put("tipoEval", safe(tipoEval));
-
-        // D. ENFERMEDAD O PROBLEMA ACTUAL (texto libre)
-        rep.put("enfermedad_actual", safe((ficha != null) ? ficha.getEnfermedadProbActual() : null));
     }
 
     private static String trimToNull(String s) {
@@ -2088,18 +2017,6 @@ public class CentroMedicoCtrl implements Serializable {
     }
 
     /**
-     * cons_tiempo_*_0..N desde Integer[]
-     */
-    private void putIntArray0Based(Map<String, String> rep, String prefix, Integer[] arr) {
-        if (arr == null) {
-            return;
-        }
-        for (int i = 0; i < arr.length; i++) {
-            rep.put(prefix + i, (arr[i] == null) ? "" : String.valueOf(arr[i]));
-        }
-    }
-
-    /**
      * Interpreta marcas tipo "true", "1", "X", "SI"
      */
     private boolean isTruthyMark(String v) {
@@ -2112,51 +2029,6 @@ public class CentroMedicoCtrl implements Serializable {
         }
         s = s.toUpperCase();
         return "TRUE".equals(s) || "1".equals(s) || "X".equals(s) || "SI".equals(s) || "S".equals(s);
-    }
-
-    /**
-     * Cédula para PDF: empleadoSel -> personaAux -> cedulaBusqueda
-     */
-    private String resolveCedulaForPdf() {
-        try {
-            if (empleadoSel != null && empleadoSel.getNoCedula() != null && !empleadoSel.getNoCedula().isBlank()) {
-                return empleadoSel.getNoCedula();
-            }
-        } catch (RuntimeException ignore) {
-            // no-op
-        }
-        try {
-            if (personaAux != null && personaAux.getCedula() != null && !personaAux.getCedula().isBlank()) {
-                return personaAux.getCedula();
-            }
-        } catch (RuntimeException ignore) {
-            // no-op
-        }
-        return (cedulaBusqueda == null) ? "" : cedulaBusqueda;
-    }
-
-    /**
-     * cons_ex_consumidor_0..N desde Boolean[] -> "X"
-     */
-    private void putBoolArray0Based(Map<String, String> rep, String prefix, Boolean[] arr) {
-        if (arr == null) {
-            return;
-        }
-        for (int i = 0; i < arr.length; i++) {
-            rep.put(prefix + i, Boolean.TRUE.equals(arr[i]) ? "X" : "");
-        }
-    }
-
-    /**
-     * cons_tiempo_consumo_0..N desde String[]
-     */
-    private void putStringArray0Based(Map<String, String> rep, String prefix, String[] arr) {
-        if (arr == null) {
-            return;
-        }
-        for (int i = 0; i < arr.length; i++) {
-            rep.put(prefix + i, safe(arr[i]));
-        }
     }
 
     private Map<String, String> buildVarsFicha() {
