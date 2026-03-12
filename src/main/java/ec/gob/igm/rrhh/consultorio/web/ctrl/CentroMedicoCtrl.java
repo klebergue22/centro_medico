@@ -5126,8 +5126,8 @@ private void asegurarPersonaAuxPersistida() {
         }
 
         dialogDiagnosticoIdx = idx;
-        dialogDiagnosticoCodigo = row.getCodigo();
-        dialogDiagnosticoDescripcion = row.getDescripcion();
+        codCie10Ppal = row.getCodigo();
+        descCie10Ppal = row.getDescripcion();
         PrimeFaces.current().executeScript("PF('kDiagDialogWv').show();");
     }
 
@@ -5137,8 +5137,8 @@ private void asegurarPersonaAuxPersistida() {
             return;
         }
 
-        String codigo = dialogDiagnosticoCodigo != null ? dialogDiagnosticoCodigo.trim().toUpperCase() : "";
-        String descripcion = dialogDiagnosticoDescripcion != null ? dialogDiagnosticoDescripcion.trim() : "";
+        String codigo = codCie10Ppal != null ? codCie10Ppal.trim().toUpperCase() : "";
+        String descripcion = descCie10Ppal != null ? descCie10Ppal.trim() : "";
 
         Cie10 cie = null;
         if (!codigo.isEmpty()) {
