@@ -1,13 +1,5 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package ec.gob.igm.rrhh.consultorio.domain.model;
 
-/**
- *
- * @author GUERRA_KLEBER
- */
 
 
 
@@ -72,18 +64,15 @@ public class FichaDiagnostico implements Serializable {
     @Column(name = "USR_ACTUALIZACION", length = 30)
     private String usrActualizacion;
 
-    // ==========================
-    // Constructores
-    // ==========================
 
     // Constructor vacío (requerido por JPA)
     public FichaDiagnostico() {
     }
 
     // Constructor completo (Reemplaza @AllArgsConstructor)
-    public FichaDiagnostico(Long idFichaDiag, FichaOcupacional ficha, String codCie10, 
-                           String descripcion, String tipoDiag, Integer orden, String estado, 
-                           Date fechaCreacion, String usrCreacion, Date fechaActualizacion, 
+    public FichaDiagnostico(Long idFichaDiag, FichaOcupacional ficha, String codCie10,
+                           String descripcion, String tipoDiag, Integer orden, String estado,
+                           Date fechaCreacion, String usrCreacion, Date fechaActualizacion,
                            String usrActualizacion) {
         this.idFichaDiag = idFichaDiag;
         this.ficha = ficha;
@@ -98,9 +87,7 @@ public class FichaDiagnostico implements Serializable {
         this.usrActualizacion = usrActualizacion;
     }
 
-    // ==========================
     // Lifecycle
-    // ==========================
     @PrePersist
     public void prePersist() {
         if (estado == null || estado.trim().isEmpty()) {
@@ -111,10 +98,6 @@ public class FichaDiagnostico implements Serializable {
         }
     }
 
-    // ==========================
-    // Equals y HashCode
-    // Basado en idFichaDiag (@EqualsAndHashCode.Include)
-    // ==========================
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -128,10 +111,7 @@ public class FichaDiagnostico implements Serializable {
         return Objects.hash(idFichaDiag);
     }
 
-    // ==========================
-    // ToString
     // Excluye 'ficha' (@ToString(exclude = "ficha"))
-    // ==========================
     @Override
     public String toString() {
         return "FichaDiagnostico{" +
@@ -148,9 +128,6 @@ public class FichaDiagnostico implements Serializable {
                 '}';
     }
 
-    // ==========================
-    // Getters y Setters
-    // ==========================
     public Long getIdFichaDiag() {
         return idFichaDiag;
     }

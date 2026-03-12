@@ -68,7 +68,6 @@ public class FichaActLaboralService {
         // INSERT
         if (e.getIdFichaActLab() == null) {
 
-            // Defaults "N" (por checks de BD)
             if (e.getEsAnterior() == null) e.setEsAnterior("N");
             if (e.getEsActual() == null) e.setEsActual("N");
             if (e.getIncidente() == null) e.setIncidente("N");
@@ -106,7 +105,6 @@ public class FichaActLaboralService {
         final String usr = (usuario == null || usuario.trim().isEmpty()) ? "SYSTEM" : usuario.trim();
         final Date ahora = new Date();
 
-        // Defaults
         if (a.getEsAnterior() == null) a.setEsAnterior("N");
         if (a.getEsActual() == null) a.setEsActual("N");
         if (a.getIncidente() == null) a.setIncidente("N");

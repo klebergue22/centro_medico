@@ -9,20 +9,15 @@
     * { margin:0; padding:0; box-sizing:border-box; }
 
     /* =========================================================
-       ✅ FIX REAL: Deja UNA sola @page con márgenes + header running
-       - El margin-top reserva espacio para el header en TODAS las páginas
-       - Evita usar padding-top en body (causa montajes/solapes)
+       FIX: Una sola @page con márgenes + header running
        ========================================================= */
     @page {
       size: A4;
-
-      /* Ajusta SOLO este 30mm si tu header es más alto/bajo */
       margin: 32mm 10mm 10mm 10mm;
-
       @top-center { content: element(pageHeader); }
     }
 
-    /* Header repetido en cada página (Flying Saucer) */
+    /* Header repetido en cada página */
     #pageHeader { position: running(pageHeader); }
 
     body {
@@ -30,8 +25,6 @@
       font-size: 10.5px;
       line-height: 1.25;
       color:#222;
-
-      /* ✅ Ya NO: padding-top: 12mm; (se reserva con margin-top en @page) */
       padding-top: 0;
     }
 
@@ -49,19 +42,21 @@
     .checklist { list-style:none; padding-left:0; margin:0; }
     .checklist li { display:inline-block; margin-right:12px; }
 
-    /* Evitar cortes feos dentro de filas */
     tr { page-break-inside: avoid; }
 
-    /* ===== Ajustes para tablas específicas (evitar "saltos" y espacios raros) ===== */
     .blk { margin-top: 6px; }
-    .cell-input-display { 
-  display: inline; 
-  white-space: normal;
-  overflow-wrap: anywhere;
-  word-break: break-all; /* fuerza quiebre en cadenas largas (PDF) */
-}
 
-    /* Todas las tablas del documento */
+    /* FIX: Mejor handling de texto en celdas */
+    .cell-input-display {
+      display: block;
+      width: 100%;
+      white-space: normal;
+      overflow-wrap: break-word;
+      word-wrap: break-word;
+      word-break: break-word;
+      hyphens: auto;
+    }
+
     table { width:100%; border-collapse:collapse; }
     thead { display: table-header-group; }
     tfoot { display: table-footer-group; }
@@ -71,23 +66,23 @@
     .risk-grid th, .risk-grid td { border:1px solid #7fa87e; padding:3px 4px; vertical-align:top; font-size:9.8px; line-height:1.15; }
     .risk-header th { background:#eef6ee; font-weight:bold; text-align:center; }
     .risk-col-label { width: 33%; }
-    .risk-col { width: 9.57%; } /* (100-33)/7 */
+    .risk-col { width: 9.57%; }
 
     /* ===== H (Actividad laboral) - CORREGIDO ===== */
-    .hx-grid { 
-      width:100%; 
-      border-collapse:collapse; 
-      margin: 6px 0; 
-      table-layout: fixed; 
+    .hx-grid {
+      width:100%;
+      border-collapse:collapse;
+      margin: 6px 0;
+      table-layout: fixed;
     }
-    .hx-grid th, .hx-grid td { 
-      border:1px solid #7fa87e; 
-      padding:3px 4px; 
-      vertical-align:top; 
-      font-size:9.5px; 
-      line-height:1.12; 
+    .hx-grid th, .hx-grid td {
+      border:1px solid #7fa87e;
+      padding:3px 4px;
+      vertical-align:top;
+      font-size:9.5px;
+      line-height:1.12;
     }
-    .hx-grid thead th { 
+    .hx-grid thead th {
       background:#eef6ee;
       font-size:8.0px;
       line-height:1.05;
@@ -97,45 +92,51 @@
       white-space:normal;
       word-break:break-word;
     }
-    .hx-grid tbody td { 
-      font-size:9.4px; 
-      line-height:1.12; 
+    .hx-grid tbody td {
+      font-size:9.4px;
+      line-height:1.12;
     }
-    .hx-grid .cell-input-display { 
-      white-space:normal; 
-      word-break:break-word; 
+    .hx-grid .cell-input-display {
+      white-space:normal;
+      word-break:break-word;
     }
-    .hx-note { 
-      font-weight:normal; 
-      font-size:7.5px; 
-      color:#666; 
+    .hx-note {
+      font-weight:normal;
+      font-size:7.5px;
+      color:#666;
       display:block;
     }
 
     /* ===== Anchos específicos para columnas H (13 columnas) ===== */
-    .hx-col-ct      { width:10%; }  /* 1. CENTRO DE TRABAJO */
-    .hx-col-acts    { width:13%; }  /* 2. ACTIVIDADES */
-    .hx-col-ant     { width:5%;  }  /* 3. ANTERIOR */
-    .hx-col-act     { width:5%;  }  /* 4. ACTUAL */
-    .hx-col-tiempo  { width:7%;  }  /* 5. TIEMPO<br/>DE<br/>TRABAJO */
-    .hx-col-inc     { width:6%;  }  /* 6. INCIDENTE */
-    .hx-col-acc     { width:6%;  }  /* 7. ACCIDENTE */
-    .hx-col-enf     { width:8%;  }  /* 8. ENFERMEDAD (Más ancha que los checks) */
-    .hx-col-si      { width:4%;  }  /* 9. SI */
-    .hx-col-no      { width:4%;  }  /* 10. NO */
-    .hx-col-fecha   { width:9%;  }  /* 11. FECHA */
-    .hx-col-espec   { width:11%; }  /* 12. ESPECIFICAR */
-    .hx-col-obsv    { width:12%; }  /* 13. OBSERVACIONES */
+    .hx-col-ct      { width:10%; }
+    .hx-col-acts    { width:13%; }
+    .hx-col-ant     { width:5%;  }
+    .hx-col-act     { width:5%;  }
+    .hx-col-tiempo  { width:7%;  }
+    .hx-col-inc     { width:6%;  }
+    .hx-col-acc     { width:6%;  }
+    .hx-col-enf     { width:8%;  }
+    .hx-col-si      { width:4%;  }
+    .hx-col-no      { width:4%;  }
+    .hx-col-fecha   { width:9%;  }
+    .hx-col-espec   { width:11%; }
+    .hx-col-obsv    { width:12%; }
 
     /* I (Extralaborales) */
     .i-grid { width:100%; border-collapse:collapse; margin: 6px 0; table-layout: fixed; }
     .i-grid th, .i-grid td { border:1px solid #7fa87e; padding:3px 4px; vertical-align:top; font-size:9.8px; line-height:1.15; }
     .i-header th { background:#eef6ee; }
+    .i-col-type { width: 30%; }
+    .i-col-date { width: 20%; }
+    .i-col-desc { width: 50%; }
 
     /* J (Exámenes) */
     .j-grid { width:100%; border-collapse:collapse; margin: 6px 0; table-layout: fixed; }
     .j-grid th, .j-grid td { border:1px solid #7fa87e; padding:3px 4px; vertical-align:top; font-size:9.8px; line-height:1.15; }
     .j-header th { background:#eef6ee; }
+    .j-col-exam { width: 35%; }
+    .j-col-date { width: 20%; }
+    .j-col-res { width: 45%; }
 
     /* K (Diagnóstico) */
     .k-grid { width:100%; border-collapse:collapse; margin: 6px 0; table-layout: fixed; }
@@ -148,8 +149,8 @@
     .l-grid th, .l-grid td, .n-grid th, .n-grid td { border:1px solid #7fa87e; padding:3px 4px; font-size:9.8px; line-height:1.15; }
     .l-head th { background:#eef6ee; }
     .n-sub th { background:#eef6ee; }
-    
-    
+
+
     /* ===== Firma Profesional / Trabajador (O + P) ===== */
 .sign-wrap{ margin-top:10px; page-break-inside:avoid; }
 .sign-table{ width:100%; border-collapse:collapse; table-layout:fixed; }
@@ -157,7 +158,7 @@
 .sign-head{ background:#d9f2d9; font-weight:bold; color:#1a1a4d; font-size:12px; }
 .sign-label{ font-size:9.5px; font-weight:bold; color:#1a1a4d; }
 .sign-line{ border-bottom:1px solid #333; height:18px; margin-top:16px; }
-.sign-box{ height:54px; } /* espacio para firma manuscrita */
+.sign-box{ height:54px; }
 .sign-img{ max-height:52px; max-width:100%; display:block; margin:2px auto 0 auto; }
 
 /* ============================
@@ -170,7 +171,7 @@
   table-layout:fixed;
 }
 .exf-grid th, .exf-grid td{
-  border:1.2px solid #5f8f5f; /* más visible que #7fa87e */
+  border:1.2px solid #5f8f5f;
   padding:3px 4px;
   vertical-align:middle;
   font-size:9.6px;
@@ -197,7 +198,6 @@
   padding:0;
 }
 
-/* ✅ Caja tipo checkbox (si hay X/☒ se ve clarito) */
 .exf-val .box{
   display:inline-block;
   width:14px;
@@ -210,12 +210,10 @@
   font-weight:bold;
 }
 
-/* Si viene vacío, igual dibuja la cajita */
 .exf-val .box:empty::after{
   content:"";
 }
 
-/* Observación como “caja” */
 .exf-obs-title{
   background:#eef6ee;
   font-weight:bold;
@@ -225,16 +223,17 @@
   height:44px;
   vertical-align:top !important;
 }
-  
+
     /* =========================================================
-       ✅ FIX WRAP / NO OVERLAP (Flying-Saucer)
+       FIX WRAP / NO OVERLAP (Flying-Saucer)
        ========================================================= */
     table { border-collapse: collapse; }
     .risk-grid, .hx-grid { table-layout: fixed; width: 100%; }
     .risk-grid th, .risk-grid td,
     .hx-grid th, .hx-grid td {
       white-space: normal;
-      overflow-wrap: anywhere;
+      overflow-wrap: break-word;
+      word-wrap: break-word;
       word-break: break-word;
       line-height: 1.15;
       vertical-align: middle;
@@ -242,23 +241,35 @@
     .hx-grid th { font-size: 9px; padding: 3px 2px; }
     .hx-grid td { font-size: 9.6px; padding: 3px 2px; }
 
-    /* Los valores ingresados deben romperse dentro de la celda */
     .cell-input-display {
       display: block;
       width: 100%;
       white-space: normal;
-      overflow-wrap: anywhere;
+      overflow-wrap: break-word;
+      word-wrap: break-word;
       word-break: break-word;
     }
 
-    /* Reduce un poco en matriz riesgos para que no se pisen */
     .risk-grid td { font-size: 9.6px; }
+
+    /* FIX: Evitar que celdas con mucho texto rompan la tabla */
+    .text-truncate {
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .text-wrap {
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      word-break: break-word;
+    }
 
 </style>
 </head>
 <body>
 
-<!-- Cabecera con logos -->
 <div id="pageHeader">
 <table class="hdr">
   <tr>
@@ -267,7 +278,8 @@
     </td>
     <td style="width:60%; text-align:center;">
       <div class="title">FICHA OCUPACIONAL</div>
-      <div class="muted">Generado: {{fecha_yyyy}}-{{fecha_MM}}-{{fecha_dd}}</div>
+
+     
     </td>
     <td style="width:20%; text-align:right;">
       <img src="{{LOGO_MIDENA_DATAURI}}" alt="MIDENA" class="logo" />
@@ -276,40 +288,43 @@
 </table>
 </div>
 
-<!-- A. DATOS DEL ESTABLECIMIENTO / USUARIO -->
 <table class="tbl">
   <tr><th colspan="8" class="sec">A. DATOS DEL ESTABLECIMIENTO / USUARIO</th></tr>
   <tr>
-    <td>Institución del Sistema</td><td colspan="3">{{institucion}}</td>
-    <td>RUC</td><td colspan="3">{{ruc}}</td>
+    <td>Institución del Sistema</td><td colspan="3"><span class="cell-input-display">{{institucion}}</span></td>
+    <td>RUC</td><td colspan="3"><span class="cell-input-display">{{ruc}}</span></td>
   </tr>
   <tr>
-    <td>Puesto de Trabajo CIUO</td><td colspan="3">{{ciiu}}</td>
-    <td>Centro de trabajo</td><td colspan="3">{{centroTrabajo}}</td>
+    <td>Puesto de Trabajo CIUO</td><td colspan="3"><span class="cell-input-display">{{ciiu}}</span></td>
+    <td>Centro de trabajo</td><td colspan="3"><span class="cell-input-display">{{centroTrabajo}}</span></td>
   </tr>
   <tr>
-    <td>N° Historia clínica</td><td colspan="3">{{noHistoria}}</td>
-    <td>N° Archivo</td><td colspan="3">{{noArchivo}}</td>
+    <td>N° Historia clínica</td><td colspan="3"><span class="cell-input-display">{{noHistoria}}</span></td>
+    <td>N° Archivo</td><td colspan="3"><span class="cell-input-display">{{noArchivo}}</span></td>
+  </tr>
+  
+  <!-- MODIFICACIÓN: Apellidos y Nombres en filas separadas -->
+  <tr>
+    <td>Primer apellido</td><td colspan="3"><span class="cell-input-display">{{apellido1}}</span></td>
+    <td>Segundo apellido</td><td colspan="3"><span class="cell-input-display">{{apellido2}}</span></td>
   </tr>
   <tr>
-    <td>Primer apellido</td><td>{{apellido1}}</td>
-    <td>Segundo apellido</td><td>{{apellido2}}</td>
-    <td>Primer nombre</td><td>{{nombre1}}</td>
-    <td>Segundo nombre</td><td>{{nombre2}}</td>
+    <td>Primer nombre</td><td colspan="3"><span class="cell-input-display">{{nombre1}}</span></td>
+    <td>Segundo nombre</td><td colspan="3"><span class="cell-input-display">{{nombre2}}</span></td>
+  </tr>
+
+  <tr>
+    <td>Sexo</td><td><span class="cell-input-display">{{sexo}}</span></td>
+    <td>Fecha de nacimiento</td><td><span class="cell-input-display">{{fechaNacimiento}}</span></td>
+    <td>Edad (años)</td><td><span class="cell-input-display">{{edad}}</span></td>
+    <td>Grupo sanguíneo</td><td><span class="cell-input-display">{{grupoSanguineo}}</span></td>
   </tr>
   <tr>
-    <td>Sexo</td><td>{{sexo}}</td>
-    <td>Fecha de nacimiento</td><td>{{fechaNacimiento}}</td>
-    <td>Edad (años)</td><td>{{edad}}</td>
-    <td>Grupo sanguíneo</td><td>{{grupoSanguineo}}</td>
-  </tr>
-  <tr>
-    <td>Lateralidad</td><td>{{lateralidad}}</td>
+    <td>Lateralidad</td><td><span class="cell-input-display">{{lateralidad}}</span></td>
     <td colspan="6"></td>
   </tr>
 </table>
 
-<!-- ATENCIÓN PRIORITARIA -->
 <table class="tbl">
   <tr><th colspan="8" class="sec">ATENCIÓN PRIORITARIA</th></tr>
   <tr>
@@ -325,82 +340,125 @@
   </tr>
 </table>
 
-<!-- B. MOTIVO DE CONSULTA -->
+<table class="tbl" style="{{apDiscapacidad_style}}">
+  <tr><th colspan="8" class="sec">DISCAPACIDAD</th></tr>
+  <tr>
+    <td style="width:14%;">Tipo</td>
+    <td colspan="3"><span class="cell-input-display">{{disTipo}}</span></td>
+    <td style="width:16%;">Porcentaje (%)</td>
+    <td><span class="cell-input-display">{{disPorcentaje}}</span></td>
+    <td colspan="2"></td>
+  </tr>
+  <tr>
+    <td>Descripción</td>
+    <td colspan="7"><span class="cell-input-display">{{disDescripcion}}</span></td>
+  </tr>
+</table>
+
+<table class="tbl" style="{{apCatastrofica_style}}">
+  <tr><th colspan="8" class="sec">ENFERMEDAD CATASTRÓFICA, HUÉRFANA Y RARA</th></tr>
+  <tr>
+    <td style="width:14%;">Diagnóstico</td>
+    <td colspan="5"><span class="cell-input-display">{{catDiagnostico}}</span></td>
+    <td style="width:12%;">Calificada</td>
+    <td><span class="cell-input-display">{{catCalificada}}</span></td>
+  </tr>
+</table>
+
+<!-- SECCIÓN B MEJORADA: Distribución en filas para claridad -->
 <table class="tbl">
   <tr><th colspan="8" class="sec">B. MOTIVO DE CONSULTA</th></tr>
   <tr>
-    <td>Tipo Evaluación</td><td>{{tipoEval}}</td>
-    <td>Fecha de atención</td><td>{{fechaAtencion}}</td>
-    <td>Fecha ingreso</td><td>{{fecIngreso}}</td>
-    <td>Fecha reintegro</td><td>{{fecReintegro}}</td>
+    <td style="width:25%;">Tipo Evaluación</td>
+    <td colspan="3"><span class="cell-input-display">{{tipoEval}}</span></td>
+    <td style="width:25%;">Fecha de atención</td>
+    <td colspan="3"><span class="cell-input-display">{{fechaAtencion}}</span></td>
   </tr>
   <tr>
-    <td>Fecha retiro</td><td>{{fecRetiro}}</td>
-    <td>Observación</td><td colspan="5">{{motivoObs}}</td>
+    <td>Fecha ingreso</td>
+    <td colspan="3"><span class="cell-input-display">{{fecIngreso}}</span></td>
+    <td>Fecha reintegro</td>
+    <td colspan="3"><span class="cell-input-display">{{fecReintegro}}</span></td>
+  </tr>
+  <tr>
+    <td>Fecha retiro</td>
+    <td colspan="3"><span class="cell-input-display">{{fecRetiro}}</span></td>
+    <td colspan="4"></td>
+  </tr>
+  <tr>
+    <td>Observación</td>
+    <td colspan="7"><span class="cell-input-display">{{motivoObs}}</span></td>
   </tr>
 </table>
 
-<!-- C. ANTECEDENTES PERSONALES -->
+<!-- SECCIÓN C MODIFICADA: Fila por fila -->
 <table class="tbl">
   <tr><th colspan="8" class="sec">C. ANTECEDENTES PERSONALES</th></tr>
   <tr>
-    <td>Antecedentes clínicos y quirúrgicos</td><td colspan="3">{{antClinicoQuirurgico}}</td>
-    <td>Antecedentes familiares</td><td colspan="3">{{antFamiliares}}</td>
+    <td style="width:25%;">Antecedentes clínicos y quirúrgicos</td>
+    <td colspan="7"><span class="cell-input-display">{{antClinicoQuirurgico}}</span></td>
   </tr>
   <tr>
-    <td>Condición especial (urgencias / emergencia / tx)</td><td colspan="3">{{condicionEspecial}}</td>
-    <td>Autoriza transfusiones</td><td>{{autorizaTransfusion}}</td>
-    <td>Tratamiento hormonal</td><td>{{tratamientoHormonal}} {{tratamientoHormonalCual}}</td>
+    <td>Antecedentes familiares</td>
+    <td colspan="7"><span class="cell-input-display">{{antFamiliares}}</span></td>
+  </tr>
+  <tr>
+    <td>Condición especial (urgencias / emergencia / tx)</td>
+    <td colspan="7"><span class="cell-input-display">{{condicionEspecial}}</span></td>
+  </tr>
+  <tr>
+    <td>Autoriza transfusiones</td>
+    <td colspan="7"><span class="cell-input-display">{{autorizaTransfusion}}</span></td>
+  </tr>
+  <tr>
+    <td>Tratamiento hormonal</td>
+    <td colspan="7"><span class="cell-input-display">{{tratamientoHormonal}} {{tratamientoHormonalCual}}</span></td>
   </tr>
 </table>
 
-<!-- ANTECEDENTES REPRODUCTIVOS (MASCULINO) – se muestra sólo si sexo = M -->
 {{#if sexoM}}
 <table class="tbl">
   <tr><th colspan="8" class="sec">ANTECEDENTES REPRODUCTIVOS MASCULINOS</th></tr>
   <tr>
-    <td>Exámenes realizados (¿cuál?)</td><td colspan="3">{{examenReproMasculino}}</td>
-    <td>Tiempo (años)</td><td colspan="3">{{tiempoReproMasculino}}</td>
+    <td>Exámenes realizados (¿cuál?)</td><td colspan="3"><span class="cell-input-display">{{examenReproMasculino}}</span></td>
+    <td>Tiempo (años)</td><td colspan="3"><span class="cell-input-display">{{tiempoReproMasculino}}</span></td>
   </tr>
 </table>
 {{/if}}
 
-<!-- ANTECEDENTES GINECO OBSTÉTRICOS (MUJER) – se muestra sólo si sexo = F -->
 {{#if sexoF}}
 <table class="tbl">
   <tr><th colspan="8" class="sec">ANTECEDENTES GINECO OBSTÉTRICOS</th></tr>
   <tr>
-    <td>FUM</td><td>{{fum}}</td>
-    <td>GESTAS</td><td>{{gestas}}</td>
-    <td>CESÁREAS</td><td>{{cesareas}}</td>
-    <td>PARTOS</td><td>{{partos}}</td>
+    <td>FUM</td><td><span class="cell-input-display">{{fum}}</span></td>
+    <td>GESTAS</td><td><span class="cell-input-display">{{gestas}}</span></td>
+    <td>CESÁREAS</td><td><span class="cell-input-display">{{cesareas}}</span></td>
+    <td>PARTOS</td><td><span class="cell-input-display">{{partos}}</span></td>
   </tr>
   <tr>
-    <td>ABORTOS</td><td>{{abortos}}</td>
-    <td>Planificación</td><td>{{planificacion}}</td>
-    <td>¿Cuál?</td><td colspan="3">{{planificacionCual}}</td>
+    <td>ABORTOS</td><td><span class="cell-input-display">{{abortos}}</span></td>
+    <td>Planificación</td><td><span class="cell-input-display">{{planificacion}}</span></td>
+    <td>¿Cuál?</td><td colspan="3"><span class="cell-input-display">{{planificacionCual}}</span></td>
   </tr>
 </table>
 
-<!-- Tabla de exámenes (dos filas) -->
 <table class="tbl">
   <tr><th colspan="8" class="sec">EXÁMENES REALIZADOS</th></tr>
   <tr>
     <th>¿Cuál?</th><th>Tiempo (años)</th><th colspan="6">Resultado</th>
   </tr>
   <tr>
-    <td>{{gineco_examen1}}</td><td>{{gineco_tiempo1}}</td><td colspan="6">{{gineco_resultado1}}</td>
+    <td><span class="cell-input-display">{{gineco_examen1}}</span></td><td><span class="cell-input-display">{{gineco_tiempo1}}</span></td><td colspan="6"><span class="cell-input-display">{{gineco_resultado1}}</span></td>
   </tr>
   <tr>
-    <td>{{gineco_examen2}}</td><td>{{gineco_tiempo2}}</td><td colspan="6">{{gineco_resultado2}}</td>
+    <td><span class="cell-input-display">{{gineco_examen2}}</span></td><td><span class="cell-input-display">{{gineco_tiempo2}}</span></td><td colspan="6"><span class="cell-input-display">{{gineco_resultado2}}</span></td>
   </tr>
   <tr>
-    <th colspan="2">Observación</th><td colspan="6">{{gineco_observacion}}</td>
+    <th colspan="2">Observación</th><td colspan="6"><span class="cell-input-display">{{gineco_observacion}}</span></td>
   </tr>
 </table>
 {{/if}}
 
-<!-- CONSUMO DE SUSTANCIAS -->
 <table class="tbl">
   <tr><th colspan="11" class="sec">CONSUMO DE SUSTANCIAS / ESTILO DE VIDA / CONDICIÓN PREEXISTENTE</th></tr>
   <thead>
@@ -421,73 +479,69 @@
   <tbody>
     <tr>
       <td>TABACO</td>
-      <td>{{cons_tiempo_consumo_0}}</td>
+      <td><span class="cell-input-display">{{cons_tiempo_consumo_0}}</span></td>
       <td class="c">{{cons_ex_consumidor_0}}</td>
-      <td>{{cons_tiempo_abstinencia_0}}</td>
+      <td><span class="cell-input-display">{{cons_tiempo_abstinencia_0}}</span></td>
       <td class="c">{{cons_no_consume_0}}</td>
       <td rowspan="3">ACTIVIDAD FÍSICA</td>
-      <td>{{af_cual_0}}</td>
-      <td>{{af_tiempo_0}}</td>
+      <td><span class="cell-input-display">{{af_cual_0}}</span></td>
+      <td><span class="cell-input-display">{{af_tiempo_0}}</span></td>
       <td rowspan="3">MEDICACIÓN HABITUAL</td>
-      <td>{{med_cual_0}}</td>
-      <td>{{med_cant_0}}</td>
+      <td><span class="cell-input-display">{{med_cual_0}}</span></td>
+      <td><span class="cell-input-display">{{med_cant_0}}</span></td>
     </tr>
     <tr>
       <td>ALCOHOL</td>
-      <td>{{cons_tiempo_consumo_1}}</td>
+      <td><span class="cell-input-display">{{cons_tiempo_consumo_1}}</span></td>
       <td class="c">{{cons_ex_consumidor_1}}</td>
-      <td>{{cons_tiempo_abstinencia_1}}</td>
+      <td><span class="cell-input-display">{{cons_tiempo_abstinencia_1}}</span></td>
       <td class="c">{{cons_no_consume_1}}</td>
-      <td>{{af_cual_1}}</td>
-      <td>{{af_tiempo_1}}</td>
-      <td>{{med_cual_1}}</td>
-      <td>{{med_cant_1}}</td>
+      <td><span class="cell-input-display">{{af_cual_1}}</span></td>
+      <td><span class="cell-input-display">{{af_tiempo_1}}</span></td>
+      <td><span class="cell-input-display">{{med_cual_1}}</span></td>
+      <td><span class="cell-input-display">{{med_cant_1}}</span></td>
     </tr>
     <tr>
-      <td>OTRAS: {{cons_otras_cual}}</td>
-      <td>{{cons_tiempo_consumo_2}}</td>
+      <td>OTRAS: <span class="cell-input-display">{{cons_otras_cual}}</span></td>
+      <td><span class="cell-input-display">{{cons_tiempo_consumo_2}}</span></td>
       <td class="c">{{cons_ex_consumidor_2}}</td>
-      <td>{{cons_tiempo_abstinencia_2}}</td>
+      <td><span class="cell-input-display">{{cons_tiempo_abstinencia_2}}</span></td>
       <td class="c">{{cons_no_consume_2}}</td>
-      <td>{{af_cual_2}}</td>
-      <td>{{af_tiempo_2}}</td>
-      <td>{{med_cual_2}}</td>
-      <td>{{med_cant_2}}</td>
+      <td><span class="cell-input-display">{{af_cual_2}}</span></td>
+      <td><span class="cell-input-display">{{af_tiempo_2}}</span></td>
+      <td><span class="cell-input-display">{{med_cual_2}}</span></td>
+      <td><span class="cell-input-display">{{med_cant_2}}</span></td>
     </tr>
     <tr>
       <th colspan="2">Observación</th>
-      <td colspan="9">{{consumo_observacion}}</td>
+      <td colspan="9"><span class="cell-input-display">{{consumo_observacion}}</span></td>
     </tr>
   </tbody>
 </table>
 
-<!-- D. ENFERMEDAD O PROBLEMA ACTUAL -->
 <table class="tbl">
   <tr><th colspan="8" class="sec">D. ENFERMEDAD O PROBLEMA ACTUAL</th></tr>
-  <tr><td colspan="8">{{enfermedad_actual}}</td></tr>
+  <tr><td colspan="8"><span class="cell-input-display">{{enfermedad_actual}}</span></td></tr>
 </table>
 
-<!-- E. CONSTANTES VITALES Y ANTROPOMETRÍA -->
 <table class="tbl">
   <tr><th colspan="10" class="sec">E. CONSTANTES VITALES Y ANTROPOMETRÍA</th></tr>
   <tr>
-    <td>Temp (°C)</td><td>{{temp}}</td>
-    <td>PA (mmHg)</td><td>{{paStr}}</td>
-    <td>FC</td><td>{{fc}}</td>
-    <td>FR</td><td>{{fr}}</td>
-    <td>Sat O₂ (%)</td><td>{{satO2}}</td>
+    <td>Temp (°C)</td><td><span class="cell-input-display">{{temp}}</span></td>
+    <td>PA (mmHg)</td><td><span class="cell-input-display">{{paStr}}</span></td>
+    <td>FC</td><td><span class="cell-input-display">{{fc}}</span></td>
+    <td>FR</td><td><span class="cell-input-display">{{fr}}</span></td>
+    <td>Sat O₂ (%)</td><td><span class="cell-input-display">{{satO2}}</span></td>
   </tr>
   <tr>
-    <td>Peso (kg)</td><td>{{peso}}</td>
-    <td>Talla (cm)</td><td>{{tallaCm}}</td>
-    <td>IMC</td><td>{{imc}}</td>
-    <td>Perímetro abd (cm)</td><td colspan="3">{{perimetroAbd}}</td>
+    <td>Peso (kg)</td><td><span class="cell-input-display">{{peso}}</span></td>
+    <td>Talla (cm)</td><td><span class="cell-input-display">{{tallaCm}}</span></td>
+    <td>IMC</td><td><span class="cell-input-display">{{imc}}</span></td>
+    <td>Perímetro abd (cm)</td><td colspan="3"><span class="cell-input-display">{{perimetroAbd}}</span></td>
   </tr>
 </table>
 
-<!-- F. EXAMEN FÍSICO REGIONAL (REDISEÑO tipo grilla web) -->
 <table class="exf-grid">
-  <!-- 4 bloques: (label + val) x4 -->
   <colgroup>
     <col style="width:21%;" /><col style="width:4%;" />
     <col style="width:21%;" /><col style="width:4%;" />
@@ -497,7 +551,7 @@
 
   <tr><th colspan="8" class="sec">F. EXAMEN FÍSICO REGIONAL</th></tr>
 
-  <!-- Encabezados 1..4 -->
+
   <tr class="exf-head">
     <th colspan="2">1. Piel</th>
     <th colspan="2">2. Ojos</th>
@@ -520,7 +574,7 @@
   </tr>
 
   <tr>
-    <td class="exf-lbl">&nbsp;</td><td class="exf-val"><span class="box">&nbsp;</span></td>
+    <td class="exf-lbl">&#160;</td><td class="exf-val"><span class="box">&#160;</span></td>
 
     <td class="exf-lbl">b. Conjuntivas</td>
     <td class="exf-val"><span class="box">{{exf_ojos_conjuntivas}}</span></td>
@@ -533,7 +587,7 @@
   </tr>
 
   <tr>
-    <td class="exf-lbl">&nbsp;</td><td class="exf-val"><span class="box">&nbsp;</span></td>
+    <td class="exf-lbl">&#160;</td><td class="exf-val"><span class="box">&#160;</span></td>
 
     <td class="exf-lbl">c. Pupilas</td>
     <td class="exf-val"><span class="box">{{exf_ojos_pupilas}}</span></td>
@@ -546,30 +600,30 @@
   </tr>
 
   <tr>
-    <td class="exf-lbl">&nbsp;</td><td class="exf-val"><span class="box">&nbsp;</span></td>
+    <td class="exf-lbl">&#160;</td><td class="exf-val"><span class="box">&#160;</span></td>
 
     <td class="exf-lbl">d. Córnea</td>
     <td class="exf-val"><span class="box">{{exf_ojos_cornea}}</span></td>
 
-    <td class="exf-lbl">&nbsp;</td><td class="exf-val"><span class="box">&nbsp;</span></td>
+    <td class="exf-lbl">&#160;</td><td class="exf-val"><span class="box">&#160;</span></td>
 
     <td class="exf-lbl">d. Amígdalas</td>
     <td class="exf-val"><span class="box">{{exf_oro_amigdalas}}</span></td>
   </tr>
 
   <tr>
-    <td class="exf-lbl">&nbsp;</td><td class="exf-val"><span class="box">&nbsp;</span></td>
+    <td class="exf-lbl">&#160;</td><td class="exf-val"><span class="box">&#160;</span></td>
 
     <td class="exf-lbl">e. Motilidad</td>
     <td class="exf-val"><span class="box">{{exf_ojos_motilidad}}</span></td>
 
-    <td class="exf-lbl">&nbsp;</td><td class="exf-val"><span class="box">&nbsp;</span></td>
+    <td class="exf-lbl">&#160;</td><td class="exf-val"><span class="box">&#160;</span></td>
 
     <td class="exf-lbl">e. Dentadura</td>
     <td class="exf-val"><span class="box">{{exf_oro_dentadura}}</span></td>
   </tr>
 
-  <!-- Encabezados 5..8 -->
+
   <tr class="exf-head">
     <th colspan="2">5. Nariz</th>
     <th colspan="2">6. Cuello</th>
@@ -596,9 +650,9 @@
     <td class="exf-val"><span class="box">{{exf_nariz_cornetes}}</span></td>
 
     <td class="exf-lbl">b. Movilidad</td>
-    <td class="exf-val"><span class="box">{{exf_cuello_movilidad}}</span></td>
+    <td class="exf-val"><span class="box">{{exf_cuello_movilidade}}</span></td>
 
-    <td class="exf-lbl">&nbsp;</td><td class="exf-val"><span class="box">&nbsp;</span></td>
+    <td class="exf-lbl">&#160;</td><td class="exf-val"><span class="box">&#160;</span></td>
 
     <td class="exf-lbl">b. Corazón</td>
     <td class="exf-val"><span class="box">{{exf_torax_corazon}}</span></td>
@@ -608,8 +662,8 @@
     <td class="exf-lbl">c. Mucosas</td>
     <td class="exf-val"><span class="box">{{exf_nariz_mucosas}}</span></td>
 
-    <td class="exf-lbl">&nbsp;</td><td class="exf-val"><span class="box">&nbsp;</span></td>
-    <td class="exf-lbl">&nbsp;</td><td class="exf-val"><span class="box">&nbsp;</span></td>
+    <td class="exf-lbl">&#160;</td><td class="exf-val"><span class="box">&#160;</span></td>
+    <td class="exf-lbl">&#160;</td><td class="exf-val"><span class="box">&#160;</span></td>
 
     <td class="exf-lbl">c. Parrilla costal</td>
     <td class="exf-val"><span class="box">{{exf_torax_parrilla}}</span></td>
@@ -619,12 +673,12 @@
     <td class="exf-lbl">d. Senos paranasales</td>
     <td class="exf-val"><span class="box">{{exf_nariz_senos}}</span></td>
 
-    <td class="exf-lbl">&nbsp;</td><td class="exf-val"><span class="box">&nbsp;</span></td>
-    <td class="exf-lbl">&nbsp;</td><td class="exf-val"><span class="box">&nbsp;</span></td>
-    <td class="exf-lbl">&nbsp;</td><td class="exf-val"><span class="box">&nbsp;</span></td>
+    <td class="exf-lbl">&#160;</td><td class="exf-val"><span class="box">&#160;</span></td>
+    <td class="exf-lbl">&#160;</td><td class="exf-val"><span class="box">&#160;</span></td>
+    <td class="exf-lbl">&#160;</td><td class="exf-val"><span class="box">&#160;</span></td>
   </tr>
 
-  <!-- Encabezados 9..12 -->
+
   <tr class="exf-head">
     <th colspan="2">9. Abdomen</th>
     <th colspan="2">10. Columna</th>
@@ -661,18 +715,18 @@
   </tr>
 
   <tr>
-    <td class="exf-lbl">&nbsp;</td><td class="exf-val"><span class="box">&nbsp;</span></td>
+    <td class="exf-lbl">&#160;</td><td class="exf-val"><span class="box">&#160;</span></td>
 
     <td class="exf-lbl">c. Dolor</td>
     <td class="exf-val"><span class="box">{{exf_columna_dolor}}</span></td>
 
-    <td class="exf-lbl">&nbsp;</td><td class="exf-val"><span class="box">&nbsp;</span></td>
+    <td class="exf-lbl">&#160;</td><td class="exf-val"><span class="box">&#160;</span></td>
 
     <td class="exf-lbl">c. Miembros inferiores</td>
     <td class="exf-val"><span class="box">{{exf_ext_inf}}</span></td>
   </tr>
 
-  <!-- 13 Neurológico (en una sola fila “tipo web”) -->
+
   <tr class="exf-head">
     <th colspan="8">13. Neurológico</th>
   </tr>
@@ -690,20 +744,17 @@
     <td class="exf-val"><span class="box">{{exf_neuro_reflejos}}</span></td>
   </tr>
 
-  <!-- Observación -->
+
   <tr>
     <td class="exf-obs-title" colspan="2">Observación</td>
-    <td class="exf-obs" colspan="6">{{obs_examen_fisico}}</td>
+    <td class="exf-obs" colspan="6"><span class="cell-input-display">{{obs_examen_fisico}}</span></td>
   </tr>
 </table>
 
-<!-- ============================================= -->
-<!-- MATRIZ DE IDENTIFICACIÓN DE RIESGOS LABORALES (STEP 2) -->
-<!-- ============================================= -->
 <div class="blk">
-  <div class="sec">MATRIZ DE IDENTIFICACIÓN DE RIESGOS LABORALES (STEP 2)</div>
+  <div class="sec">MATRIZ DE IDENTIFICACIÓN DE RIESGOS LABORALES</div>
 
-  <!-- Puesto de trabajo -->
+
   <table class="risk-grid" style="margin-bottom:6px;">
     <tr>
       <th colspan="8" style="text-align:left; background:#f5f5f5; padding:6px;">
@@ -712,7 +763,7 @@
     </tr>
   </table>
 
-  <!-- Actividades laborales (cabecera + fila) -->
+
   <table class="risk-grid">
     <colgroup>
       <col class="risk-col-label" />
@@ -739,7 +790,7 @@
     </tbody>
   </table>
 
-  <!-- RIESGOS FÍSICOS -->
+
   <div style="margin-top:10px; border:1px solid #7fa87e; padding:4px;">
     <div style="background:#d9f2d9; font-weight:bold; padding:4px;">FÍSICO</div>
     <table class="risk-grid">
@@ -754,12 +805,12 @@
         <tr><td>Iluminación</td>                 <td class="c">{{fis_iluminacion_1}}</td><td class="c">{{fis_iluminacion_2}}</td><td class="c">{{fis_iluminacion_3}}</td><td class="c">{{fis_iluminacion_4}}</td><td class="c">{{fis_iluminacion_5}}</td><td class="c">{{fis_iluminacion_6}}</td><td class="c">{{fis_iluminacion_7}}</td></tr>
         <tr><td>Ventilación</td>                 <td class="c">{{fis_ventilacion_1}}</td><td class="c">{{fis_ventilacion_2}}</td><td class="c">{{fis_ventilacion_3}}</td><td class="c">{{fis_ventilacion_4}}</td><td class="c">{{fis_ventilacion_5}}</td><td class="c">{{fis_ventilacion_6}}</td><td class="c">{{fis_ventilacion_7}}</td></tr>
         <tr><td>Fluido eléctrico</td>            <td class="c">{{fis_fluido_elect_1}}</td><td class="c">{{fis_fluido_elect_2}}</td><td class="c">{{fis_fluido_elect_3}}</td><td class="c">{{fis_fluido_elect_4}}</td><td class="c">{{fis_fluido_elect_5}}</td><td class="c">{{fis_fluido_elect_6}}</td><td class="c">{{fis_fluido_elect_7}}</td></tr>
-        <tr><td><em>Otros (Físico)</em></td>    <td>{{otros_fis_1}}</td><td>{{otros_fis_2}}</td><td>{{otros_fis_3}}</td><td>{{otros_fis_4}}</td><td>{{otros_fis_5}}</td><td>{{otros_fis_6}}</td><td>{{otros_fis_7}}</td></tr>
+        <tr><td><em>Otros (Físico)</em></td>    <td><span class="cell-input-display">{{otros_fis_1}}</span></td><td><span class="cell-input-display">{{otros_fis_2}}</span></td><td><span class="cell-input-display">{{otros_fis_3}}</span></td><td><span class="cell-input-display">{{otros_fis_4}}</span></td><td><span class="cell-input-display">{{otros_fis_5}}</span></td><td><span class="cell-input-display">{{otros_fis_6}}</span></td><td><span class="cell-input-display">{{otros_fis_7}}</span></td></tr>
       </tbody>
     </table>
   </div>
 
-  <!-- RIESGOS DE SEGURIDAD -->
+
   <div style="margin-top:10px; border:1px solid #7fa87e; padding:4px;">
     <div style="background:#d9f2d9; font-weight:bold; padding:4px;">DE SEGURIDAD</div>
     <table class="risk-grid">
@@ -779,12 +830,12 @@
         <tr><td>Proyección de partículas – fragmentos</td>      <td class="c">{{seg_mec_proy_part_1}}</td><td class="c">{{seg_mec_proy_part_2}}</td><td class="c">{{seg_mec_proy_part_3}}</td><td class="c">{{seg_mec_proy_part_4}}</td><td class="c">{{seg_mec_proy_part_5}}</td><td class="c">{{seg_mec_proy_part_6}}</td><td class="c">{{seg_mec_proy_part_7}}</td></tr>
         <tr><td>Contacto con superficies de trabajo</td>        <td class="c">{{seg_mec_superficies_1}}</td><td class="c">{{seg_mec_superficies_2}}</td><td class="c">{{seg_mec_superficies_3}}</td><td class="c">{{seg_mec_superficies_4}}</td><td class="c">{{seg_mec_superficies_5}}</td><td class="c">{{seg_mec_superficies_6}}</td><td class="c">{{seg_mec_superficies_7}}</td></tr>
         <tr><td><strong>ELÉCTRICOS</strong> — Contacto eléctrico</td><td class="c">{{seg_elec_contacto_1}}</td><td class="c">{{seg_elec_contacto_2}}</td><td class="c">{{seg_elec_contacto_3}}</td><td class="c">{{seg_elec_contacto_4}}</td><td class="c">{{seg_elec_contacto_5}}</td><td class="c">{{seg_elec_contacto_6}}</td><td class="c">{{seg_elec_contacto_7}}</td></tr>
-        <tr><td><em>Otros (Seguridad)</em></td>                <td>{{otros_seg_1}}</td><td>{{otros_seg_2}}</td><td>{{otros_seg_3}}</td><td>{{otros_seg_4}}</td><td>{{otros_seg_5}}</td><td>{{otros_seg_6}}</td><td>{{otros_seg_7}}</td></tr>
+        <tr><td><em>Otros (Seguridad)</em></td>                <td><span class="cell-input-display">{{otros_seg_1}}</span></td><td><span class="cell-input-display">{{otros_seg_2}}</span></td><td><span class="cell-input-display">{{otros_seg_3}}</span></td><td><span class="cell-input-display">{{otros_seg_4}}</span></td><td><span class="cell-input-display">{{otros_seg_5}}</span></td><td><span class="cell-input-display">{{otros_seg_6}}</span></td><td><span class="cell-input-display">{{otros_seg_7}}</span></td></tr>
       </tbody>
     </table>
   </div>
 
-  <!-- RIESGOS QUÍMICOS -->
+
   <div style="margin-top:10px; border:1px solid #7fa87e; padding:4px;">
     <div style="background:#d9f2d9; font-weight:bold; padding:4px;">QUÍMICO</div>
     <table class="risk-grid">
@@ -793,17 +844,17 @@
         <tr><td>Polvos</td>       <td class="c">{{qui_polvos_1}}</td><td class="c">{{qui_polvos_2}}</td><td class="c">{{qui_polvos_3}}</td><td class="c">{{qui_polvos_4}}</td><td class="c">{{qui_polvos_5}}</td><td class="c">{{qui_polvos_6}}</td><td class="c">{{qui_polvos_7}}</td></tr>
         <tr><td>Sólidos</td>      <td class="c">{{qui_solidos_1}}</td><td class="c">{{qui_solidos_2}}</td><td class="c">{{qui_solidos_3}}</td><td class="c">{{qui_solidos_4}}</td><td class="c">{{qui_solidos_5}}</td><td class="c">{{qui_solidos_6}}</td><td class="c">{{qui_solidos_7}}</td></tr>
         <tr><td>Humos</td>        <td class="c">{{qui_humos_1}}</td><td class="c">{{qui_humos_2}}</td><td class="c">{{qui_humos_3}}</td><td class="c">{{qui_humos_4}}</td><td class="c">{{qui_humos_5}}</td><td class="c">{{qui_humos_6}}</td><td class="c">{{qui_humos_7}}</td></tr>
-        <tr><td>Líquidos</td>     <td class="c">{{qui_liquidos_1}}</td><td class="c">{{qui_liquidos_2}}</td><td class="c">{{qui_liquidos_3}}</td><td class="c">{{qui_liquidos_4}}</td><td class="c">{{qui_liquidos_5}}</td><td class="c">{{qui_liquidos_6}}</td><td class="c">{{qui_liquidos_7}}</td></tr>
+        <tr><td>Líquidos</td>     <td class="c">{{qui_liquidos_1}}</td><td class="c">{{qui_liquidos_2}}</td><td class="c">{{qui_liquidos_3}}</td><td class="c">{{qui_liquids_4}}</td><td class="c">{{qui_liquidos_5}}</td><td class="c">{{qui_liquidos_6}}</td><td class="c">{{qui_liquidos_7}}</td></tr>
         <tr><td>Vapores</td>      <td class="c">{{qui_vapores_1}}</td><td class="c">{{qui_vapores_2}}</td><td class="c">{{qui_vapores_3}}</td><td class="c">{{qui_vapores_4}}</td><td class="c">{{qui_vapores_5}}</td><td class="c">{{qui_vapores_6}}</td><td class="c">{{qui_vapores_7}}</td></tr>
         <tr><td>Aerosoles</td>    <td class="c">{{qui_aerosoles_1}}</td><td class="c">{{qui_aerosoles_2}}</td><td class="c">{{qui_aerosoles_3}}</td><td class="c">{{qui_aerosoles_4}}</td><td class="c">{{qui_aerosoles_5}}</td><td class="c">{{qui_aerosoles_6}}</td><td class="c">{{qui_aerosoles_7}}</td></tr>
         <tr><td>Neblinas</td>     <td class="c">{{qui_neblinas_1}}</td><td class="c">{{qui_neblinas_2}}</td><td class="c">{{qui_neblinas_3}}</td><td class="c">{{qui_neblinas_4}}</td><td class="c">{{qui_neblinas_5}}</td><td class="c">{{qui_neblinas_6}}</td><td class="c">{{qui_neblinas_7}}</td></tr>
         <tr><td>Gaseosos</td>     <td class="c">{{qui_gases_1}}</td><td class="c">{{qui_gases_2}}</td><td class="c">{{qui_gases_3}}</td><td class="c">{{qui_gases_4}}</td><td class="c">{{qui_gases_5}}</td><td class="c">{{qui_gases_6}}</td><td class="c">{{qui_gases_7}}</td></tr>
-        <tr><td><em>Otros (Químico)</em></td> <td>{{otros_qui_1}}</td><td>{{otros_qui_2}}</td><td>{{otros_qui_3}}</td><td>{{otros_qui_4}}</td><td>{{otros_qui_5}}</td><td>{{otros_qui_6}}</td><td>{{otros_qui_7}}</td></tr>
+        <tr><td><em>Otros (Químico)</em></td> <td><span class="cell-input-display">{{otros_qui_1}}</span></td><td><span class="cell-input-display">{{otros_qui_2}}</span></td><td><span class="cell-input-display">{{otros_qui_3}}</span></td><td><span class="cell-input-display">{{otros_qui_4}}</span></td><td><span class="cell-input-display">{{otros_qui_5}}</span></td><td><span class="cell-input-display">{{otros_qui_6}}</span></td><td><span class="cell-input-display">{{otros_qui_7}}</span></td></tr>
       </tbody>
     </table>
   </div>
 
-  <!-- RIESGOS BIOLÓGICOS -->
+
   <div style="margin-top:10px; border:1px solid #7fa87e; padding:4px;">
     <div style="background:#d9f2d9; font-weight:bold; padding:4px;">BIOLÓGICO</div>
     <table class="risk-grid">
@@ -815,12 +866,12 @@
         <tr><td>Parásitos</td>           <td class="c">{{bio_parasitos_1}}</td><td class="c">{{bio_parasitos_2}}</td><td class="c">{{bio_parasitos_3}}</td><td class="c">{{bio_parasitos_4}}</td><td class="c">{{bio_parasitos_5}}</td><td class="c">{{bio_parasitos_6}}</td><td class="c">{{bio_parasitos_7}}</td></tr>
         <tr><td>Vectores</td>            <td class="c">{{bio_vectores_1}}</td><td class="c">{{bio_vectores_2}}</td><td class="c">{{bio_vectores_3}}</td><td class="c">{{bio_vectores_4}}</td><td class="c">{{bio_vectores_5}}</td><td class="c">{{bio_vectores_6}}</td><td class="c">{{bio_vectores_7}}</td></tr>
         <tr><td>Animales selváticos</td> <td class="c">{{bio_selvaticos_1}}</td><td class="c">{{bio_selvaticos_2}}</td><td class="c">{{bio_selvaticos_3}}</td><td class="c">{{bio_selvaticos_4}}</td><td class="c">{{bio_selvaticos_5}}</td><td class="c">{{bio_selvaticos_6}}</td><td class="c">{{bio_selvaticos_7}}</td></tr>
-        <tr><td><em>Otros (Biológico)</em></td> <td>{{otros_bio_1}}</td><td>{{otros_bio_2}}</td><td>{{otros_bio_3}}</td><td>{{otros_bio_4}}</td><td>{{otros_bio_5}}</td><td>{{otros_bio_6}}</td><td>{{otros_bio_7}}</td></tr>
+        <tr><td><em>Otros (Biológico)</em></td> <td><span class="cell-input-display">{{otros_bio_1}}</span></td><td><span class="cell-input-display">{{otros_bio_2}}</span></td><td><span class="cell-input-display">{{otros_bio_3}}</span></td><td><span class="cell-input-display">{{otros_bio_4}}</span></td><td><span class="cell-input-display">{{otros_bio_5}}</span></td><td><span class="cell-input-display">{{otros_bio_6}}</span></td><td><span class="cell-input-display">{{otros_bio_7}}</span></td></tr>
       </tbody>
     </table>
   </div>
 
-  <!-- RIESGOS ERGONÓMICOS -->
+
   <div style="margin-top:10px; border:1px solid #7fa87e; padding:4px;">
     <div style="background:#d9f2d9; font-weight:bold; padding:4px;">ERGONÓMICO</div>
     <table class="risk-grid">
@@ -831,12 +882,12 @@
         <tr><td>Posturas forzadas</td>           <td class="c">{{erg_posturas_1}}</td><td class="c">{{erg_posturas_2}}</td><td class="c">{{erg_posturas_3}}</td><td class="c">{{erg_posturas_4}}</td><td class="c">{{erg_posturas_5}}</td><td class="c">{{erg_posturas_6}}</td><td class="c">{{erg_posturas_7}}</td></tr>
         <tr><td>Trabajos con PVD</td>            <td class="c">{{erg_pvd_1}}</td><td class="c">{{erg_pvd_2}}</td><td class="c">{{erg_pvd_3}}</td><td class="c">{{erg_pvd_4}}</td><td class="c">{{erg_pvd_5}}</td><td class="c">{{erg_pvd_6}}</td><td class="c">{{erg_pvd_7}}</td></tr>
         <tr><td>Diseño inadecuado del puesto</td><td class="c">{{erg_puesto_1}}</td><td class="c">{{erg_puesto_2}}</td><td class="c">{{erg_puesto_3}}</td><td class="c">{{erg_puesto_4}}</td><td class="c">{{erg_puesto_5}}</td><td class="c">{{erg_puesto_6}}</td><td class="c">{{erg_puesto_7}}</td></tr>
-        <tr><td><em>Otros (Ergonómico)</em></td> <td>{{otros_erg_1}}</td><td>{{otros_erg_2}}</td><td>{{otros_erg_3}}</td><td>{{otros_erg_4}}</td><td>{{otros_erg_5}}</td><td>{{otros_erg_6}}</td><td>{{otros_erg_7}}</td></tr>
+        <tr><td><em>Otros (Ergonómico)</em></td> <td><span class="cell-input-display">{{otros_erg_1}}</span></td><td><span class="cell-input-display">{{otros_erg_2}}</span></td><td><span class="cell-input-display">{{otros_erg_3}}</span></td><td><span class="cell-input-display">{{otros_erg_4}}</span></td><td><span class="cell-input-display">{{otros_erg_5}}</span></td><td><span class="cell-input-display">{{otros_erg_6}}</span></td><td><span class="cell-input-display">{{otros_erg_7}}</span></td></tr>
       </tbody>
     </table>
   </div>
 
-  <!-- RIESGOS PSICOSOCIALES -->
+
   <div style="margin-top:10px; border:1px solid #7fa87e; padding:4px;">
     <div style="background:#d9f2d9; font-weight:bold; padding:4px;">PSICOSOCIAL</div>
     <table class="risk-grid">
@@ -849,12 +900,12 @@
         <tr><td>Relaciones interpersonales</td>  <td class="c">{{psi_relaciones_1}}</td><td class="c">{{psi_relaciones_2}}</td><td class="c">{{psi_relaciones_3}}</td><td class="c">{{psi_relaciones_4}}</td><td class="c">{{psi_relaciones_5}}</td><td class="c">{{psi_relaciones_6}}</td><td class="c">{{psi_relaciones_7}}</td></tr>
         <tr><td>Inestabilidad laboral</td>       <td class="c">{{psi_inestabilidad_1}}</td><td class="c">{{psi_inestabilidad_2}}</td><td class="c">{{psi_inestabilidad_3}}</td><td class="c">{{psi_inestabilidad_4}}</td><td class="c">{{psi_inestabilidad_5}}</td><td class="c">{{psi_inestabilidad_6}}</td><td class="c">{{psi_inestabilidad_7}}</td></tr>
         <tr><td>Amenaza delincuencial</td>       <td class="c">{{psi_amenaza_1}}</td><td class="c">{{psi_amenaza_2}}</td><td class="c">{{psi_amenaza_3}}</td><td class="c">{{psi_amenaza_4}}</td><td class="c">{{psi_amenaza_5}}</td><td class="c">{{psi_amenaza_6}}</td><td class="c">{{psi_amenaza_7}}</td></tr>
-        <tr><td><em>Otros (Psicosocial)</em></td><td>{{otros_psi_1}}</td><td>{{otros_psi_2}}</td><td>{{otros_psi_3}}</td><td>{{otros_psi_4}}</td><td>{{otros_psi_5}}</td><td>{{otros_psi_6}}</td><td>{{otros_psi_7}}</td></tr>
+        <tr><td><em>Otros (Psicosocial)</em></td><td><span class="cell-input-display">{{otros_psi_1}}</span></td><td><span class="cell-input-display">{{otros_psi_2}}</span></td><td><span class="cell-input-display">{{otros_psi_3}}</span></td><td><span class="cell-input-display">{{otros_psi_4}}</span></td><td><span class="cell-input-display">{{otros_psi_5}}</span></td><td><span class="cell-input-display">{{otros_psi_6}}</span></td><td><span class="cell-input-display">{{otros_psi_7}}</span></td></tr>
       </tbody>
     </table>
   </div>
 
-  <!-- MEDIDAS PREVENTIVAS -->
+
   <table class="risk-grid" style="margin-top:10px;">
     <colgroup>
       <col class="risk-col-label" />
@@ -875,41 +926,39 @@
     </tbody>
   </table>
 </div>
-<!-- ============================================= -->
-<!-- H. ACTIVIDAD LABORAL / INCIDENTES / ACCIDENTES / ENFERMEDADES OCUPACIONALES -->
-<!-- ============================================= -->
+
 <div class="blk">
   <div class="sec">H. ACTIVIDAD LABORAL / INCIDENTES / ACCIDENTES / ENFERMEDADES OCUPACIONALES</div>
   <table class="hx-grid">
     <colgroup>
-      <!-- 13 columnas: 2 fijas + 3 trabajo + 3 accidentes + 4 IESS + 1 obs -->
-      <col style="width:10%;" />   <!-- 1. CENTRO DE TRABAJO -->
-      <col style="width:13%;" />   <!-- 2. ACTIVIDADES -->
-      <col style="width:5%;" />    <!-- 3. ANTERIOR -->
-      <col style="width:5%;" />    <!-- 4. ACTUAL -->
-      <col style="width:7%;" />    <!-- 5. TIEMPO<br/>DE<br/>TRABAJO -->
-      <col style="width:6%;" />    <!-- 6. INCIDENTE -->
-      <col style="width:6%;" />    <!-- 7. ACCIDENTE -->
-      <col style="width:8%;" />    <!-- 8. ENFERMEDAD PROFESIONAL -->
-      <col style="width:4%;" />    <!-- 9. SI -->
-      <col style="width:4%;" />    <!-- 10. NO -->
-      <col style="width:9%;" />    <!-- 11. FECHA -->
-      <col style="width:11%;" />   <!-- 12. ESPECIFICAR -->
-      <col style="width:12%;" />   <!-- 13. OBSERVACIONES -->
+      <col style="width:10%;" />
+      <col style="width:13%;" />
+      <col style="width:5%;" />
+      <col style="width:5%;" />
+      <col style="width:7%;" />
+      <col style="width:6%;" />
+      <col style="width:6%;" />
+      <col style="width:8%;" />
+      <col style="width:4%;" />
+      <col style="width:4%;" />
+      <col style="width:9%;" />
+      <col style="width:11%;" />
+      <col style="width:12%;" />
     </colgroup>
     <thead>
+
       <tr>
         <th rowspan="2">CENTRO DE TRABAJO</th>
         <th rowspan="2">ACTIVIDADES QUE DESEMPEÑABA</th>
         <th colspan="3">TRABAJO</th>
         <th colspan="3">De los Accidentes de Trabajo y las Enfermedades Profesionales</th>
-        <th colspan="4">CALIFICADO POR<br/>INSTITUTO ECUATORIANO DE<br/>SEGURIDAD SOCIAL</th>
+        <th colspan="4">CALIFICADO POR INSTITUTO ECUATORIANO DE SEGURIDAD SOCIAL</th>
         <th rowspan="2">OBSERVACIONES</th>
       </tr>
       <tr>
         <th>ANTERIOR</th>
         <th>ACTUAL</th>
-        <th>TIEMPO<br/>DE<br/>TRABAJO</th>
+        <th>TIEMPO DE TRABAJO</th>
         <th>INCIDENTE</th>
         <th>ACCIDENTE</th>
         <th>ENFERMEDAD PROFESIONAL</th>
@@ -928,7 +977,7 @@
         <td><span class="cell-input-display">{{act_lab_tiempo_0}}</span></td>
         <td class="c">{{act_lab_incidente_0}}</td>
         <td class="c">{{act_lab_accidente_0}}</td>
-        <td class="c">{{act_lab_enfermedad_0}}</td>
+        <td><span class="cell-input-display">{{act_lab_enfermedad_0}}</span></td>
         <td class="c">{{iess_si_0}}</td>
         <td class="c">{{iess_no_0}}</td>
         <td><span class="cell-input-display">{{iess_fecha_0}}</span></td>
@@ -943,7 +992,7 @@
         <td><span class="cell-input-display">{{act_lab_tiempo_1}}</span></td>
         <td class="c">{{act_lab_incidente_1}}</td>
         <td class="c">{{act_lab_accidente_1}}</td>
-        <td class="c">{{act_lab_enfermedad_1}}</td>
+        <td><span class="cell-input-display">{{act_lab_enfermedad_1}}</span></td>
         <td class="c">{{iess_si_1}}</td>
         <td class="c">{{iess_no_1}}</td>
         <td><span class="cell-input-display">{{iess_fecha_1}}</span></td>
@@ -958,7 +1007,7 @@
         <td><span class="cell-input-display">{{act_lab_tiempo_2}}</span></td>
         <td class="c">{{act_lab_incidente_2}}</td>
         <td class="c">{{act_lab_accidente_2}}</td>
-        <td class="c">{{act_lab_enfermedad_2}}</td>
+        <td><span class="cell-input-display">{{act_lab_enfermedad_2}}</span></td>
         <td class="c">{{iess_si_2}}</td>
         <td class="c">{{iess_no_2}}</td>
         <td><span class="cell-input-display">{{iess_fecha_2}}</span></td>
@@ -973,7 +1022,7 @@
         <td><span class="cell-input-display">{{act_lab_tiempo_3}}</span></td>
         <td class="c">{{act_lab_incidente_3}}</td>
         <td class="c">{{act_lab_accidente_3}}</td>
-        <td class="c">{{act_lab_enfermedad_3}}</td>
+        <td><span class="cell-input-display">{{act_lab_enfermedad_3}}</span></td>
         <td class="c">{{iess_si_3}}</td>
         <td class="c">{{iess_no_3}}</td>
         <td><span class="cell-input-display">{{iess_fecha_3}}</span></td>
@@ -984,9 +1033,6 @@
   </table>
 </div>
 
-<!-- ============================================= -->
-<!-- I. ACTIVIDADES EXTRALABORALES -->
-<!-- ============================================= -->
 <div class="blk">
   <div class="sec">I. ACTIVIDADES EXTRALABORALES</div>
   <table class="i-grid">
@@ -1003,7 +1049,6 @@
       </tr>
     </thead>
     <tbody>
-      <!-- 3 filas -->
       <tr>
         <td><span class="cell-input-display">{{tipo_act_0}}</span></td>
         <td><span class="cell-input-display">{{fecha_act_0}}</span></td>
@@ -1023,9 +1068,6 @@
   </table>
 </div>
 
-<!-- ============================================= -->
-<!-- J. RESULTADOS DE EXÁMENES GENERALES Y ESPECÍFICOS SEGÚN RIESGO/PUESTO -->
-<!-- ============================================= -->
 <div class="blk">
   <div class="sec">J. RESULTADOS DE EXÁMENES GENERALES Y ESPECÍFICOS SEGÚN RIESGO/PUESTO</div>
   <table class="j-grid">
@@ -1042,7 +1084,6 @@
       </tr>
     </thead>
     <tbody>
-      <!-- 5 filas -->
       <tr><td><span class="cell-input-display">{{exam_nombre_0}}</span></td><td><span class="cell-input-display">{{exam_fecha_0}}</span></td><td><span class="cell-input-display">{{exam_resultado_0}}</span></td></tr>
       <tr><td><span class="cell-input-display">{{exam_nombre_1}}</span></td><td><span class="cell-input-display">{{exam_fecha_1}}</span></td><td><span class="cell-input-display">{{exam_resultado_1}}</span></td></tr>
       <tr><td><span class="cell-input-display">{{exam_nombre_2}}</span></td><td><span class="cell-input-display">{{exam_fecha_2}}</span></td><td><span class="cell-input-display">{{exam_resultado_2}}</span></td></tr>
@@ -1056,9 +1097,6 @@
   </div>
 </div>
 
-<!-- ============================================= -->
-<!-- K. DIAGNÓSTICO — PRE: PRESUNTIVO  DEF: DEFINITIVO -->
-<!-- ============================================= -->
 <div class="blk">
   <div class="sec">K. DIAGNÓSTICO — PRE: PRESUNTIVO  DEF: DEFINITIVO</div>
   <table class="k-grid">
@@ -1080,7 +1118,6 @@
       </tr>
     </thead>
     <tbody>
-      <!-- 6 filas (DIAG_ROWS = 6) -->
       <tr>
         <td><span class="cell-input-display">{{k_codigo_0}}</span></td>
         <td><span class="cell-input-display">{{k_desc_0}}</span></td>
@@ -1121,9 +1158,6 @@
   </table>
 </div>
 
-<!-- ============================================= -->
-<!-- L. APTITUD MÉDICA PARA EL TRABAJO -->
-<!-- ============================================= -->
 <div class="blk">
   <div class="sec">L. APTITUD MÉDICA PARA EL TRABAJO</div>
   <table class="l-grid">
@@ -1150,17 +1184,12 @@
   </div>
 </div>
 
-<!-- ============================================= -->
-<!-- M. RECOMENDACIONES Y/O TRATAMIENTO -->
-<!-- ============================================= -->
 <div class="blk">
   <div class="sec">M. RECOMENDACIONES Y/O TRATAMIENTO</div>
   <div class="cell-input-display" style="white-space:pre-wrap;">{{recomendaciones}}</div>
 </div>
 
-<!-- ============================================= -->
-<!-- N. RETIRO (EVALUACIÓN) -->
-<!-- ============================================= -->
+{{#if esRetiro}}
 <div class="blk">
   <div class="sec">N. RETIRO (EVALUACIÓN)</div>
   <table class="n-grid">
@@ -1185,10 +1214,8 @@
     <div class="cell-input-display" style="white-space:pre-wrap;">{{n_obs_retiro}}</div>
   </div>
 </div>
+{{/if}}
 
-<!-- ============================================= -->
-<!-- O. DATOS DEL PROFESIONAL  +  P. FIRMA DEL TRABAJADOR -->
-<!-- ============================================= -->
 <div class="sign-wrap">
   <table class="sign-table">
     <colgroup>
@@ -1196,13 +1223,13 @@
       <col style="width:27%;" />
     </colgroup>
 
-    <!-- Cabeceras principales -->
+
     <tr>
       <th class="sign-head">O. DATOS DEL PROFESIONAL</th>
       <th class="sign-head">P. FIRMA DEL TRABAJADOR</th>
     </tr>
 
-    <!-- Subcabeceras (como tu Excel) -->
+
     <tr>
       <td style="padding:0;">
         <table class="sign-table" style="border:0;">
@@ -1224,13 +1251,12 @@
               <div class="cell-input-display">{{medico_codigo}}</div>
             </td>
 
-            <!-- Firma y sello del profesional -->
+
             <td class="c">
               <div class="sign-box">
-                <!-- Si tienes imagen de firma/sello en DataURI -->
-         
+
               </div>
-              <!-- Línea para firmar si no hay imagen -->
+
               <div class="sign-line"></div>
               <div class="muted">Firma y sello</div>
             </td>
@@ -1238,15 +1264,13 @@
         </table>
       </td>
 
-      <!-- Firma del trabajador -->
+
       <td class="c">
         <div class="sign-box">
-      
         </div>
 
-        <!-- Línea para firma manual -->
+
         <div class="sign-line"></div>
-       
       </td>
     </tr>
   </table>

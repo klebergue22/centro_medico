@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package ec.gob.igm.rrhh.consultorio.web.servlet;
 
 /**
@@ -61,7 +57,6 @@ public class PdfServlet extends HttpServlet {
             return;
         }
 
-        // cache-control (evita cosas raras con preview)
         resp.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0");
         resp.setHeader("Pragma", "no-cache");
         resp.setDateHeader("Expires", 0);

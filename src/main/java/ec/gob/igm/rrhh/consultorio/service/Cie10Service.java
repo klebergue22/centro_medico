@@ -1,19 +1,13 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package ec.gob.igm.rrhh.consultorio.service;
 
-/**
- *
- * @author GUERRA_KLEBER
- */
 
 
 import ec.gob.igm.rrhh.consultorio.domain.model.Cie10;
 import jakarta.ejb.Stateless;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceException;
 import jakarta.persistence.PersistenceContext;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -23,11 +17,6 @@ public class Cie10Service {
     @PersistenceContext(unitName = "consultorioPU")
     private EntityManager em;
 
-    /**
-     * Busca por código:
-     *  1) exacto (case-insensitive)
-     *  2) normalizado sin puntos ni símbolos (ej: "T46.5" == "T465")
-     */
     public Cie10 buscarPorCodigo(String codigo) {
         if (codigo == null) return null;
 
@@ -68,9 +57,6 @@ public class Cie10Service {
         return normalizado.isEmpty() ? null : normalizado.get(0);
     }
 
-    /**
-     * Buscar por descripción que contenga...
-     */
     public List<Cie10> buscarPorDescripcionLike(String query, int maxResults) {
         if (query == null) return Collections.emptyList();
 
@@ -83,7 +69,7 @@ public class Cie10Service {
 
         int max = maxResults > 0 ? maxResults : 20;
 
-        return em.createQuery(
+        List<Cie10> lista = em.createQuery(
                 "SELECT c FROM Cie10 c " +
                 "WHERE UPPER(c.descripcion) LIKE :query " +
                 "ORDER BY c.descripcion",
@@ -91,11 +77,39 @@ public class Cie10Service {
             .setParameter("query", "%" + q.toUpperCase() + "%")
             .setMaxResults(max)
             .getResultList();
+
+        if (!lista.isEmpty()) {
+            return lista;
+        }
+
+        // Fallback para catálogos con tildes: "COLERA" debe encontrar "CÓLERA".
+        String from = "ÁÀÄÂÉÈËÊÍÌÏÎÓÒÖÔÚÙÜÛÑ";
+        String to = "AAAAEEEEIIIIOOOOUUUUN";
+        String qNorm = q.toUpperCase()
+                .replace('Á', 'A').replace('À', 'A').replace('Ä', 'A').replace('Â', 'A')
+                .replace('É', 'E').replace('È', 'E').replace('Ë', 'E').replace('Ê', 'E')
+                .replace('Í', 'I').replace('Ì', 'I').replace('Ï', 'I').replace('Î', 'I')
+                .replace('Ó', 'O').replace('Ò', 'O').replace('Ö', 'O').replace('Ô', 'O')
+                .replace('Ú', 'U').replace('Ù', 'U').replace('Ü', 'U').replace('Û', 'U')
+                .replace('Ñ', 'N');
+
+        try {
+            return em.createQuery(
+                    "SELECT c FROM Cie10 c " +
+                    "WHERE UPPER(FUNCTION('translate', c.descripcion, :from, :to)) LIKE :query " +
+                    "ORDER BY c.descripcion",
+                    Cie10.class)
+                .setParameter("from", from)
+                .setParameter("to", to)
+                .setParameter("query", "%" + qNorm + "%")
+                .setMaxResults(max)
+                .getResultList();
+        } catch (PersistenceException | IllegalArgumentException ex) {
+            // Si la BD no soporta translate, devolver el resultado base (vacío).
+            return lista;
+        }
     }
 
-    /**
-     * Buscar por código o descripción (LIKE).
-     */
     public List<Cie10> buscarPorCodigoODescripcion(String termino, int maxResults) {
         if (termino == null) return Collections.emptyList();
 
@@ -119,9 +133,10 @@ public class Cie10Service {
             .getResultList();
     }
 
-    /**
-     * Buscar primero por descripción exacta (case-insensitive).
-     */
+    public List<Cie10> buscarPorTermino(String termino, int maxResults) {
+        return buscarPorCodigoODescripcion(termino, maxResults);
+    }
+
     public Cie10 buscarPrimeroPorDescripcion(String descripcion) {
         if (descripcion == null) return null;
 
@@ -144,10 +159,6 @@ public class Cie10Service {
         return lista.isEmpty() ? null : lista.get(0);
     }
 
-    /**
-     * Búsqueda jerárquica (autocomplete por prefijo), ignorando puntos:
-     * term "T46.5" -> "T465%" sobre replace(codigo,'.','')
-     */
     public List<Cie10> buscarJerarquiaPorTerm(String termino) {
         if (termino == null) return Collections.emptyList();
 
@@ -158,13 +169,73 @@ public class Cie10Service {
             throw new IllegalStateException("EntityManager no inyectado. Revisa persistence.xml y unitName='consultorioPU'.");
         }
 
-        return em.createQuery(
+        try {
+            return em.createQuery(
+                    "SELECT c FROM Cie10 c " +
+                    "WHERE UPPER(FUNCTION('replace', c.codigo, '.', '')) LIKE :term " +
+                    "ORDER BY c.codigo",
+                    Cie10.class)
+                .setParameter("term", norm + "%")
+                .setMaxResults(20)
+                .getResultList();
+        } catch (PersistenceException | IllegalArgumentException ex) {
+            // Fallback cuando la BD/JPA no soporta FUNCTION('replace', ...).
+            return em.createQuery(
+                    "SELECT c FROM Cie10 c " +
+                    "WHERE UPPER(c.codigo) LIKE :term " +
+                    "ORDER BY c.codigo",
+                    Cie10.class)
+                .setParameter("term", norm + "%")
+                .setMaxResults(20)
+                .getResultList();
+        }
+    }
+
+    public List<Cie10> buscarPorCodigoAproximado(String termino, int maxResults) {
+        if (termino == null) return Collections.emptyList();
+
+        String norm = normalizarCodigo(termino);
+        if (norm.isEmpty()) return Collections.emptyList();
+
+        if (em == null) {
+            throw new IllegalStateException("EntityManager no inyectado. Revisa persistence.xml y unitName='consultorioPU'.");
+        }
+
+        int max = maxResults > 0 ? maxResults : 20;
+
+        // Trae un conjunto acotado por la primera letra y filtra en memoria normalizado.
+        List<Cie10> candidatos = em.createQuery(
                 "SELECT c FROM Cie10 c " +
-                "WHERE UPPER(FUNCTION('replace', c.codigo, '.', '')) LIKE :term " +
+                "WHERE UPPER(c.codigo) LIKE :head " +
                 "ORDER BY c.codigo",
                 Cie10.class)
-            .setParameter("term", norm + "%")
-            .setMaxResults(20)
+            .setParameter("head", norm.substring(0, 1) + "%")
+            .setMaxResults(Math.max(200, max * 10))
             .getResultList();
+
+        List<Cie10> out = new ArrayList<>();
+        for (Cie10 c : candidatos) {
+            if (c == null || c.getCodigo() == null) {
+                continue;
+            }
+
+            String codNorm = normalizarCodigo(c.getCodigo());
+            if (!codNorm.contains(norm)) {
+                continue;
+            }
+
+            out.add(c);
+            if (out.size() >= max) {
+                break;
+            }
+        }
+
+        return out;
+    }
+
+    private String normalizarCodigo(String codigo) {
+        return codigo == null
+                ? ""
+                : codigo.trim().toUpperCase().replaceAll("[^A-Z0-9]", "");
     }
 }

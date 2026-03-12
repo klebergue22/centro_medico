@@ -1,13 +1,5 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package ec.gob.igm.rrhh.consultorio.domain.model;
 
-/**
- *
- * @author GUERRA_KLEBER
- */
 
 
 
@@ -82,9 +74,6 @@ public class ConsultaMedica implements Serializable {
     @OneToMany(mappedBy = "consulta", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ConsultaDiagnostico> diagnosticos;
 
-    // ==========================
-    // Constructores
-    // ==========================
 
     // Constructor vacío (requerido por JPA)
     public ConsultaMedica() {
@@ -92,10 +81,10 @@ public class ConsultaMedica implements Serializable {
     }
 
     // Constructor completo (Reemplaza @AllArgsConstructor)
-    public ConsultaMedica(Long idConsulta, DatEmpleado empleado, Date fechaConsulta, String motivoConsulta, 
-                          String enfermedadActual, String examenFisico, SignosVitales signos, 
-                          String medicoNombre, String medicoCodigo, String estado, 
-                          Date fechaCreacion, String usrCreacion, Date fechaActualizacion, 
+    public ConsultaMedica(Long idConsulta, DatEmpleado empleado, Date fechaConsulta, String motivoConsulta,
+                          String enfermedadActual, String examenFisico, SignosVitales signos,
+                          String medicoNombre, String medicoCodigo, String estado,
+                          Date fechaCreacion, String usrCreacion, Date fechaActualizacion,
                           String usrActualizacion, List<ConsultaDiagnostico> diagnosticos) {
         this.idConsulta = idConsulta;
         this.empleado = empleado;
@@ -118,10 +107,6 @@ public class ConsultaMedica implements Serializable {
         }
     }
 
-    // ==========================
-    // ToString
-    // Excluye relaciones para evitar recursividad (@ToString(exclude = ...))
-    // ==========================
     @Override
     public String toString() {
         return "ConsultaMedica{" +
@@ -140,9 +125,6 @@ public class ConsultaMedica implements Serializable {
                 '}';
     }
 
-    // ==========================
-    // Getters y Setters
-    // ==========================
     public Long getIdConsulta() {
         return idConsulta;
     }

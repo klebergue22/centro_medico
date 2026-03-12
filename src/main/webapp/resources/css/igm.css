@@ -2070,3 +2070,169 @@ td.j-date  .ui-datepicker-trigger{
   overflow-y: visible !important;
 }
 
+.k-ac-panel.ui-autocomplete-panel{
+  z-index: 999999 !important;
+}
+
+
+/* ==== FIX Autocomplete overlays inside wizard/scroll containers ==== */
+.k-ac-panel.ui-autocomplete-panel,
+.ui-autocomplete-panel.k-ac-panel {
+  z-index: 2147483647 !important;
+  position: fixed !important;
+}
+
+/* Ensure step/wizard containers do not clip overlays */
+.ui-wizard-content,
+.ui-wizard-step-content,
+.panel-scroll,
+.k-fieldset,
+.k-grid {
+  overflow: visible !important;
+}
+
+/* If any parent uses transform, it can break overlay stacking; disable for step containers */
+.ui-wizard-content,
+.panel-scroll {
+  transform: none !important;
+}
+
+/* ================================
+   PrimeFaces p:slider - IGM (olivo)
+   ================================ */
+
+.igmslider.ui-slider {
+  background: #dfe7de;        /* pista */
+  border: 1px solid var(--olive-700);
+  border-radius: 999px;
+  height: 0.5rem;
+}
+
+.igmslider .ui-slider-range {
+  background: var(--olive-700); /* tramo seleccionado */
+  border-radius: 999px;
+}
+
+.igmslider .ui-slider-handle {
+  width: 1.05rem;
+  height: 1.05rem;
+  border-radius: 999px;
+  border: 2px solid var(--olive-700);
+  background: var(--olive-600); /* “perilla” */
+  top: -0.33rem;               /* centra la perilla en la pista */
+}
+
+.igmslider .ui-slider-handle:hover,
+.igmslider .ui-slider-handle:focus {
+  background: var(--olive-800);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(67,97,55,.25);
+}
+/* ============================
+   PrimeFaces p:slider - IGM
+   (sobrescribe theme: ui-widget-header / ui-state-default)
+   ============================ */
+
+.igmslider.ui-slider {
+  background: var(--khaki-200, #dfe7de);
+  border: 1px solid var(--olive-700, #2f5d2f);
+  border-radius: 999px;
+  height: 8px;
+}
+
+/* barra activa: ui-widget-header */
+.igmslider .ui-slider-range.ui-widget-header {
+  background: var(--olive-700, #2f5d2f) !important;
+  border-radius: 999px;
+}
+
+/* handle: ui-state-default */
+.igmslider .ui-slider-handle.ui-state-default {
+  background: var(--olive-600, #3a6b3a) !important;
+  border: 2px solid var(--olive-800, #214421) !important;
+  width: 18px;
+  height: 18px;
+  top: -6px;
+  border-radius: 50%;
+  box-shadow: none;
+}
+
+.igmslider .ui-slider-handle.ui-state-default:hover,
+.igmslider .ui-slider-handle.ui-state-default:focus {
+  background: var(--olive-800, #214421) !important;
+  border-color: var(--olive-800, #214421) !important;
+  box-shadow: 0 0 0 3px rgba(47, 93, 47, .18);
+  outline: none;
+}
+
+/* ============================
+   Slider institucional PF (p:slider)
+   ============================ */
+
+/* barra base */
+.ui-slider.igmslider {
+  background: #e6efe8 !important;
+  border: 1px solid #1f5b2e !important;
+  height: 8px !important;
+  border-radius: 999px !important;
+}
+
+/* rango (lo que se “llena”) */
+.ui-slider.igmslider .ui-slider-range,
+.ui-slider.igmslider .ui-widget-header {
+  background: #0b3d1a !important;   /* verde institucional */
+  border-radius: 999px !important;
+  border: 0 !important;
+}
+
+/* handle */
+.ui-slider.igmslider .ui-slider-handle {
+  background: #0b3d1a !important;
+  border: 2px solid #c7a253 !important;  /* dorado */
+  width: 18px !important;
+  height: 18px !important;
+  top: -6px !important;
+  border-radius: 50% !important;
+  box-shadow: none !important;
+}
+
+/* hover / focus */
+.ui-slider.igmslider .ui-slider-handle:hover,
+.ui-slider.igmslider .ui-slider-handle:focus {
+  background: #145a26 !important;
+  border-color: #c7a253 !important;
+  box-shadow: 0 0 0 3px rgba(11, 61, 26, .18) !important;
+}
+/* === PrimeFaces Slider (Discapacidad) - Color institucional === */
+.ui-slider.igmslider,
+.ui-slider.igmslider.ui-widget-content {
+  border-color: #0B3D1A !important;
+}
+
+.ui-slider.igmslider .ui-slider-range {
+  background: #0B3D1A !important;   /* la “barra” llena */
+}
+
+.ui-slider.igmslider .ui-slider-handle {
+  background: #0B3D1A !important;   /* el círculo */
+  border: 1px solid #0B3D1A !important;
+}
+
+.ui-slider.igmslider .ui-slider-handle.ui-state-hover,
+.ui-slider.igmslider .ui-slider-handle.ui-state-focus,
+.ui-slider.igmslider .ui-slider-handle.ui-state-active {
+  background: #06240F !important;   /* un tono más oscuro al interactuar */
+  border-color: #06240F !important;
+  box-shadow: none !important;
+}
+/* PF Slider - forzar color institucional en el rango */
+.ui-slider.igmslider .ui-slider-range,
+.ui-slider.igmslider .ui-slider-range.ui-widget-header,
+.ui-slider.igmslider .ui-widget-header {
+  background: #0B3D1A !important;
+  border-color: #0B3D1A !important;
+}
+.ui-slider.igmslider.ui-widget-content {
+  background: #e6efe8 !important;
+  border: 1px solid #0B3D1A !important;
+}

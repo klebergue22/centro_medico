@@ -10,12 +10,12 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-        <!-- WildFly 38 + Jakarta EE 10 -->
+
         <maven.compiler.release>21</maven.compiler.release>
         <jakartaee.version>10.0.0</jakartaee.version>
         <primefaces.version>14.0.0</primefaces.version>
 
-        <!-- Se eliminó lombok.version -->
+
 
         <maven.compiler.plugin.version>3.13.0</maven.compiler.plugin.version>
         <maven.war.plugin.version>3.4.0</maven.war.plugin.version>
@@ -32,8 +32,8 @@
 
     <dependencies>
 
-        
-        <!-- Fix: some libs (e.g., Flying-Saucer/XMLGraphics) pull xml-apis-ext:1.4.01 which is not available on Maven Central -->
+
+
         <dependency>
             <groupId>xml-apis</groupId>
             <artifactId>xml-apis-ext</artifactId>
@@ -41,8 +41,6 @@
         </dependency>
 
 
-
-        <!-- PrimeFaces Jakarta -->
         <dependency>
             <groupId>org.primefaces</groupId>
             <artifactId>primefaces</artifactId>
@@ -50,9 +48,9 @@
             <classifier>jakarta</classifier>
         </dependency>
 
-        <!-- Se eliminó la dependencia de Lombok -->
 
-        <!-- PDF: Flying Saucer -->
+
+
         <dependency>
             <groupId>org.xhtmlrenderer</groupId>
             <artifactId>flying-saucer-pdf</artifactId>
@@ -65,7 +63,7 @@
             </exclusions>
         </dependency>
 
-        <!-- iText 2.1.7 (com.lowagie) -->
+
         <dependency>
             <groupId>com.lowagie</groupId>
             <artifactId>itext</artifactId>
@@ -77,14 +75,14 @@
             <version>1.4.01</version>
         </dependency>
 
-        <!-- ✅ APIs Jakarta EE 10 (incluye: servlet, ejb, faces, cdi, jpa, etc.) -->
+
         <dependency>
             <groupId>jakarta.platform</groupId>
             <artifactId>jakarta.jakartaee-api</artifactId>
             <version>10.0.0</version>
             <scope>provided</scope>
         </dependency>
-        <!-- Logging API -->
+
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
@@ -96,7 +94,6 @@
             <artifactId>hibernate-community-dialects</artifactId>
             <version>6.6.31.Final</version>
         </dependency>
-
 
         <dependency>
             <groupId>jakarta.faces</groupId>
@@ -127,15 +124,15 @@
     <build>
         <plugins>
 
-            <!-- Compiler (Configuración estándar sin Lombok) -->
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>${maven.compiler.plugin.version}</version>
                 <configuration>
                     <release>${maven.compiler.release}</release>
-                    
-                    <!-- Se eliminó annotationProcessorPaths de Lombok -->
+
+
 
                     <compilerArgs>
                         <arg>-parameters</arg>
@@ -144,7 +141,7 @@
                 </configuration>
             </plugin>
 
-            <!-- Tests -->
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
@@ -154,7 +151,7 @@
                 </configuration>
             </plugin>
 
-            <!-- WAR -->
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-war-plugin</artifactId>
