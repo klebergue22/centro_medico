@@ -1938,6 +1938,7 @@ public class CentroMedicoCtrl implements Serializable {
 
             // Si tienes bloques {{#if sexoM}} / {{#if sexoF}} en la plantilla:
             html = aplicarBloquesSexo(html, rep.get("sexo"));
+            html = aplicarBloquesTipoEvaluacion(html);
 
             return html;
 
@@ -1959,6 +1960,15 @@ public class CentroMedicoCtrl implements Serializable {
         html = aplicarBloqueCondicional(html, "sexoF", esF);
 
         return html;
+    }
+
+    private String aplicarBloquesTipoEvaluacion(String html) {
+        String tipo = trimToNull(tipoEval);
+        if (tipo == null) {
+            tipo = trimToNull(tipoEvaluacion);
+        }
+        boolean esRetiro = "RETIRO".equalsIgnoreCase(tipo);
+        return aplicarBloqueCondicional(html, "esRetiro", esRetiro);
     }
 
     private String aplicarBloqueCondicional(String html, String nombre, boolean incluir) {
