@@ -5,9 +5,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.PrintWriter;
 import java.io.Serializable;
-import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -22,7 +20,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.UUID;
 import java.util.regex.Pattern;
 
 import jakarta.annotation.PostConstruct;
@@ -30,13 +27,9 @@ import jakarta.ejb.EJB;
 import jakarta.faces.application.FacesMessage;
 import jakarta.faces.component.UIComponent;
 import jakarta.faces.component.UIInput;
-import jakarta.faces.component.UIViewRoot;
 import jakarta.faces.context.ExternalContext;
 import jakarta.faces.context.FacesContext;
-import jakarta.faces.context.PartialViewContext;
-import jakarta.faces.context.ResponseWriter;
 import jakarta.faces.event.AjaxBehaviorEvent;
-import jakarta.faces.view.ViewDeclarationLanguage;
 import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
@@ -72,6 +65,7 @@ import ec.gob.igm.rrhh.consultorio.service.FichaRiesgoDetService;
 import ec.gob.igm.rrhh.consultorio.service.FichaRiesgoService;
 import ec.gob.igm.rrhh.consultorio.service.PersonaAuxService;
 import ec.gob.igm.rrhh.consultorio.service.Step1FichaService;
+import ec.gob.igm.rrhh.consultorio.web.facade.CentroMedicoPdfFacade;
 import ec.gob.igm.rrhh.consultorio.web.audit.CentroMedicoAuditService;
 import ec.gob.igm.rrhh.consultorio.web.pdf.PdfTemplateEngine;
 import ec.gob.igm.rrhh.consultorio.web.pdf.PdfRenderer;
@@ -408,6 +402,9 @@ public class CentroMedicoCtrl implements Serializable {
 
     @Inject
     private transient PdfTemplateEngine pdfTemplateEngine;
+
+    @Inject
+    private transient CentroMedicoPdfFacade centroMedicoPdfFacade;
 
     @Inject
     private transient CentroMedicoWizardService centroMedicoWizardService;
@@ -1641,14 +1638,18 @@ public class CentroMedicoCtrl implements Serializable {
             ficha = fichaService.actualizar(ficha);
             recargarFichaDesdeBdParaImpresion();
 
-            String html = construirHtmlFichaDesdePlantilla();
-            byte[] bytes = renderizarPdf(html);
+            CentroMedicoPdfFacade.PdfPreviewResult result = centroMedicoPdfFacade.prepararPreviewDesdeHtml(
+                    null,
+                    this::construirHtmlFichaDesdePlantilla,
+                    "FICHA_");
 
-            String token = "FICHA_" + UUID.randomUUID().toString().replace("-", "");
-            pdfSessionStore.put(ctx, token, bytes);
+            this.pdfTokenFicha = result.getToken();
+            this.fichaPdfListo = result.isListo();
 
-            this.pdfTokenFicha = token;
-            this.fichaPdfListo = true;
+            if (!fichaPdfListo) {
+                return;
+            }
+
             this.activeStep = "step4";
             this.mostrarDlgCedula = false;
 
@@ -1781,9 +1782,7 @@ public class CentroMedicoCtrl implements Serializable {
     }
 
     private String construirHtmlFichaDesdeFacelet() {
-
-        String html = renderFaceletToHtml("/pages/ficha/fichaPrint.xhtml");
-
+        String html = centroMedicoPdfFacade.renderFaceletToHtml("/pages/ficha/fichaPrint.xhtml");
         return normalizarXhtmlPdf(html);
     }
 
@@ -1858,72 +1857,8 @@ public class CentroMedicoCtrl implements Serializable {
     }
 
     private String renderFaceletToHtml(String viewId) {
-        FacesContext fc = FacesContext.getCurrentInstance();
-        if (fc == null) {
-            throw new IllegalStateException("FacesContext es null. Solo dentro de request JSF.");
-        }
-
-        LOG.info("FichaPrint: renderFaceletToHtml START viewId={}", viewId);
-
-        UIViewRoot originalViewRoot = fc.getViewRoot();
-        ResponseWriter originalWriter = fc.getResponseWriter();
-
-        PartialViewContext pvc = fc.getPartialViewContext();
-        boolean hadPvc = (pvc != null);
-        boolean oldRenderAll = false;
-        if (hadPvc) {
-            try {
-                oldRenderAll = pvc.isRenderAll();
-                pvc.setRenderAll(true);
-            } catch (Exception ignore) {
-            }
-        }
-
-        try {
-            ViewDeclarationLanguage vdl = fc.getApplication()
-                    .getViewHandler()
-                    .getViewDeclarationLanguage(fc, viewId);
-
-            UIViewRoot tempViewRoot = vdl.createView(fc, viewId);
-            tempViewRoot.setLocale(fc.getViewRoot() != null ? fc.getViewRoot().getLocale() : fc.getApplication().getDefaultLocale());
-            tempViewRoot.setRenderKitId(fc.getApplication().getViewHandler().calculateRenderKitId(fc));
-
-            vdl.buildView(fc, tempViewRoot);
-
-            StringWriter sw = new StringWriter(128 * 1024);
-            ResponseWriter rw = fc.getRenderKit()
-                    .createResponseWriter(new PrintWriter(sw), "text/html", "UTF-8");
-
-            fc.setViewRoot(tempViewRoot);
-            fc.setResponseWriter(rw);
-
-            fc.getApplication().getViewHandler().renderView(fc, tempViewRoot);
-            rw.flush();
-
-            String html = sw.toString();
-            LOG.info("FichaPrint: renderFaceletToHtml END viewId={} htmlLen={}", viewId, html != null ? html.length() : -1);
-            return html;
-
-        } catch (Exception e) {
-            LOG.error("FichaPrint: renderFaceletToHtml ERROR viewId={}", viewId, e);
-            throw new RuntimeException("Error renderizando facelet " + viewId, e);
-
-        } finally {
-            try {
-                fc.setResponseWriter(originalWriter);
-            } catch (Exception ignore) {
-            }
-            try {
-                fc.setViewRoot(originalViewRoot);
-            } catch (Exception ignore) {
-            }
-            if (hadPvc) {
-                try {
-                    pvc.setRenderAll(oldRenderAll);
-                } catch (Exception ignore) {
-                }
-            }
-        }
+        LOG.info("FichaPrint: renderFaceletToHtml delegado a facade. viewId={}", viewId);
+        return centroMedicoPdfFacade.renderFaceletToHtml(viewId);
     }
 
     private String construirHtmlFichaDesdePlantilla() {
@@ -1934,11 +1869,11 @@ public class CentroMedicoCtrl implements Serializable {
             syncCamposDesdeObjetos();
 
             Map<String, String> rep = buildReemplazosFicha();
-            String html = aplicarReemplazos(template, rep);
+            String html = centroMedicoPdfFacade.aplicarReemplazos(template, rep);
 
             // Si tienes bloques {{#if sexoM}} / {{#if sexoF}} en la plantilla:
-            html = aplicarBloquesSexo(html, rep.get("sexo"));
-            html = aplicarBloquesTipoEvaluacion(html);
+            html = centroMedicoPdfFacade.aplicarBloquesSexo(html, rep.get("sexo"));
+            html = centroMedicoPdfFacade.aplicarBloquesTipoEvaluacion(html, obtenerTipoEvaluacionPdf());
 
             return html;
 
@@ -1950,61 +1885,12 @@ public class CentroMedicoCtrl implements Serializable {
         }
     }
 
-    private String aplicarBloquesSexo(String html, String sexo) {
-        String sx = (sexo == null) ? "" : sexo.trim().toUpperCase();
-
-        boolean esM = "M".equals(sx) || "MASCULINO".equals(sx) || "H".equals(sx) || "HOMBRE".equals(sx);
-        boolean esF = "F".equals(sx) || "FEMENINO".equals(sx) || "MUJER".equals(sx);
-
-        html = aplicarBloqueCondicional(html, "sexoM", esM);
-        html = aplicarBloqueCondicional(html, "sexoF", esF);
-
-        return html;
-    }
-
-    private String aplicarBloquesTipoEvaluacion(String html) {
+    private String obtenerTipoEvaluacionPdf() {
         String tipo = trimToNull(tipoEval);
         if (tipo == null) {
             tipo = trimToNull(tipoEvaluacion);
         }
-        boolean esRetiro = "RETIRO".equalsIgnoreCase(tipo);
-        return aplicarBloqueCondicional(html, "esRetiro", esRetiro);
-    }
-
-    private String aplicarBloqueCondicional(String html, String nombre, boolean incluir) {
-        String open = "{{#if " + nombre + "}}";
-        String close = "{{/if}}";
-
-        int from = 0;
-        while (true) {
-            int i = html.indexOf(open, from);
-            if (i < 0) {
-                break;
-            }
-
-            int j = html.indexOf(close, i + open.length());
-            if (j < 0) {
-
-                html = html.replace(open, "");
-                break;
-            }
-
-            int end = j + close.length();
-            String contenido = html.substring(i + open.length(), j);
-            String reemplazo = incluir ? contenido : "";
-
-            html = html.substring(0, i) + reemplazo + html.substring(end);
-            from = i + reemplazo.length();
-        }
-        return html;
-    }
-
-    private String aplicarReemplazos(String template, Map<String, String> rep) {
-        String html = template;
-        for (Map.Entry<String, String> e : rep.entrySet()) {
-            html = html.replace("{{" + e.getKey() + "}}", e.getValue() == null ? "" : e.getValue());
-        }
-        return html;
+        return tipo;
     }
 
     private String s(Object v) {
@@ -2734,7 +2620,7 @@ public class CentroMedicoCtrl implements Serializable {
             LOG.warn("No se pudo colocar centroMedicoPrint en sesión.", e);
         }
 
-        String html = renderFaceletToHtml("/pages/ficha/fichaPrint.xhtml");
+        String html = centroMedicoPdfFacade.renderFaceletToHtml("/pages/ficha/fichaPrint.xhtml");
         if (html != null) {
             html = html.replace("\u00A0", " ");
         }
@@ -2756,7 +2642,7 @@ public class CentroMedicoCtrl implements Serializable {
                 certificadoListo = false;
                 return;
             }
-            generatePdfPreview(ctx);
+            generatePdfPreview();
             certificadoListo = true;
             if (ctx != null) {
                 ctx.addMessage(null, new FacesMessage(
@@ -2774,23 +2660,15 @@ public class CentroMedicoCtrl implements Serializable {
         }
     }
 
-    private void generatePdfPreview(FacesContext ctx) {
+    private void generatePdfPreview() {
         try {
-            String html = construirHtmlDesdePlantilla();
-            byte[] bytes = renderizarPdf(html);
-
-            String token = "CERT_" + UUID.randomUUID().toString().replace("-", "");
-            storePdfBytesInPdfStore(ctx, token, bytes);
+            String token = centroMedicoPdfFacade.generarDesdeHtml(construirHtmlDesdePlantilla(), "CERT_");
 
             this.pdfTokenCertificado = token;
             this.pdfObjectUrl = null;
         } catch (Exception e) {
             handleUnexpected("generatePdfPreview", e);
         }
-    }
-
-    private void storePdfBytesInPdfStore(FacesContext ctx, String token, byte[] bytes) {
-        pdfSessionStore.put(ctx, token, bytes);
     }
 
     private void cleanupPdfPreview(FacesContext ctx) {
@@ -2848,7 +2726,7 @@ public class CentroMedicoCtrl implements Serializable {
             }
 
             // 4) Generar el PDF del certificado
-            generatePdfPreview(ctx);
+            generatePdfPreview();
 
             certificadoListo = (pdfTokenCertificado != null);
 

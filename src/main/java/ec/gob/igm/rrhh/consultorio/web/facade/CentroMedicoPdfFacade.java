@@ -9,6 +9,10 @@ import ec.gob.igm.rrhh.consultorio.web.pdf.PdfSessionStore;
 import ec.gob.igm.rrhh.consultorio.web.pdf.PdfTemplateEngine;
 import jakarta.faces.context.ExternalContext;
 import jakarta.faces.context.FacesContext;
+import jakarta.faces.context.PartialViewContext;
+import jakarta.faces.context.ResponseWriter;
+import jakarta.faces.component.UIViewRoot;
+import jakarta.faces.view.ViewDeclarationLanguage;
 import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
@@ -17,10 +21,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Serializable;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.UUID;
 import java.util.regex.Pattern;
+import java.util.function.Supplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,6 +40,27 @@ public class CentroMedicoPdfFacade implements Serializable {
 
     private static final String TEMPLATE_PATH = "/resources/pdf/plantilla_ficha.html";
     private static final Pattern AMPERSAND_PATTERN = Pattern.compile("&(?![a-zA-Z]{2,8};|#\\d{2,5};|#x[0-9a-fA-F]{2,5};)");
+
+    public static class PdfPreviewResult implements Serializable {
+
+        private static final long serialVersionUID = 1L;
+
+        private final boolean listo;
+        private final String token;
+
+        public PdfPreviewResult(boolean listo, String token) {
+            this.listo = listo;
+            this.token = token;
+        }
+
+        public boolean isListo() {
+            return listo;
+        }
+
+        public String getToken() {
+            return token;
+        }
+    }
 
     @Inject
     private PdfTemplateEngine pdfTemplateEngine;
@@ -83,6 +111,133 @@ public class CentroMedicoPdfFacade implements Serializable {
             LOG.error("Error al generar PDF desde HTML directo.", e);
             throw new RuntimeException("No fue posible generar el PDF.", e);
         }
+    }
+
+    public PdfPreviewResult prepararPreviewDesdeHtml(Supplier<Boolean> verificador,
+            Supplier<String> htmlSupplier,
+            String prefijoToken) {
+        if (verificador != null && !Boolean.TRUE.equals(verificador.get())) {
+            return new PdfPreviewResult(false, null);
+        }
+        String token = generarDesdeHtml(htmlSupplier.get(), prefijoToken);
+        return new PdfPreviewResult(token != null, token);
+    }
+
+    public String aplicarReemplazos(String template, Map<String, String> rep) {
+        String html = template;
+        for (Map.Entry<String, String> e : rep.entrySet()) {
+            html = html.replace("{{" + e.getKey() + "}}", e.getValue() == null ? "" : e.getValue());
+        }
+        return html;
+    }
+
+    public String aplicarBloquesSexo(String html, String sexo) {
+        String sx = (sexo == null) ? "" : sexo.trim().toUpperCase();
+
+        boolean esM = "M".equals(sx) || "MASCULINO".equals(sx) || "H".equals(sx) || "HOMBRE".equals(sx);
+        boolean esF = "F".equals(sx) || "FEMENINO".equals(sx) || "MUJER".equals(sx);
+
+        html = aplicarBloqueCondicional(html, "sexoM", esM);
+        html = aplicarBloqueCondicional(html, "sexoF", esF);
+
+        return html;
+    }
+
+    public String aplicarBloquesTipoEvaluacion(String html, String tipoEvaluacion) {
+        boolean esRetiro = "RETIRO".equalsIgnoreCase(tipoEvaluacion);
+        return aplicarBloqueCondicional(html, "esRetiro", esRetiro);
+    }
+
+    public String renderFaceletToHtml(String viewId) {
+        FacesContext fc = FacesContext.getCurrentInstance();
+        if (fc == null) {
+            throw new IllegalStateException("FacesContext es null. Solo dentro de request JSF.");
+        }
+
+        UIViewRoot originalViewRoot = fc.getViewRoot();
+        ResponseWriter originalWriter = fc.getResponseWriter();
+
+        PartialViewContext pvc = fc.getPartialViewContext();
+        boolean hadPvc = (pvc != null);
+        boolean oldRenderAll = false;
+        if (hadPvc) {
+            try {
+                oldRenderAll = pvc.isRenderAll();
+                pvc.setRenderAll(true);
+            } catch (Exception ignore) {
+            }
+        }
+
+        try {
+            ViewDeclarationLanguage vdl = fc.getApplication()
+                    .getViewHandler()
+                    .getViewDeclarationLanguage(fc, viewId);
+
+            UIViewRoot tempViewRoot = vdl.createView(fc, viewId);
+            tempViewRoot.setLocale(fc.getViewRoot() != null ? fc.getViewRoot().getLocale() : fc.getApplication().getDefaultLocale());
+            tempViewRoot.setRenderKitId(fc.getApplication().getViewHandler().calculateRenderKitId(fc));
+
+            vdl.buildView(fc, tempViewRoot);
+
+            StringWriter sw = new StringWriter(128 * 1024);
+            ResponseWriter rw = fc.getRenderKit()
+                    .createResponseWriter(new PrintWriter(sw), "text/html", "UTF-8");
+
+            fc.setViewRoot(tempViewRoot);
+            fc.setResponseWriter(rw);
+
+            fc.getApplication().getViewHandler().renderView(fc, tempViewRoot);
+            rw.flush();
+
+            return sw.toString();
+
+        } catch (Exception e) {
+            LOG.error("Error renderizando facelet viewId={}", viewId, e);
+            throw new RuntimeException("Error renderizando facelet " + viewId, e);
+
+        } finally {
+            try {
+                fc.setResponseWriter(originalWriter);
+            } catch (Exception ignore) {
+            }
+            try {
+                fc.setViewRoot(originalViewRoot);
+            } catch (Exception ignore) {
+            }
+            if (hadPvc) {
+                try {
+                    pvc.setRenderAll(oldRenderAll);
+                } catch (Exception ignore) {
+                }
+            }
+        }
+    }
+
+    private String aplicarBloqueCondicional(String html, String nombre, boolean incluir) {
+        String open = "{{#if " + nombre + "}}";
+        String close = "{{/if}}";
+
+        int from = 0;
+        while (true) {
+            int i = html.indexOf(open, from);
+            if (i < 0) {
+                break;
+            }
+
+            int j = html.indexOf(close, i + open.length());
+            if (j < 0) {
+                html = html.replace(open, "");
+                break;
+            }
+
+            int end = j + close.length();
+            String contenido = html.substring(i + open.length(), j);
+            String reemplazo = incluir ? contenido : "";
+
+            html = html.substring(0, i) + reemplazo + html.substring(end);
+            from = i + reemplazo.length();
+        }
+        return html;
     }
 
     private String almacenarPdfEnSesion(FacesContext ctx, byte[] pdfBytes, String prefijoToken) {
