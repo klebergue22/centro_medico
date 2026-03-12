@@ -769,6 +769,9 @@ private void asegurarPersonaAuxPersistida() {
         if (esVacio(puestoTrabajoCiuoActual)) {
             puestoTrabajoCiuoActual = ciiu;
         }
+        if (esVacio(puestoTrabajoCiuoActual) && fichaRiesgo != null) {
+            puestoTrabajoCiuoActual = fichaRiesgo.getPuestoTrabajo();
+        }
 
         ValidationResult result = centroMedicoStepValidationService.validarStep1(
                 apellido1,
@@ -782,7 +785,7 @@ private void asegurarPersonaAuxPersistida() {
                 peso,
                 tallaCm,
                 signos,
-                ciiu,
+                puestoTrabajoCiuoActual,
                 fichaRiesgo);
         addValidationMessages("Step 1", result);
         return result.isValid();
