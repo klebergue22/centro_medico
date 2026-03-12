@@ -782,7 +782,7 @@ private void asegurarPersonaAuxPersistida() {
                 peso,
                 tallaCm,
                 signos,
-                puestoTrabajoCiuoActual,
+                ciiu,
                 fichaRiesgo);
         addValidationMessages("Step 1", result);
         return result.isValid();
