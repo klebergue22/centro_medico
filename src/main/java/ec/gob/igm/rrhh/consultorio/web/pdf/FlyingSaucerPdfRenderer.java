@@ -1,16 +1,12 @@
 package ec.gob.igm.rrhh.consultorio.web.pdf;
 
 import com.lowagie.text.DocumentException;
-import com.lowagie.text.pdf.BaseFont;
 import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.faces.context.FacesContext;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xhtmlrenderer.pdf.ITextRenderer;
-
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
 
 @ApplicationScoped
 public class FlyingSaucerPdfRenderer implements PdfRenderer {
@@ -18,41 +14,20 @@ public class FlyingSaucerPdfRenderer implements PdfRenderer {
     private static final Logger LOG = LoggerFactory.getLogger(FlyingSaucerPdfRenderer.class);
 
     @Override
-    public byte[] render(String xhtml) throws IOException {
+    public byte[] render(String xhtml) throws DocumentException, IOException {
         if (xhtml == null || xhtml.trim().isEmpty()) {
-            throw new IllegalArgumentException("El contenido XHTML para generar el PDF está vacío.");
+            LOG.error("render: El string HTML recibido es nulo o vacío");
+            throw new IllegalArgumentException("El contenido HTML para generar el PDF está vacío.");
         }
 
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
         ITextRenderer renderer = new ITextRenderer();
-
-        String baseURL = FacesContext.getCurrentInstance()
-                .getExternalContext()
-                .getResource("/")
-                .toExternalForm();
-
-        try {
-            String fontsBase = FacesContext.getCurrentInstance()
-                    .getExternalContext().getRealPath("/resources/fonts/");
-            if (fontsBase != null) {
-                renderer.getFontResolver().addFont(
-                        fontsBase + File.separator + "DejaVuSans.ttf",
-                        BaseFont.IDENTITY_H, true
-                );
-            }
-        } catch (DocumentException | IOException e) {
-            LOG.debug("Skipping optional font registration for PDF rendering.", e);
-        }
-
-        renderer.setDocumentFromString(xhtml, baseURL);
+        renderer.setDocumentFromString(xhtml);
         renderer.layout();
-        try {
+
+        try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
             renderer.createPDF(baos);
             renderer.finishPDF();
-        } catch (DocumentException e) {
-            throw new IOException("No fue posible generar el PDF.", e);
+            return baos.toByteArray();
         }
-
-        return baos.toByteArray();
     }
 }
