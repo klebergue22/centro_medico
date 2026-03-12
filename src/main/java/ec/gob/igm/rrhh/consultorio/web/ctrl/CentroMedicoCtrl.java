@@ -762,6 +762,14 @@ private void asegurarPersonaAuxPersistida() {
 
 
     private boolean validarStep1() {
+        String puestoTrabajoCiuoActual = null;
+        if (ficha != null) {
+            puestoTrabajoCiuoActual = ficha.getCiiu();
+        }
+        if (esVacio(puestoTrabajoCiuoActual)) {
+            puestoTrabajoCiuoActual = ciiu;
+        }
+
         ValidationResult result = centroMedicoStepValidationService.validarStep1(
                 apellido1,
                 apellido2,
