@@ -98,7 +98,7 @@ public class CentroMedicoCtrl implements Serializable {
 
     private static final Logger LOG = LoggerFactory.getLogger(CentroMedicoCtrl.class);
 
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 2L;
     private static final List<String> STATIC_RISK_COLS = new ArrayList<>();
 
     static {
@@ -109,7 +109,7 @@ public class CentroMedicoCtrl implements Serializable {
 
     public static class BusinessValidationException extends RuntimeException {
 
-        private static final long serialVersionUID = 1L;
+        private static final long serialVersionUID = 2L;
 
         public BusinessValidationException(String message) {
             super(message);
