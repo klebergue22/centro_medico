@@ -1748,16 +1748,42 @@ public class CentroMedicoCtrl implements Serializable {
     }
 
     private void corregirOtrosRiesgos(Map<String, String> rep) {
-        if (otrosRiesgos != null) {
-            for (Map.Entry<String, String> e : otrosRiesgos.entrySet()) {
-                String k = e.getKey();
-                if (k == null) {
-                    continue;
-                }
-                String ph = k.toLowerCase();
-                rep.put(ph, safe(e.getValue()));
+        if (otrosRiesgos == null) {
+            return;
+        }
+
+        for (Map.Entry<String, String> e : otrosRiesgos.entrySet()) {
+            String k = e.getKey();
+            if (k == null) {
+                continue;
+            }
+
+            String value = safe(e.getValue());
+            String ph = k.toLowerCase();
+            rep.put(ph, value);
+
+            String alias = normalizeOtrosPlaceholder(ph);
+            if (alias != null) {
+                rep.put(alias, value);
             }
         }
+    }
+
+    private String normalizeOtrosPlaceholder(String keyLower) {
+        if (isBlank(keyLower)) {
+            return null;
+        }
+
+        String[] parts = keyLower.split("_");
+        if (parts.length != 3) {
+            return null;
+        }
+
+        if (!"otros".equals(parts[1])) {
+            return null;
+        }
+
+        return "otros_" + parts[0] + "_" + parts[2];
     }
 
     /**
