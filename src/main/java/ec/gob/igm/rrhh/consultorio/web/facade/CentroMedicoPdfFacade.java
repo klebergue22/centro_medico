@@ -17,6 +17,7 @@ import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -24,6 +25,8 @@ import java.io.Serializable;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
+import java.util.Base64;
+import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 import java.util.regex.Pattern;
@@ -146,6 +149,40 @@ public class CentroMedicoPdfFacade implements Serializable {
     public String aplicarBloquesTipoEvaluacion(String html, String tipoEvaluacion) {
         boolean esRetiro = "RETIRO".equalsIgnoreCase(tipoEvaluacion);
         return aplicarBloqueCondicional(html, "esRetiro", esRetiro);
+    }
+
+    public String dataUriFromResource(String pathFromResources) throws IOException {
+        FacesContext ctx = FacesContext.getCurrentInstance();
+        if (ctx == null) {
+            throw new IllegalStateException("No existe FacesContext activo para resolver recursos.");
+        }
+
+        try (InputStream in = ctx.getExternalContext().getResourceAsStream("/resources/" + pathFromResources)) {
+            if (in == null) {
+                LOG.warn("No se encontró recurso: /resources/{}", pathFromResources);
+                return "";
+            }
+
+            byte[] bytes;
+            try (ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
+                byte[] buf = new byte[8192];
+                int r;
+                while ((r = in.read(buf)) != -1) {
+                    bos.write(buf, 0, r);
+                }
+                bytes = bos.toByteArray();
+            }
+
+            String mime = "image/png";
+            String lower = pathFromResources.toLowerCase(Locale.ROOT);
+            if (lower.endsWith(".jpg") || lower.endsWith(".jpeg")) {
+                mime = "image/jpeg";
+            } else if (lower.endsWith(".gif")) {
+                mime = "image/gif";
+            }
+
+            return "data:" + mime + ";base64," + Base64.getEncoder().encodeToString(bytes);
+        }
     }
 
     public String renderFaceletToHtml(String viewId) {
