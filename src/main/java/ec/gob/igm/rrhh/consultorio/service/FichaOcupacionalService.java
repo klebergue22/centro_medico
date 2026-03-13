@@ -96,8 +96,35 @@ public class FichaOcupacionalService {
      * desde otros servicios de la misma transacción.
      */
     private void normalizarPacienteExclusivo(FichaOcupacional f) {
-        if (f.getEmpleado() == null || f.getPersonaAux() == null) {
+        boolean tieneEmpleado = f.getEmpleado() != null;
+        boolean tieneAuxiliar = f.getPersonaAux() != null;
+
+        // Estado ya válido frente al CHECK: exactamente uno informado.
+        if (tieneEmpleado ^ tieneAuxiliar) {
             return;
+        }
+
+        // Si llegan ambos nulos en UPDATE, intentamos conservar el paciente ya persistido.
+        if (!tieneEmpleado && !tieneAuxiliar && f.getIdFicha() != null) {
+            FichaOcupacional actual = em.find(FichaOcupacional.class, f.getIdFicha());
+            if (actual != null) {
+                if (actual.getEmpleado() != null) {
+                    f.setEmpleado(actual.getEmpleado());
+                    return;
+                }
+                if (actual.getPersonaAux() != null) {
+                    f.setPersonaAux(actual.getPersonaAux());
+                    return;
+                }
+            }
+        }
+
+        // Si después de normalizar sigue sin paciente, fallamos en capa de servicio
+        // con mensaje claro en lugar de ORA-02290 en flush.
+        if (f.getEmpleado() == null && f.getPersonaAux() == null) {
+            throw new IllegalArgumentException(
+                    "La ficha ocupacional debe tener NO_PERSONA o ID_PERSONA_AUX (exclusivo)."
+            );
         }
 
         String historia = safeTrim(f.getNoHistoriaClinica());
