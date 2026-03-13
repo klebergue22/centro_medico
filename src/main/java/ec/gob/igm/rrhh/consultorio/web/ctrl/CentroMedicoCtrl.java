@@ -77,6 +77,7 @@ import ec.gob.igm.rrhh.consultorio.web.service.FichaPdfPlaceholderBuilder;
 import ec.gob.igm.rrhh.consultorio.web.service.FichaPdfPreparationService;
 import ec.gob.igm.rrhh.consultorio.web.service.FichaPdfViewModelBuilder;
 import ec.gob.igm.rrhh.consultorio.web.service.FichaPdfViewModelBuilder.FichaPdfViewModelContext;
+import ec.gob.igm.rrhh.consultorio.web.service.PacienteFichaStateService;
 import ec.gob.igm.rrhh.consultorio.web.service.PersonaAuxFlowService;
 import ec.gob.igm.rrhh.consultorio.web.service.Step2OrchestratorService;
 import ec.gob.igm.rrhh.consultorio.web.service.Step2OrchestratorService.Step2RiskCommand;
@@ -124,6 +125,16 @@ public class CentroMedicoCtrl implements Serializable {
         throw new BusinessValidationException(message);
     }
 
+    private void applyPatientState(PacienteFichaStateService.PatientState state) {
+        if (state == null) {
+            return;
+        }
+        ficha = state.getFicha();
+        empleadoSel = state.getEmpleadoSel();
+        noPersonaSel = state.getNoPersonaSel();
+        personaAux = state.getPersonaAux();
+        permitirIngresoManual = state.isPermitirIngresoManual();
+    }
 
     private static final int H_ROWS = 4;
     private static final int CONSUMO_ROWS = 3;
@@ -432,6 +443,9 @@ public class CentroMedicoCtrl implements Serializable {
     @Inject
     private transient PersonaAuxFlowService personaAuxFlowService;
 
+    @Inject
+    private transient PacienteFichaStateService pacienteFichaStateService;
+
     @EJB
     private transient Step3OrchestratorService step3OrchestratorService;
 
@@ -454,7 +468,12 @@ public class CentroMedicoCtrl implements Serializable {
             if (fc == null) {
                 return;
             }
-            ensureEmpleadoSelEnViewScope();
+            applyPatientState(pacienteFichaStateService.ensureEmpleadoSelEnViewScope(
+                    permitirIngresoManual,
+                    empleadoSel,
+                    noPersonaSel,
+                    ficha,
+                    personaAux));
             final boolean postback = fc.isPostback();
 
             if (!"step1".equals(activeStep)) {
@@ -776,7 +795,12 @@ public class CentroMedicoCtrl implements Serializable {
     }
 
     private void saveStep1() {
-        ensureEmpleadoSelEnViewScope();
+        applyPatientState(pacienteFichaStateService.ensureEmpleadoSelEnViewScope(
+                permitirIngresoManual,
+                empleadoSel,
+                noPersonaSel,
+                ficha,
+                personaAux));
 
         Step1FichaService.Step1Command command = new Step1FichaService.Step1Command(
                 ficha,
@@ -847,59 +871,14 @@ public class CentroMedicoCtrl implements Serializable {
             empleadoSel = result.empleadoSel();
             personaAux = result.personaAux();
             signos = result.signos();
-            syncPatientStateAfterStep1();
+            applyPatientState(pacienteFichaStateService.syncPatientStateAfterStep1(
+                    permitirIngresoManual,
+                    empleadoSel,
+                    noPersonaSel,
+                    personaAux,
+                    ficha));
         } catch (Step1FichaService.Step1ValidationException ex) {
             throw new BusinessValidationException(ex.getMessage());
-        }
-    }
-
-    private void ensureEmpleadoSelEnViewScope() {
-        if (permitirIngresoManual) {
-            return;
-        }
-
-        if (empleadoSel != null) {
-            if (noPersonaSel == null) {
-                noPersonaSel = empleadoSel.getNoPersona();
-            }
-            return;
-        }
-
-        if (ficha != null && ficha.getEmpleado() != null) {
-            empleadoSel = ficha.getEmpleado();
-            if (noPersonaSel == null) {
-                noPersonaSel = empleadoSel.getNoPersona();
-            }
-            return;
-        }
-
-        if (noPersonaSel != null) {
-            empleadoSel = empleadoService.buscarPorId(noPersonaSel);
-            if (ficha != null && empleadoSel != null) {
-                ficha.setEmpleado(empleadoSel);
-                ficha.setPersonaAux(null);
-            }
-        }
-    }
-
-    private void syncPatientStateAfterStep1() {
-        if (ficha == null) {
-            return;
-        }
-
-        if (ficha.getEmpleado() != null) {
-            empleadoSel = ficha.getEmpleado();
-            noPersonaSel = empleadoSel.getNoPersona();
-            personaAux = null;
-            permitirIngresoManual = false;
-            return;
-        }
-
-        if (ficha.getPersonaAux() != null) {
-            personaAux = ficha.getPersonaAux();
-            empleadoSel = null;
-            noPersonaSel = null;
-            permitirIngresoManual = true;
         }
     }
 
@@ -1013,7 +992,16 @@ public class CentroMedicoCtrl implements Serializable {
 
     private void saveStep3() {
         ensureFichaSavedOrThrow();
-        ensurePatientAssignedForFicha();
+        try {
+            applyPatientState(pacienteFichaStateService.ensurePatientAssignedForFicha(
+                    permitirIngresoManual,
+                    empleadoSel,
+                    noPersonaSel,
+                    personaAux,
+                    ficha));
+        } catch (IllegalStateException ex) {
+            fail(ex.getMessage());
+        }
 
         final Date now = new Date();
         final String user = usuarioReal();
@@ -1058,62 +1046,6 @@ public class CentroMedicoCtrl implements Serializable {
 
         registrarAuditoria("GUARDAR_STEP3", "FICHA_OCUPACIONAL / H / I / J / K", "*",
                 "Step 3 guardado. ID_FICHA=" + ficha.getIdFicha());
-    }
-
-    private void ensurePatientAssignedForFicha() {
-        if (ficha == null) {
-            return;
-        }
-
-        if (ficha.getEmpleado() != null && ficha.getPersonaAux() != null) {
-            if (permitirIngresoManual && personaAux != null) {
-                ficha.setEmpleado(null);
-            } else {
-                ficha.setPersonaAux(null);
-            }
-            return;
-        }
-
-        if (ficha.getEmpleado() != null || ficha.getPersonaAux() != null) {
-            return;
-        }
-
-        DatEmpleado empleado = empleadoSel;
-        if (empleado == null && noPersonaSel != null) {
-            empleado = empleadoService.buscarPorId(noPersonaSel);
-        }
-
-        if (empleado != null) {
-            ficha.setEmpleado(empleado);
-            ficha.setPersonaAux(null);
-            return;
-        }
-
-        if (personaAux != null) {
-            ficha.setPersonaAux(personaAux);
-            ficha.setEmpleado(null);
-            return;
-        }
-
-        // Fallback: si el estado en memoria perdió la referencia del paciente
-        // (ej. empleadoSel/noPersonaSel no cargados), reutilizamos lo persistido.
-        if (ficha.getIdFicha() != null) {
-            FichaOcupacional persisted = fichaService.findById(ficha.getIdFicha());
-            if (persisted != null) {
-                if (persisted.getEmpleado() != null) {
-                    ficha.setEmpleado(persisted.getEmpleado());
-                    ficha.setPersonaAux(null);
-                    return;
-                }
-                if (persisted.getPersonaAux() != null) {
-                    ficha.setPersonaAux(persisted.getPersonaAux());
-                    ficha.setEmpleado(null);
-                    return;
-                }
-            }
-        }
-
-        fail("Debe seleccionar un empleado o registrar una persona auxiliar antes de guardar el Step 3.");
     }
 
     private <T> T getSafe(List<T> list, int idx) {
@@ -2751,7 +2683,12 @@ public class CentroMedicoCtrl implements Serializable {
             if (this.ficha != null) {
                 this.ficha.setPersonaAux(null);
             }
-            ensureEmpleadoSelEnViewScope();
+            applyPatientState(pacienteFichaStateService.ensureEmpleadoSelEnViewScope(
+                    permitirIngresoManual,
+                    empleadoSel,
+                    noPersonaSel,
+                    ficha,
+                    personaAux));
         } else {
             this.permitirIngresoManual = result.isShowManual();
         }
