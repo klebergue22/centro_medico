@@ -84,7 +84,7 @@ import ec.gob.igm.rrhh.consultorio.web.service.FichaPdfMappedData;
 import ec.gob.igm.rrhh.consultorio.web.service.FichaPdfPlaceholderBuilder;
 import ec.gob.igm.rrhh.consultorio.web.service.FichaPdfViewModelBuilder;
 import ec.gob.igm.rrhh.consultorio.web.service.FichaPdfViewModelBuilder.FichaPdfViewModelContext;
-import ec.gob.igm.rrhh.consultorio.web.service.PacienteFichaStateService;
+import ec.gob.igm.rrhh.consultorio.web.service.PacienteUiFlowCoordinator;
 import ec.gob.igm.rrhh.consultorio.web.service.PersonaAuxFlowService;
 import ec.gob.igm.rrhh.consultorio.web.service.Step2OrchestratorService;
 import ec.gob.igm.rrhh.consultorio.web.service.Step2OrchestratorService.Step2RiskCommand;
@@ -131,15 +131,15 @@ public class CentroMedicoCtrl implements Serializable {
         throw new BusinessValidationException(message);
     }
 
-    private void applyPatientState(PacienteFichaStateService.PatientState state) {
-        if (state == null) {
+    private void applyPacienteUiFlow(PacienteUiFlowCoordinator.UiFlowResult result) {
+        if (result == null) {
             return;
         }
-        ficha = state.getFicha();
-        empleadoSel = state.getEmpleadoSel();
-        noPersonaSel = state.getNoPersonaSel();
-        personaAux = state.getPersonaAux();
-        permitirIngresoManual = state.isPermitirIngresoManual();
+        ficha = result.getFicha();
+        empleadoSel = result.getEmpleadoSel();
+        noPersonaSel = result.getNoPersonaSel();
+        personaAux = result.getPersonaAux();
+        permitirIngresoManual = result.isPermitirIngresoManual();
     }
 
     private static final int H_ROWS = 4;
@@ -453,7 +453,7 @@ public class CentroMedicoCtrl implements Serializable {
     private transient PersonaAuxFlowService personaAuxFlowService;
 
     @Inject
-    private transient PacienteFichaStateService pacienteFichaStateService;
+    private transient PacienteUiFlowCoordinator pacienteUiFlowCoordinator;
 
     @Inject
     private transient Step1CommandAssembler step1CommandAssembler;
@@ -489,7 +489,7 @@ public class CentroMedicoCtrl implements Serializable {
             if (fc == null) {
                 return;
             }
-            applyPatientState(pacienteFichaStateService.ensureEmpleadoSelEnViewScope(
+            applyPacienteUiFlow(pacienteUiFlowCoordinator.ensureEmpleadoSelEnViewScope(
                     permitirIngresoManual,
                     empleadoSel,
                     noPersonaSel,
@@ -732,12 +732,11 @@ public class CentroMedicoCtrl implements Serializable {
         }
     }
     private void asegurarPersonaAuxPersistida() {
-        PersonaAuxFlowService.EnsurePersonaAuxResult result = personaAuxFlowService.asegurarPersonaAuxPersistida(
+        PacienteUiFlowCoordinator.UiFlowResult result = pacienteUiFlowCoordinator.asegurarPersonaAuxPersistida(
                 permitirIngresoManual,
                 ficha,
                 personaAux);
-        this.ficha = result.getFicha();
-        this.personaAux = result.getPersonaAux();
+        applyPacienteUiFlow(result);
     }
     public void retrocederStep() {
         activeStep = centroMedicoWizardService.retrocederStep(activeStep);
@@ -806,7 +805,7 @@ public class CentroMedicoCtrl implements Serializable {
     }
 
     private void saveStep1() {
-        applyPatientState(pacienteFichaStateService.ensureEmpleadoSelEnViewScope(
+        applyPacienteUiFlow(pacienteUiFlowCoordinator.ensureEmpleadoSelEnViewScope(
                 permitirIngresoManual,
                 empleadoSel,
                 noPersonaSel,
@@ -882,7 +881,7 @@ public class CentroMedicoCtrl implements Serializable {
             empleadoSel = result.empleadoSel();
             personaAux = result.personaAux();
             signos = result.signos();
-            applyPatientState(pacienteFichaStateService.syncPatientStateAfterStep1(
+            applyPacienteUiFlow(pacienteUiFlowCoordinator.syncPatientStateAfterStep1(
                     permitirIngresoManual,
                     empleadoSel,
                     noPersonaSel,
@@ -1004,7 +1003,7 @@ public class CentroMedicoCtrl implements Serializable {
     private void saveStep3() {
         ensureFichaSavedOrThrow();
         try {
-            applyPatientState(pacienteFichaStateService.ensurePatientAssignedForFicha(
+            applyPacienteUiFlow(pacienteUiFlowCoordinator.ensurePatientAssignedForFicha(
                     permitirIngresoManual,
                     empleadoSel,
                     noPersonaSel,
@@ -2010,10 +2009,19 @@ public class CentroMedicoCtrl implements Serializable {
     }
 
     public void abrirPersonaAuxManual() {
-        PersonaAuxFlowService.OpenManualResult result = personaAuxFlowService.abrirPersonaAuxManual(cedulaBusqueda, personaAux);
-        this.personaAux = result.getPersonaAux();
+        PacienteUiFlowCoordinator.UiFlowResult result = pacienteUiFlowCoordinator.abrirPersonaAuxManual(
+                cedulaBusqueda,
+                personaAux,
+                ficha,
+                empleadoSel,
+                noPersonaSel,
+                permitirIngresoManual,
+                mostrarDlgCedula);
+        applyPacienteUiFlow(result);
         this.mostrarDiaLOGoAux = result.isMostrarDialogoAux();
-        PrimeFaces.current().executeScript("PF('dlgPersonaAux').show();");
+        for (String script : result.getScripts()) {
+            PrimeFaces.current().executeScript(script);
+        }
     }
 
     // Persona Auxiliar - Registro y Selección
@@ -2025,9 +2033,13 @@ public class CentroMedicoCtrl implements Serializable {
         LOG.info(String.valueOf("PERSONA AUXILIAR ANTES VALIDAR: " + personaAux));
 
         try {
-            PersonaAuxFlowService.SavePersonaAuxResult result = personaAuxFlowService.guardarPersonaAuxYUsar(personaAux);
+            PacienteUiFlowCoordinator.UiFlowResult result = pacienteUiFlowCoordinator.guardarPersonaAuxYUsar(
+                    personaAux,
+                    ficha,
+                    empleadoSel,
+                    noPersonaSel);
 
-            this.personaAux = result.getPersonaAux();
+            applyPacienteUiFlow(result);
             this.cedulaBusqueda = result.getCedulaBusqueda();
             this.apellido1 = result.getApellido1();
             this.apellido2 = result.getApellido2();
@@ -2037,14 +2049,15 @@ public class CentroMedicoCtrl implements Serializable {
             this.fechaNacimiento = result.getFechaNacimiento();
             this.noHistoria = result.getNoHistoria();
             this.mostrarDiaLOGoAux = result.isMostrarDialogoAux();
-            this.mostrarDlgCedula = result.isMostrarDialogoCedula();
-            this.permitirIngresoManual = result.isPermitirIngresoManual();
+            this.mostrarDlgCedula = result.isMostrarDlgCedula();
 
-            PrimeFaces.current().ajax().update(":noHistoriaClinica");
+            for (String update : result.getUpdates()) {
+                PrimeFaces.current().ajax().update(update);
+            }
             PrimeFaces.current().ajax().addCallbackParam("validationFailed", false);
-            PrimeFaces.current().executeScript(
-                    "PF('dlgPersonaAux').hide(); PF('dlgCedula').hide();"
-            );
+            for (String script : result.getScripts()) {
+                PrimeFaces.current().executeScript(script);
+            }
 
             ctx.addMessage(null, new FacesMessage(
                     FacesMessage.SEVERITY_INFO,
@@ -2081,18 +2094,35 @@ public class CentroMedicoCtrl implements Serializable {
     // Búsqueda de Cédula / Diálogo Inicial
     public void buscarCedula() {
         try {
-            CedulaSearchService.CedulaSearchResult result = cedulaSearchService.search(cedulaBusqueda, ficha, personaAux);
+            PacienteUiFlowCoordinator.UiFlowResult result = pacienteUiFlowCoordinator.buscarCedula(
+                    cedulaBusqueda,
+                    ficha,
+                    personaAux,
+                    permitirIngresoManual);
             applyCedulaSearchResult(result);
 
             if (result.isFound()) {
-                tryLoadCargoFromVista();
-                cedulaDialogUiCoordinator.onFound(result);
+                cedulaDialogUiCoordinator.onFound(CedulaSearchService.CedulaSearchResult.found(
+                        result.getCedulaBusqueda(),
+                        result.getFicha(),
+                        result.getPersonaAux(),
+                        result.getEmpleadoSel(),
+                        result.getNoPersonaSel(),
+                        result.getApellido1(),
+                        result.getApellido2(),
+                        result.getNombre1(),
+                        result.getNombre2(),
+                        result.getSexo(),
+                        result.getFechaNacimiento(),
+                        result.getEdad()));
+                if (result.isCargoNoEncontrado()) {
+                    cedulaDialogUiCoordinator.showCargoMissing();
+                }
             } else if (result.isShowManual()) {
-                cedulaDialogUiCoordinator.onManualEnabled(result);
-            }
-
-            if (result.isFound() || result.isShowManual()) {
-                mostrarDlgCedula = false;
+                cedulaDialogUiCoordinator.onManualEnabled(CedulaSearchService.CedulaSearchResult.manual(
+                        result.getCedulaBusqueda(),
+                        result.getFicha(),
+                        result.getPersonaAux()));
             }
 
             cedulaDialogUiCoordinator.refreshMainViews();
@@ -2104,29 +2134,8 @@ public class CentroMedicoCtrl implements Serializable {
         }
     }
 
-    private void tryLoadCargoFromVista() {
-        CedulaSearchService.CargoLookupResult cargo = cedulaSearchService.lookupCargo(cedulaBusqueda);
-
-        if (ficha == null) {
-            return;
-        }
-
-        if (cargo.isEmptyCedula()) {
-            ficha.setCiiu(null);
-            return;
-        }
-
-        if (!cargo.isFound()) {
-            ficha.setCiiu(null);
-            cedulaDialogUiCoordinator.showCargoMissing();
-            return;
-        }
-
-        ficha.setCiiu(cargo.getCargoDescripcion());
-    }
-
-    private void applyCedulaSearchResult(CedulaSearchService.CedulaSearchResult result) {
-        this.cedulaBusqueda = result.getCedula();
+    private void applyCedulaSearchResult(PacienteUiFlowCoordinator.UiFlowResult result) {
+        this.cedulaBusqueda = result.getCedulaBusqueda();
         this.ficha = result.getFicha();
         this.personaAux = result.getPersonaAux();
         this.empleadoSel = result.getEmpleadoSel();
@@ -2140,20 +2149,9 @@ public class CentroMedicoCtrl implements Serializable {
             this.sexo = result.getSexo();
             this.fechaNacimiento = result.getFechaNacimiento();
             this.edad = result.getEdad();
-            this.permitirIngresoManual = false;
-            this.personaAux = null;
-            if (this.ficha != null) {
-                this.ficha.setPersonaAux(null);
-            }
-            applyPatientState(pacienteFichaStateService.ensureEmpleadoSelEnViewScope(
-                    permitirIngresoManual,
-                    empleadoSel,
-                    noPersonaSel,
-                    ficha,
-                    personaAux));
-        } else {
-            this.permitirIngresoManual = result.isShowManual();
         }
+        this.mostrarDlgCedula = result.isMostrarDlgCedula();
+        applyPacienteUiFlow(result);
     }
 
     private void safeUpdate(String clientId) {
