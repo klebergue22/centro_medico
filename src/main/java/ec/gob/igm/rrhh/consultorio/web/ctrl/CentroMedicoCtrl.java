@@ -70,11 +70,11 @@ import ec.gob.igm.rrhh.consultorio.web.pdf.PdfRenderer;
 import ec.gob.igm.rrhh.consultorio.web.service.CedulaDialogUiCoordinator;
 import ec.gob.igm.rrhh.consultorio.web.service.CedulaSearchService;
 import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoFormInitializer;
+import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoPdfCoordinatorService;
 import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoWizardService;
 import ec.gob.igm.rrhh.consultorio.web.service.FichaPdfDataMapper;
 import ec.gob.igm.rrhh.consultorio.web.service.FichaPdfMappedData;
 import ec.gob.igm.rrhh.consultorio.web.service.FichaPdfPlaceholderBuilder;
-import ec.gob.igm.rrhh.consultorio.web.service.FichaPdfPreparationService;
 import ec.gob.igm.rrhh.consultorio.web.service.FichaPdfViewModelBuilder;
 import ec.gob.igm.rrhh.consultorio.web.service.FichaPdfViewModelBuilder.FichaPdfViewModelContext;
 import ec.gob.igm.rrhh.consultorio.web.service.PacienteFichaStateService;
@@ -450,7 +450,7 @@ public class CentroMedicoCtrl implements Serializable {
     private transient Step3OrchestratorService step3OrchestratorService;
 
     @EJB
-    private transient FichaPdfPreparationService fichaPdfPreparationService;
+    private transient CentroMedicoPdfCoordinatorService centroMedicoPdfCoordinatorService;
 
     @EJB
     private transient FichaPdfDataMapper fichaPdfDataMapper;
@@ -704,17 +704,31 @@ public class CentroMedicoCtrl implements Serializable {
 
     private void onEnterStep4AutoRegenerar() {
         try {
-            if (this.ficha == null || this.ficha.getIdFicha() == null) {
-                return;
-            }
-
             this.fichaPdfListo = false;
             this.certificadoListo = false;
             this.pdfTokenFicha = null;
             this.pdfTokenCertificado = null;
 
-            prepararVistaPreviaFicha();
-            prepararVistaPreviaCertificado();
+            CentroMedicoPdfCoordinatorService.Step4Result result = centroMedicoPdfCoordinatorService.regenerarStep4(
+                    new CentroMedicoPdfCoordinatorService.RegenerarStep4Command(
+                            ficha,
+                            buildPrepareFichaCommand(),
+                            buildPrepareCertificadoCommand()));
+
+            if (result == null || result.skipped || result.ficha == null) {
+                return;
+            }
+
+            if (result.ficha.listo) {
+                this.ficha = result.ficha.ficha;
+                this.pdfTokenFicha = result.ficha.token;
+                this.fichaPdfListo = true;
+            }
+
+            if (result.certificado != null && result.certificado.listo) {
+                this.pdfTokenCertificado = result.certificado.token;
+                this.certificadoListo = true;
+            }
 
         } catch (Exception ex) {
             LOG.warn("Auto-regeneración Step4 falló", ex);
@@ -1094,16 +1108,10 @@ public class CentroMedicoCtrl implements Serializable {
         FacesContext ctx = FacesContext.getCurrentInstance();
 
         try {
-            FichaPdfPreparationService.FichaPdfPrepareResult result = fichaPdfPreparationService.preparar(
-                    ficha,
-                    empleadoSel,
-                    personaAux,
-                    permitirIngresoManual,
-                    this::asegurarPersonaAuxPersistida,
-                    this::construirHtmlFichaDesdePlantilla,
-                    centroMedicoPdfFacade);
+            CentroMedicoPdfCoordinatorService.FichaResult result = centroMedicoPdfCoordinatorService.prepararFicha(
+                    buildPrepareFichaCommand());
 
-            if (!result.valid) {
+            if (!result.listo) {
                 StringBuilder sb = new StringBuilder();
                 for (String error : result.errores) {
                     sb.append("- ").append(error).append("\n");
@@ -1118,11 +1126,7 @@ public class CentroMedicoCtrl implements Serializable {
 
             ficha = result.ficha;
             this.pdfTokenFicha = result.token;
-            this.fichaPdfListo = result.listo;
-
-            if (!fichaPdfListo) {
-                return;
-            }
+            this.fichaPdfListo = true;
 
             this.activeStep = "step4";
             this.mostrarDlgCedula = false;
@@ -1147,6 +1151,34 @@ public class CentroMedicoCtrl implements Serializable {
                     "Error",
                     "No se pudo generar el PDF de la ficha"
             ));
+        }
+    }
+
+    private CentroMedicoPdfCoordinatorService.PrepareFichaCommand buildPrepareFichaCommand() {
+        return new CentroMedicoPdfCoordinatorService.PrepareFichaCommand(
+                ficha,
+                empleadoSel,
+                personaAux,
+                permitirIngresoManual,
+                this::asegurarPersonaAuxPersistida,
+                this::construirHtmlFichaDesdePlantilla,
+                centroMedicoPdfFacade);
+    }
+
+    private CentroMedicoPdfCoordinatorService.PrepareCertificadoCommand buildPrepareCertificadoCommand() {
+        return new CentroMedicoPdfCoordinatorService.PrepareCertificadoCommand(
+                ficha,
+                this::verificarFichaCompleta,
+                this::construirHtmlDesdePlantillaUnchecked,
+                fecha -> this.fechaEmision = fecha,
+                centroMedicoPdfFacade);
+    }
+
+    private String construirHtmlDesdePlantillaUnchecked() {
+        try {
+            return construirHtmlDesdePlantilla();
+        } catch (IOException e) {
+            throw new RuntimeException("No se pudo construir HTML del certificado", e);
         }
     }
 
@@ -1933,7 +1965,6 @@ public class CentroMedicoCtrl implements Serializable {
 
         try {
 
-            // 1) Asegurar que la FICHA esté lista (porque el certificado depende de la ficha)
             if (!fichaPdfListo || pdfTokenFicha == null) {
                 prepararVistaPreviaFicha();
                 if (!fichaPdfListo || pdfTokenFicha == null) {
@@ -1942,31 +1973,30 @@ public class CentroMedicoCtrl implements Serializable {
                 }
             }
 
-            // 2) ✅ Setear FECHA DE EMISIÓN del certificado (solo si está null)
-            //    Esta fecha pertenece al certificado, por eso se setea aquí,
-            //    cuando el usuario pide "vista previa / descarga del certificado".
-            if (ficha != null && ficha.getFechaEmision() == null) {
-                ficha.setFechaEmision(new java.util.Date());
-            }
-            if (ficha != null) {
-                this.fechaEmision = ficha.getFechaEmision();
-            }
+            CentroMedicoPdfCoordinatorService.CertificadoResult result = centroMedicoPdfCoordinatorService.prepararCertificado(
+                    buildPrepareCertificadoCommand());
 
-            // 3) Validar que todo esté completo (incluye fecha de emisión)
-            if (!verificarFichaCompleta()) {
-                certificadoListo = false;
+            certificadoListo = result.listo;
+            this.pdfTokenCertificado = result.token;
+
+            if (!certificadoListo) {
+                if (!result.errores.isEmpty() && ctx != null) {
+                    StringBuilder sb = new StringBuilder();
+                    for (String error : result.errores) {
+                        sb.append("- ").append(error).append("\n");
+                    }
+                    ctx.addMessage(null,
+                            new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                                    "Validación antes de generar el certificado",
+                                    sb.toString()));
+                }
                 return;
             }
-
-            // 4) Generar el PDF del certificado
-            generatePdfPreview();
-
-            certificadoListo = (pdfTokenCertificado != null);
 
             this.activeStep = "step4";
             this.mostrarDlgCedula = false;
 
-            if (certificadoListo && ctx != null) {
+            if (ctx != null) {
                 ctx.addMessage(null, new FacesMessage(
                         FacesMessage.SEVERITY_INFO,
                         "PDF Certificado listo",
