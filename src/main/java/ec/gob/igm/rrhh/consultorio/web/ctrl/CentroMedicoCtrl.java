@@ -65,6 +65,11 @@ import ec.gob.igm.rrhh.consultorio.service.Step1FichaService;
 import ec.gob.igm.rrhh.consultorio.web.facade.CentroMedicoPdfFacade;
 import ec.gob.igm.rrhh.consultorio.web.jsf.CentroMedicoMessageService;
 import ec.gob.igm.rrhh.consultorio.web.audit.CentroMedicoAuditService;
+import ec.gob.igm.rrhh.consultorio.web.pdf.CentroMedicoPdfCommandFactory;
+import ec.gob.igm.rrhh.consultorio.web.pdf.FichaPdfContextAssembler;
+import ec.gob.igm.rrhh.consultorio.web.pdf.FichaPdfPlaceholderAssembler;
+import ec.gob.igm.rrhh.consultorio.web.pdf.FichaPdfPlaceholderAssembler.FichaState;
+import ec.gob.igm.rrhh.consultorio.web.pdf.PdfTextUtil;
 import ec.gob.igm.rrhh.consultorio.web.pdf.PdfTemplateEngine;
 import ec.gob.igm.rrhh.consultorio.web.pdf.PdfRenderer;
 import ec.gob.igm.rrhh.consultorio.web.service.CedulaDialogUiCoordinator;
@@ -465,6 +470,15 @@ public class CentroMedicoCtrl implements Serializable {
 
     @EJB
     private transient FichaPdfViewModelBuilder fichaPdfViewModelBuilder;
+
+    @EJB
+    private transient CentroMedicoPdfCommandFactory centroMedicoPdfCommandFactory;
+
+    @EJB
+    private transient FichaPdfContextAssembler fichaPdfContextAssembler;
+
+    @EJB
+    private transient FichaPdfPlaceholderAssembler fichaPdfPlaceholderAssembler;
 
     @EJB
     private transient CentroMedicoPdfUiService centroMedicoPdfUiService;
@@ -1143,7 +1157,7 @@ public class CentroMedicoCtrl implements Serializable {
     }
 
     private CentroMedicoPdfUiService.PrepareFichaUiCommand buildPrepareFichaCommand() {
-        return new CentroMedicoPdfUiService.PrepareFichaUiCommand(
+        return centroMedicoPdfCommandFactory.buildPrepareFichaUiCommand(
                 ficha,
                 empleadoSel,
                 personaAux,
@@ -1154,7 +1168,7 @@ public class CentroMedicoCtrl implements Serializable {
     }
 
     private CentroMedicoPdfUiService.PrepareCertificadoUiCommand buildPrepareCertificadoCommand() {
-        return new CentroMedicoPdfUiService.PrepareCertificadoUiCommand(
+        return centroMedicoPdfCommandFactory.buildPrepareCertificadoUiCommand(
                 ficha,
                 this::verificarFichaCompleta,
                 this::construirHtmlDesdePlantillaUnchecked,
@@ -1163,11 +1177,7 @@ public class CentroMedicoCtrl implements Serializable {
     }
 
     private String construirHtmlDesdePlantillaUnchecked() {
-        try {
-            return construirHtmlDesdePlantilla();
-        } catch (IOException e) {
-            throw new RuntimeException("No se pudo construir HTML del certificado", e);
-        }
+        return centroMedicoPdfCommandFactory.construirHtmlDesdePlantillaUnchecked(this::construirHtmlDesdePlantilla);
     }
 
     private void debugObjetosAntesDeImprimir() {
@@ -1194,7 +1204,7 @@ public class CentroMedicoCtrl implements Serializable {
 
     private String construirHtmlFichaDesdeFacelet() {
         String html = centroMedicoPdfFacade.renderFaceletToHtml("/pages/ficha/fichaPrint.xhtml");
-        return normalizarXhtmlPdf(html);
+        return PdfTextUtil.normalizarXhtmlPdf(html);
     }
 
     private String leerRecursoComoString(String classpathLocation) {
@@ -1234,38 +1244,10 @@ public class CentroMedicoCtrl implements Serializable {
         }
     }
 
-    private String safePdf(String s) {
-        return s == null ? "" : escHtml(s.trim());
-    }
 
-    private String safeDate(Date d) {
-        if (d == null) {
-            return "";
-        }
 
-        return new SimpleDateFormat("dd/MM/yyyy", new Locale("es", "EC")).format(d);
-    }
 
-    private String safeNum(Object n) {
-        return n == null ? "" : String.valueOf(n);
-    }
 
-    private String escHtml(String s) {
-
-        return s.replace("&", "&amp;")
-                .replace("<", "&lt;")
-                .replace(">", "&gt;")
-                .replace("\"", "&quot;")
-                .replace("'", "&#39;");
-    }
-
-    private String normalizarXhtmlPdf(String html) {
-        if (html == null) {
-            return "";
-        }
-
-        return html.replace("\u00A0", " ");
-    }
 
     private String renderFaceletToHtml(String viewId) {
         LOG.info("FichaPrint: renderFaceletToHtml delegado a facade. viewId={}", viewId);
@@ -1299,9 +1281,9 @@ public class CentroMedicoCtrl implements Serializable {
     }
 
     private String obtenerTipoEvaluacionPdf() {
-        String tipo = trimToNull(tipoEval);
+        String tipo = PdfTextUtil.trimToNull(tipoEval);
         if (tipo == null) {
-            tipo = trimToNull(tipoEvaluacion);
+            tipo = PdfTextUtil.trimToNull(tipoEvaluacion);
         }
         return tipo;
     }
@@ -1317,7 +1299,11 @@ public class CentroMedicoCtrl implements Serializable {
     }
 
     private void syncCamposDesdeObjetos() {
-        FichaPdfMappedData data = fichaPdfDataMapper.map(ficha, empleadoSel, fechaNacimiento);
+        FichaPdfMappedData data = fichaPdfContextAssembler.syncCamposDesdeObjetos(
+                fichaPdfDataMapper,
+                ficha,
+                empleadoSel,
+                fechaNacimiento);
         this.institucion = data.institucion;
         this.ruc = data.ruc;
         this.centroTrabajo = data.centroTrabajo;
@@ -1363,50 +1349,72 @@ public class CentroMedicoCtrl implements Serializable {
         LOG.info("[STEP1] nombre2=" + nombre2);
 
         LOG.info("[STEP1] sexo=" + sexo);
-        LOG.info("[STEP1] fechaNacimiento=" + safeDate(fechaNacimiento));
-        LOG.info("[STEP1] edad=" + safeNum(edad));
+        LOG.info("[STEP1] fechaNacimiento=" + PdfTextUtil.safeDate(fechaNacimiento));
+        LOG.info("[STEP1] edad=" + PdfTextUtil.safeNum(edad));
         LOG.info("[STEP1] grupoSanguineo=" + grupoSanguineo);
         LOG.info("[STEP1] lateralidad=" + lateralidad);
     }
 
     private Map<String, String> buildReemplazosFicha() {
-        Map<String, String> rep = new LinkedHashMap<>();
-
-        cargarLogos(rep);
-        cargarAtencionPrioritaria(rep);
-        cargarFechaActual(rep);
-        cargarActividadLaboralArrays(rep);
-        cargarAntecedentes(rep);
-        cargarRiesgos(rep);
         recalcularIMC();
-
-        rep.putAll(fichaPdfViewModelBuilder.buildReemplazosFicha(buildFichaPdfViewModelContext()));
-
-        LOG.info("=== buildReemplazosFicha - valores en el mapa ===");
-        LOG.info("gineco_examen1 = " + rep.get("gineco_examen1"));
-        LOG.info("gineco_tiempo1 = " + rep.get("gineco_tiempo1"));
-        LOG.info("gineco_resultado1 = " + rep.get("gineco_resultado1"));
-        LOG.info("gineco_examen2 = " + rep.get("gineco_examen2"));
-        LOG.info("gineco_tiempo2 = " + rep.get("gineco_tiempo2"));
-        LOG.info("gineco_resultado2 = " + rep.get("gineco_resultado2"));
-        LOG.info("gineco_observacion = " + rep.get("gineco_observacion"));
-        LOG.info("=================================================");
-
-        cargarActividadesLaboralesList(rep);
-        cargarMedidasPreventivasList(rep);
-        cargarHActividadLaboral(rep);
-        cargarIActividadesExtra(rep);
-        cargarJExamenes(rep);
-        cargarKDiagnosticos(rep);
-        cargarLAptitud(rep);
-        cargarNRetiro(rep);
-        cargarOProfesional(rep);
-        cargarAntecedentesCamelCase(rep);
-        corregirOtrosRiesgos(rep);
-
+        Map<String, String> rep = new LinkedHashMap<>();
+        cargarAtencionPrioritaria(rep);
+        cargarActividadLaboralArrays(rep);
+        rep.putAll(fichaPdfPlaceholderAssembler.buildReemplazosFicha(buildFichaState()));
         return rep;
     }
 
+
+
+    private FichaState buildFichaState() {
+        FichaState state = new FichaState();
+        state.centroMedicoPdfFacade = centroMedicoPdfFacade;
+        state.log = LOG;
+        state.fichaPdfViewModelBuilder = fichaPdfViewModelBuilder;
+        state.fichaPdfViewModelContext = buildFichaPdfViewModelContext();
+        state.antClinicoQuirurgico = antClinicoQuirurgico;
+        state.antFamiliares = antFamiliares;
+        state.antTerapeutica = antTerapeutica;
+        state.antObs = antObs;
+        state.riesgos = riesgos;
+        state.actividadesLab = actividadesLab;
+        state.medidasPreventivas = medidasPreventivas;
+        state.actLabCentroTrabajo = actLabCentroTrabajo;
+        state.actLabActividad = actLabActividad;
+        state.actLabTiempo = actLabTiempo;
+        state.actLabTrabajoAnterior = actLabTrabajoAnterior;
+        state.actLabTrabajoActual = actLabTrabajoActual;
+        state.iessSi = iessSi;
+        state.iessNo = iessNo;
+        state.iessFecha = iessFecha;
+        state.iessEspecificar = iessEspecificar;
+        state.actLabObservaciones = actLabObservaciones;
+        state.tipoAct = tipoAct;
+        state.fechaAct = fechaAct;
+        state.descAct = descAct;
+        state.examNombre = examNombre;
+        state.examFecha = examFecha;
+        state.examResultado = examResultado;
+        state.obsJ = obsJ;
+        state.listaDiag = listaDiag;
+        state.aptitudSel = aptitudSel;
+        state.detalleObservaciones = detalleObservaciones;
+        state.fallbackObservacion = getFichaStringByReflection(ficha,
+                "getDetalleObs",
+                "getDetalleObservaciones",
+                "getObservaciones",
+                "getObs",
+                "getObservacion");
+        state.nRealizaEvaluacion = nRealizaEvaluacion;
+        state.nRelacionTrabajo = nRelacionTrabajo;
+        state.nObsRetiro = nObsRetiro;
+        state.medicoNombre = medicoNombre;
+        state.medicoCodigo = medicoCodigo;
+        state.otrosRiesgos = otrosRiesgos;
+        state.getSafe = this::getSafe;
+        state.toDateParser = this::toDate;
+        return state;
+    }
     private FichaPdfViewModelContext buildFichaPdfViewModelContext() {
         FichaPdfViewModelContext ctx = new FichaPdfViewModelContext();
         ctx.ficha = ficha;
@@ -1477,254 +1485,63 @@ public class CentroMedicoCtrl implements Serializable {
         ctx.tipoEval = tipoEval;
         ctx.enfermedadActual = enfermedadActual;
         ctx.otrosRiesgos = otrosRiesgos;
-        ctx.exfPielCicatrices = preferCurrent(ficha != null ? ficha.getExfPielCicatrices() : null, exfPielCicatrices);
-        ctx.exfOjosParpados = preferCurrent(ficha != null ? ficha.getExfOjosParpados() : null, exfOjosParpados);
-        ctx.exfOjosConjuntivas = preferCurrent(ficha != null ? ficha.getExfOjosConjuntivas() : null, exfOjosConjuntivas);
-        ctx.exfOjosPupilas = preferCurrent(ficha != null ? ficha.getExfOjosPupilas() : null, exfOjosPupilas);
-        ctx.exfOjosCornea = preferCurrent(ficha != null ? ficha.getExfOjosCornea() : null, exfOjosCornea);
-        ctx.exfOjosMotilidad = preferCurrent(ficha != null ? ficha.getExfOjosMotilidad() : null, exfOjosMotilidad);
-        ctx.exfOidoConducto = preferCurrent(ficha != null ? ficha.getExfOidoConducto() : null, exfOidoConducto);
-        ctx.exfOidoPabellon = preferCurrent(ficha != null ? ficha.getExfOidoPabellon() : null, exfOidoPabellon);
-        ctx.exfOidoTimpanos = preferCurrent(ficha != null ? ficha.getExfOidoTimpanos() : null, exfOidoTimpanos);
-        ctx.exfOroLabios = preferCurrent(ficha != null ? ficha.getExfOroLabios() : null, exfOroLabios);
-        ctx.exfOroLengua = preferCurrent(ficha != null ? ficha.getExfOroLengua() : null, exfOroLengua);
-        ctx.exfOroFaringe = preferCurrent(ficha != null ? ficha.getExfOroFaringe() : null, exfOroFaringe);
-        ctx.exfOroAmigdalas = preferCurrent(ficha != null ? ficha.getExfOroAmigdalas() : null, exfOroAmigdalas);
-        ctx.exfOroDentadura = preferCurrent(ficha != null ? ficha.getExfOroDentadura() : null, exfOroDentadura);
-        ctx.exfNarizTabique = preferCurrent(ficha != null ? ficha.getExfNarizTabique() : null, exfNarizTabique);
-        ctx.exfNarizCornetes = preferCurrent(ficha != null ? ficha.getExfNarizCornetes() : null, exfNarizCornetes);
-        ctx.exfNarizMucosas = preferCurrent(ficha != null ? ficha.getExfNarizMucosas() : null, exfNarizMucosas);
-        ctx.exfNarizSenos = preferCurrent(ficha != null ? ficha.getExfNarizSenosParanasa() : null, exfNarizSenos);
-        ctx.exfCuelloTiroides = preferCurrent(ficha != null ? ficha.getExfCuelloTiroidesMasas() : null, exfCuelloTiroides);
-        ctx.exfCuelloMovilidad = preferCurrent(ficha != null ? ficha.getExfCuelloMovilidad() : null, exfCuelloMovilidad);
-        ctx.exfToraxMamas = preferCurrent(ficha != null ? ficha.getExfToraxMamas() : null, exfToraxMamas);
-        ctx.exfToraxPulmones = preferCurrent(ficha != null ? ficha.getExfToraxPulmones() : null, exfToraxPulmones);
-        ctx.exfToraxCorazon = preferCurrent(ficha != null ? ficha.getExfToraxCorazon() : null, exfToraxCorazon);
-        ctx.exfToraxParrilla = preferCurrent(ficha != null ? ficha.getExfToraxParrillaCostal() : null, exfToraxParrilla);
-        ctx.exfAbdomenVisceras = preferCurrent(ficha != null ? ficha.getExfAbdVisceras() : null, exfAbdomenVisceras);
-        ctx.exfAbdomenPared = preferCurrent(ficha != null ? ficha.getExfAbdParedAbdominal() : null, exfAbdomenPared);
-        ctx.exfColumnaFlexibilidad = preferCurrent(ficha != null ? ficha.getExfColFlexibilidad() : null, exfColumnaFlexibilidad);
-        ctx.exfColumnaDesviacion = preferCurrent(ficha != null ? ficha.getExfColDesviacion() : null, exfColumnaDesviacion);
-        ctx.exfColumnaDolor = preferCurrent(ficha != null ? ficha.getExfColDolor() : null, exfColumnaDolor);
-        ctx.exfPelvisPelvis = preferCurrent(ficha != null ? ficha.getExfPelvisPelvis() : null, exfPelvisPelvis);
-        ctx.exfPelvisGenitales = preferCurrent(ficha != null ? ficha.getExfPelvisGenitales() : null, exfPelvisGenitales);
-        ctx.exfExtVascular = preferCurrent(ficha != null ? ficha.getExfExtVascular() : null, exfExtVascular);
-        ctx.exfExtSup = preferCurrent(ficha != null ? ficha.getExfExtMiembrosSup() : null, exfExtSup);
-        ctx.exfExtInf = preferCurrent(ficha != null ? ficha.getExfExtMiembrosInf() : null, exfExtInf);
-        ctx.exfNeuroFuerza = preferCurrent(ficha != null ? ficha.getExfNeuroFuerza() : null, exfNeuroFuerza);
-        ctx.exfNeuroSensibilidad = preferCurrent(ficha != null ? ficha.getExfNeuroSensibilidad() : null, exfNeuroSensibilidad);
-        ctx.exfNeuroMarcha = preferCurrent(ficha != null ? ficha.getExfNeuroMarcha() : null, exfNeuroMarcha);
-        ctx.exfNeuroReflejos = preferCurrent(ficha != null ? ficha.getExfNeuroReflejos() : null, exfNeuroReflejos);
+        ctx.exfPielCicatrices = PdfTextUtil.preferCurrent(ficha != null ? ficha.getExfPielCicatrices() : null, exfPielCicatrices);
+        ctx.exfOjosParpados = PdfTextUtil.preferCurrent(ficha != null ? ficha.getExfOjosParpados() : null, exfOjosParpados);
+        ctx.exfOjosConjuntivas = PdfTextUtil.preferCurrent(ficha != null ? ficha.getExfOjosConjuntivas() : null, exfOjosConjuntivas);
+        ctx.exfOjosPupilas = PdfTextUtil.preferCurrent(ficha != null ? ficha.getExfOjosPupilas() : null, exfOjosPupilas);
+        ctx.exfOjosCornea = PdfTextUtil.preferCurrent(ficha != null ? ficha.getExfOjosCornea() : null, exfOjosCornea);
+        ctx.exfOjosMotilidad = PdfTextUtil.preferCurrent(ficha != null ? ficha.getExfOjosMotilidad() : null, exfOjosMotilidad);
+        ctx.exfOidoConducto = PdfTextUtil.preferCurrent(ficha != null ? ficha.getExfOidoConducto() : null, exfOidoConducto);
+        ctx.exfOidoPabellon = PdfTextUtil.preferCurrent(ficha != null ? ficha.getExfOidoPabellon() : null, exfOidoPabellon);
+        ctx.exfOidoTimpanos = PdfTextUtil.preferCurrent(ficha != null ? ficha.getExfOidoTimpanos() : null, exfOidoTimpanos);
+        ctx.exfOroLabios = PdfTextUtil.preferCurrent(ficha != null ? ficha.getExfOroLabios() : null, exfOroLabios);
+        ctx.exfOroLengua = PdfTextUtil.preferCurrent(ficha != null ? ficha.getExfOroLengua() : null, exfOroLengua);
+        ctx.exfOroFaringe = PdfTextUtil.preferCurrent(ficha != null ? ficha.getExfOroFaringe() : null, exfOroFaringe);
+        ctx.exfOroAmigdalas = PdfTextUtil.preferCurrent(ficha != null ? ficha.getExfOroAmigdalas() : null, exfOroAmigdalas);
+        ctx.exfOroDentadura = PdfTextUtil.preferCurrent(ficha != null ? ficha.getExfOroDentadura() : null, exfOroDentadura);
+        ctx.exfNarizTabique = PdfTextUtil.preferCurrent(ficha != null ? ficha.getExfNarizTabique() : null, exfNarizTabique);
+        ctx.exfNarizCornetes = PdfTextUtil.preferCurrent(ficha != null ? ficha.getExfNarizCornetes() : null, exfNarizCornetes);
+        ctx.exfNarizMucosas = PdfTextUtil.preferCurrent(ficha != null ? ficha.getExfNarizMucosas() : null, exfNarizMucosas);
+        ctx.exfNarizSenos = PdfTextUtil.preferCurrent(ficha != null ? ficha.getExfNarizSenosParanasa() : null, exfNarizSenos);
+        ctx.exfCuelloTiroides = PdfTextUtil.preferCurrent(ficha != null ? ficha.getExfCuelloTiroidesMasas() : null, exfCuelloTiroides);
+        ctx.exfCuelloMovilidad = PdfTextUtil.preferCurrent(ficha != null ? ficha.getExfCuelloMovilidad() : null, exfCuelloMovilidad);
+        ctx.exfToraxMamas = PdfTextUtil.preferCurrent(ficha != null ? ficha.getExfToraxMamas() : null, exfToraxMamas);
+        ctx.exfToraxPulmones = PdfTextUtil.preferCurrent(ficha != null ? ficha.getExfToraxPulmones() : null, exfToraxPulmones);
+        ctx.exfToraxCorazon = PdfTextUtil.preferCurrent(ficha != null ? ficha.getExfToraxCorazon() : null, exfToraxCorazon);
+        ctx.exfToraxParrilla = PdfTextUtil.preferCurrent(ficha != null ? ficha.getExfToraxParrillaCostal() : null, exfToraxParrilla);
+        ctx.exfAbdomenVisceras = PdfTextUtil.preferCurrent(ficha != null ? ficha.getExfAbdVisceras() : null, exfAbdomenVisceras);
+        ctx.exfAbdomenPared = PdfTextUtil.preferCurrent(ficha != null ? ficha.getExfAbdParedAbdominal() : null, exfAbdomenPared);
+        ctx.exfColumnaFlexibilidad = PdfTextUtil.preferCurrent(ficha != null ? ficha.getExfColFlexibilidad() : null, exfColumnaFlexibilidad);
+        ctx.exfColumnaDesviacion = PdfTextUtil.preferCurrent(ficha != null ? ficha.getExfColDesviacion() : null, exfColumnaDesviacion);
+        ctx.exfColumnaDolor = PdfTextUtil.preferCurrent(ficha != null ? ficha.getExfColDolor() : null, exfColumnaDolor);
+        ctx.exfPelvisPelvis = PdfTextUtil.preferCurrent(ficha != null ? ficha.getExfPelvisPelvis() : null, exfPelvisPelvis);
+        ctx.exfPelvisGenitales = PdfTextUtil.preferCurrent(ficha != null ? ficha.getExfPelvisGenitales() : null, exfPelvisGenitales);
+        ctx.exfExtVascular = PdfTextUtil.preferCurrent(ficha != null ? ficha.getExfExtVascular() : null, exfExtVascular);
+        ctx.exfExtSup = PdfTextUtil.preferCurrent(ficha != null ? ficha.getExfExtMiembrosSup() : null, exfExtSup);
+        ctx.exfExtInf = PdfTextUtil.preferCurrent(ficha != null ? ficha.getExfExtMiembrosInf() : null, exfExtInf);
+        ctx.exfNeuroFuerza = PdfTextUtil.preferCurrent(ficha != null ? ficha.getExfNeuroFuerza() : null, exfNeuroFuerza);
+        ctx.exfNeuroSensibilidad = PdfTextUtil.preferCurrent(ficha != null ? ficha.getExfNeuroSensibilidad() : null, exfNeuroSensibilidad);
+        ctx.exfNeuroMarcha = PdfTextUtil.preferCurrent(ficha != null ? ficha.getExfNeuroMarcha() : null, exfNeuroMarcha);
+        ctx.exfNeuroReflejos = PdfTextUtil.preferCurrent(ficha != null ? ficha.getExfNeuroReflejos() : null, exfNeuroReflejos);
         ctx.obsExamenFisico = obsExamenFisico;
-        return ctx;
+        return fichaPdfContextAssembler.buildFichaPdfViewModelContext(ctx);
     }
 
-    private static String preferCurrent(String current, String legacy) {
-        return current != null ? current : legacy;
-    }
 
-    private void cargarLogos(Map<String, String> rep) {
-        try {
-            rep.put("LOGO_IGM_DATAURI", dataUriFromResource("images/LOGO_IGM_FULL_COLOR.png"));
-        } catch (IOException ex) {
-            LOG.warn("[FICHA] No se pudo cargar LOGo IGM", ex);
-            rep.put("LOGO_IGM_DATAURI", "");
-        }
-        try {
-            rep.put("LOGO_MIDENA_DATAURI", dataUriFromResource("images/LOGO_MIDENA.png"));
-        } catch (IOException ex) {
-            LOG.warn("[FICHA] No se pudo cargar LOGo MIDENA", ex);
-            rep.put("LOGO_MIDENA_DATAURI", "");
-        }
-    }
 
-    private void cargarFechaActual(Map<String, String> rep) {
-        LocalDate hoy = LocalDate.now();
-        rep.put("fecha_yyyy", String.valueOf(hoy.getYear()));
-        rep.put("fecha_mm", String.format("%02d", hoy.getMonthValue()));
-        rep.put("fecha_dd", String.format("%02d", hoy.getDayOfMonth()));
-    }
 
-    private void cargarAntecedentes(Map<String, String> rep) {
-        rep.put("ant_clinico_quirurgico", safe(antClinicoQuirurgico));
-        rep.put("ant_familiares", safe(antFamiliares));
-        rep.put("ant_terapeutica", safe(antTerapeutica));
-        rep.put("ant_obs", safe(antObs));
-    }
 
-    private void cargarRiesgos(Map<String, String> rep) {
-        if (riesgos != null) {
-            for (Map.Entry<String, Boolean> e : riesgos.entrySet()) {
-                String k = e.getKey();
-                if (k == null) {
-                    continue;
-                }
-                String ph = k.toLowerCase();
-                rep.put(ph, Boolean.TRUE.equals(e.getValue()) ? "X" : "");
-            }
-        }
-        // Nota: otrosRiesgos se corrige más adelante en corregirOtrosRiesgos()
-    }
 
-    private static String trimToNull(String s) {
-        if (s == null) {
-            return null;
-        }
-        String t = s.trim();
-        return t.isEmpty() ? null : t;
-    }
 
-    private void cargarActividadesLaboralesList(Map<String, String> rep) {
-        if (actividadesLab != null) {
-            for (int i = 0; i < actividadesLab.size() && i < 7; i++) {
-                rep.put("actividad_" + (i + 1), safe(actividadesLab.get(i)));
-            }
-        }
-    }
 
-    private void cargarMedidasPreventivasList(Map<String, String> rep) {
-        if (medidasPreventivas != null) {
-            for (int i = 0; i < medidasPreventivas.size() && i < 7; i++) {
-                rep.put("medida_" + (i + 1), safe(medidasPreventivas.get(i)));
-            }
-        }
-    }
 
-    private void cargarHActividadLaboral(Map<String, String> rep) {
-        int hRows = H_ROWS;
-        for (int i = 0; i < hRows; i++) {
-            rep.put("act_lab_centro_" + i, safe(getSafe(actLabCentroTrabajo, i)));
-            rep.put("act_lab_actividad_" + i, safe(getSafe(actLabActividad, i)));
-            rep.put("act_lab_tiempo_" + i, safe(getSafe(actLabTiempo, i)));
-            rep.put("act_lab_anterior_" + i, isTrue(getSafe(actLabTrabajoAnterior, i)) ? "X" : "");
-            rep.put("act_lab_actual_" + i, isTrue(getSafe(actLabTrabajoActual, i)) ? "X" : "");
-            rep.put("act_lab_incidente_" + i, isTrue(getSafe(actLabIncidenteChk, i)) ? "X" : "");
-            rep.put("act_lab_accidente_" + i, isTrue(getSafe(actLabAccidenteChk, i)) ? "X" : "");
-            rep.put("act_lab_enfermedad_" + i, isTrue(getSafe(actLabEnfermedadChk, i)) ? "X" : "");
-            rep.put("iess_si_" + i, isTrue(getSafe(iessSi, i)) ? "X" : "");
-            rep.put("iess_no_" + i, isTrue(getSafe(iessNo, i)) ? "X" : "");
-            rep.put("iess_fecha_" + i, fmtDate(toDate(getSafe(iessFecha, i))));
-            rep.put("iess_especificar_" + i, safe(getSafe(iessEspecificar, i)));
-            rep.put("act_lab_obs_" + i, safe(getSafe(actLabObservaciones, i)));
-        }
-    }
 
-    private void cargarIActividadesExtra(Map<String, String> rep) {
-        for (int i = 0; i < 3; i++) {
-            rep.put("tipo_act_" + i, safe(getSafe(tipoAct, i)));
-            rep.put("fecha_act_" + i, fmtDate(toDate(getSafe(fechaAct, i))));
-            rep.put("desc_act_" + i, safe(getSafe(descAct, i)));
-        }
-    }
 
-    private void cargarJExamenes(Map<String, String> rep) {
-        for (int i = 0; i < 5; i++) {
-            rep.put("exam_nombre_" + i, safe(getSafe(examNombre, i)));
-            rep.put("exam_fecha_" + i, fmtDate(toDate(getSafe(examFecha, i))));
-            rep.put("exam_resultado_" + i, safe(getSafe(examResultado, i)));
-        }
-        rep.put("obs_j", safe(obsJ));
-    }
 
-    private void cargarKDiagnosticos(Map<String, String> rep) {
-        if (listaDiag != null) {
-            for (int i = 0; i < listaDiag.size() && i < 6; i++) {
-                ConsultaDiagnostico d = listaDiag.get(i);
-                if (d != null) {
-                    rep.put("k_codigo_" + i, safe(d.getCodigo()));
-                    rep.put("k_desc_" + i, safe(d.getDescripcion()));
-                    rep.put("k_pre_" + i, "P".equals(d.getTipoDiag()) ? "X" : "");
-                    rep.put("k_def_" + i, "D".equals(d.getTipoDiag()) ? "X" : "");
-                } else {
-                    rep.put("k_codigo_" + i, "");
-                    rep.put("k_desc_" + i, "");
-                    rep.put("k_pre_" + i, "");
-                    rep.put("k_def_" + i, "");
-                }
-            }
-        }
-    }
 
-    private void cargarLAptitud(Map<String, String> rep) {
-        String aptoX = "", aptoObsX = "", aptoLimitX = "", noAptoX = "";
-        if (aptitudSel != null) {
-            switch (aptitudSel) {
-                case "APTO":
-                    aptoX = "X";
-                    break;
-                case "APTO_EN_OBS":
-                    aptoObsX = "X";
-                    break;
-                case "APTO_LIMIT":
-                    aptoLimitX = "X";
-                    break;
-                case "NO_APTO":
-                    noAptoX = "X";
-                    break;
-            }
-        }
-        rep.put("l_apto", aptoX);
-        rep.put("l_apto_obs", aptoObsX);
-        rep.put("l_apto_limit", aptoLimitX);
-        rep.put("l_no_apto", noAptoX);
-        String obs = detalleObservaciones;
-        if (obs == null || obs.trim().isEmpty()) {
-            // fallback: si observaciones ya están en la entidad Ficha, las tomamos de ahí
-            obs = getFichaStringByReflection(ficha,
-                    "getDetalleObs",
-                    "getDetalleObservaciones",
-                    "getObservaciones",
-                    "getObs",
-                    "getObservacion"
-            );
-        }
-        rep.put("l_observaciones", safe(obs));
-    }
 
-    private void cargarNRetiro(Map<String, String> rep) {
-        // Acepta valores S/N, SI/NO, true/false, 1/0
-        rep.put("n_realiza_eval_si", isYes(nRealizaEvaluacion) ? "X" : "");
-        rep.put("n_realiza_eval_no", isNo(nRealizaEvaluacion) ? "X" : "");
 
-        rep.put("n_relacion_trabajo_si", isYes(nRelacionTrabajo) ? "X" : "");
-        rep.put("n_relacion_trabajo_no", isNo(nRelacionTrabajo) ? "X" : "");
 
-        rep.put("n_obs_retiro", safe(nObsRetiro));
-    }
-
-    private void cargarOProfesional(Map<String, String> rep) {
-        rep.put("medico_nombre", safe(medicoNombre));
-        rep.put("medico_codigo", safe(medicoCodigo));
-    }
-
-    private void cargarAntecedentesCamelCase(Map<String, String> rep) {
-        rep.put("antClinicoQuirurgico", safe(antClinicoQuirurgico));
-        rep.put("antFamiliares", safe(antFamiliares));
-        rep.put("antTerapeutica", safe(antTerapeutica));
-        rep.put("antObs", safe(antObs));
-    }
-
-    private void corregirOtrosRiesgos(Map<String, String> rep) {
-        if (otrosRiesgos == null) {
-            return;
-        }
-
-        for (Map.Entry<String, String> e : otrosRiesgos.entrySet()) {
-            String k = e.getKey();
-            if (k == null) {
-                continue;
-            }
-
-            String value = safe(e.getValue());
-            String ph = k.toLowerCase();
-            rep.put(ph, value);
-
-            String alias = normalizeOtrosPlaceholder(ph);
-            if (alias != null) {
-                rep.put(alias, value);
-            }
-        }
-    }
 
     private String normalizeOtrosPlaceholder(String keyLower) {
         if (isBlank(keyLower)) {
