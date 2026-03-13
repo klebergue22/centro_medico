@@ -72,6 +72,7 @@ import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoPdfFacadeService;
 import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoPdfTemplateCoordinator;
 import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoPdfUiCoordinator;
 import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoWizardNavigationCoordinator;
+import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoStepFlowFacade;
 import ec.gob.igm.rrhh.consultorio.web.service.DiagnosticoFilaUiCoordinator;
 import ec.gob.igm.rrhh.consultorio.web.service.FichaPdfDataMapper;
 import ec.gob.igm.rrhh.consultorio.web.service.FichaPdfMappedData;
@@ -184,6 +185,8 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     private transient CentroMedicoPdfFacade centroMedicoPdfFacade;
     @Inject
     private transient CentroMedicoWizardNavigationCoordinator wizardNavigationCoordinator;
+    @Inject
+    private transient CentroMedicoStepFlowFacade centroMedicoStepFlowFacade;
     @Inject
     private transient CentroMedicoMessageService messageService;
     @Inject
@@ -622,8 +625,8 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
         controllerActionTemplate.executeWithResult(
                 "guardarStepActual",
                 () -> {
-                    wizardNavigationCoordinator.guardarStepActual(
-                            new CentroMedicoWizardNavigationCoordinator.GuardarStepActualCommand(
+                    centroMedicoStepFlowFacade.guardarStepActual(
+                            new CentroMedicoStepFlowFacade.GuardarStepActualFacadeCommand(
                                     activeStep,
                                     this::guardarStep1,
                                     this::guardarStep2,
@@ -633,8 +636,8 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
                                     this::resetStep4PdfState,
                                     this::applyStep4State,
                                     ficha,
-                                    buildPrepareFichaCommand(),
-                                    buildPrepareCertificadoCommand()));
+                                    this::buildPrepareFichaCommand,
+                                    this::buildPrepareCertificadoCommand));
                     return activeStep;
                 },
                 ignored -> {
