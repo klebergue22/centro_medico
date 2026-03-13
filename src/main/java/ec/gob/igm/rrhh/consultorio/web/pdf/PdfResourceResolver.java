@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.MalformedURLException;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Locale;
@@ -70,8 +71,9 @@ public class PdfResourceResolver {
             return "";
         }
         try {
-            return ctx.getExternalContext().getResource("/resources/images/" + fileName).toExternalForm();
-        } catch (RuntimeException ex) {
+            var resource = ctx.getExternalContext().getResource("/resources/images/" + fileName);
+            return resource != null ? resource.toExternalForm() : "";
+        } catch (MalformedURLException | RuntimeException ex) {
             return "";
         }
     }
