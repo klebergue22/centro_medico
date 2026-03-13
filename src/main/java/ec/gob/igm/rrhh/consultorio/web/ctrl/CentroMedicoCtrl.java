@@ -64,6 +64,8 @@ import ec.gob.igm.rrhh.consultorio.service.PersonaAuxService;
 import ec.gob.igm.rrhh.consultorio.service.Step1FichaService;
 import ec.gob.igm.rrhh.consultorio.web.facade.CentroMedicoPdfFacade;
 import ec.gob.igm.rrhh.consultorio.web.jsf.CentroMedicoMessageService;
+import ec.gob.igm.rrhh.consultorio.web.mapper.Step1CommandAssembler;
+import ec.gob.igm.rrhh.consultorio.web.mapper.Step3CommandAssembler;
 import ec.gob.igm.rrhh.consultorio.web.audit.CentroMedicoAuditService;
 import ec.gob.igm.rrhh.consultorio.web.pdf.FichaPdfContextAssembler;
 import ec.gob.igm.rrhh.consultorio.web.pdf.FichaPdfPlaceholderAssembler;
@@ -87,7 +89,6 @@ import ec.gob.igm.rrhh.consultorio.web.service.PersonaAuxFlowService;
 import ec.gob.igm.rrhh.consultorio.web.service.Step2OrchestratorService;
 import ec.gob.igm.rrhh.consultorio.web.service.Step2OrchestratorService.Step2RiskCommand;
 import ec.gob.igm.rrhh.consultorio.web.service.Step3OrchestratorService;
-import ec.gob.igm.rrhh.consultorio.web.service.Step3OrchestratorService.Step3SaveCommand;
 import ec.gob.igm.rrhh.consultorio.web.session.PdfSessionStore;
 import ec.gob.igm.rrhh.consultorio.web.util.CentroMedicoCalcUtil;
 import ec.gob.igm.rrhh.consultorio.web.util.SnUtils;
@@ -454,6 +455,12 @@ public class CentroMedicoCtrl implements Serializable {
     @Inject
     private transient PacienteFichaStateService pacienteFichaStateService;
 
+    @Inject
+    private transient Step1CommandAssembler step1CommandAssembler;
+
+    @Inject
+    private transient Step3CommandAssembler step3CommandAssembler;
+
     @EJB
     private transient Step3OrchestratorService step3OrchestratorService;
 
@@ -806,7 +813,7 @@ public class CentroMedicoCtrl implements Serializable {
                 ficha,
                 personaAux));
 
-        Step1FichaService.Step1Command command = new Step1FichaService.Step1Command(
+        Step1FichaService.Step1Command command = step1CommandAssembler.toCommand(
                 ficha,
                 empleadoSel,
                 personaAux,
@@ -1011,7 +1018,7 @@ public class CentroMedicoCtrl implements Serializable {
         final String user = usuarioReal();
 
         try {
-            ficha = step3OrchestratorService.saveStep3(new Step3SaveCommand(
+            ficha = step3OrchestratorService.saveStep3(step3CommandAssembler.toCommand(
                     ficha,
                     codCie10Ppal,
                     obsExamenFisico,
