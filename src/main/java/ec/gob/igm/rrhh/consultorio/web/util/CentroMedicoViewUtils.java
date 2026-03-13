@@ -59,6 +59,19 @@ public final class CentroMedicoViewUtils {
         return String.valueOf(v);
     }
 
+    public static String safe(String s) {
+        if (s == null) {
+            return "";
+        }
+        String out = s;
+        out = out.replace("&", "&amp;");
+        out = out.replace("<", "&lt;");
+        out = out.replace(">", "&gt;");
+        out = out.replace("\"", "&quot;");
+        out = out.replace("'", "&#39;");
+        return out;
+    }
+
     public static void putArray1Based(Map<String, String> rep, String prefix, String[] arr, UnaryOperator<String> valueMapper) {
         if (arr == null) {
             return;
