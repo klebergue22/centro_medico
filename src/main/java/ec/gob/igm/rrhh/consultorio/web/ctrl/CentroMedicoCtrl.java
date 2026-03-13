@@ -1,5 +1,12 @@
 package ec.gob.igm.rrhh.consultorio.web.ctrl;
 
+import static ec.gob.igm.rrhh.consultorio.web.util.CentroMedicoViewUtils.esVacio;
+import static ec.gob.igm.rrhh.consultorio.web.util.CentroMedicoViewUtils.getSafe;
+import static ec.gob.igm.rrhh.consultorio.web.util.CentroMedicoViewUtils.isBlank;
+import static ec.gob.igm.rrhh.consultorio.web.util.CentroMedicoViewUtils.isTrue;
+import static ec.gob.igm.rrhh.consultorio.web.util.CentroMedicoViewUtils.s;
+import static ec.gob.igm.rrhh.consultorio.web.util.CentroMedicoViewUtils.sn;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -644,10 +651,6 @@ public class CentroMedicoCtrl implements Serializable {
         this.imc = calcUtil.recalcularIMC(peso, tallaCm);
     }
 
-    private boolean isBlank(String s) {
-        return s == null || s.trim().isEmpty();
-    }
-
     private void registrarAuditoria(String accion, String tabla, String campo, String observaciones) {
         s3("registrarAuditoria() accion=" + accion + " tabla=" + tabla + " campo=" + campo);
 
@@ -752,10 +755,6 @@ public class CentroMedicoCtrl implements Serializable {
                 fichaRiesgo);
         messageService.addValidationMessages("Step 1", result);
         return result.isValid();
-    }
-
-    private boolean esVacio(String s) {
-        return s == null || s.trim().isEmpty();
     }
 
     private String usuarioReal() {
@@ -1035,22 +1034,6 @@ public class CentroMedicoCtrl implements Serializable {
                 "Step 3 guardado. ID_FICHA=" + ficha.getIdFicha());
     }
 
-    private <T> T getSafe(List<T> list, int idx) {
-        if (list == null) {
-            s3("getSafe() list=null idx=" + idx);
-            return null;
-        }
-        if (idx < 0 || idx >= list.size()) {
-            s3("getSafe() idx fuera de rango idx=" + idx + " size=" + list.size());
-            return null;
-        }
-        return list.get(idx);
-    }
-
-    private boolean isTrue(Boolean b) {
-        return b != null && b;
-    }
-
     private boolean verificarFichaCompleta() {
         ValidationResult result = fichaCompletaValidator.validate(
                 ficha,
@@ -1242,16 +1225,6 @@ public class CentroMedicoCtrl implements Serializable {
         return tipo;
     }
 
-    private String s(Object v) {
-        if (v == null) {
-            return "";
-        }
-        if (v instanceof java.util.Date) {
-            return new java.text.SimpleDateFormat("dd/MM/yyyy").format((java.util.Date) v);
-        }
-        return String.valueOf(v);
-    }
-
     private void syncCamposDesdeObjetosInternal() {
         FichaPdfMappedData data = fichaPdfContextAssembler.syncCamposDesdeObjetos(
                 fichaPdfDataMapper,
@@ -1363,57 +1336,6 @@ public class CentroMedicoCtrl implements Serializable {
         }
 
         return null;
-    }
-
-    /**
-     * actividad_1..N desde String[]
-     */
-    private void putArray1Based(Map<String, String> rep, String prefix, String[] arr) {
-        if (arr == null) {
-            return;
-        }
-        for (int i = 0; i < arr.length; i++) {
-            rep.put(prefix + (i + 1), safe(arr[i]));
-        }
-    }
-
-    /**
-     * ta_1..N desde Integer[]
-     */
-    private void putIntArray1Based(Map<String, String> rep, String prefix, Integer[] arr) {
-        if (arr == null) {
-            return;
-        }
-        for (int i = 0; i < arr.length; i++) {
-            rep.put(prefix + (i + 1), (arr[i] == null) ? "" : String.valueOf(arr[i]));
-        }
-    }
-
-    /**
-     * ii_1..N desde Boolean[] -> "X"
-     */
-    private void putBoolArray1Based(Map<String, String> rep, String prefix, Boolean[] arr) {
-        if (arr == null) {
-            return;
-        }
-        for (int i = 0; i < arr.length; i++) {
-            rep.put(prefix + (i + 1), Boolean.TRUE.equals(arr[i]) ? "X" : "");
-        }
-    }
-
-    /**
-     * Interpreta marcas tipo "true", "1", "X", "SI"
-     */
-    private boolean isTruthyMark(String v) {
-        if (v == null) {
-            return false;
-        }
-        String s = v.trim();
-        if (s.isEmpty()) {
-            return false;
-        }
-        s = s.toUpperCase();
-        return "TRUE".equals(s) || "1".equals(s) || "X".equals(s) || "SI".equals(s) || "S".equals(s);
     }
 
     private Map<String, String> buildVarsFicha() {
@@ -1802,14 +1724,6 @@ public class CentroMedicoCtrl implements Serializable {
             LOG.error("!!! [AC-K-DESC] ERROR {} : {}", e.getClass().getName(), e.getMessage(), e);
             return new ArrayList<>();
         }
-    }
-
-    private String sn(Boolean b) {
-        return Boolean.TRUE.equals(b) ? "S" : "N";
-    }
-
-    private String sn(boolean b) {
-        return b ? "S" : "N";
     }
 
     public void abrirPersonaAuxManual() {
@@ -4077,17 +3991,6 @@ public class CentroMedicoCtrl implements Serializable {
             return "";
         }
         return new java.text.SimpleDateFormat("dd/MM/yyyy").format(d);
-    }
-
-    private String sn(Object boolOrString) {
-        if (boolOrString == null) {
-            return "NO";
-        }
-        String s = String.valueOf(boolOrString).trim();
-        if ("true".equalsIgnoreCase(s) || "1".equals(s) || "X".equalsIgnoreCase(s) || "SI".equalsIgnoreCase(s)) {
-            return "SI";
-        }
-        return "NO";
     }
 
     public String getAntTerapeutica() {
