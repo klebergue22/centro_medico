@@ -104,6 +104,9 @@ public class FichaPdfPlaceholderAssembler implements Serializable {
             rep.put("act_lab_tiempo_" + i, safePdfObject(s.getSafe.apply(s.actLabTiempo, i)));
             rep.put("act_lab_anterior_" + i, truthy(s.getSafe.apply(s.actLabTrabajoAnterior, i)) ? "X" : "");
             rep.put("act_lab_actual_" + i, truthy(s.getSafe.apply(s.actLabTrabajoActual, i)) ? "X" : "");
+            rep.put("act_lab_incidente_" + i, truthy(s.getSafe.apply(s.actLabIncidenteChk, i)) ? "X" : "");
+            rep.put("act_lab_accidente_" + i, truthy(s.getSafe.apply(s.actLabAccidenteChk, i)) ? "X" : "");
+            rep.put("act_lab_enfermedad_" + i, truthy(s.getSafe.apply(s.actLabEnfermedadChk, i)) ? "X" : "");
             rep.put("iess_si_" + i, truthy(s.getSafe.apply(s.iessSi, i)) ? "X" : "");
             rep.put("iess_no_" + i, truthy(s.getSafe.apply(s.iessNo, i)) ? "X" : "");
             rep.put("iess_fecha_" + i, PdfTextUtil.safeDate(s.toDateParser.apply(s.getSafe.apply(s.iessFecha, i))));
@@ -260,6 +263,9 @@ public class FichaPdfPlaceholderAssembler implements Serializable {
         public List<String> actLabTiempo;
         public List<Boolean> actLabTrabajoAnterior;
         public List<Boolean> actLabTrabajoActual;
+        public List<Boolean> actLabIncidenteChk;
+        public List<Boolean> actLabAccidenteChk;
+        public List<Boolean> actLabEnfermedadChk;
         public List<Boolean> iessSi;
         public List<Boolean> iessNo;
         public List<?> iessFecha;
