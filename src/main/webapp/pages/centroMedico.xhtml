@@ -20,13 +20,13 @@
 
 
 
-  <p:remoteCommand name="rcAutoOpenCedulaDlg"
-                 autoRun="true"
-                 process="@this"
-                 actionListener="#{centroMedicoCtrl.consumirAutoOpenCedulaDlg}"
-                 oncomplete="if (args.openCedulaDlg === true) { PF('dlgCedula').show(); }"/>
+        <p:remoteCommand name="rcAutoOpenCedulaDlg"
+                         autoRun="true"
+                         process="@this"
+                         actionListener="#{centroMedicoCtrl.consumirAutoOpenCedulaDlg}"
+                         oncomplete="if (args.openCedulaDlg === true) { PF('dlgCedula').show(); }"/>
 
-<p:remoteCommand name="rcUpdateWizard"
+        <p:remoteCommand name="rcUpdateWizard"
                          process="@this"
                          update="@([id$=wdzFicha]) @([id$=msgs])"/>
 
@@ -234,14 +234,13 @@
 
                     <h:outputLabel for="fnManual" value="Fecha nacimiento *"/>
 
-                    <p:datePicker id="fnManual"
-                                  value="#{centroMedicoCtrl.personaAux.fechaNac}"
-                                  pattern="dd/MM/yyyy"
-                                  monthNavigator="true"
-                                  yearNavigator="true"
-                                  yearRange="1924:2007"
-                                  showIcon="true"
-                                  required="true"/>
+                    <p:calendar id="fnManual"
+                                value="#{centroMedicoCtrl.personaAux.fechaNac}"
+                                pattern="dd/MM/yyyy"
+                                navigator="true"
+                                showOn="button"
+                                yearRange="1924:2007"
+                                required="true"/>
 
                 </p:panelGrid>
 
