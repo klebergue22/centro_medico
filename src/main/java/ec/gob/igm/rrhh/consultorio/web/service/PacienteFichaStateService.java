@@ -33,7 +33,8 @@ public class PacienteFichaStateService implements Serializable {
         }
 
         if (ficha != null && ficha.getEmpleado() != null) {
-            DatEmpleado empleadoFicha = ficha.getEmpleado();
+            DatEmpleado empleadoFicha = resolveEmpleadoForView(ficha.getEmpleado());
+            ficha.setEmpleado(empleadoFicha);
             Integer noPersona = (noPersonaSel == null) ? empleadoFicha.getNoPersona() : noPersonaSel;
             return new PatientState(ficha, empleadoFicha, noPersona, personaAux, false);
         }
@@ -57,7 +58,8 @@ public class PacienteFichaStateService implements Serializable {
         }
 
         if (ficha.getEmpleado() != null) {
-            DatEmpleado empleadoFicha = ficha.getEmpleado();
+            DatEmpleado empleadoFicha = resolveEmpleadoForView(ficha.getEmpleado());
+            ficha.setEmpleado(empleadoFicha);
             return new PatientState(ficha, empleadoFicha, empleadoFicha.getNoPersona(), null, false);
         }
 
@@ -108,9 +110,9 @@ public class PacienteFichaStateService implements Serializable {
             FichaOcupacional persisted = fichaService.findById(ficha.getIdFicha());
             if (persisted != null) {
                 if (persisted.getEmpleado() != null) {
-                    ficha.setEmpleado(persisted.getEmpleado());
+                    DatEmpleado empleadoPersistido = resolveEmpleadoForView(persisted.getEmpleado());
+                    ficha.setEmpleado(empleadoPersistido);
                     ficha.setPersonaAux(null);
-                    DatEmpleado empleadoPersistido = persisted.getEmpleado();
                     return new PatientState(ficha, empleadoPersistido, empleadoPersistido.getNoPersona(), null, false);
                 }
                 if (persisted.getPersonaAux() != null) {
@@ -123,6 +125,15 @@ public class PacienteFichaStateService implements Serializable {
 
         throw new IllegalStateException(
                 "Debe seleccionar un empleado o registrar una persona auxiliar antes de guardar el Step 3.");
+    }
+
+    private DatEmpleado resolveEmpleadoForView(DatEmpleado empleado) {
+        if (empleado == null || empleado.getNoPersona() == null) {
+            return empleado;
+        }
+
+        DatEmpleado completo = empleadoService.buscarPorId(empleado.getNoPersona());
+        return completo != null ? completo : empleado;
     }
 
     public static class PatientState {
