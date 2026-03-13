@@ -1,14 +1,8 @@
 package ec.gob.igm.rrhh.consultorio.web.ctrl;
 
-import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.Serializable;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -20,7 +14,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.regex.Pattern;
 
 import jakarta.annotation.PostConstruct;
 import jakarta.ejb.EJB;
@@ -34,7 +27,6 @@ import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import jakarta.servlet.http.HttpSession;
-import com.lowagie.text.DocumentException;
 
 import org.primefaces.PrimeFaces;
 import org.primefaces.event.FlowEvent;
@@ -70,9 +62,11 @@ import ec.gob.igm.rrhh.consultorio.web.audit.CentroMedicoAuditService;
 import ec.gob.igm.rrhh.consultorio.web.pdf.FichaPdfContextAssembler;
 import ec.gob.igm.rrhh.consultorio.web.pdf.FichaPdfPlaceholderAssembler;
 import ec.gob.igm.rrhh.consultorio.web.pdf.FichaPdfPlaceholderAssembler.FichaState;
+import ec.gob.igm.rrhh.consultorio.web.pdf.FichaPdfTemplateService;
+import ec.gob.igm.rrhh.consultorio.web.pdf.CertificadoPdfTemplateService;
+import ec.gob.igm.rrhh.consultorio.web.pdf.PdfResourceResolver;
 import ec.gob.igm.rrhh.consultorio.web.pdf.PdfTextUtil;
 import ec.gob.igm.rrhh.consultorio.web.pdf.PdfTemplateEngine;
-import ec.gob.igm.rrhh.consultorio.web.pdf.PdfRenderer;
 import ec.gob.igm.rrhh.consultorio.web.service.CedulaDialogUiCoordinator;
 import ec.gob.igm.rrhh.consultorio.web.service.CedulaSearchService;
 import ec.gob.igm.rrhh.consultorio.web.service.Cie10LookupService;
@@ -417,10 +411,16 @@ public class CentroMedicoCtrl implements Serializable {
     private transient PdfSessionStore pdfSessionStore;
 
     @Inject
-    private transient PdfRenderer pdfRenderer;
+    private transient PdfTemplateEngine pdfTemplateEngine;
 
     @Inject
-    private transient PdfTemplateEngine pdfTemplateEngine;
+    private transient PdfResourceResolver pdfResourceResolver;
+
+    @EJB
+    private transient FichaPdfTemplateService fichaPdfTemplateService;
+
+    @Inject
+    private transient CertificadoPdfTemplateService certificadoPdfTemplateService;
 
     @Inject
     private transient CentroMedicoPdfFacade centroMedicoPdfFacade;
@@ -1206,48 +1206,6 @@ public class CentroMedicoCtrl implements Serializable {
         return PdfTextUtil.normalizarXhtmlPdf(html);
     }
 
-    private String leerRecursoComoString(String classpathLocation) {
-
-        InputStream is = null;
-
-        try {
-
-            is = Thread.currentThread().getContextClassLoader().getResourceAsStream(
-                    classpathLocation.startsWith("/") ? classpathLocation.substring(1) : classpathLocation
-            );
-
-            if (is == null) {
-                FacesContext fc = FacesContext.getCurrentInstance();
-                if (fc != null) {
-                    ExternalContext ec = fc.getExternalContext();
-                    is = ec.getResourceAsStream(classpathLocation.startsWith("/") ? classpathLocation : ("/" + classpathLocation));
-                }
-            }
-
-            if (is == null) {
-                throw new IllegalStateException("No se encontró el template en classpath: " + classpathLocation
-                        + " (Revisa src/main/resources y la ruta).");
-            }
-
-            try (BufferedReader br = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8))) {
-                StringBuilder sb = new StringBuilder();
-                String line;
-                while ((line = br.readLine()) != null) {
-                    sb.append(line).append("\n");
-                }
-                return sb.toString();
-            }
-
-        } catch (IOException e) {
-            throw new RuntimeException("Error leyendo recurso: " + classpathLocation, e);
-        }
-    }
-
-
-
-
-
-
     private String renderFaceletToHtml(String viewId) {
         LOG.info("FichaPrint: renderFaceletToHtml delegado a facade. viewId={}", viewId);
         return centroMedicoPdfFacade.renderFaceletToHtml(viewId);
@@ -1255,16 +1213,11 @@ public class CentroMedicoCtrl implements Serializable {
 
     private String construirHtmlFichaDesdePlantilla() {
         try {
-            return fichaPdfPlaceholderBuilder.construirHtmlFichaDesdePlantilla(
-                    () -> {
-                        try {
-                            return cargarRecursoComoString("plantilla_ficha.html");
-                        } catch (IOException e) {
-                            throw new RuntimeException(e);
-                        }
-                    },
-                    this::syncCamposDesdeObjetos,
-                    this::buildReemplazosFicha,
+            return fichaPdfTemplateService.construirHtmlFichaDesdePlantilla(
+                    fichaPdfPlaceholderBuilder,
+                    () -> pdfResourceResolver.readPdfTemplate("plantilla_ficha.html"),
+                    this::syncCamposDesdeObjetosInternal,
+                    this::buildReemplazosFichaInternal,
                     this::obtenerTipoEvaluacionPdf,
                     centroMedicoPdfFacade);
         } catch (RuntimeException ex) {
@@ -1297,7 +1250,7 @@ public class CentroMedicoCtrl implements Serializable {
         return String.valueOf(v);
     }
 
-    private void syncCamposDesdeObjetos() {
+    private void syncCamposDesdeObjetosInternal() {
         FichaPdfMappedData data = fichaPdfContextAssembler.syncCamposDesdeObjetos(
                 fichaPdfDataMapper,
                 ficha,
@@ -1354,24 +1307,26 @@ public class CentroMedicoCtrl implements Serializable {
         LOG.info("[STEP1] lateralidad=" + lateralidad);
     }
 
-    private Map<String, String> buildReemplazosFicha() {
-        recalcularIMC();
-        Map<String, String> rep = new LinkedHashMap<>();
-        cargarAtencionPrioritaria(rep);
-        cargarActividadLaboralArrays(rep);
-        rep.putAll(fichaPdfPlaceholderAssembler.buildReemplazosFicha(buildFichaState()));
-        return rep;
+    private Map<String, String> buildReemplazosFichaInternal() {
+        final Map<String, String> snapshot = new LinkedHashMap<>();
+        return fichaPdfTemplateService.buildReemplazosFicha(
+                this::recalcularIMC,
+                () -> cargarAtencionPrioritaria(snapshot),
+                () -> cargarActividadLaboralArrays(snapshot),
+                () -> snapshot,
+                fichaPdfPlaceholderAssembler,
+                this::buildFichaStateInternal);
     }
 
 
 
-    private FichaState buildFichaState() {
+    private FichaState buildFichaStateInternal() {
         return fichaPdfContextAssembler.buildFichaState(
                 this,
                 centroMedicoPdfFacade,
                 LOG,
                 fichaPdfViewModelBuilder,
-                buildFichaPdfViewModelContext(),
+                buildFichaPdfViewModelContextInternal(),
                 getFichaStringByReflection(ficha,
                         "getDetalleObs",
                         "getDetalleObservaciones",
@@ -1382,7 +1337,7 @@ public class CentroMedicoCtrl implements Serializable {
                 this::toDate);
     }
 
-    private FichaPdfViewModelContext buildFichaPdfViewModelContext() {
+    private FichaPdfViewModelContext buildFichaPdfViewModelContextInternal() {
         return fichaPdfContextAssembler.buildFichaPdfViewModelContext(this);
     }
 
@@ -1513,27 +1468,7 @@ public class CentroMedicoCtrl implements Serializable {
     }
 
     private String buildLogoDataUri(String fileName) {
-        try (InputStream in = FacesContext.getCurrentInstance()
-                .getExternalContext()
-                .getResourceAsStream("/resources/images/" + fileName)) {
-
-            if (in == null) {
-                return "";
-            }
-
-            byte[] bytes = in.readAllBytes();
-            String b64 = java.util.Base64.getEncoder().encodeToString(bytes);
-
-            String lower = fileName.toLowerCase();
-            String mime = lower.endsWith(".png") ? "image/png"
-                    : (lower.endsWith(".jpg") || lower.endsWith(".jpeg")) ? "image/jpeg"
-                    : "application/octet-stream";
-
-            return "data:" + mime + ";base64," + b64;
-
-        } catch (Exception e) {
-            return "";
-        }
+        return pdfResourceResolver.buildLogoDataUri(fileName);
     }
 
     private String renderTemplate(String template, Map<String, String> rep) {
@@ -1678,63 +1613,13 @@ public class CentroMedicoCtrl implements Serializable {
         }
     }
 
-    private static final Pattern AMP_BAD = Pattern.compile(
-            "&(?!amp;|lt;|gt;|quot;|apos;|#\\d+;|#x[0-9A-Fa-f]+;)"
-    );
-
-    private String sanitizeXhtmlForPdf(String html) {
-        if (html == null) {
-            return null;
-        }
-
-        html = html.replace("&nbsp;", "&#160;");
-
-        html = AMP_BAD.matcher(html).replaceAll("&amp;");
-        return html;
-    }
-
-    private void dumpXhtmlDebug(String fileName, String xhtml, Exception ex) {
-        try {
-            Path p = Path.of(System.getProperty("java.io.tmpdir"), fileName);
-            Files.writeString(p, xhtml, StandardCharsets.UTF_8);
-            LOG.error("PDF DEBUG: Se guardó XHTML en {}", p.toAbsolutePath(), ex);
-        } catch (Exception ignore) {
-            LOG.error("PDF DEBUG: No se pudo guardar XHTML de diagnóstico.", ignore);
-        }
-    }
-
-    private byte[] renderizarPdf(String xhtml) throws IOException, DocumentException {
-
-        if (xhtml == null || xhtml.trim().isEmpty()) {
-            LOG.error("renderizarPdf: El string HTML recibido es NULO o VACÍO.");
-            throw new IllegalArgumentException(
-                    "El contenido HTML para generar el PDF está vacío. "
-                    + "Esto generalmente significa que el método renderFaceletToHtml falló. "
-                    + "Revise el LOG del servidor buscando 'FichaPrint: renderFaceletToHtml ERROR' para ver el error real."
-            );
-        }
-
-        final String xhtmlOk = sanitizeXhtmlForPdf(xhtml);
-
-        try {
-            return pdfRenderer.render(xhtmlOk);
-        } catch (RuntimeException ex) {
-            dumpXhtmlDebug("fichaPrint_debug.xhtml", xhtmlOk, ex);
-            throw ex;
-        }
-    }
-
     private String construirHtmlDesdePlantilla() throws IOException {
 
-        String template = cargarRecursoComoString("plantilla_certificado.html");
-        template = normalizarXhtml(template);
+        String template = pdfResourceResolver.readPdfTemplate("plantilla_certificado.html");
 
         Date f = (ficha != null && ficha.getFechaEmision() != null)
                 ? ficha.getFechaEmision()
                 : ((fechaEmision != null) ? fechaEmision : new Date());
-        SimpleDateFormat yy = new SimpleDateFormat("yyyy");
-        SimpleDateFormat MM = new SimpleDateFormat("MM");
-        SimpleDateFormat dd = new SimpleDateFormat("dd");
 
         String aApto = "&nbsp;", aObs = "&nbsp;", aLim = "&nbsp;", aNo = "&nbsp;";
         if (aptitudSel != null) {
@@ -1777,117 +1662,40 @@ public class CentroMedicoCtrl implements Serializable {
             }
         }
 
-        String LOGoIgmUrl = "";
-        String LOGoMidenaUrl = "";
-        try {
-            LOGoIgmUrl = FacesContext.getCurrentInstance()
-                    .getExternalContext()
-                    .getResource("/resources/images/LOGO_IGM_FULL_COLOR.png")
-                    .toExternalForm();
-        } catch (RuntimeException ex) {
-            LOG.error("[PDF] No se pudo resolver LOGO_IGM_FULL_COLOR.png: " + ex.getMessage());
-        }
-        try {
-            LOGoMidenaUrl = FacesContext.getCurrentInstance()
-                    .getExternalContext()
-                    .getResource("/resources/images/LOGO_MIDENA.png")
-                    .toExternalForm();
-        } catch (RuntimeException ex) {
-            LOG.error("[PDF] No se pudo resolver LOGO_MIDENA.png: " + ex.getMessage());
-        }
-
-        Map<String, String> rep = new LinkedHashMap<>();
-
-        rep.put("LOGO_IGM_DATAURI", LOGoIgmUrl);
-        rep.put("LOGO_MIDENA_DATAURI", LOGoMidenaUrl);
-
-        rep.put("institucion", safe(institucion));
-        rep.put("ruc", safe(ruc));
-        rep.put("num_formulario", safe(noHistoria));
-        rep.put("num_archivo", safe(noArchivo));
-        rep.put("centroTrabajo", safe(centroTrabajo));
-        rep.put("ciiu", safe(ciiu));
-
-        rep.put("apellido1", safe(apellido1));
-        rep.put("apellido2", safe(apellido2));
-        rep.put("nombre1", safe(nombre1));
-        rep.put("nombre2", safe(nombre2));
-        rep.put("sexo", safe(sexo));
-
-        rep.put("fecha_yyyy", yy.format(f));
-        rep.put("fecha_MM", MM.format(f));
-        rep.put("fecha_dd", dd.format(f));
-        rep.put("chk_ingreso", chkIngreso);
-        rep.put("chk_periodico", chkPeriodico);
-        rep.put("chk_reintegro", chkReintegro);
-        rep.put("chk_retiro", chkRetiro);
-
-        rep.put("chk_apto", aApto);
-        rep.put("chk_obs", aObs);
-        rep.put("chk_lim", aLim);
-        rep.put("chk_noapto", aNo);
-
-        rep.put("detalleObservaciones", safe(detalleObservaciones));
-        rep.put("recomendaciones", safe(recomendaciones));
-        rep.put("medicoNombre", safe(medicoNombre));
-        rep.put("medicoCodigo", safe(medicoCodigo));
-
-        for (Map.Entry<String, String> e : rep.entrySet()) {
-            String key = e.getKey();
-            String val = (e.getValue() == null) ? "" : e.getValue();
-            template = template.replace("{{" + key + "}}", val);
-        }
-
-        return template;
-    }
-
-    private String cargarRecursoComoString(String pathRelativo) throws IOException {
-        InputStream in = FacesContext.getCurrentInstance()
-                .getExternalContext()
-                .getResourceAsStream("/resources/pdf/" + pathRelativo);
-        if (in == null) {
-            throw new IllegalArgumentException("No se encontró la plantilla: /resources/pdf/" + pathRelativo);
-        }
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8))) {
-            StringBuilder sb = new StringBuilder();
-            String line;
-            while ((line = reader.readLine()) != null) {
-                sb.append(line).append("\n");
-            }
-            return sb.toString();
-        }
+        CertificadoPdfTemplateService.CertificadoTemplateData data = new CertificadoPdfTemplateService.CertificadoTemplateData();
+        data.template = template;
+        data.fechaEmision = f;
+        data.apto = aApto;
+        data.obs = aObs;
+        data.lim = aLim;
+        data.noApto = aNo;
+        data.chkIngreso = chkIngreso;
+        data.chkPeriodico = chkPeriodico;
+        data.chkReintegro = chkReintegro;
+        data.chkRetiro = chkRetiro;
+        data.logoIgm = pdfResourceResolver.resolveImageUrl("LOGO_IGM_FULL_COLOR.png");
+        data.logoMidena = pdfResourceResolver.resolveImageUrl("LOGO_MIDENA.png");
+        data.institucion = safe(institucion);
+        data.ruc = safe(ruc);
+        data.noHistoria = safe(noHistoria);
+        data.noArchivo = safe(noArchivo);
+        data.centroTrabajo = safe(centroTrabajo);
+        data.ciiu = safe(ciiu);
+        data.apellido1 = safe(apellido1);
+        data.apellido2 = safe(apellido2);
+        data.nombre1 = safe(nombre1);
+        data.nombre2 = safe(nombre2);
+        data.sexo = safe(sexo);
+        data.detalleObservaciones = safe(detalleObservaciones);
+        data.recomendaciones = safe(recomendaciones);
+        data.medicoNombre = safe(medicoNombre);
+        data.medicoCodigo = safe(medicoCodigo);
+        data.templateEngine = pdfTemplateEngine;
+        return certificadoPdfTemplateService.construirHtmlDesdePlantilla(data);
     }
 
     public void syncTipoEvaluacion() {
         this.tipoEvaluacion = this.tipoEval;
-    }
-
-    private String dataUriFromResource(String pathFromResources) throws IOException {
-        InputStream in = FacesContext.getCurrentInstance()
-                .getExternalContext()
-                .getResourceAsStream("/resources/" + pathFromResources);
-        if (in == null) {
-            LOG.error("[PDF] No se encontró recurso: /resources/" + pathFromResources);
-            return "";
-        }
-        byte[] bytes;
-        try (ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
-            byte[] buf = new byte[8192];
-            int r;
-            while ((r = in.read(buf)) != -1) {
-                bos.write(buf, 0, r);
-            }
-            bytes = bos.toByteArray();
-        }
-        String base64 = java.util.Base64.getEncoder().encodeToString(bytes);
-        String mime = "image/png";
-        String lower = pathFromResources.toLowerCase(Locale.ROOT);
-        if (lower.endsWith(".jpg") || lower.endsWith(".jpeg")) {
-            mime = "image/jpeg";
-        } else if (lower.endsWith(".gif")) {
-            mime = "image/gif";
-        }
-        return "data:" + mime + ";base64," + base64;
     }
 
     private void syncCie10PrincipalFromK() {
