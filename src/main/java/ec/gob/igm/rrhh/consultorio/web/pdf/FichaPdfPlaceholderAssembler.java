@@ -99,17 +99,21 @@ public class FichaPdfPlaceholderAssembler implements Serializable {
 
     private void cargarHActividadLaboral(Map<String, String> rep, FichaState s) {
         for (int i = 0; i < 4; i++) {
-            rep.put("act_lab_centro_" + i, PdfTextUtil.safePdf(s.getSafe.apply(s.actLabCentroTrabajo, i)));
-            rep.put("act_lab_actividad_" + i, PdfTextUtil.safePdf(s.getSafe.apply(s.actLabActividad, i)));
-            rep.put("act_lab_tiempo_" + i, PdfTextUtil.safePdf(s.getSafe.apply(s.actLabTiempo, i)));
+            rep.put("act_lab_centro_" + i, safePdfObject(s.getSafe.apply(s.actLabCentroTrabajo, i)));
+            rep.put("act_lab_actividad_" + i, safePdfObject(s.getSafe.apply(s.actLabActividad, i)));
+            rep.put("act_lab_tiempo_" + i, safePdfObject(s.getSafe.apply(s.actLabTiempo, i)));
             rep.put("act_lab_anterior_" + i, truthy(s.getSafe.apply(s.actLabTrabajoAnterior, i)) ? "X" : "");
             rep.put("act_lab_actual_" + i, truthy(s.getSafe.apply(s.actLabTrabajoActual, i)) ? "X" : "");
             rep.put("iess_si_" + i, truthy(s.getSafe.apply(s.iessSi, i)) ? "X" : "");
             rep.put("iess_no_" + i, truthy(s.getSafe.apply(s.iessNo, i)) ? "X" : "");
             rep.put("iess_fecha_" + i, PdfTextUtil.safeDate(s.toDateParser.apply(s.getSafe.apply(s.iessFecha, i))));
-            rep.put("iess_especificar_" + i, PdfTextUtil.safePdf(s.getSafe.apply(s.iessEspecificar, i)));
-            rep.put("act_lab_obs_" + i, PdfTextUtil.safePdf(s.getSafe.apply(s.actLabObservaciones, i)));
+            rep.put("iess_especificar_" + i, safePdfObject(s.getSafe.apply(s.iessEspecificar, i)));
+            rep.put("act_lab_obs_" + i, safePdfObject(s.getSafe.apply(s.actLabObservaciones, i)));
         }
+    }
+
+    private static String safePdfObject(Object value) {
+        return PdfTextUtil.safePdf(value == null ? null : String.valueOf(value));
     }
 
     private void cargarIActividadesExtra(Map<String, String> rep, List<String> tipoAct, List<?> fechaAct, List<String> descAct,
