@@ -72,6 +72,7 @@ import ec.gob.igm.rrhh.consultorio.web.service.CedulaSearchService;
 import ec.gob.igm.rrhh.consultorio.web.service.Cie10LookupService;
 import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoFormInitializer;
 import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoPdfCoordinatorService;
+import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoPdfUiService;
 import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoWizardService;
 import ec.gob.igm.rrhh.consultorio.web.service.FichaPdfDataMapper;
 import ec.gob.igm.rrhh.consultorio.web.service.FichaPdfMappedData;
@@ -465,6 +466,9 @@ public class CentroMedicoCtrl implements Serializable {
     @EJB
     private transient FichaPdfViewModelBuilder fichaPdfViewModelBuilder;
 
+    @EJB
+    private transient CentroMedicoPdfUiService centroMedicoPdfUiService;
+
     // JSF Lifecycle / Inicialización
     public void preRenderInit() {
         try {
@@ -692,8 +696,8 @@ public class CentroMedicoCtrl implements Serializable {
             CentroMedicoPdfCoordinatorService.Step4Result result = centroMedicoPdfCoordinatorService.regenerarStep4(
                     new CentroMedicoPdfCoordinatorService.RegenerarStep4Command(
                             ficha,
-                            buildPrepareFichaCommand(),
-                            buildPrepareCertificadoCommand()));
+                            centroMedicoPdfUiService.buildPrepareFichaCommand(buildPrepareFichaCommand()),
+                            centroMedicoPdfUiService.buildPrepareCertificadoCommand(buildPrepareCertificadoCommand())));
 
             if (result == null || result.skipped || result.ficha == null) {
                 return;
@@ -1085,10 +1089,14 @@ public class CentroMedicoCtrl implements Serializable {
     // PDF - Ficha Ocupacional
 
     public void prepararVistaPreviaFicha() {
+        onPrepararFichaPdf();
+    }
+
+    public void onPrepararFichaPdf() {
         FacesContext ctx = FacesContext.getCurrentInstance();
 
         try {
-            CentroMedicoPdfCoordinatorService.FichaResult result = centroMedicoPdfCoordinatorService.prepararFicha(
+            CentroMedicoPdfCoordinatorService.FichaResult result = centroMedicoPdfUiService.prepararFicha(
                     buildPrepareFichaCommand());
 
             if (!result.listo) {
@@ -1134,8 +1142,8 @@ public class CentroMedicoCtrl implements Serializable {
         }
     }
 
-    private CentroMedicoPdfCoordinatorService.PrepareFichaCommand buildPrepareFichaCommand() {
-        return new CentroMedicoPdfCoordinatorService.PrepareFichaCommand(
+    private CentroMedicoPdfUiService.PrepareFichaUiCommand buildPrepareFichaCommand() {
+        return new CentroMedicoPdfUiService.PrepareFichaUiCommand(
                 ficha,
                 empleadoSel,
                 personaAux,
@@ -1145,8 +1153,8 @@ public class CentroMedicoCtrl implements Serializable {
                 centroMedicoPdfFacade);
     }
 
-    private CentroMedicoPdfCoordinatorService.PrepareCertificadoCommand buildPrepareCertificadoCommand() {
-        return new CentroMedicoPdfCoordinatorService.PrepareCertificadoCommand(
+    private CentroMedicoPdfUiService.PrepareCertificadoUiCommand buildPrepareCertificadoCommand() {
+        return new CentroMedicoPdfUiService.PrepareCertificadoUiCommand(
                 ficha,
                 this::verificarFichaCompleta,
                 this::construirHtmlDesdePlantillaUnchecked,
@@ -1887,7 +1895,7 @@ public class CentroMedicoCtrl implements Serializable {
                 certificadoListo = false;
                 return;
             }
-            generatePdfPreview();
+            onPrepararCertificadoPdf();
             certificadoListo = true;
             if (ctx != null) {
                 ctx.addMessage(null, new FacesMessage(
@@ -1905,24 +1913,8 @@ public class CentroMedicoCtrl implements Serializable {
         }
     }
 
-    private void generatePdfPreview() {
-        try {
-            String token = centroMedicoPdfFacade.generarDesdeHtml(construirHtmlDesdePlantilla(), "CERT_");
-
-            this.pdfTokenCertificado = token;
-            this.pdfObjectUrl = null;
-        } catch (Exception e) {
-            messageService.handleUnexpected(LOG, "generatePdfPreview", e, activeStep, noPersonaSel, cedulaBusqueda);
-        }
-    }
-
     private void cleanupPdfPreview(FacesContext ctx) {
-        if (ctx == null) {
-            pdfTokenCertificado = null;
-            pdfObjectUrl = null;
-            return;
-        }
-        pdfSessionStore.remove(ctx, pdfTokenCertificado);
+        centroMedicoPdfUiService.cleanupPdfPreview(ctx, pdfSessionStore, pdfTokenCertificado);
         pdfTokenCertificado = null;
         pdfObjectUrl = null;
     }
@@ -1941,6 +1933,10 @@ public class CentroMedicoCtrl implements Serializable {
 
     // PDF - Certificado Médico
     public void prepararVistaPreviaCertificado() {
+        onPrepararCertificadoPdf();
+    }
+
+    public void onPrepararCertificadoPdf() {
         FacesContext ctx = FacesContext.getCurrentInstance();
 
         try {
@@ -1953,7 +1949,7 @@ public class CentroMedicoCtrl implements Serializable {
                 }
             }
 
-            CentroMedicoPdfCoordinatorService.CertificadoResult result = centroMedicoPdfCoordinatorService.prepararCertificado(
+            CentroMedicoPdfCoordinatorService.CertificadoResult result = centroMedicoPdfUiService.prepararCertificado(
                     buildPrepareCertificadoCommand());
 
             certificadoListo = result.listo;
