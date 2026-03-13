@@ -63,6 +63,7 @@ import ec.gob.igm.rrhh.consultorio.service.FichaOcupacionalService;
 import ec.gob.igm.rrhh.consultorio.service.PersonaAuxService;
 import ec.gob.igm.rrhh.consultorio.service.Step1FichaService;
 import ec.gob.igm.rrhh.consultorio.web.facade.CentroMedicoPdfFacade;
+import ec.gob.igm.rrhh.consultorio.web.jsf.CentroMedicoMessageService;
 import ec.gob.igm.rrhh.consultorio.web.audit.CentroMedicoAuditService;
 import ec.gob.igm.rrhh.consultorio.web.pdf.PdfTemplateEngine;
 import ec.gob.igm.rrhh.consultorio.web.pdf.PdfRenderer;
@@ -81,6 +82,7 @@ import ec.gob.igm.rrhh.consultorio.web.service.Step2OrchestratorService.Step2Ris
 import ec.gob.igm.rrhh.consultorio.web.service.Step3OrchestratorService;
 import ec.gob.igm.rrhh.consultorio.web.service.Step3OrchestratorService.Step3SaveCommand;
 import ec.gob.igm.rrhh.consultorio.web.session.PdfSessionStore;
+import ec.gob.igm.rrhh.consultorio.web.util.CentroMedicoCalcUtil;
 import ec.gob.igm.rrhh.consultorio.web.util.SnUtils;
 import ec.gob.igm.rrhh.consultorio.web.validation.FichaCompletaValidator;
 import ec.gob.igm.rrhh.consultorio.web.validation.Step1Validator;
@@ -121,11 +123,6 @@ public class CentroMedicoCtrl implements Serializable {
         throw new BusinessValidationException(message);
     }
 
-    private void handleUnexpected(String action, Throwable t) {
-        LOG.error("Unexpected error during {}. activeStep={}, noPersonaSel={}, cedulaBusqueda={}",
-                action, activeStep, noPersonaSel, cedulaBusqueda, t);
-        error("Ocurrió un error inesperado al " + action + ". Revise el LOG o contacte a soporte.");
-    }
 
     private static final int H_ROWS = 4;
     private static final int CONSUMO_ROWS = 3;
@@ -414,6 +411,12 @@ public class CentroMedicoCtrl implements Serializable {
     private transient CentroMedicoWizardService centroMedicoWizardService;
 
     @Inject
+    private transient CentroMedicoMessageService messageService;
+
+    @Inject
+    private transient CentroMedicoCalcUtil calcUtil;
+
+    @Inject
     private transient CedulaSearchService cedulaSearchService;
 
     @Inject
@@ -556,14 +559,14 @@ public class CentroMedicoCtrl implements Serializable {
 
     public void onFechaNacimientoSelect(SelectEvent e) {
         this.fechaNacimiento = (java.util.Date) e.getObject();
-        this.edad = calcularEdad(this.fechaNacimiento);
+        this.edad = calcUtil.calcularEdad(this.fechaNacimiento);
         FacesContext.getCurrentInstance().addMessage(null,
                 new FacesMessage(FacesMessage.SEVERITY_INFO, "Cálculo de edad",
                         "Edad calculada: " + (edad == null ? "(sin fecha)" : edad + " años")));
     }
 
     public void onFechaNacimientoChange() {
-        this.edad = calcularEdad(this.fechaNacimiento);
+        this.edad = calcUtil.calcularEdad(this.fechaNacimiento);
         FacesContext.getCurrentInstance().addMessage(null,
                 new FacesMessage(FacesMessage.SEVERITY_INFO, "Cálculo de edad",
                         "Edad calculada: " + (edad == null ? "(sin fecha)" : edad + " años")));
@@ -575,7 +578,7 @@ public class CentroMedicoCtrl implements Serializable {
 
     public void setFechaNacimiento(Date f) {
         this.fechaNacimiento = f;
-        this.edad = calcularEdad(f);
+        this.edad = calcUtil.calcularEdad(f);
     }
 
     /**
@@ -600,77 +603,19 @@ public class CentroMedicoCtrl implements Serializable {
      * Metodo que se usa en la vista
      */
     public void calcularEdad() {
-        this.edad = calcularEdad(this.fechaNacimiento);
+        this.edad = calcUtil.calcularEdad(this.fechaNacimiento);
     }
 
-    /**
-     * Recibe una fecha y calcula la edad actual
-     *
-     * @param fechaNacimiento
-     * @return
-     */
-    private Integer calcularEdad(Date fechaNacimiento) {
-        if (fechaNacimiento == null) {
-            return null;
-        }
-
-        Calendar hoy = Calendar.getInstance();
-        Calendar nac = Calendar.getInstance();
-        nac.setTime(fechaNacimiento);
-
-        limpiarHora(hoy);
-        limpiarHora(nac);
-
-        if (nac.after(hoy)) {
-            return null;
-        }
-
-        int years = hoy.get(Calendar.YEAR) - nac.get(Calendar.YEAR);
-
-        int mesHoy = hoy.get(Calendar.MONTH);
-        int mesNac = nac.get(Calendar.MONTH);
-
-        if (mesHoy < mesNac || (mesHoy == mesNac && hoy.get(Calendar.DAY_OF_MONTH) < nac.get(Calendar.DAY_OF_MONTH))) {
-            years--;
-        }
-
-        return years;
-    }
-
-    /**
-     * limpia la hora
-     *
-     * @param cal
-     */
-    private void limpiarHora(Calendar cal) {
-        cal.set(Calendar.HOUR_OF_DAY, 0);
-        cal.set(Calendar.MINUTE, 0);
-        cal.set(Calendar.SECOND, 0);
-        cal.set(Calendar.MILLISECOND, 0);
-    }
-
-    /**
-     * Valida que sea una edad valida mayor a 18 años
-     *
-     * @return
-     */
     public Date getFechaMaximaNacimiento() {
-        Calendar cal = Calendar.getInstance();
-        cal.add(Calendar.YEAR, -18);
-        cal.set(Calendar.HOUR_OF_DAY, 0);
-        cal.set(Calendar.MINUTE, 0);
-        cal.set(Calendar.SECOND, 0);
-        cal.set(Calendar.MILLISECOND, 0);
-        return cal.getTime();
+        return calcUtil.getFechaMaximaNacimiento();
     }
 
     /**
      * Se usa en calculo de la edad para ejercer un trabajo
      */
     public void validarEdadMinima() {
-        if (edad != null && edad < 18) {
-            FacesContext.getCurrentInstance().addMessage(null,
-                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "La edad debe ser ≥ 18 años"));
+        if (!calcUtil.validarEdadMinima(edad)) {
+            messageService.error("La edad debe ser ≥ 18 años");
             fechaNacimiento = null;
             edad = null;
         }
@@ -680,21 +625,13 @@ public class CentroMedicoCtrl implements Serializable {
      * calculo del Indice de masa corporal
      */
     public void recalcularIMC() {
-        if (peso != null && tallaCm != null && tallaCm > 0) {
-            double m = tallaCm / 100.0;
-            this.imc = Math.round((peso / (m * m)) * 100.0) / 100.0;
-        } else {
-            this.imc = null;
-        }
+        this.imc = calcUtil.recalcularIMC(peso, tallaCm);
     }
 
     private boolean isBlank(String s) {
         return s == null || s.trim().isEmpty();
     }
 
-    private void addMsg(FacesMessage.Severity sev, String summary, String detail) {
-        FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(sev, summary, detail));
-    }
 
     private void registrarAuditoria(String accion, String tabla, String campo, String observaciones) {
         s3("registrarAuditoria() accion=" + accion + " tabla=" + tabla + " campo=" + campo);
@@ -731,7 +668,7 @@ public class CentroMedicoCtrl implements Serializable {
             }
 
         } catch (RuntimeException ex) {
-            handleUnexpected("guardarStepActual", ex);
+            messageService.handleUnexpected(LOG, "guardarStepActual", ex, activeStep, noPersonaSel, cedulaBusqueda);
             if (ctx != null) {
                 ctx.validationFailed();
             }
@@ -809,34 +746,13 @@ public class CentroMedicoCtrl implements Serializable {
                 signos,
                 fichaRiesgo != null ? fichaRiesgo.getPuestoTrabajo() : null,
                 fichaRiesgo);
-        addValidationMessages("Step 1", result);
+        messageService.addValidationMessages("Step 1", result);
         return result.isValid();
     }
 
-    private void addValidationMessages(String step, ValidationResult result) {
-        FacesContext ctx = FacesContext.getCurrentInstance();
-        if (ctx == null || result == null || result.isValid()) {
-            return;
-        }
-        for (String error : result.getErrors()) {
-            ctx.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, step, error));
-        }
-    }
 
-    private void warn(String msg) {
-        FacesContext.getCurrentInstance().addMessage(null,
-                new FacesMessage(FacesMessage.SEVERITY_WARN, "Step 1", msg));
-    }
 
-    private void info(String msg) {
-        FacesContext.getCurrentInstance().addMessage(null,
-                new FacesMessage(FacesMessage.SEVERITY_INFO, "Step 1", msg));
-    }
 
-    private void error(String msg) {
-        FacesContext.getCurrentInstance().addMessage(null,
-                new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", msg));
-    }
 
     private boolean esVacio(String s) {
         return s == null || s.trim().isEmpty();
@@ -866,14 +782,14 @@ public class CentroMedicoCtrl implements Serializable {
         FacesContext ctx = FacesContext.getCurrentInstance();
         try {
             saveStep1();
-            info("Step 1 guardado correctamente (BORRADOR).");
+            messageService.info("Step 1 guardado correctamente (BORRADOR).");
         } catch (BusinessValidationException ex) {
-            warn(ex.getMessage());
+            messageService.warn(ex.getMessage());
             if (ctx != null) {
                 ctx.validationFailed();
             }
         } catch (RuntimeException ex) {
-            handleUnexpected("guardarStep1", ex);
+            messageService.handleUnexpected(LOG, "guardarStep1", ex, activeStep, noPersonaSel, cedulaBusqueda);
             if (ctx != null) {
                 ctx.validationFailed();
             }
@@ -959,7 +875,7 @@ public class CentroMedicoCtrl implements Serializable {
         try {
             buscarCedula();
         } catch (RuntimeException ex) {
-            handleUnexpected("onBuscarPorCedulaRh", ex);
+            messageService.handleUnexpected(LOG, "onBuscarPorCedulaRh", ex, activeStep, noPersonaSel, cedulaBusqueda);
             cedulaDialogUiCoordinator.onRhError();
         }
     }
@@ -967,7 +883,7 @@ public class CentroMedicoCtrl implements Serializable {
 
     private boolean validarStep2() {
         ValidationResult result = step2Validator.validate(fichaRiesgo, actividadesLab, medidasPreventivas);
-        addValidationMessages("Step 2", result);
+        messageService.addValidationMessages("Step 2", result);
         return result.isValid();
     }
 
@@ -990,12 +906,12 @@ public class CentroMedicoCtrl implements Serializable {
                         "Riesgos laborales guardados correctamente (encabezado + detalle)."));
             }
         } catch (BusinessValidationException ex) {
-            warn(ex.getMessage());
+            messageService.warn(ex.getMessage());
             if (ctx != null) {
                 ctx.validationFailed();
             }
         } catch (RuntimeException ex) {
-            handleUnexpected("guardarStep2", ex);
+            messageService.handleUnexpected(LOG, "guardarStep2", ex, activeStep, noPersonaSel, cedulaBusqueda);
             if (ctx != null) {
                 ctx.validationFailed();
             }
@@ -1039,7 +955,7 @@ public class CentroMedicoCtrl implements Serializable {
                 s3("validarStep3() FAIL: " + error);
             }
         }
-        addValidationMessages("Step 3", result);
+        messageService.addValidationMessages("Step 3", result);
         s3("validarStep3() FIN -> " + result.isValid());
         return result.isValid();
     }
@@ -1055,12 +971,12 @@ public class CentroMedicoCtrl implements Serializable {
                         FacesMessage.SEVERITY_INFO, "OK", "Step 3 guardado correctamente."));
             }
         } catch (BusinessValidationException ex) {
-            warn(ex.getMessage());
+            messageService.warn(ex.getMessage());
             if (ctx != null) {
                 ctx.validationFailed();
             }
         } catch (RuntimeException ex) {
-            handleUnexpected("guardarStep3", ex);
+            messageService.handleUnexpected(LOG, "guardarStep3", ex, activeStep, noPersonaSel, cedulaBusqueda);
             if (ctx != null) {
                 ctx.validationFailed();
             }
@@ -1967,7 +1883,7 @@ public class CentroMedicoCtrl implements Serializable {
             this.pdfTokenCertificado = token;
             this.pdfObjectUrl = null;
         } catch (Exception e) {
-            handleUnexpected("generatePdfPreview", e);
+            messageService.handleUnexpected(LOG, "generatePdfPreview", e, activeStep, noPersonaSel, cedulaBusqueda);
         }
     }
 
@@ -2757,7 +2673,7 @@ public class CentroMedicoCtrl implements Serializable {
         } catch (CedulaSearchService.CedulaValidationException ex) {
             cedulaDialogUiCoordinator.onValidationWarning(ex.getMessage());
         } catch (RuntimeException ex) {
-            handleUnexpected("buscarCedula", ex);
+            messageService.handleUnexpected(LOG, "buscarCedula", ex, activeStep, noPersonaSel, cedulaBusqueda);
             cedulaDialogUiCoordinator.onSearchError();
         }
     }
