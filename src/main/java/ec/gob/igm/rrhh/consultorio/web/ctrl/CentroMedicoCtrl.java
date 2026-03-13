@@ -69,6 +69,7 @@ import ec.gob.igm.rrhh.consultorio.web.pdf.PdfTemplateEngine;
 import ec.gob.igm.rrhh.consultorio.web.pdf.PdfRenderer;
 import ec.gob.igm.rrhh.consultorio.web.service.CedulaDialogUiCoordinator;
 import ec.gob.igm.rrhh.consultorio.web.service.CedulaSearchService;
+import ec.gob.igm.rrhh.consultorio.web.service.Cie10LookupService;
 import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoFormInitializer;
 import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoPdfCoordinatorService;
 import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoWizardService;
@@ -428,6 +429,9 @@ public class CentroMedicoCtrl implements Serializable {
     @Inject
     private transient ControllerActionTemplate controllerActionTemplate;
 
+    @EJB
+    private transient Cie10LookupService cie10LookupService;
+
     @Inject
     private transient CentroMedicoCalcUtil calcUtil;
 
@@ -549,39 +553,15 @@ public class CentroMedicoCtrl implements Serializable {
 
     public void onCie10BlurCodigo(int index) {
         ConsultaDiagnostico diag = ensureDiag(index);
-
-        String codigo = diag.getCodigo();
-        if (codigo == null || codigo.trim().isEmpty()) {
-            diag.setDescripcion(null);
-            diag.setCie10(null);
-            return;
-        }
-
-        Cie10 cie = cie10Service.buscarPorCodigo(codigo.trim());
-        if (cie != null) {
-            diag.setDescripcion(cie.getDescripcion());
-            diag.setCie10(cie);
-        } else {
-            diag.setDescripcion(null);
-            diag.setCie10(null);
-        }
+        cie10LookupService.completarDiagnosticoPorCodigo(diag);
     }
 
     public void onCie10FilaSelect(int idx) {
-        if (listaDiag == null) {
-            return;
-        }
-        if (idx < 0 || idx >= listaDiag.size()) {
+        if (listaDiag == null || idx < 0 || idx >= listaDiag.size()) {
             return;
         }
 
-        ConsultaDiagnostico d = listaDiag.get(idx);
-        if (d == null || d.getCie10() == null) {
-            return;
-        }
-
-        d.setCodigo(d.getCie10().getCodigo());
-        d.setDescripcion(d.getCie10().getDescripcion());
+        cie10LookupService.sincronizarFilaSeleccionada(listaDiag.get(idx));
     }
 
     public void onFechaNacimientoSelect(SelectEvent e) {
@@ -2267,227 +2247,53 @@ public class CentroMedicoCtrl implements Serializable {
     }
 
     public List<Cie10> completarCie10(String query) {
-        return cie10Service.buscarPorCodigoODescripcion(query, 20);
+        return cie10LookupService.completarPorCodigoODescripcion(query, 20);
     }
 
     public List<Cie10> completarCie10PorCodigo(String query) {
-        if (query == null) {
-            return new ArrayList<Cie10>();
-        }
-        String q = query.trim().toUpperCase();
-        if (q.isEmpty()) {
-            return new ArrayList<Cie10>();
-        }
-
-        List<Cie10> lista = cie10Service.buscarJerarquiaPorTerm(q);
-
-        List<Cie10> out = new ArrayList<Cie10>();
-        for (Cie10 c : lista) {
-            if (c != null && c.getCodigo() != null
-                    && c.getCodigo().toUpperCase().startsWith(q)) {
-                out.add(c);
-            }
-        }
-        return out;
+        return cie10LookupService.completarPorCodigo(query);
     }
 
     public List<Cie10> completarCie10PorDescripcion(String query) {
-        if (query == null) {
-            return new ArrayList<Cie10>();
-        }
-        String q = query.trim();
-        if (q.isEmpty()) {
-            return new ArrayList<Cie10>();
-        }
-
-        return cie10Service.buscarPorDescripcionLike(q, 20);
+        return cie10LookupService.completarPorDescripcion(query, 20);
     }
 
     public void onCie10CodigoSelect(SelectEvent event) {
         String codigo = (String) event.getObject();
         this.codCie10Ppal = codigo;
-
-        if (codigo != null && !codigo.trim().isEmpty()) {
-            Cie10 cie = cie10Service.buscarPorCodigo(codigo.trim());
-            if (cie != null) {
-                this.descCie10Ppal = cie.getDescripcion();
-            } else {
-                this.descCie10Ppal = null;
-            }
-        } else {
-            this.descCie10Ppal = null;
-        }
+        this.descCie10Ppal = cie10LookupService.buscarDescripcionPorCodigo(codigo);
     }
 
     public void onCie10CodigoBlur() {
-        if (this.codCie10Ppal != null && !this.codCie10Ppal.trim().isEmpty()) {
-            Cie10 cie = cie10Service.buscarPorCodigo(this.codCie10Ppal.trim());
-            if (cie != null) {
-                this.descCie10Ppal = cie.getDescripcion();
-            } else {
-                this.descCie10Ppal = null;
-            }
-        } else {
-            this.descCie10Ppal = null;
-        }
+        this.descCie10Ppal = cie10LookupService.buscarDescripcionPorCodigo(this.codCie10Ppal);
     }
 
     public void onCie10DescripcionSelect(SelectEvent event) {
         String descripcion = (String) event.getObject();
         this.descCie10Ppal = descripcion;
-
-        if (descripcion != null && !descripcion.trim().isEmpty()) {
-            Cie10 cie = cie10Service.buscarPrimeroPorDescripcion(descripcion);
-            if (cie != null) {
-                this.codCie10Ppal = cie.getCodigo();
-            } else {
-                this.codCie10Ppal = null;
-            }
-        } else {
-            this.codCie10Ppal = null;
-        }
+        this.codCie10Ppal = cie10LookupService.buscarCodigoPorDescripcion(descripcion);
     }
 
     public void onCie10DescripcionBlur() {
-        if (this.descCie10Ppal != null && !this.descCie10Ppal.trim().isEmpty()) {
-            Cie10 cie = cie10Service.buscarPrimeroPorDescripcion(this.descCie10Ppal.trim());
-            if (cie != null) {
-                this.codCie10Ppal = cie.getCodigo();
-            } else {
-                this.codCie10Ppal = null;
-            }
-        } else {
-            this.codCie10Ppal = null;
-        }
+        this.codCie10Ppal = cie10LookupService.buscarCodigoPorDescripcion(this.descCie10Ppal);
     }
 
     private Cie10 inferCie10PrincipalFromListaK() {
-        if (listaDiag == null || listaDiag.isEmpty()) {
-            return null;
-        }
-
-        ConsultaDiagnostico best = null;
-
-        for (ConsultaDiagnostico r : listaDiag) {
-            if (r == null) {
-                continue;
-            }
-            String cod = (r.getCodigo() != null) ? r.getCodigo().trim() : "";
-            if (cod.isEmpty()) {
-                continue;
-            }
-
-            if ("D".equals(r.getTipoDiag())) {
-                best = r;
-                break;
-            }
-            if (best == null) {
-                best = r;
-            }
-        }
-
-        if (best == null || best.getCodigo() == null || best.getCodigo().trim().isEmpty()) {
-            return null;
-        }
-
-        return cie10Service.buscarPorCodigo(best.getCodigo().trim());
+        return cie10LookupService.inferirPrincipalDesdeLista(listaDiag);
     }
 
-    private Cie10 pickBestByDescripcion(List<Cie10> list, String input) {
-        if (list == null || list.isEmpty() || input == null) {
-            return null;
-        }
-
-        final String needle = norm(input);
-
-        Cie10 best = null;
-        int bestScore = Integer.MAX_VALUE;
-        int bestLen = Integer.MAX_VALUE;
-
-        for (Cie10 c : list) {
-            if (c == null || c.getDescripcion() == null) {
-                continue;
-            }
-
-            String cand = norm(c.getDescripcion());
-            int score;
-
-            if (cand.equals(needle)) {
-                score = 0;
-            } else if (cand.startsWith(needle)) {
-                score = 1;
-            } else if (cand.contains(needle)) {
-                score = 2;
-            } else {
-                score = 9;
-            }
-            int len = cand.length();
-
-            if (best == null || score < bestScore || (score == bestScore && len < bestLen)) {
-                best = c;
-                bestScore = score;
-                bestLen = len;
-            }
-        }
-
-        if (bestScore >= 9) {
-            return null;
-        }
-
-        return best;
-    }
-
-    private String norm(String s) {
-
-        return s.trim().toLowerCase()
-                .replaceAll("\\s+", " ");
-    }
 
     public List<String> completarCie10FilaPorCodigo(String query) {
         try {
             FacesContext fc = FacesContext.getCurrentInstance();
             String viewId = (fc != null && fc.getViewRoot() != null) ? fc.getViewRoot().getViewId() : "null";
-            LOG.info(">>> [AC-K-COD] complete ENTER query=[" + query + "] viewId=" + viewId);
+            LOG.info(">>> [AC-K-COD] complete ENTER query=[{}] viewId={}", query, viewId);
 
-            if (query == null) {
-                LOG.info("<<< [AC-K-COD] query=null => return empty");
-                return new ArrayList<>();
-            }
+            List<String> out = cie10LookupService.completarFilaPorCodigo(query);
 
-            String qRaw = query.trim().toUpperCase();
-            String q = qRaw.replaceAll("[^A-Z0-9]", "");
-            if (q.isEmpty() && qRaw.isEmpty()) {
-                LOG.info("<<< [AC-K-COD] q empty after normalize => return empty");
-                return new ArrayList<>();
-            }
-
-            List<String> out = new ArrayList<>();
-
-            List<Cie10> lista = cie10Service.buscarJerarquiaPorTerm(q);
-            LOG.debug("... [AC-K-COD] service.buscarJerarquiaPorTerm(q={}) size={}", q,
-                    (lista == null ? "null" : lista.size()));
-
-            agregarCoincidenciasCodigo(out, lista, q, qRaw);
-
-            // Fallback: hay catálogos con códigos no normalizados (espacios/puntos).
-            // Si no hubo resultados por prefijo, hacemos búsqueda tolerante por código.
-            if (out.isEmpty()) {
-                List<Cie10> alterna = cie10Service.buscarPorCodigoAproximado(q, 20);
-                LOG.debug("... [AC-K-COD] fallback buscarPorCodigoAproximado(q={}) size={}", q,
-                        (alterna == null ? "null" : alterna.size()));
-                agregarCoincidenciasCodigo(out, alterna, q, qRaw);
-            }
-
-            // Último fallback: búsqueda general por término (código/descr.).
-            if (out.isEmpty()) {
-                List<Cie10> general = cie10Service.buscarPorTermino(q, 20);
-                LOG.debug("... [AC-K-COD] fallback buscarPorTermino(q={}) size={}", q,
-                        (general == null ? "null" : general.size()));
-                agregarCoincidenciasCodigo(out, general, q, qRaw);
-            }
-
-            LOG.info("<<< [AC-K-COD] RETURN out.size=" + out.size()
-                    + (out.isEmpty() ? "" : (" first=[" + out.get(0) + "]")));
+            LOG.info("<<< [AC-K-COD] RETURN out.size={}{}",
+                    out.size(),
+                    out.isEmpty() ? "" : " first=[" + out.get(0) + "]");
             return out;
 
         } catch (Exception e) {
@@ -2496,76 +2302,22 @@ public class CentroMedicoCtrl implements Serializable {
         }
     }
 
-    private void agregarCoincidenciasCodigo(List<String> out, List<Cie10> lista, String qCodigo, String qTexto) {
-        if (lista == null || out == null) {
-            return;
-        }
-
-        String qCodigoNorm = (qCodigo == null) ? "" : qCodigo.trim();
-        String qTextoNorm = (qTexto == null) ? "" : qTexto.trim().toUpperCase();
-
-        for (Cie10 c : lista) {
-            if (c == null || c.getCodigo() == null) {
-                continue;
-            }
-
-            String codigo = c.getCodigo().trim();
-            if (codigo.isEmpty()) {
-                continue;
-            }
-
-            String codNorm = codigo.toUpperCase().replaceAll("[^A-Z0-9]", "");
-            boolean coincideCodigo = !qCodigoNorm.isEmpty() && codNorm.contains(qCodigoNorm);
-            String desc = c.getDescripcion();
-            boolean coincideDescripcion = !qTextoNorm.isEmpty()
-                    && desc != null
-                    && desc.toUpperCase().contains(qTextoNorm);
-
-            if (!coincideCodigo && !coincideDescripcion) {
-                continue;
-            }
-
-            if (!out.contains(codigo)) {
-                out.add(codigo);
-            }
-
-            if (out.size() >= 20) {
-                return;
-            }
-        }
-    }
-
     public List<String> completarCie10FilaPorDescripcion(String query) {
         try {
             FacesContext fc = FacesContext.getCurrentInstance();
             String viewId = (fc != null && fc.getViewRoot() != null) ? fc.getViewRoot().getViewId() : "null";
-            LOG.info(">>> [AC-K-DESC] complete ENTER query=[" + query + "] viewId=" + viewId);
+            LOG.info(">>> [AC-K-DESC] complete ENTER query=[{}] viewId={}", query, viewId);
 
-            List<String> out = new ArrayList<String>();
-            if (query == null || query.trim().isEmpty()) {
-                LOG.info("<<< [AC-K-DESC] query empty => return empty");
-                return out;
-            }
+            List<String> out = cie10LookupService.completarFilaPorDescripcion(query, 20);
 
-            List<Cie10> lista = cie10Service.buscarPorDescripcionLike(query, 20);
-            LOG.debug("... [AC-K-DESC] service.buscarPorDescripcionLike size={}",
-                    (lista == null ? "null" : lista.size()));
-
-            if (lista != null) {
-                for (Cie10 c : lista) {
-                    if (c != null && c.getDescripcion() != null) {
-                        out.add(c.getDescripcion());
-                    }
-                }
-            }
-
-            LOG.info("<<< [AC-K-DESC] RETURN out.size=" + out.size()
-                    + (out.isEmpty() ? "" : (" first=[" + out.get(0) + "]")));
+            LOG.info("<<< [AC-K-DESC] RETURN out.size={}{}",
+                    out.size(),
+                    out.isEmpty() ? "" : " first=[" + out.get(0) + "]");
             return out;
 
         } catch (Exception e) {
             LOG.error("!!! [AC-K-DESC] ERROR {} : {}", e.getClass().getName(), e.getMessage(), e);
-            return new ArrayList<String>();
+            return new ArrayList<>();
         }
     }
 
@@ -4143,7 +3895,7 @@ public class CentroMedicoCtrl implements Serializable {
             List<Cie10> candidatos = cie10Service.buscarPorDescripcionLike(desc, 20);
             LOG.info("... [AC-K-DESC] candidatos.size=" + (candidatos == null ? "null" : candidatos.size()));
             if (candidatos != null && !candidatos.isEmpty()) {
-                cie = pickBestByDescripcion(candidatos, desc);
+                cie = cie10LookupService.buscarMejorCoincidenciaPorDescripcion(candidatos, desc);
             }
         } catch (RuntimeException e) {
             LOG.error("!!! [AC-K-DESC] error: {}", e.getMessage(), e);
