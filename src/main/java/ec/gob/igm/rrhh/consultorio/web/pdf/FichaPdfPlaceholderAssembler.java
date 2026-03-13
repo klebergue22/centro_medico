@@ -112,8 +112,8 @@ public class FichaPdfPlaceholderAssembler implements Serializable {
         }
     }
 
-    private void cargarIActividadesExtra(Map<String, String> rep, String[] tipoAct, String[] fechaAct, String[] descAct,
-            Function<String, java.util.Date> toDateParser) {
+    private void cargarIActividadesExtra(Map<String, String> rep, List<String> tipoAct, List<?> fechaAct, List<String> descAct,
+            Function<Object, java.util.Date> toDateParser) {
         for (int i = 0; i < 3; i++) {
             rep.put("tipo_act_" + i, PdfTextUtil.safePdf(getSafe(tipoAct, i)));
             rep.put("fecha_act_" + i, PdfTextUtil.safeDate(toDateParser.apply(getSafe(fechaAct, i))));
@@ -121,8 +121,8 @@ public class FichaPdfPlaceholderAssembler implements Serializable {
         }
     }
 
-    private void cargarJExamenes(Map<String, String> rep, String[] examNombre, String[] examFecha, String[] examResultado,
-            String obsJ, Function<String, java.util.Date> toDateParser) {
+    private void cargarJExamenes(Map<String, String> rep, List<String> examNombre, List<?> examFecha, List<String> examResultado,
+            String obsJ, Function<Object, java.util.Date> toDateParser) {
         for (int i = 0; i < 5; i++) {
             rep.put("exam_nombre_" + i, PdfTextUtil.safePdf(getSafe(examNombre, i)));
             rep.put("exam_fecha_" + i, PdfTextUtil.safeDate(toDateParser.apply(getSafe(examFecha, i))));
@@ -212,18 +212,18 @@ public class FichaPdfPlaceholderAssembler implements Serializable {
         return null;
     }
 
-    private static String getSafe(String[] arr, int i) {
-        if (arr == null || i < 0 || i >= arr.length) {
-            return "";
+    private static <T> T getSafe(List<T> list, int i) {
+        if (list == null || i < 0 || i >= list.size()) {
+            return null;
         }
-        return arr[i];
+        return list.get(i);
     }
 
-    private static boolean truthy(String v) {
+    private static boolean truthy(Object v) {
         if (v == null) {
             return false;
         }
-        String s = v.trim().toUpperCase();
+        String s = String.valueOf(v).trim().toUpperCase();
         return "S".equals(s) || "SI".equals(s) || "TRUE".equals(s) || "1".equals(s) || "X".equals(s);
     }
 
@@ -251,22 +251,22 @@ public class FichaPdfPlaceholderAssembler implements Serializable {
         public Map<String, Boolean> riesgos;
         public List<String> actividadesLab;
         public List<String> medidasPreventivas;
-        public String[] actLabCentroTrabajo;
-        public String[] actLabActividad;
-        public String[] actLabTiempo;
-        public String[] actLabTrabajoAnterior;
-        public String[] actLabTrabajoActual;
-        public String[] iessSi;
-        public String[] iessNo;
-        public String[] iessFecha;
-        public String[] iessEspecificar;
-        public String[] actLabObservaciones;
-        public String[] tipoAct;
-        public String[] fechaAct;
-        public String[] descAct;
-        public String[] examNombre;
-        public String[] examFecha;
-        public String[] examResultado;
+        public List<String> actLabCentroTrabajo;
+        public List<String> actLabActividad;
+        public List<String> actLabTiempo;
+        public List<Boolean> actLabTrabajoAnterior;
+        public List<Boolean> actLabTrabajoActual;
+        public List<Boolean> iessSi;
+        public List<Boolean> iessNo;
+        public List<?> iessFecha;
+        public List<String> iessEspecificar;
+        public List<String> actLabObservaciones;
+        public List<String> tipoAct;
+        public List<?> fechaAct;
+        public List<String> descAct;
+        public List<String> examNombre;
+        public List<?> examFecha;
+        public List<String> examResultado;
         public String obsJ;
         public List<ConsultaDiagnostico> listaDiag;
         public String aptitudSel;
@@ -278,7 +278,7 @@ public class FichaPdfPlaceholderAssembler implements Serializable {
         public String medicoNombre;
         public String medicoCodigo;
         public Map<String, String> otrosRiesgos;
-        public BiFunction<String[], Integer, String> getSafe;
-        public Function<String, java.util.Date> toDateParser;
+        public BiFunction<List<?>, Integer, Object> getSafe;
+        public Function<Object, java.util.Date> toDateParser;
     }
 }
