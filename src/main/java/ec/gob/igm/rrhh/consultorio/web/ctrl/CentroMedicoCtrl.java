@@ -664,29 +664,29 @@ public class CentroMedicoCtrl implements Serializable {
      */
     public void guardarStepActual() {
         LOG.info(">>> ENTRO A guardarStepActual, step={}", activeStep);
+        controllerActionTemplate.executeWithResult(
+                "guardarStepActual",
+                () -> centroMedicoWizardService.guardarStepActual(
+                        activeStep,
+                        this::guardarStep1,
+                        this::guardarStep2,
+                        this::guardarStep3,
+                        this::onEnterStep4AutoRegenerar),
+                this::onGuardarStepActualSuccess,
+                LOG,
+                activeStep,
+                noPersonaSel,
+                cedulaBusqueda);
+    }
+
+    private void onGuardarStepActualSuccess(String next) {
         FacesContext ctx = FacesContext.getCurrentInstance();
-
-        try {
-            final String next = centroMedicoWizardService.guardarStepActual(
-                    activeStep,
-                    this::guardarStep1,
-                    this::guardarStep2,
-                    this::guardarStep3,
-                    this::onEnterStep4AutoRegenerar);
-
-            if (ctx != null && !ctx.isValidationFailed() && next != null) {
-                activeStep = next;
-
-                if ("step4".equals(next)) {
-                    PrimeFaces.current().ajax().update("@([id$=wdzFicha])");
-                }
-            }
-
-        } catch (RuntimeException ex) {
-            messageService.handleUnexpected(LOG, "guardarStepActual", ex, activeStep, noPersonaSel, cedulaBusqueda);
-            if (ctx != null) {
-                ctx.validationFailed();
-            }
+        if (ctx == null || ctx.isValidationFailed() || next == null) {
+            return;
+        }
+        activeStep = next;
+        if ("step4".equals(next)) {
+            PrimeFaces.current().ajax().update("@([id$=wdzFicha])");
         }
     }
 
@@ -1081,53 +1081,43 @@ public class CentroMedicoCtrl implements Serializable {
     }
 
     public void onPrepararFichaPdf() {
+        controllerActionTemplate.executeWithResult(
+                "onPrepararFichaPdf",
+                () -> centroMedicoPdfWorkflowService.onPrepararFichaPdf(
+                        new CentroMedicoPdfWorkflowService.PrepareFichaFlowCommand(buildPrepareFichaCommand())),
+                this::onPrepararFichaPdfSuccess,
+                LOG,
+                activeStep,
+                noPersonaSel,
+                cedulaBusqueda);
+    }
+
+    private void onPrepararFichaPdfSuccess(CentroMedicoPdfWorkflowService.FichaFlowResult result) {
         FacesContext ctx = FacesContext.getCurrentInstance();
-
-        try {
-            CentroMedicoPdfWorkflowService.FichaFlowResult result = centroMedicoPdfWorkflowService.onPrepararFichaPdf(
-                    new CentroMedicoPdfWorkflowService.PrepareFichaFlowCommand(buildPrepareFichaCommand()));
-
-            if (!result.listo) {
-                StringBuilder sb = new StringBuilder();
-                for (String error : result.errores) {
-                    sb.append("- ").append(error).append("\n");
-                }
-                ctx.addMessage(null,
-                        new FacesMessage(FacesMessage.SEVERITY_ERROR,
-                                "Validación antes de generar la ficha",
-                                sb.toString()));
-                fichaPdfListo = false;
-                return;
-            }
-
-            ficha = result.ficha;
-            this.pdfTokenFicha = result.token;
-            this.fichaPdfListo = true;
-
-            this.activeStep = "step4";
-            this.mostrarDlgCedula = false;
-
-            ctx.addMessage(null, new FacesMessage(
-                    FacesMessage.SEVERITY_INFO,
-                    "PDF Ficha listo",
-                    "Se generó la ficha para vista previa y descarga."
-            ));
-
-            PrimeFaces.current().ajax().addCallbackParam("fichaListo", fichaPdfListo);
-            PrimeFaces.current().ajax().update(":msgs", "@([id$=wdzFicha])");
-
-        } catch (Exception ex) {
-            this.fichaPdfListo = false;
-            this.pdfTokenFicha = null;
-
-            LOG.error("Error generando PDF FICHA", ex);
-
-            ctx.addMessage(null, new FacesMessage(
-                    FacesMessage.SEVERITY_ERROR,
-                    "Error",
-                    "No se pudo generar el PDF de la ficha"
-            ));
+        if (ctx == null || result == null) {
+            return;
         }
+        if (!result.listo) {
+            showValidationMessage(ctx, "Validación antes de generar la ficha", result.errores);
+            fichaPdfListo = false;
+            pdfTokenFicha = null;
+            return;
+        }
+
+        ficha = result.ficha;
+        pdfTokenFicha = result.token;
+        fichaPdfListo = true;
+        activeStep = "step4";
+        mostrarDlgCedula = false;
+
+        ctx.addMessage(null, new FacesMessage(
+                FacesMessage.SEVERITY_INFO,
+                "PDF Ficha listo",
+                "Se generó la ficha para vista previa y descarga."
+        ));
+
+        PrimeFaces.current().ajax().addCallbackParam("fichaListo", fichaPdfListo);
+        PrimeFaces.current().ajax().update(":msgs", "@([id$=wdzFicha])");
     }
 
     private CentroMedicoPdfWorkflowService.PrepareFichaCommandData buildPrepareFichaCommand() {
@@ -1486,48 +1476,53 @@ public class CentroMedicoCtrl implements Serializable {
     }
 
     public void prepararVistaPrevia() {
+        controllerActionTemplate.executeWithResult(
+                "prepararVistaPrevia",
+                () -> centroMedicoPdfWorkflowService.prepararVistaPrevia(
+                        new CentroMedicoPdfWorkflowService.PreparePreviewFlowCommand(
+                                fichaPdfListo,
+                                pdfTokenFicha,
+                                this::verificarFichaCompleta,
+                                buildPrepareFichaCommand(),
+                                buildPrepareCertificadoCommand())),
+                this::onPrepararVistaPreviaSuccess,
+                LOG,
+                activeStep,
+                noPersonaSel,
+                cedulaBusqueda);
+    }
+
+    private void onPrepararVistaPreviaSuccess(CentroMedicoPdfWorkflowService.PreviewFlowResult result) {
         FacesContext ctx = FacesContext.getCurrentInstance();
-        try {
-            CentroMedicoPdfWorkflowService.PreviewFlowResult result = centroMedicoPdfWorkflowService.prepararVistaPrevia(
-                    new CentroMedicoPdfWorkflowService.PreparePreviewFlowCommand(
-                            fichaPdfListo,
-                            pdfTokenFicha,
-                            this::verificarFichaCompleta,
-                            buildPrepareFichaCommand(),
-                            buildPrepareCertificadoCommand()));
+        if (result == null) {
+            return;
+        }
 
-            if (result.fichaResult != null && result.fichaResult.listo) {
-                ficha = result.fichaResult.ficha;
-                fichaPdfListo = true;
-                pdfTokenFicha = result.fichaResult.token;
-            }
+        if (result.fichaResult != null && result.fichaResult.listo) {
+            ficha = result.fichaResult.ficha;
+            fichaPdfListo = true;
+            pdfTokenFicha = result.fichaResult.token;
+        }
 
-            if (!result.listo) {
-                certificadoListo = false;
-                return;
-            }
-
-            pdfTokenCertificado = result.certificadoToken;
-            certificadoListo = true;
-            if (ctx != null) {
-                ctx.addMessage(null, new FacesMessage(
-                        FacesMessage.SEVERITY_INFO, "PDF listo",
-                        "Se generó el certificado para vista previa y descarga."));
-            }
-        } catch (RuntimeException ex) {
+        if (!result.listo) {
             certificadoListo = false;
             cleanupPdfPreview(ctx);
-            if (ctx != null) {
-                ctx.addMessage(null, new FacesMessage(
-                        FacesMessage.SEVERITY_ERROR, "Error", "No se pudo generar el PDF"));
-            }
-            LOG.error("Unexpected error while preparing PDF preview.", ex);
+            return;
+        }
+
+        pdfTokenCertificado = result.certificadoToken;
+        certificadoListo = true;
+        if (ctx != null) {
+            ctx.addMessage(null, new FacesMessage(
+                    FacesMessage.SEVERITY_INFO, "PDF listo",
+                    "Se generó el certificado para vista previa y descarga."));
         }
     }
 
     private void cleanupPdfPreview(FacesContext ctx) {
         centroMedicoPdfWorkflowService.cleanupPdfPreview(
                 new CentroMedicoPdfWorkflowService.CleanupPdfPreviewCommand(ctx, pdfSessionStore, pdfTokenCertificado));
+        certificadoListo = false;
         pdfTokenCertificado = null;
         pdfObjectUrl = null;
     }
@@ -1538,6 +1533,10 @@ public class CentroMedicoCtrl implements Serializable {
                         FacesContext.getCurrentInstance(),
                         pdfSessionStore,
                         pdfTokenCertificado));
+        cleanupPdfPreviewState();
+    }
+
+    private void cleanupPdfPreviewState() {
         certificadoListo = false;
         pdfTokenCertificado = null;
         pdfObjectUrl = null;
@@ -1549,62 +1548,65 @@ public class CentroMedicoCtrl implements Serializable {
     }
 
     public void onPrepararCertificadoPdf() {
+        controllerActionTemplate.executeWithResult(
+                "onPrepararCertificadoPdf",
+                () -> centroMedicoPdfWorkflowService.onPrepararCertificadoPdf(
+                        new CentroMedicoPdfWorkflowService.PrepareCertificadoFlowCommand(
+                                fichaPdfListo,
+                                pdfTokenFicha,
+                                buildPrepareFichaCommand(),
+                                buildPrepareCertificadoCommand())),
+                this::onPrepararCertificadoPdfSuccess,
+                LOG,
+                activeStep,
+                noPersonaSel,
+                cedulaBusqueda);
+    }
+
+    private void onPrepararCertificadoPdfSuccess(CentroMedicoPdfWorkflowService.CertificadoFlowResult result) {
         FacesContext ctx = FacesContext.getCurrentInstance();
+        if (result == null) {
+            return;
+        }
 
-        try {
-            CentroMedicoPdfWorkflowService.CertificadoFlowResult result = centroMedicoPdfWorkflowService.onPrepararCertificadoPdf(
-                    new CentroMedicoPdfWorkflowService.PrepareCertificadoFlowCommand(
-                            fichaPdfListo,
-                            pdfTokenFicha,
-                            buildPrepareFichaCommand(),
-                            buildPrepareCertificadoCommand()));
+        if (result.fichaResult != null && result.fichaResult.listo) {
+            ficha = result.fichaResult.ficha;
+            fichaPdfListo = true;
+            pdfTokenFicha = result.fichaResult.token;
+        }
 
-            if (result.fichaResult != null && result.fichaResult.listo) {
-                ficha = result.fichaResult.ficha;
-                fichaPdfListo = true;
-                pdfTokenFicha = result.fichaResult.token;
-            }
-
-            certificadoListo = result.listo;
-            this.pdfTokenCertificado = result.token;
-
-            if (!certificadoListo) {
-                if (!result.errores.isEmpty() && ctx != null) {
-                    StringBuilder sb = new StringBuilder();
-                    for (String error : result.errores) {
-                        sb.append("- ").append(error).append("\n");
-                    }
-                    ctx.addMessage(null,
-                            new FacesMessage(FacesMessage.SEVERITY_ERROR,
-                                    "Validación antes de generar el certificado",
-                                    sb.toString()));
-                }
-                return;
-            }
-
-            this.activeStep = "step4";
-            this.mostrarDlgCedula = false;
-
-            if (ctx != null) {
-                ctx.addMessage(null, new FacesMessage(
-                        FacesMessage.SEVERITY_INFO,
-                        "PDF Certificado listo",
-                        "Se generó el certificado para vista previa y descarga."
-                ));
-            }
-
-        } catch (RuntimeException ex) {
-            certificadoListo = false;
+        if (!result.listo) {
             cleanupPdfPreview(ctx);
             if (ctx != null) {
-                ctx.addMessage(null, new FacesMessage(
-                        FacesMessage.SEVERITY_ERROR,
-                        "Error",
-                        "No se pudo generar el PDF del certificado"
-                ));
+                showValidationMessage(ctx, "Validación antes de generar el certificado", result.errores);
             }
-            LOG.error("Error generando PDF CERTIFICADO", ex);
+            return;
         }
+
+        certificadoListo = true;
+        pdfTokenCertificado = result.token;
+
+        activeStep = "step4";
+        mostrarDlgCedula = false;
+
+        if (ctx != null) {
+            ctx.addMessage(null, new FacesMessage(
+                    FacesMessage.SEVERITY_INFO,
+                    "PDF Certificado listo",
+                    "Se generó el certificado para vista previa y descarga."
+            ));
+        }
+    }
+
+    private void showValidationMessage(FacesContext ctx, String summary, List<String> errors) {
+        if (ctx == null || errors == null || errors.isEmpty()) {
+            return;
+        }
+        StringBuilder sb = new StringBuilder();
+        for (String error : errors) {
+            sb.append("- ").append(error).append("\n");
+        }
+        ctx.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, summary, sb.toString()));
     }
 
     private String construirHtmlDesdePlantilla() throws IOException {
