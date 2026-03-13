@@ -64,7 +64,6 @@ import ec.gob.igm.rrhh.consultorio.web.mapper.Step3CommandAssembler;
 import ec.gob.igm.rrhh.consultorio.web.audit.CentroMedicoAuditService;
 import ec.gob.igm.rrhh.consultorio.web.pdf.FichaPdfContextAssembler;
 import ec.gob.igm.rrhh.consultorio.web.pdf.FichaPdfPlaceholderAssembler;
-import ec.gob.igm.rrhh.consultorio.web.pdf.FichaPdfPlaceholderAssembler.FichaState;
 import ec.gob.igm.rrhh.consultorio.web.pdf.FichaPdfTemplateService;
 import ec.gob.igm.rrhh.consultorio.web.pdf.CertificadoPdfTemplateService;
 import ec.gob.igm.rrhh.consultorio.web.pdf.PdfResourceResolver;
@@ -76,12 +75,12 @@ import ec.gob.igm.rrhh.consultorio.web.service.Cie10LookupService;
 import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoFormInitializer;
 import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoFormStateService;
 import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoPdfWorkflowService;
+import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoPdfFacadeService;
 import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoWizardService;
 import ec.gob.igm.rrhh.consultorio.web.service.FichaPdfDataMapper;
 import ec.gob.igm.rrhh.consultorio.web.service.FichaPdfMappedData;
 import ec.gob.igm.rrhh.consultorio.web.service.FichaPdfPlaceholderBuilder;
 import ec.gob.igm.rrhh.consultorio.web.service.FichaPdfViewModelBuilder;
-import ec.gob.igm.rrhh.consultorio.web.service.FichaPdfViewModelBuilder.FichaPdfViewModelContext;
 import ec.gob.igm.rrhh.consultorio.web.service.PacienteUiFlowCoordinator;
 import ec.gob.igm.rrhh.consultorio.web.service.PersonaAuxFlowService;
 import ec.gob.igm.rrhh.consultorio.web.service.Step2OrchestratorService;
@@ -488,6 +487,9 @@ public class CentroMedicoCtrl implements Serializable {
 
     @EJB
     private transient CentroMedicoPdfWorkflowService centroMedicoPdfWorkflowService;
+
+    @EJB
+    private transient CentroMedicoPdfFacadeService centroMedicoPdfFacadeService;
 
     // JSF Lifecycle / Inicialización
     public void preRenderInit() {
@@ -1097,27 +1099,25 @@ public class CentroMedicoCtrl implements Serializable {
     }
 
     private CentroMedicoPdfWorkflowService.PrepareFichaCommandData buildPrepareFichaCommand() {
-        return new CentroMedicoPdfWorkflowService.PrepareFichaCommandData(
-                ficha,
-                empleadoSel,
-                personaAux,
-                permitirIngresoManual,
-                this::asegurarPersonaAuxPersistida,
-                this::construirHtmlFichaDesdePlantilla,
-                centroMedicoPdfFacade);
+        CentroMedicoPdfFacadeService.BuildPrepareFichaCommand cmd = new CentroMedicoPdfFacadeService.BuildPrepareFichaCommand();
+        cmd.ficha = ficha;
+        cmd.empleadoSel = empleadoSel;
+        cmd.personaAux = personaAux;
+        cmd.permitirIngresoManual = permitirIngresoManual;
+        cmd.asegurarPersonaAuxPersistida = this::asegurarPersonaAuxPersistida;
+        cmd.htmlFichaSupplier = this::construirHtmlFichaDesdePlantilla;
+        cmd.centroMedicoPdfFacade = centroMedicoPdfFacade;
+        return centroMedicoPdfFacadeService.buildPrepareFichaCommand(cmd);
     }
 
     private CentroMedicoPdfWorkflowService.PrepareCertificadoCommandData buildPrepareCertificadoCommand() {
-        return new CentroMedicoPdfWorkflowService.PrepareCertificadoCommandData(
-                ficha,
-                this::verificarFichaCompleta,
-                this::construirHtmlDesdePlantillaUnchecked,
-                fecha -> this.fechaEmision = fecha,
-                centroMedicoPdfFacade);
-    }
-
-    private String construirHtmlDesdePlantillaUnchecked() {
-        return centroMedicoPdfWorkflowService.construirHtmlDesdePlantillaUnchecked(this::construirHtmlDesdePlantilla);
+        CentroMedicoPdfFacadeService.BuildPrepareCertificadoCommand cmd = new CentroMedicoPdfFacadeService.BuildPrepareCertificadoCommand();
+        cmd.ficha = ficha;
+        cmd.verificarFichaCompleta = this::verificarFichaCompleta;
+        cmd.htmlCertificadoSupplier = this::construirHtmlDesdePlantilla;
+        cmd.fechaEmisionSetter = fecha -> this.fechaEmision = fecha;
+        cmd.centroMedicoPdfFacade = centroMedicoPdfFacade;
+        return centroMedicoPdfFacadeService.buildPrepareCertificadoCommand(cmd);
     }
 
     private void debugObjetosAntesDeImprimir() {
@@ -1190,24 +1190,31 @@ public class CentroMedicoCtrl implements Serializable {
     }
 
     private String construirHtmlFichaDesdePlantilla() {
-        try {
-            return fichaPdfTemplateService.construirHtmlFichaDesdePlantilla(
-                    fichaPdfPlaceholderBuilder,
-                    () -> pdfResourceResolver.readPdfTemplate("plantilla_ficha.html"),
-                    this::syncCamposDesdeObjetosInternal,
-                    this::buildReemplazosFichaInternal,
-                    this::obtenerTipoEvaluacionPdf,
-                    centroMedicoPdfFacade);
-        } catch (RuntimeException ex) {
-            Throwable cause = ex.getCause() != null ? ex.getCause() : ex;
-            LOG.error("[FICHA] Error cargando plantilla_ficha.html", cause);
-            return "<html><body><h3>Error cargando plantilla_ficha.html</h3><pre>"
-                    + safe(cause.getMessage()) + "</pre></body></html>";
-        } catch (Exception e) {
-            LOG.error("[FICHA] Error cargando plantilla_ficha.html", e);
-            return "<html><body><h3>Error cargando plantilla_ficha.html</h3><pre>"
-                    + safe(e.getMessage()) + "</pre></body></html>";
-        }
+        CentroMedicoPdfFacadeService.FichaTemplateCommand cmd = new CentroMedicoPdfFacadeService.FichaTemplateCommand();
+        cmd.source = this;
+        cmd.log = LOG;
+        cmd.fichaPdfTemplateService = fichaPdfTemplateService;
+        cmd.fichaPdfPlaceholderBuilder = fichaPdfPlaceholderBuilder;
+        cmd.pdfResourceResolver = pdfResourceResolver;
+        cmd.fichaPdfPlaceholderAssembler = fichaPdfPlaceholderAssembler;
+        cmd.fichaPdfContextAssembler = fichaPdfContextAssembler;
+        cmd.fichaPdfDataMapper = fichaPdfDataMapper;
+        cmd.fichaPdfViewModelBuilder = fichaPdfViewModelBuilder;
+        cmd.centroMedicoPdfFacade = centroMedicoPdfFacade;
+        cmd.syncCamposDesdeObjetos = this::syncCamposDesdeObjetosInternal;
+        cmd.obtenerTipoEvaluacionPdf = this::obtenerTipoEvaluacionPdf;
+        cmd.recalcularIMC = this::recalcularIMC;
+        cmd.cargarAtencionPrioritaria = this::cargarAtencionPrioritaria;
+        cmd.cargarActividadLaboralArrays = this::cargarActividadLaboralArrays;
+        cmd.fallbackObservacionSupplier = () -> getFichaStringByReflection(ficha,
+                "getDetalleObs",
+                "getDetalleObservaciones",
+                "getObservaciones",
+                "getObs",
+                "getObservacion");
+        cmd.getSafe = CentroMedicoViewUtils::getSafe;
+        cmd.toDate = this::toDate;
+        return centroMedicoPdfFacadeService.construirHtmlFichaDesdePlantilla(cmd);
     }
 
     private String obtenerTipoEvaluacionPdf() {
@@ -1273,38 +1280,6 @@ public class CentroMedicoCtrl implements Serializable {
         LOG.info("[STEP1] edad=" + PdfTextUtil.safeNum(edad));
         LOG.info("[STEP1] grupoSanguineo=" + grupoSanguineo);
         LOG.info("[STEP1] lateralidad=" + lateralidad);
-    }
-
-    private Map<String, String> buildReemplazosFichaInternal() {
-        final Map<String, String> snapshot = new LinkedHashMap<>();
-        return fichaPdfTemplateService.buildReemplazosFicha(
-                this::recalcularIMC,
-                () -> cargarAtencionPrioritaria(snapshot),
-                () -> cargarActividadLaboralArrays(snapshot),
-                () -> snapshot,
-                fichaPdfPlaceholderAssembler,
-                this::buildFichaStateInternal);
-    }
-
-    private FichaState buildFichaStateInternal() {
-        return fichaPdfContextAssembler.buildFichaState(
-                this,
-                centroMedicoPdfFacade,
-                LOG,
-                fichaPdfViewModelBuilder,
-                buildFichaPdfViewModelContextInternal(),
-                getFichaStringByReflection(ficha,
-                        "getDetalleObs",
-                        "getDetalleObservaciones",
-                        "getObservaciones",
-                        "getObs",
-                        "getObservacion"),
-                CentroMedicoViewUtils::getSafe,
-                this::toDate);
-    }
-
-    private FichaPdfViewModelContext buildFichaPdfViewModelContextInternal() {
-        return fichaPdfContextAssembler.buildFichaPdfViewModelContext(this);
     }
 
     private String normalizeOtrosPlaceholder(String keyLower) {
@@ -1435,26 +1410,23 @@ public class CentroMedicoCtrl implements Serializable {
     }
 
     private void cleanupPdfPreview(FacesContext ctx) {
-        centroMedicoPdfWorkflowService.cleanupPdfPreview(
-                new CentroMedicoPdfWorkflowService.CleanupPdfPreviewCommand(ctx, pdfSessionStore, pdfTokenCertificado));
-        certificadoListo = false;
-        pdfTokenCertificado = null;
-        pdfObjectUrl = null;
+        centroMedicoPdfFacadeService.cleanupPdfPreview(ctx, pdfSessionStore, pdfTokenCertificado);
+        applyCleanupPdfPreviewState();
     }
 
     public void limpiarVistaPrevia() {
-        centroMedicoPdfWorkflowService.limpiarVistaPrevia(
-                new CentroMedicoPdfWorkflowService.CleanupPdfPreviewCommand(
-                        FacesContext.getCurrentInstance(),
-                        pdfSessionStore,
-                        pdfTokenCertificado));
-        cleanupPdfPreviewState();
+        centroMedicoPdfFacadeService.cleanupPdfPreview(
+                FacesContext.getCurrentInstance(),
+                pdfSessionStore,
+                pdfTokenCertificado);
+        applyCleanupPdfPreviewState();
     }
 
-    private void cleanupPdfPreviewState() {
-        certificadoListo = false;
-        pdfTokenCertificado = null;
-        pdfObjectUrl = null;
+    private void applyCleanupPdfPreviewState() {
+        CentroMedicoPdfFacadeService.PdfPreviewState state = centroMedicoPdfFacadeService.cleanupPdfPreviewState();
+        certificadoListo = state.certificadoListo;
+        pdfTokenCertificado = state.pdfTokenCertificado;
+        pdfObjectUrl = state.pdfObjectUrl;
     }
 
     // PDF - Certificado Médico
@@ -1514,95 +1486,35 @@ public class CentroMedicoCtrl implements Serializable {
     }
 
     private void showValidationMessage(FacesContext ctx, String summary, List<String> errors) {
-        if (ctx == null || errors == null || errors.isEmpty()) {
-            return;
-        }
-        StringBuilder sb = new StringBuilder();
-        for (String error : errors) {
-            sb.append("- ").append(error).append("\n");
-        }
-        ctx.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, summary, sb.toString()));
+        centroMedicoPdfFacadeService.showValidationMessage(ctx, summary, errors);
     }
 
     private String construirHtmlDesdePlantilla() throws IOException {
-
-        String template = pdfResourceResolver.readPdfTemplate("plantilla_certificado.html");
-
-        Date f = (ficha != null && ficha.getFechaEmision() != null)
-                ? ficha.getFechaEmision()
-                : ((fechaEmision != null) ? fechaEmision : new Date());
-
-        String aApto = "&nbsp;", aObs = "&nbsp;", aLim = "&nbsp;", aNo = "&nbsp;";
-        if (aptitudSel != null) {
-            switch (aptitudSel) {
-                case "APTO":
-                    aApto = "X";
-                    break;
-                case "APTO_EN_OBS":
-                    aObs = "X";
-                    break;
-                case "APTO_LIMIT":
-                    aLim = "X";
-                    break;
-                case "NO_APTO":
-                    aNo = "X";
-                    break;
-            }
-        }
-
-        if (tipoEval != null && (tipoEvaluacion == null || tipoEvaluacion.isEmpty())) {
-            tipoEvaluacion = tipoEval;
-        }
-
-        String chkIngreso = "&nbsp;", chkPeriodico = "&nbsp;", chkReintegro = "&nbsp;", chkRetiro = "&nbsp;";
-        if (tipoEvaluacion != null) {
-            switch (tipoEvaluacion.toUpperCase()) {
-                case "INGRESO":
-                    chkIngreso = "X";
-                    break;
-                case "PERIODICO":
-                case "PERIÓDICO":
-                    chkPeriodico = "X";
-                    break;
-                case "REINTEGRO":
-                    chkReintegro = "X";
-                    break;
-                case "RETIRO":
-                    chkRetiro = "X";
-                    break;
-            }
-        }
-
-        CertificadoPdfTemplateService.CertificadoTemplateData data = new CertificadoPdfTemplateService.CertificadoTemplateData();
-        data.template = template;
-        data.fechaEmision = f;
-        data.apto = aApto;
-        data.obs = aObs;
-        data.lim = aLim;
-        data.noApto = aNo;
-        data.chkIngreso = chkIngreso;
-        data.chkPeriodico = chkPeriodico;
-        data.chkReintegro = chkReintegro;
-        data.chkRetiro = chkRetiro;
-        data.logoIgm = pdfResourceResolver.resolveImageUrl("LOGO_IGM_FULL_COLOR.png");
-        data.logoMidena = pdfResourceResolver.resolveImageUrl("LOGO_MIDENA.png");
-        data.institucion = safe(institucion);
-        data.ruc = safe(ruc);
-        data.noHistoria = safe(noHistoria);
-        data.noArchivo = safe(noArchivo);
-        data.centroTrabajo = safe(centroTrabajo);
-        data.ciiu = safe(ciiu);
-        data.apellido1 = safe(apellido1);
-        data.apellido2 = safe(apellido2);
-        data.nombre1 = safe(nombre1);
-        data.nombre2 = safe(nombre2);
-        data.sexo = safe(sexo);
-        data.detalleObservaciones = safe(detalleObservaciones);
-        data.recomendaciones = safe(recomendaciones);
-        data.medicoNombre = safe(medicoNombre);
-        data.medicoCodigo = safe(medicoCodigo);
-        data.templateEngine = pdfTemplateEngine;
-        return certificadoPdfTemplateService.construirHtmlDesdePlantilla(data);
+        CentroMedicoPdfFacadeService.CertificadoTemplateCommand cmd = new CentroMedicoPdfFacadeService.CertificadoTemplateCommand();
+        cmd.ficha = ficha;
+        cmd.fechaEmision = fechaEmision;
+        cmd.aptitudSel = aptitudSel;
+        cmd.tipoEval = tipoEval;
+        cmd.tipoEvaluacion = tipoEvaluacion;
+        cmd.institucion = institucion;
+        cmd.ruc = ruc;
+        cmd.noHistoria = noHistoria;
+        cmd.noArchivo = noArchivo;
+        cmd.centroTrabajo = centroTrabajo;
+        cmd.ciiu = ciiu;
+        cmd.apellido1 = apellido1;
+        cmd.apellido2 = apellido2;
+        cmd.nombre1 = nombre1;
+        cmd.nombre2 = nombre2;
+        cmd.sexo = sexo;
+        cmd.detalleObservaciones = detalleObservaciones;
+        cmd.recomendaciones = recomendaciones;
+        cmd.medicoNombre = medicoNombre;
+        cmd.medicoCodigo = medicoCodigo;
+        cmd.pdfResourceResolver = pdfResourceResolver;
+        cmd.pdfTemplateEngine = pdfTemplateEngine;
+        cmd.certificadoPdfTemplateService = certificadoPdfTemplateService;
+        return centroMedicoPdfFacadeService.construirHtmlDesdePlantilla(cmd);
     }
 
     public void syncTipoEvaluacion() {
