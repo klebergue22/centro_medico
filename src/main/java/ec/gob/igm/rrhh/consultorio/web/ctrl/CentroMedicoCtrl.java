@@ -5,7 +5,6 @@ import static ec.gob.igm.rrhh.consultorio.web.util.CentroMedicoViewUtils.getSafe
 import static ec.gob.igm.rrhh.consultorio.web.util.CentroMedicoViewUtils.isBlank;
 import static ec.gob.igm.rrhh.consultorio.web.util.CentroMedicoViewUtils.isTrue;
 
-import java.io.IOException;
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -72,6 +71,7 @@ import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoFormInitializer;
 import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoFormStateService;
 import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoPdfWorkflowService;
 import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoPdfFacadeService;
+import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoPdfUiCoordinator;
 import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoWizardNavigationCoordinator;
 import ec.gob.igm.rrhh.consultorio.web.service.FichaPdfDataMapper;
 import ec.gob.igm.rrhh.consultorio.web.service.FichaPdfMappedData;
@@ -504,6 +504,9 @@ public class CentroMedicoCtrl implements Serializable {
     @EJB
     private transient CentroMedicoPdfFacadeService centroMedicoPdfFacadeService;
 
+    @Inject
+    private transient CentroMedicoPdfUiCoordinator centroMedicoPdfUiCoordinator;
+
     // JSF Lifecycle / Inicialización
     public void preRenderInit() {
         try {
@@ -703,32 +706,11 @@ public class CentroMedicoCtrl implements Serializable {
     }
 
     private void resetStep4PdfState() {
-        pdfPreviewState.setFichaPdfListo(false);
-        pdfPreviewState.setCertificadoListo(false);
-        pdfPreviewState.setPdfTokenFicha(null);
-        pdfPreviewState.setPdfTokenCertificado(null);
-
-        this.fichaPdfListo = false;
-        this.certificadoListo = false;
-        this.pdfTokenFicha = null;
-        this.pdfTokenCertificado = null;
+        applyPdfUiState(centroMedicoPdfUiCoordinator.resetStep4PdfState());
     }
 
     private void applyStep4State(CentroMedicoWizardNavigationCoordinator.Step4UiState state) {
-        if (state.fichaPdfListo) {
-            this.ficha = state.ficha;
-            this.pdfTokenFicha = state.pdfTokenFicha;
-            this.fichaPdfListo = true;
-            pdfPreviewState.setFichaPdfListo(true);
-            pdfPreviewState.setPdfTokenFicha(state.pdfTokenFicha);
-        }
-
-        if (state.certificadoListo) {
-            this.pdfTokenCertificado = state.pdfTokenCertificado;
-            this.certificadoListo = true;
-            pdfPreviewState.setCertificadoListo(true);
-            pdfPreviewState.setPdfTokenCertificado(state.pdfTokenCertificado);
-        }
+        applyPdfUiState(centroMedicoPdfUiCoordinator.applyStep4State(state, null));
     }
 
     private void asegurarPersonaAuxPersistida() {
@@ -1109,7 +1091,7 @@ public class CentroMedicoCtrl implements Serializable {
     }
 
     private CentroMedicoPdfWorkflowService.PrepareFichaCommandData buildPrepareFichaCommand() {
-        CentroMedicoPdfFacadeService.BuildPrepareFichaCommand cmd = new CentroMedicoPdfFacadeService.BuildPrepareFichaCommand();
+        CentroMedicoPdfUiCoordinator.BuildPrepareFichaUiCommand cmd = new CentroMedicoPdfUiCoordinator.BuildPrepareFichaUiCommand();
         cmd.ficha = ficha;
         cmd.empleadoSel = empleadoSel;
         cmd.personaAux = personaAux;
@@ -1117,17 +1099,17 @@ public class CentroMedicoCtrl implements Serializable {
         cmd.asegurarPersonaAuxPersistida = this::asegurarPersonaAuxPersistida;
         cmd.htmlFichaSupplier = this::construirHtmlFichaDesdePlantilla;
         cmd.centroMedicoPdfFacade = centroMedicoPdfFacade;
-        return centroMedicoPdfFacadeService.buildPrepareFichaCommand(cmd);
+        return centroMedicoPdfUiCoordinator.buildPrepareFichaCommand(cmd);
     }
 
     private CentroMedicoPdfWorkflowService.PrepareCertificadoCommandData buildPrepareCertificadoCommand() {
-        CentroMedicoPdfFacadeService.BuildPrepareCertificadoCommand cmd = new CentroMedicoPdfFacadeService.BuildPrepareCertificadoCommand();
+        CentroMedicoPdfUiCoordinator.BuildPrepareCertificadoUiCommand cmd = new CentroMedicoPdfUiCoordinator.BuildPrepareCertificadoUiCommand();
         cmd.ficha = ficha;
         cmd.verificarFichaCompleta = this::verificarFichaCompleta;
         cmd.htmlCertificadoSupplier = this::construirHtmlDesdePlantilla;
         cmd.fechaEmisionSetter = fecha -> this.fechaEmision = fecha;
         cmd.centroMedicoPdfFacade = centroMedicoPdfFacade;
-        return centroMedicoPdfFacadeService.buildPrepareCertificadoCommand(cmd);
+        return centroMedicoPdfUiCoordinator.buildPrepareCertificadoCommand(cmd);
     }
 
     private String construirHtmlFichaDesdePlantilla() {
@@ -1221,31 +1203,15 @@ public class CentroMedicoCtrl implements Serializable {
     }
 
     private void onPrepararVistaPreviaSuccess(CentroMedicoPdfWorkflowService.PreviewFlowResult result) {
-        FacesContext ctx = FacesContext.getCurrentInstance();
-        if (result == null) {
-            return;
-        }
-
-        applyFichaPreviewResult(result.fichaResult);
-
-        if (!result.listo) {
-            certificadoListo = false;
-            cleanupPdfPreview(ctx);
-            return;
-        }
-
-        pdfTokenCertificado = result.certificadoToken;
-        certificadoListo = true;
-        if (ctx != null) {
-            ctx.addMessage(null, new FacesMessage(
-                    FacesMessage.SEVERITY_INFO, "PDF listo",
-                    "Se generó el certificado para vista previa y descarga."));
-        }
+        applyPdfUiState(centroMedicoPdfUiCoordinator.onPrepararVistaPreviaSuccess(
+                result,
+                FacesContext.getCurrentInstance(),
+                pdfSessionStore,
+                pdfTokenCertificado));
     }
 
     private void cleanupPdfPreview(FacesContext ctx) {
-        centroMedicoPdfFacadeService.cleanupPdfPreview(ctx, pdfSessionStore, pdfTokenCertificado);
-        applyCleanupPdfPreviewState();
+        applyPdfUiState(centroMedicoPdfUiCoordinator.cleanupPdfPreview(ctx, pdfSessionStore, pdfTokenCertificado));
     }
 
     public void limpiarVistaPrevia() {
@@ -1257,14 +1223,7 @@ public class CentroMedicoCtrl implements Serializable {
     }
 
     private void applyCleanupPdfPreviewState() {
-        CentroMedicoPdfFacadeService.PdfPreviewState state = centroMedicoPdfFacadeService.cleanupPdfPreviewState();
-        certificadoListo = state.certificadoListo;
-        pdfTokenCertificado = state.pdfTokenCertificado;
-        pdfObjectUrl = state.pdfObjectUrl;
-
-        pdfPreviewState.setCertificadoListo(state.certificadoListo);
-        pdfPreviewState.setPdfTokenCertificado(state.pdfTokenCertificado);
-        pdfPreviewState.setPdfObjectUrl(state.pdfObjectUrl);
+        applyPdfUiState(centroMedicoPdfUiCoordinator.applyCleanupPdfPreviewState(null));
     }
 
     // PDF - Certificado Médico
@@ -1289,51 +1248,19 @@ public class CentroMedicoCtrl implements Serializable {
     }
 
     private void onPrepararCertificadoPdfSuccess(CentroMedicoPdfWorkflowService.CertificadoFlowResult result) {
-        FacesContext ctx = FacesContext.getCurrentInstance();
-        if (result == null) {
-            return;
-        }
-
-        applyFichaPreviewResult(result.fichaResult);
-
-        if (!result.listo) {
-            cleanupPdfPreview(ctx);
-            if (ctx != null) {
-                showValidationMessage(ctx, "Validación antes de generar el certificado", result.errores);
-            }
-            return;
-        }
-
-        certificadoListo = true;
-        pdfTokenCertificado = result.token;
-
-        activeStep = "step4";
-        mostrarDlgCedula = false;
-
-        if (ctx != null) {
-            ctx.addMessage(null, new FacesMessage(
-                    FacesMessage.SEVERITY_INFO,
-                    "PDF Certificado listo",
-                    "Se generó el certificado para vista previa y descarga."
-            ));
-        }
+        applyPdfUiState(centroMedicoPdfUiCoordinator.onPrepararCertificadoPdfSuccess(
+                result,
+                FacesContext.getCurrentInstance(),
+                pdfSessionStore,
+                pdfTokenCertificado));
     }
 
     private void showValidationMessage(FacesContext ctx, String summary, List<String> errors) {
         centroMedicoPdfFacadeService.showValidationMessage(ctx, summary, errors);
     }
 
-    private void applyFichaPreviewResult(CentroMedicoPdfWorkflowService.FichaFlowResult fichaResult) {
-        if (fichaResult == null || !fichaResult.listo) {
-            return;
-        }
-        ficha = fichaResult.ficha;
-        fichaPdfListo = true;
-        pdfTokenFicha = fichaResult.token;
-    }
-
-    private String construirHtmlDesdePlantilla() throws IOException {
-        CentroMedicoPdfFacadeService.CertificadoTemplateCommand cmd = new CentroMedicoPdfFacadeService.CertificadoTemplateCommand();
+    private String construirHtmlDesdePlantilla() throws java.io.IOException {
+        CentroMedicoPdfUiCoordinator.ConstruirCertificadoHtmlCommand cmd = new CentroMedicoPdfUiCoordinator.ConstruirCertificadoHtmlCommand();
         cmd.ficha = ficha;
         cmd.fechaEmision = fechaEmision;
         cmd.aptitudSel = aptitudSel;
@@ -1357,7 +1284,21 @@ public class CentroMedicoCtrl implements Serializable {
         cmd.pdfResourceResolver = pdfResourceResolver;
         cmd.pdfTemplateEngine = pdfTemplateEngine;
         cmd.certificadoPdfTemplateService = certificadoPdfTemplateService;
-        return centroMedicoPdfFacadeService.construirHtmlDesdePlantilla(cmd);
+        return centroMedicoPdfUiCoordinator.construirHtmlDesdePlantilla(cmd);
+    }
+
+    private void applyPdfUiState(CentroMedicoPdfUiCoordinator.PdfUiState state) {
+        centroMedicoPdfUiCoordinator.applyPdfUiState(
+                state,
+                pdfPreviewState,
+                value -> this.ficha = value,
+                value -> this.fichaPdfListo = value,
+                value -> this.pdfTokenFicha = value,
+                value -> this.certificadoListo = value,
+                value -> this.pdfTokenCertificado = value,
+                value -> this.pdfObjectUrl = value,
+                value -> this.activeStep = value,
+                value -> this.mostrarDlgCedula = value);
     }
 
     public void syncTipoEvaluacion() {
