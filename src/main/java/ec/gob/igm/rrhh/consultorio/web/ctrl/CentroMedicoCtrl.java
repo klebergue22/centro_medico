@@ -510,6 +510,9 @@ public class CentroMedicoCtrl implements Serializable {
     @Inject
     private transient CentroMedicoPdfUiCoordinator centroMedicoPdfUiCoordinator;
 
+    // =========================
+    // Ciclo de vida y navegación
+    // =========================
     public void preRenderInit() {
         try {
             FacesContext fc = FacesContext.getCurrentInstance();
@@ -627,6 +630,9 @@ public class CentroMedicoCtrl implements Serializable {
         this.imc = calcUtil.recalcularIMC(peso, tallaCm);
     }
 
+    // =========================
+    // Utilidades de cálculo/auditoría
+    // =========================
     private void registrarAuditoria(String accion, String tabla, String campo, String observaciones) {
         s3("registrarAuditoria() accion=" + accion + " tabla=" + tabla + " campo=" + campo);
 
@@ -641,6 +647,9 @@ public class CentroMedicoCtrl implements Serializable {
     /**
      * guarda el step actual
      */
+    // =========================
+    // Flujo Wizard (Step 1,2,3 y navegación)
+    // =========================
     public void guardarStepActual() {
         LOG.info(">>> ENTRO A guardarStepActual, step={}", activeStep);
         controllerActionTemplate.executeWithResult(
@@ -1255,6 +1264,9 @@ public class CentroMedicoCtrl implements Serializable {
                 value -> this.mostrarDlgCedula = value);
     }
 
+    // =========================
+    // CIE10 y diagnóstico
+    // =========================
     public void syncTipoEvaluacion() {
         this.tipoEvaluacion = this.tipoEval;
     }
@@ -1294,6 +1306,7 @@ public class CentroMedicoCtrl implements Serializable {
             descCie10Ppal = best.getDescripcion();
         }
     }
+
 
     public void onCie10BlurCodigo(int index) {
         ConsultaDiagnostico diag = centroMedicoFormStateService.ensureDiag(this, index);
@@ -1385,6 +1398,9 @@ public class CentroMedicoCtrl implements Serializable {
         }
     }
 
+    // =========================
+    // Gestión de paciente / cédula / persona auxiliar
+    // =========================
     public void abrirPersonaAuxManual() {
         PacienteUiFlowCoordinator.UiFlowResult result = pacienteUiFlowCoordinator.abrirPersonaAuxManual(
                 cedulaBusqueda,
@@ -1445,6 +1461,7 @@ public class CentroMedicoCtrl implements Serializable {
     }
 
     // Búsqueda de Cédula / Diálogo Inicial
+
     public void onBuscarPorCedulaRh() {
         try {
             buscarCedula();
@@ -1645,6 +1662,22 @@ public class CentroMedicoCtrl implements Serializable {
         return false;
     }
 
+    public int getStepIndex() {
+        return stepIndex;
+    }
+
+    public void setStepIndex(int stepIndex) {
+        this.stepIndex = stepIndex;
+    }
+
+    public String getProcessStepId() {
+
+        return ":wiz:" + activeStep;
+    }
+
+    // =========================
+    // Consumo, hábitos y estructuras auxiliares del formulario
+    // =========================
     private static final int CONS_ROWS = 3;
 
     private void initConsumoVidaCond() {
@@ -1692,11 +1725,81 @@ public class CentroMedicoCtrl implements Serializable {
         }
     }
 
+
     public void onNoConsumeChange(int idx) {
         if (Boolean.TRUE.equals(consNoConsume[idx])) {
             consExConsumidor[idx] = false;
             consTiempoConsumoMeses[idx] = 0;
             consTiempoAbstinenciaMeses[idx] = 0;
+        }
+    }
+
+    public Integer[] getConsTiempoConsumo() {
+        return consTiempoConsumoMeses;
+    }
+
+    public void setConsTiempoConsumo(Integer[] v) {
+        this.consTiempoConsumoMeses = v;
+    }
+
+    public Integer[] getConsTiempoAbstinencia() {
+        return consTiempoAbstinenciaMeses;
+    }
+
+    public void setConsTiempoAbstinencia(Integer[] v) {
+        this.consTiempoAbstinenciaMeses = v;
+    }
+
+    public String getObsExamenFisico() {
+        return obsExamenFisico;
+    }
+
+    public void setObsExamenFisico(String obsExamenFisico) {
+        this.obsExamenFisico = obsExamenFisico;
+    }
+
+    public String getConsObservacion() {
+        return consumoVidaCondObs;
+    }
+
+    public void setConsObservacion(String v) {
+        this.consumoVidaCondObs = v;
+    }
+
+    public String getNRealizaEvaluacion() {
+        return nRealizaEvaluacion;
+    }
+
+    public void setNRealizaEvaluacion(String nRealizaEvaluacion) {
+        this.nRealizaEvaluacion = nRealizaEvaluacion;
+    }
+
+    public String getNRelacionTrabajo() {
+        return nRelacionTrabajo;
+    }
+
+    public void setNRelacionTrabajo(String nRelacionTrabajo) {
+        this.nRelacionTrabajo = nRelacionTrabajo;
+    }
+
+    public String getNObsRetiro() {
+        return nObsRetiro;
+    }
+
+    public void setNObsRetiro(String nObsRetiro) {
+        this.nObsRetiro = nObsRetiro;
+    }
+
+    public Map<String, Boolean> getRiesgos() {
+        if (riesgos == null) {
+            riesgos = new java.util.LinkedHashMap<>();
+        }
+        return riesgos;
+    }
+
+    public Map<String, String> getOtrosRiesgos() {
+        if (otrosRiesgos == null) {
+            otrosRiesgos = new java.util.LinkedHashMap<>();
         }
     }
 
