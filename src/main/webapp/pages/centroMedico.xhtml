@@ -7,7 +7,7 @@
 
 
     <ui:define name="metadata">
-        <f:viewAction action="#{centroMedicoCtrl.preRenderInit}" onPostback="true"/>
+        <f:viewAction action="#{centroMedicoViewLifecycleCoordinator.preRender(centroMedicoCtrl)}" onPostback="true"/>
     </ui:define>
 
 
