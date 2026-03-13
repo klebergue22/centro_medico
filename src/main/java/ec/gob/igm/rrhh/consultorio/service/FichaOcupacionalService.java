@@ -40,6 +40,8 @@ public class FichaOcupacionalService {
             return;
         }
 
+        normalizarPacienteExclusivo(f);
+
         f.setExfPielCicatrices(snNoNull(f.getExfPielCicatrices()));
         f.setExfOjosParpados(snNoNull(f.getExfOjosParpados()));
         f.setExfOjosConjuntivas(snNoNull(f.getExfOjosConjuntivas()));
@@ -83,6 +85,38 @@ public class FichaOcupacionalService {
         if (!"SI".equalsIgnoreCase(safeTrim(f.getPlanificacion()))) {
             f.setPlanificacionCual(null);
         }
+    }
+
+    /**
+     * La restricción CK_FICHA_PERSONA_OR_AUX exige exclusividad entre
+     * NO_PERSONA (empleado) e ID_PERSONA_AUX (persona auxiliar).
+     *
+     * Como la ficha puede llegar con estado mixto desde distintos pasos/UI,
+     * se normaliza antes de persistir/merge para evitar violaciones al hacer flush
+     * desde otros servicios de la misma transacción.
+     */
+    private void normalizarPacienteExclusivo(FichaOcupacional f) {
+        if (f.getEmpleado() == null || f.getPersonaAux() == null) {
+            return;
+        }
+
+        String historia = safeTrim(f.getNoHistoriaClinica());
+        String cedulaEmpleado = (f.getEmpleado() != null) ? safeTrim(f.getEmpleado().getNoCedula()) : null;
+        String cedulaAux = (f.getPersonaAux() != null) ? safeTrim(f.getPersonaAux().getCedula()) : null;
+
+        if (historia != null) {
+            if (historia.equals(cedulaAux) && !historia.equals(cedulaEmpleado)) {
+                f.setEmpleado(null);
+                return;
+            }
+            if (historia.equals(cedulaEmpleado) && !historia.equals(cedulaAux)) {
+                f.setPersonaAux(null);
+                return;
+            }
+        }
+
+        // Fallback seguro para evitar que llegue ambos no-nulos a BD.
+        f.setEmpleado(null);
     }
 
     private String snNoNull(String v) {
