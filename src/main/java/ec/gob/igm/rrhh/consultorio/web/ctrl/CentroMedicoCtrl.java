@@ -5,12 +5,8 @@ import static ec.gob.igm.rrhh.consultorio.web.util.CentroMedicoViewUtils.getSafe
 import static ec.gob.igm.rrhh.consultorio.web.util.CentroMedicoViewUtils.isBlank;
 import static ec.gob.igm.rrhh.consultorio.web.util.CentroMedicoViewUtils.isTrue;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.Serializable;
-import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.ArrayList;
@@ -1134,75 +1130,6 @@ public class CentroMedicoCtrl implements Serializable {
         return centroMedicoPdfFacadeService.buildPrepareCertificadoCommand(cmd);
     }
 
-    private void debugObjetosAntesDeImprimir() {
-        LOG.info("[PRINT] ficha=" + (ficha != null));
-        if (ficha != null) {
-            LOG.info("[PRINT] ficha.instSistema=" + ficha.getInstSistema());
-            LOG.info("[PRINT] ficha.ruc=" + ficha.getRucEstablecimiento());
-            LOG.info("[PRINT] ficha.centroTrabajo=" + ficha.getEstablecimientoCt());
-            LOG.info("[PRINT] ficha.ciiu=" + ficha.getCiiu());
-            LOG.info("[PRINT] ficha.noHistoria=" + ficha.getNoHistoriaClinica());
-            LOG.info("[PRINT] ficha.noArchivo=" + ficha.getNoArchivo());
-        }
-
-        LOG.info("[PRINT] empleadoSel=" + (empleadoSel != null));
-        if (empleadoSel != null) {
-            LOG.info("[PRINT] empleadoSel.priApellido=" + empleadoSel.getPriApellido());
-            LOG.info("[PRINT] empleadoSel.segApellido=" + empleadoSel.getSegApellido());
-            LOG.info("[PRINT] empleadoSel.nombres=" + empleadoSel.getNombres());
-            // si tienes:
-            // LOG.info("[PRINT] empleadoSel.sexo=" + empleadoSel.getSexo());
-            // LOG.info("[PRINT] empleadoSel.fechaNac=" + empleadoSel.getFechaNacimiento());
-        }
-    }
-
-    private String construirHtmlFichaDesdeFacelet() {
-        String html = centroMedicoPdfFacade.renderFaceletToHtml("/pages/ficha/fichaPrint.xhtml");
-        return PdfTextUtil.normalizarXhtmlPdf(html);
-    }
-
-    private String leerRecursoComoString(String classpathLocation) {
-
-        InputStream is = null;
-
-        try {
-
-            is = Thread.currentThread().getContextClassLoader().getResourceAsStream(
-                    classpathLocation.startsWith("/") ? classpathLocation.substring(1) : classpathLocation
-            );
-
-            if (is == null) {
-                FacesContext fc = FacesContext.getCurrentInstance();
-                if (fc != null) {
-                    ExternalContext ec = fc.getExternalContext();
-                    is = ec.getResourceAsStream(classpathLocation.startsWith("/") ? classpathLocation : ("/" + classpathLocation));
-                }
-            }
-
-            if (is == null) {
-                throw new IllegalStateException("No se encontró el template en classpath: " + classpathLocation
-                        + " (Revisa src/main/resources y la ruta).");
-            }
-
-            try (BufferedReader br = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8))) {
-                StringBuilder sb = new StringBuilder();
-                String line;
-                while ((line = br.readLine()) != null) {
-                    sb.append(line).append("\n");
-                }
-                return sb.toString();
-            }
-
-        } catch (IOException e) {
-            throw new RuntimeException("Error leyendo recurso: " + classpathLocation, e);
-        }
-    }
-
-    private String renderFaceletToHtml(String viewId) {
-        LOG.info("FichaPrint: renderFaceletToHtml delegado a facade. viewId={}", viewId);
-        return centroMedicoPdfFacade.renderFaceletToHtml(viewId);
-    }
-
     private String construirHtmlFichaDesdePlantilla() {
         CentroMedicoPdfFacadeService.FichaTemplateCommand cmd = new CentroMedicoPdfFacadeService.FichaTemplateCommand();
         cmd.source = this;
@@ -1274,109 +1201,6 @@ public class CentroMedicoCtrl implements Serializable {
         if (data.edad != null) {
             this.edad = data.edad;
         }
-    }
-
-    private void LOGDebugStep1() {
-        LOG.info("[STEP1] institucion=" + institucion);
-        LOG.info("[STEP1] ruc=" + ruc);
-        LOG.info("[STEP1] centroTrabajo=" + centroTrabajo);
-        LOG.info("[STEP1] ciiu=" + ciiu);
-        LOG.info("[STEP1] noHistoria=" + noHistoria);
-        LOG.info("[STEP1] noArchivo=" + noArchivo);
-
-        LOG.info("[STEP1] apellido1=" + apellido1);
-        LOG.info("[STEP1] apellido2=" + apellido2);
-        LOG.info("[STEP1] nombre1=" + nombre1);
-        LOG.info("[STEP1] nombre2=" + nombre2);
-
-        LOG.info("[STEP1] sexo=" + sexo);
-        LOG.info("[STEP1] fechaNacimiento=" + PdfTextUtil.safeDate(fechaNacimiento));
-        LOG.info("[STEP1] edad=" + PdfTextUtil.safeNum(edad));
-        LOG.info("[STEP1] grupoSanguineo=" + grupoSanguineo);
-        LOG.info("[STEP1] lateralidad=" + lateralidad);
-    }
-
-    private String normalizeOtrosPlaceholder(String keyLower) {
-        if (isBlank(keyLower)) {
-            return null;
-        }
-
-        String[] parts = keyLower.split("_");
-        if (parts.length != 3) {
-            return null;
-        }
-
-        // Soporta ambos formatos recibidos desde UI/datos:
-        // 1) SEG_OTROS_1  -> otros_seg_1
-        // 2) OTROS_SEG_1  -> otros_seg_1
-        if ("otros".equals(parts[0])) {
-            return keyLower;
-        }
-
-        if ("otros".equals(parts[1])) {
-            return "otros_" + parts[0] + "_" + parts[2];
-        }
-
-        return null;
-    }
-
-    private Map<String, String> buildVarsFicha() {
-        Map<String, String> m = new HashMap<>();
-
-        m.put("institucion", safe(institucion));
-        m.put("ruc", safe(ruc));
-        m.put("centroTrabajo", safe(centroTrabajo));
-        // m.put("num_formulario", safe(numFormulario));
-
-        m.put("apellido1", safe(apellido1));
-        m.put("apellido2", safe(apellido2));
-        m.put("nombre1", safe(nombre1));
-        m.put("nombre2", safe(nombre2));
-        m.put("sexo", safe(sexo));
-        m.put("ciiu", safe(ciiu));
-
-        m.put("no_historia", safe(noHistoria));
-        //m.put("puesto_trabajo", safe(puestoTrabajo));
-
-        /*m.put("fecha_yyyy", safe(fecha_yyyy));
-    m.put("fecha_MM", safe(fecha_MM));
-    m.put("fecha_dd", safe(fecha_dd));*/
-        m.put("LOGO_IGM_DATAURI", buildLogoDataUri("LOGO_IGM_FULL_COLOR.png"));
-        m.put("LOGO_MIDENA_DATAURI", buildLogoDataUri("LOGomidena.png"));
-
-        return m;
-    }
-
-    private String aplicarPlaceholders(String html, Map<String, String> vars) {
-        String out = html;
-        for (Map.Entry<String, String> e : vars.entrySet()) {
-            out = out.replace("{{" + e.getKey() + "}}", safe(e.getValue()));
-        }
-        return out;
-    }
-
-    private String buildLogoDataUri(String fileName) {
-        return pdfResourceResolver.buildLogoDataUri(fileName);
-    }
-
-    private String renderTemplate(String template, Map<String, String> rep) {
-        return pdfTemplateEngine.render(template, rep);
-    }
-
-    private String construirHtmlFichaDesdePrintFacelets() {
-
-        try {
-            ExternalContext ec = FacesContext.getCurrentInstance().getExternalContext();
-            ec.getSessionMap().put("centroMedicoPrint", this);
-        } catch (Exception e) {
-            LOG.warn("No se pudo colocar centroMedicoPrint en sesión.", e);
-        }
-
-        String html = centroMedicoPdfFacade.renderFaceletToHtml("/pages/ficha/fichaPrint.xhtml");
-        if (html != null) {
-            html = html.replace("\u00A0", " ");
-        }
-        return html;
     }
 
     public void prepararVistaPrevia() {
