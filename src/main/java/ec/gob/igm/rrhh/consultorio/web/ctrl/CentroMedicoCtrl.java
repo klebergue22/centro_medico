@@ -415,6 +415,9 @@ public class CentroMedicoCtrl implements Serializable {
     private transient CentroMedicoMessageService messageService;
 
     @Inject
+    private transient ControllerActionTemplate controllerActionTemplate;
+
+    @Inject
     private transient CentroMedicoCalcUtil calcUtil;
 
     @Inject
@@ -759,21 +762,17 @@ public class CentroMedicoCtrl implements Serializable {
 
     // Wizard - Guardado Step 1
     public void guardarStep1() {
-        FacesContext ctx = FacesContext.getCurrentInstance();
-        try {
-            saveStep1();
-            messageService.info("Step 1 guardado correctamente (BORRADOR).");
-        } catch (BusinessValidationException ex) {
-            messageService.warn(ex.getMessage());
-            if (ctx != null) {
-                ctx.validationFailed();
-            }
-        } catch (RuntimeException ex) {
-            messageService.handleUnexpected(LOG, "guardarStep1", ex, activeStep, noPersonaSel, cedulaBusqueda);
-            if (ctx != null) {
-                ctx.validationFailed();
-            }
-        }
+        controllerActionTemplate.execute(
+                "guardarStep1",
+                () -> {
+                    saveStep1();
+                    return true;
+                },
+                () -> messageService.info("Step 1 guardado correctamente (BORRADOR)."),
+                LOG,
+                activeStep,
+                noPersonaSel,
+                cedulaBusqueda);
     }
 
     private void saveStep1() {
@@ -922,33 +921,31 @@ public class CentroMedicoCtrl implements Serializable {
 
     // Wizard - Guardado Step 2
     public void guardarStep2() {
-        FacesContext ctx = FacesContext.getCurrentInstance();
-        try {
-            if (!validarStep2()) {
-                if (ctx != null) {
-                    ctx.validationFailed();
-                }
-                return;
-            }
-
-            saveStep2();
-
-            if (ctx != null) {
-                ctx.addMessage(null, new FacesMessage(
-                        FacesMessage.SEVERITY_INFO, "Step 2",
-                        "Riesgos laborales guardados correctamente (encabezado + detalle)."));
-            }
-        } catch (BusinessValidationException ex) {
-            messageService.warn(ex.getMessage());
-            if (ctx != null) {
-                ctx.validationFailed();
-            }
-        } catch (RuntimeException ex) {
-            messageService.handleUnexpected(LOG, "guardarStep2", ex, activeStep, noPersonaSel, cedulaBusqueda);
-            if (ctx != null) {
-                ctx.validationFailed();
-            }
-        }
+        controllerActionTemplate.execute(
+                "guardarStep2",
+                () -> {
+                    FacesContext ctx = FacesContext.getCurrentInstance();
+                    if (!validarStep2()) {
+                        if (ctx != null) {
+                            ctx.validationFailed();
+                        }
+                        return false;
+                    }
+                    saveStep2();
+                    return true;
+                },
+                () -> {
+                    FacesContext ctx = FacesContext.getCurrentInstance();
+                    if (ctx != null) {
+                        ctx.addMessage(null, new FacesMessage(
+                                FacesMessage.SEVERITY_INFO, "Step 2",
+                                "Riesgos laborales guardados correctamente (encabezado + detalle)."));
+                    }
+                },
+                LOG,
+                activeStep,
+                noPersonaSel,
+                cedulaBusqueda);
     }
 
     private void saveStep2() {
@@ -995,25 +992,23 @@ public class CentroMedicoCtrl implements Serializable {
 
     // Wizard - Guardado Step 3
     public void guardarStep3() {
-        FacesContext ctx = FacesContext.getCurrentInstance();
-        try {
-            saveStep3();
-
-            if (ctx != null) {
-                ctx.addMessage(null, new FacesMessage(
-                        FacesMessage.SEVERITY_INFO, "OK", "Step 3 guardado correctamente."));
-            }
-        } catch (BusinessValidationException ex) {
-            messageService.warn(ex.getMessage());
-            if (ctx != null) {
-                ctx.validationFailed();
-            }
-        } catch (RuntimeException ex) {
-            messageService.handleUnexpected(LOG, "guardarStep3", ex, activeStep, noPersonaSel, cedulaBusqueda);
-            if (ctx != null) {
-                ctx.validationFailed();
-            }
-        }
+        controllerActionTemplate.execute(
+                "guardarStep3",
+                () -> {
+                    saveStep3();
+                    return true;
+                },
+                () -> {
+                    FacesContext ctx = FacesContext.getCurrentInstance();
+                    if (ctx != null) {
+                        ctx.addMessage(null, new FacesMessage(
+                                FacesMessage.SEVERITY_INFO, "OK", "Step 3 guardado correctamente."));
+                    }
+                },
+                LOG,
+                activeStep,
+                noPersonaSel,
+                cedulaBusqueda);
     }
 
     private void saveStep3() {
