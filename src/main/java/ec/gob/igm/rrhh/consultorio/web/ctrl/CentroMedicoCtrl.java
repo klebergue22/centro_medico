@@ -1306,7 +1306,7 @@ public class CentroMedicoCtrl implements Serializable {
                         "getObservaciones",
                         "getObs",
                         "getObservacion"),
-                this::getSafe,
+                CentroMedicoViewUtils::getSafe,
                 this::toDate);
     }
 
