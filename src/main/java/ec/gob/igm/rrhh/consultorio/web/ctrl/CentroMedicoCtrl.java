@@ -441,7 +441,6 @@ public class CentroMedicoCtrl implements Serializable {
     @Inject
     private transient CentroMedicoPdfFacade centroMedicoPdfFacade;
 
-
     @Inject
     private transient CentroMedicoWizardNavigationCoordinator wizardNavigationCoordinator;
 
@@ -531,7 +530,6 @@ public class CentroMedicoCtrl implements Serializable {
             if (!"step1".equals(activeStep)) {
                 mostrarDlgCedula = false;
             } else {
-
                 mostrarDlgCedula = (empleadoSel == null);
             }
 
@@ -589,15 +587,6 @@ public class CentroMedicoCtrl implements Serializable {
                         "Edad calculada: " + (edad == null ? "(sin fecha)" : edad + " años")));
     }
 
-    public Date getFechaNacimiento() {
-        return fechaNacimiento;
-    }
-
-    public void setFechaNacimiento(Date f) {
-        this.fechaNacimiento = f;
-        this.edad = calcUtil.calcularEdad(f);
-    }
-
     /**
      * cambio de step
      *
@@ -621,10 +610,6 @@ public class CentroMedicoCtrl implements Serializable {
      */
     public void calcularEdad() {
         this.edad = calcUtil.calcularEdad(this.fechaNacimiento);
-    }
-
-    public Date getFechaMaximaNacimiento() {
-        return calcUtil.getFechaMaximaNacimiento();
     }
 
     /**
@@ -734,7 +719,6 @@ public class CentroMedicoCtrl implements Serializable {
 
     private String usuarioReal() {
         try {
-
             return "USR_APP";
         } catch (RuntimeException e) {
             return "USR_APP";
@@ -1558,14 +1542,6 @@ public class CentroMedicoCtrl implements Serializable {
         }
     }
 
-    public boolean isMostrarDlgCedula() {
-        return mostrarDlgCedula;
-    }
-
-    public void setMostrarDlgCedula(boolean mostrarDlgCedula) {
-        this.mostrarDlgCedula = mostrarDlgCedula;
-    }
-
     private String esNulo(String s) {
         return s == null ? "" : s;
     }
@@ -1637,77 +1613,6 @@ public class CentroMedicoCtrl implements Serializable {
             sb.append(partes[i]);
         }
         return sb.toString();
-    }
-
-    public PersonaAux getPersonaAux() {
-        if (personaAux == null) {
-            personaAux = new PersonaAux();
-        }
-        return personaAux;
-    }
-
-    public void setPersonaAux(PersonaAux personaAux) {
-        this.personaAux = personaAux;
-    }
-
-    public String getStepActual() {
-        return activeStep;
-    }
-
-    public void setStepActual(String stepActual) {
-        this.activeStep = stepActual;
-    }
-
-    public String getActiveStep() {
-        return this.activeStep;
-    }
-
-    public void setActiveStep(String activeStep) {
-        this.activeStep = activeStep;
-    }
-
-    public Date getFechaAtencion() {
-        if (fechaAtencion == null) {
-            fechaAtencion = new Date();
-        }
-        return fechaAtencion;
-    }
-
-    public void setFechaAtencion(Date fechaAtencion) {
-        this.fechaAtencion = fechaAtencion;
-    }
-
-    public List<String> getTipoAct() {
-        if (tipoAct == null) {
-            tipoAct = new ArrayList<>();
-        }
-        return tipoAct;
-    }
-
-    public void setTipoAct(List<String> tipoAct) {
-        this.tipoAct = tipoAct;
-    }
-
-    public List<Date> getFechaAct() {
-        if (fechaAct == null) {
-            fechaAct = new ArrayList<>();
-        }
-        return fechaAct;
-    }
-
-    public void setFechaAct(List<Date> fechaAct) {
-        this.fechaAct = fechaAct;
-    }
-
-    public List<String> getDescAct() {
-        if (descAct == null) {
-            descAct = new ArrayList<>();
-        }
-        return descAct;
-    }
-
-    public void setDescAct(List<String> descAct) {
-        this.descAct = descAct;
     }
 
     private boolean filaActLabTieneAlgo(int i) {
@@ -1896,7 +1801,6 @@ public class CentroMedicoCtrl implements Serializable {
         if (otrosRiesgos == null) {
             otrosRiesgos = new java.util.LinkedHashMap<>();
         }
-        return otrosRiesgos;
     }
 
     private void s3(String msg) {
@@ -1912,6 +1816,677 @@ public class CentroMedicoCtrl implements Serializable {
         if (t != null) {
             LOG.error("Unexpected error.", t);
         }
+    }
+
+    public void initConsumoVidaCondDefaults() {
+        initConsumoVidaCond();
+    }
+
+    private Integer extraerIdx(UIComponent comp) {
+        if (comp == null) {
+            LOG.info("... [IDX] extraerIdx comp=null");
+            return null;
+        }
+        Object idxObj = comp.getAttributes().get("idx");
+
+        String clientId;
+        try {
+            clientId = comp.getClientId(FacesContext.getCurrentInstance());
+        } catch (RuntimeException e) {
+            clientId = String.valueOf(comp.getId());
+        }
+
+        LOG.debug("... [IDX] extraerIdx compId=" + comp.getId()
+                + " clientId=" + clientId
+                + " idxAttr=" + idxObj);
+
+        if (idxObj == null) {
+            return null;
+        }
+        try {
+            return Integer.parseInt(idxObj.toString());
+        } catch (NumberFormatException e) {
+            LOG.info("... [IDX] extraerIdx parse ERROR idxAttr={} ex={}", idxObj, e.toString());
+            return null;
+        }
+    }
+
+    public void onKCieCodigoSelect(SelectEvent<String> event) {
+        UIComponent comp = (event != null ? event.getComponent() : null);
+        Integer idx = extraerIdx(comp);
+        String selected = (event != null ? event.getObject() : null);
+
+        LOG.info(">>> [AC-K-COD] itemSelect idx=" + idx
+                + " selected=[" + selected + "] clientId=" + (comp != null ? comp.getClientId() : "null"));
+
+        ConsultaDiagnostico row = getDiagRow(idx, "AC-K-COD itemSelect");
+        if (row == null) {
+            return;
+        }
+
+        if (selected == null || selected.trim().isEmpty()) {
+            LOG.info("<<< [AC-K-COD] itemSelect empty selection => no-op");
+            return;
+        }
+
+        String codigo = selected.trim().toUpperCase();
+        row.setCodigo(codigo);
+
+        Cie10 cie = cie10Service.buscarPorCodigo(codigo);
+        LOG.info("... [AC-K-COD] itemSelect buscarPorCodigo(" + codigo + ") => " + (cie != null ? cie.getCodigo() : "null"));
+
+        if (cie != null) {
+            row.setCodigo(cie.getCodigo());
+            row.setDescripcion(cie.getDescripcion());
+            row.setCie10(cie);
+        } else {
+            row.setDescripcion(null);
+            row.setCie10(null);
+        }
+
+        LOG.info("<<< [AC-K-COD] itemSelect AFTER codigo=[" + row.getCodigo() + "] desc=[" + row.getDescripcion() + "]");
+    }
+
+    public void abrirDialogoDiagnostico(AjaxBehaviorEvent event) {
+        UIComponent comp = (event != null ? event.getComponent() : null);
+        Integer idx = extraerIdx(comp);
+        ConsultaDiagnostico row = getDiagRow(idx, "K-DLG abrir");
+        if (row == null) {
+            return;
+        }
+
+        dialogDiagnosticoIdx = idx;
+        codCie10Ppal = row.getCodigo();
+        descCie10Ppal = row.getDescripcion();
+        PrimeFaces.current().executeScript("PF('kDiagDialogWv').show();");
+    }
+
+    public void aceptarDialogoDiagnostico() {
+        ConsultaDiagnostico row = getDiagRow(dialogDiagnosticoIdx, "K-DLG aceptar");
+        if (row == null) {
+            return;
+        }
+
+        String codigo = codCie10Ppal != null ? codCie10Ppal.trim().toUpperCase() : "";
+        String descripcion = descCie10Ppal != null ? descCie10Ppal.trim() : "";
+
+        Cie10 cie = null;
+        if (!codigo.isEmpty()) {
+            cie = cie10Service.buscarPorCodigo(codigo);
+        }
+        if (cie == null && !descripcion.isEmpty()) {
+            cie = cie10Service.buscarPrimeroPorDescripcion(descripcion);
+        }
+
+        if (cie != null) {
+            row.setCodigo(cie.getCodigo());
+            row.setDescripcion(cie.getDescripcion());
+            row.setCie10(cie);
+        } else {
+            row.setCodigo(codigo.isEmpty() ? null : codigo);
+            row.setDescripcion(descripcion.isEmpty() ? null : descripcion);
+            row.setCie10(null);
+        }
+
+        syncCie10PrincipalFromK();
+        PrimeFaces.current().executeScript("PF('kDiagDialogWv').hide();");
+    }
+
+    public void cerrarDialogoDiagnostico() {
+        PrimeFaces.current().executeScript("PF('kDiagDialogWv').hide();");
+    }
+
+    public void onKCieCodigoBlur(AjaxBehaviorEvent event) {
+        UIComponent comp = event != null ? event.getComponent() : null;
+        Integer idx = extraerIdx(comp);
+
+        String clientId = safeClientId(comp);
+        String typed = getAutoCompleteTypedRobusto(comp);
+
+        LOG.info(">>> [AC-K-COD] blur idx=" + idx + " clientId=" + clientId + " typed=[" + typed + "]");
+
+        ConsultaDiagnostico row = getDiagRow(idx, "AC-K-COD blur");
+        if (row == null) {
+            return;
+        }
+
+        String codigo = typed != null ? typed.trim() : "";
+        if (codigo.isEmpty()) {
+            row.setCodigo(null);
+            row.setDescripcion(null);
+            row.setCie10(null);
+            LOG.info("<<< [AC-K-COD] blur empty => cleared row");
+            return;
+        }
+
+        String codigoUp = codigo.toUpperCase();
+
+        if (codigoUp.length() < 3) {
+            row.setCodigo(codigoUp);
+            row.setDescripcion(null);
+            row.setCie10(null);
+            LOG.info("<<< [AC-K-COD] blur partial [" + codigoUp + "] => keep, no exact lookup");
+            return;
+        }
+
+        Cie10 cie = cie10Service.buscarPorCodigo(codigoUp);
+
+        if (cie == null) {
+            List<Cie10> sugerencias = cie10Service.buscarJerarquiaPorTerm(codigoUp);
+            if (sugerencias != null) {
+                String codigoNorm = codigoUp.replaceAll("[^A-Z0-9]", "");
+                for (Cie10 candidato : sugerencias) {
+                    if (candidato == null || candidato.getCodigo() == null) {
+                        continue;
+                    }
+
+                    String candidatoNorm = candidato.getCodigo().toUpperCase().replaceAll("[^A-Z0-9]", "");
+                    if (candidatoNorm.equals(codigoNorm)) {
+                        cie = candidato;
+                        break;
+                    }
+                }
+            }
+        }
+
+        LOG.debug("... [AC-K-COD] buscarPorCodigo(" + codigoUp + ") => "
+                + (cie != null ? (cie.getCodigo() + " | " + cie.getDescripcion()) : "null"));
+        if (cie != null) {
+            row.setCodigo(cie.getCodigo());
+            row.setDescripcion(cie.getDescripcion());
+            row.setCie10(cie);
+            LOG.info("<<< [AC-K-COD] blur AFTER MATCH codigo=[" + row.getCodigo() + "] desc=[" + row.getDescripcion() + "]");
+            return;
+        }
+
+        row.setCodigo(codigoUp);
+        row.setDescripcion(null);
+        row.setCie10(null);
+        LOG.info("<<< [AC-K-COD] blur AFTER NO-MATCH keep codigo=[" + row.getCodigo() + "]");
+    }
+
+    public void onKDescSelect(SelectEvent<String> event) {
+        String descripcion = event.getObject();
+        UIComponent comp = event.getComponent();
+        Integer idx = extraerIdx(comp);
+
+        LOG.info(">>> [AC-K-DESC] itemSelect ENTER desc=[" + descripcion + "] idx=" + idx);
+
+        ConsultaDiagnostico row = getDiagRow(idx, "AC-K-DESC itemSelect");
+        if (row == null) {
+            return;
+        }
+
+        row.setDescripcion(descripcion);
+
+        if (descripcion != null && !descripcion.trim().isEmpty()) {
+            Cie10 cie = cie10Service.buscarPrimeroPorDescripcion(descripcion.trim());
+            LOG.info("... [AC-K-DESC] buscarPrimeroPorDescripcion => " + (cie != null ? cie.getCodigo() : "null"));
+
+            if (cie != null) {
+                row.setCodigo(cie.getCodigo());
+                row.setCie10(cie);
+            } else {
+                row.setCodigo(null);
+                row.setCie10(null);
+            }
+        }
+
+        LOG.info("<<< [AC-K-DESC] itemSelect row AFTER idx=" + idx
+                + " codigo=[" + row.getCodigo() + "] desc=[" + row.getDescripcion() + "]");
+
+        syncCie10PrincipalFromK();
+    }
+
+    public void onKDescBlur(AjaxBehaviorEvent event) {
+        UIComponent comp = (event != null ? event.getComponent() : null);
+        Integer idx = extraerIdx(comp);
+        String clientId = safeClientId(comp);
+        String typed = getAutoCompleteTypedRobusto(comp);
+
+        LOG.info(">>> [AC-K-DESC] blur idx=" + idx + " clientId=" + clientId + " typed=[" + typed + "]");
+
+        ConsultaDiagnostico row = getDiagRow(idx, "AC-K-DESC blur");
+        if (row == null) {
+            return;
+        }
+
+        String desc = (typed != null ? typed.trim() : "");
+        if (desc.isEmpty()) {
+            row.setDescripcion(null);
+            row.setCie10(null);
+            LOG.info("<<< [AC-K-DESC] blur empty => cleared descripcion");
+            return;
+        }
+
+        row.setDescripcion(desc);
+
+        if (desc.length() < 4) {
+            row.setCie10(null);
+            LOG.info("<<< [AC-K-DESC] blur partial => keep desc only");
+            return;
+        }
+
+        Cie10 cie = null;
+        try {
+            List<Cie10> candidatos = cie10Service.buscarPorDescripcionLike(desc, 20);
+            LOG.info("... [AC-K-DESC] candidatos.size=" + (candidatos == null ? "null" : candidatos.size()));
+            if (candidatos != null && !candidatos.isEmpty()) {
+                cie = cie10LookupService.buscarMejorCoincidenciaPorDescripcion(candidatos, desc);
+            }
+        } catch (RuntimeException e) {
+            LOG.error("!!! [AC-K-DESC] error: {}", e.getMessage(), e);
+        }
+
+        LOG.debug("... [AC-K-DESC] pickBest => "
+                + (cie != null ? (cie.getCodigo() + " | " + cie.getDescripcion()) : "null"));
+
+        if (cie != null) {
+            row.setCodigo(cie.getCodigo());
+            row.setDescripcion(cie.getDescripcion());
+            row.setCie10(cie);
+            LOG.info("<<< [AC-K-DESC] blur AFTER MATCH codigo=[" + row.getCodigo() + "] desc=[" + row.getDescripcion() + "]");
+            return;
+        }
+
+        row.setCie10(null);
+        LOG.info("<<< [AC-K-DESC] blur AFTER NO-MATCH keep desc=[" + row.getDescripcion() + "]");
+    }
+
+    public void onKTipoChange(AjaxBehaviorEvent event) {
+        UIComponent comp = (event != null ? event.getComponent() : null);
+        Integer idx = extraerIdx(comp);
+
+        String clientId = safeClientId(comp);
+
+        LOG.info(">>> [K-TIPO] change ENTER idx=" + idx + " clientId=" + clientId);
+
+        ConsultaDiagnostico row = getDiagRow(idx, "K-TIPO change");
+        if (row == null) {
+            return;
+        }
+
+        LOG.info("<<< [K-TIPO] AFTER idx=" + idx
+                + " codigo=[" + row.getCodigo() + "]"
+                + " desc=[" + row.getDescripcion() + "]"
+                + " tipo=[" + row.getTipoDiag() + "]");
+    }
+
+    private String safeClientId(UIComponent comp) {
+        try {
+            FacesContext fc = FacesContext.getCurrentInstance();
+            return (fc != null && comp != null) ? comp.getClientId(fc) : "null";
+        } catch (RuntimeException e) {
+            return "err:" + e.getMessage();
+        }
+    }
+
+    private Date toDate(Object value) {
+        if (value == null) {
+            return null;
+        }
+        if (value instanceof Date d) {
+            return d;
+        }
+        if (value instanceof LocalDate ld) {
+            return Date.from(ld.atStartOfDay(ZoneId.systemDefault()).toInstant());
+        }
+        return null;
+    }
+
+    public void autoOpenCedulaIfNeeded() {
+
+        boolean open = false;
+
+        if (!cedulaDlgAutoOpened) {
+
+            if (mostrarDlgCedula && "step1".equals(activeStep)) {
+                open = true;
+                cedulaDlgAutoOpened = true;
+            }
+        }
+
+        org.primefaces.PrimeFaces.current().ajax().addCallbackParam("openCedulaDlg", open);
+    }
+
+    public void consumirAutoOpenCedulaDlg() {
+        boolean open = false;
+
+        if ("step1".equals(activeStep)
+                && empleadoSel == null
+                && !cedulaDlgAutoOpened) {
+
+            open = true;
+            cedulaDlgAutoOpened = true;
+        }
+
+        PrimeFaces.current().ajax().addCallbackParam("openCedulaDlg", open);
+    }
+
+    public void onDlgCedulaHide() {
+        mostrarDlgCedula = false;
+    }
+
+    public void onDlgCedulaClose() {
+        mostrarDlgCedula = false;
+    }
+
+    private static String safe(String s) {
+        if (s == null) {
+            return "";
+        }
+        String out = s;
+        out = out.replace("&", "&amp;");
+        out = out.replace("<", "&lt;");
+        out = out.replace(">", "&gt;");
+        out = out.replace("\"", "&quot;");
+
+        out = out.replace("'", "&#39;");
+        return out;
+    }
+
+    private static String markX(Object v) {
+        if (v == null) {
+            return "";
+        }
+        String s = String.valueOf(v).trim();
+        if (s.isEmpty()) {
+            return "";
+        }
+        s = s.toUpperCase();
+        if ("S".equals(s) || "SI".equals(s) || "TRUE".equals(s) || "1".equals(s) || "X".equals(s) || "✔".equals(s)) {
+            return "X";
+        }
+        return "";
+    }
+
+    private static String normalizarXhtml(String html) {
+        if (html == null) {
+            return "";
+        }
+        String out = html;
+
+        out = out.replace("&nbsp;", " ");
+
+        out = out.replaceAll("(?i)<br(\s*)>", "<br/>");
+
+        out = out.replaceAll("(?i)<hr(\s*)>", "<hr/>");
+
+        return out;
+    }
+
+    private String val(Object root, String path) {
+        if (root == null || path == null || path.isBlank()) {
+            return "";
+        }
+        Object cur = root;
+        for (String part : path.split("\\.")) {
+            if (cur == null) {
+                return "";
+            }
+            cur = readProperty(cur, part);
+        }
+        return cur == null ? "" : String.valueOf(cur);
+    }
+
+    private Object readProperty(Object obj, String prop) {
+        try {
+            // intenta getProp()
+            String m = "get" + Character.toUpperCase(prop.charAt(0)) + prop.substring(1);
+            return obj.getClass().getMethod(m).invoke(obj);
+        } catch (Exception ignore) {
+            try {
+                // intenta isProp()
+                String m = "is" + Character.toUpperCase(prop.charAt(0)) + prop.substring(1);
+                return obj.getClass().getMethod(m).invoke(obj);
+            } catch (Exception ignore2) {
+                try {
+                    // intenta campo directo
+                    java.lang.reflect.Field f = obj.getClass().getDeclaredField(prop);
+                    f.setAccessible(true);
+                    return f.get(obj);
+                } catch (Exception ignore3) {
+                    return null;
+                }
+            }
+        }
+    }
+
+    private String fmtDate(java.util.Date d) {
+        if (d == null) {
+            return "";
+        }
+        return new java.text.SimpleDateFormat("dd/MM/yyyy").format(d);
+    }
+
+    private void cargarActividadLaboralArrays(Map<String, String> rep) {
+        for (int i = 0; i < H_ROWS; i++) {
+            int idx = i + 1; // índice 1-based
+            rep.put("h_centro_" + idx, safe(getSafe(actLabCentroTrabajo, i)));
+            rep.put("h_actividad_" + idx, safe(getSafe(actLabActividad, i)));
+            rep.put("h_tiempo_" + idx, safe(getSafe(actLabTiempo, i)));
+            rep.put("h_anterior_" + idx, isTrue(getSafe(actLabTrabajoAnterior, i)) ? "X" : "");
+            rep.put("h_actual_" + idx, isTrue(getSafe(actLabTrabajoActual, i)) ? "X" : "");
+            rep.put("h_incidente_" + idx, isTrue(getSafe(actLabIncidenteChk, i)) ? "X" : "");
+            rep.put("h_accidente_" + idx, isTrue(getSafe(actLabAccidenteChk, i)) ? "X" : "");
+            rep.put("h_enfermedad_" + idx, isTrue(getSafe(actLabEnfermedadChk, i)) ? "X" : "");
+            rep.put("h_iess_si_" + idx, isTrue(getSafe(iessSi, i)) ? "X" : "");
+            rep.put("h_iess_no_" + idx, isTrue(getSafe(iessNo, i)) ? "X" : "");
+            rep.put("h_iess_fecha_" + idx, fmtDate(toDate(getSafe(iessFecha, i))));
+            rep.put("h_iess_especificar_" + idx, safe(getSafe(iessEspecificar, i)));
+            rep.put("h_obs_" + idx, safe(getSafe(actLabObservaciones, i)));
+        }
+    }
+
+    private static String firstNonEmpty(String... vals) {
+        if (vals == null) {
+            return null;
+        }
+        for (String v : vals) {
+            if (v != null && !v.trim().isEmpty()) {
+                return v;
+            }
+        }
+        return null;
+    }
+
+    public void onToggleDiscapacidad() {
+        if (!apDiscapacidad) {
+            discapTipo = null;
+            discapDesc = null;
+            discapPorc = null;
+        }
+    }
+
+    public void onToggleCatastrofica() {
+        if (!apCatastrofica) {
+            catasDiagnostico = null;
+            catasCalificada = null;
+        }
+    }
+
+    public void reloadFichaDesdeBd() {
+        if (this.ficha == null || this.ficha.getIdFicha() == null) {
+            return;
+        }
+        this.ficha = fichaService.findById(this.ficha.getIdFicha());
+    }
+
+    // Getters y setters
+
+    public Date getFechaNacimiento() {
+        return fechaNacimiento;
+    }
+
+    public void setFechaNacimiento(Date f) {
+        this.fechaNacimiento = f;
+        this.edad = calcUtil.calcularEdad(f);
+    }
+
+    public Date getFechaMaximaNacimiento() {
+        return calcUtil.getFechaMaximaNacimiento();
+    }
+
+    public boolean isMostrarDlgCedula() {
+        return mostrarDlgCedula;
+    }
+
+    public void setMostrarDlgCedula(boolean mostrarDlgCedula) {
+        this.mostrarDlgCedula = mostrarDlgCedula;
+    }
+
+    public PersonaAux getPersonaAux() {
+        if (personaAux == null) {
+            personaAux = new PersonaAux();
+        }
+        return personaAux;
+    }
+
+    public void setPersonaAux(PersonaAux personaAux) {
+        this.personaAux = personaAux;
+    }
+
+    public String getStepActual() {
+        return activeStep;
+    }
+
+    public void setStepActual(String stepActual) {
+        this.activeStep = stepActual;
+    }
+
+    public String getActiveStep() {
+        return this.activeStep;
+    }
+
+    public void setActiveStep(String activeStep) {
+        this.activeStep = activeStep;
+    }
+
+    public Date getFechaAtencion() {
+        if (fechaAtencion == null) {
+            fechaAtencion = new Date();
+        }
+        return fechaAtencion;
+    }
+
+    public void setFechaAtencion(Date fechaAtencion) {
+        this.fechaAtencion = fechaAtencion;
+    }
+
+    public List<String> getTipoAct() {
+        if (tipoAct == null) {
+            tipoAct = new ArrayList<>();
+        }
+        return tipoAct;
+    }
+
+    public void setTipoAct(List<String> tipoAct) {
+        this.tipoAct = tipoAct;
+    }
+
+    public List<Date> getFechaAct() {
+        if (fechaAct == null) {
+            fechaAct = new ArrayList<>();
+        }
+        return fechaAct;
+    }
+
+    public void setFechaAct(List<Date> fechaAct) {
+        this.fechaAct = fechaAct;
+    }
+
+    public List<String> getDescAct() {
+        if (descAct == null) {
+            descAct = new ArrayList<>();
+        }
+        return descAct;
+    }
+
+    public void setDescAct(List<String> descAct) {
+        this.descAct = descAct;
+    }
+
+    public int getStepIndex() {
+        return stepIndex;
+    }
+
+    public void setStepIndex(int stepIndex) {
+        this.stepIndex = stepIndex;
+    }
+
+    public String getProcessStepId() {
+
+        return ":wiz:" + activeStep;
+    }
+
+    public Integer[] getConsTiempoConsumo() {
+        return consTiempoConsumoMeses;
+    }
+
+    public void setConsTiempoConsumo(Integer[] v) {
+        this.consTiempoConsumoMeses = v;
+    }
+
+    public Integer[] getConsTiempoAbstinencia() {
+        return consTiempoAbstinenciaMeses;
+    }
+
+    public void setConsTiempoAbstinencia(Integer[] v) {
+        this.consTiempoAbstinenciaMeses = v;
+    }
+
+    public String getObsExamenFisico() {
+        return obsExamenFisico;
+    }
+
+    public void setObsExamenFisico(String obsExamenFisico) {
+        this.obsExamenFisico = obsExamenFisico;
+    }
+
+    public String getConsObservacion() {
+        return consumoVidaCondObs;
+    }
+
+    public void setConsObservacion(String v) {
+        this.consumoVidaCondObs = v;
+    }
+
+    public String getNRealizaEvaluacion() {
+        return nRealizaEvaluacion;
+    }
+
+    public void setNRealizaEvaluacion(String nRealizaEvaluacion) {
+        this.nRealizaEvaluacion = nRealizaEvaluacion;
+    }
+
+    public String getNRelacionTrabajo() {
+        return nRelacionTrabajo;
+    }
+
+    public void setNRelacionTrabajo(String nRelacionTrabajo) {
+        this.nRelacionTrabajo = nRelacionTrabajo;
+    }
+
+    public String getNObsRetiro() {
+        return nObsRetiro;
+    }
+
+    public void setNObsRetiro(String nObsRetiro) {
+        this.nObsRetiro = nObsRetiro;
+    }
+
+    public Map<String, Boolean> getRiesgos() {
+        if (riesgos == null) {
+            riesgos = new java.util.LinkedHashMap<>();
+        }
+        return riesgos;
+    }
+
+    public Map<String, String> getOtrosRiesgos() {
+        if (otrosRiesgos == null) {
+            otrosRiesgos = new java.util.LinkedHashMap<>();
+        }
+        return otrosRiesgos;
     }
 
     public long getTs() {
@@ -2081,10 +2656,6 @@ public class CentroMedicoCtrl implements Serializable {
 
     public void setExfNeuroReflejos(String exfNeuroReflejos) {
         this.exfNeuroReflejos = exfNeuroReflejos;
-    }
-
-    public void initConsumoVidaCondDefaults() {
-        initConsumoVidaCond();
     }
 
     public Integer getAbortos() {
@@ -2748,302 +3319,12 @@ public class CentroMedicoCtrl implements Serializable {
         return null;
     }
 
-    private Integer extraerIdx(UIComponent comp) {
-        if (comp == null) {
-            LOG.info("... [IDX] extraerIdx comp=null");
-            return null;
-        }
-        Object idxObj = comp.getAttributes().get("idx");
-
-        String clientId;
-        try {
-            clientId = comp.getClientId(FacesContext.getCurrentInstance());
-        } catch (RuntimeException e) {
-            clientId = String.valueOf(comp.getId());
-        }
-
-        LOG.debug("... [IDX] extraerIdx compId=" + comp.getId()
-                + " clientId=" + clientId
-                + " idxAttr=" + idxObj);
-
-        if (idxObj == null) {
-            return null;
-        }
-        try {
-            return Integer.parseInt(idxObj.toString());
-        } catch (NumberFormatException e) {
-            LOG.info("... [IDX] extraerIdx parse ERROR idxAttr={} ex={}", idxObj, e.toString());
-            return null;
-        }
-    }
-
     private ConsultaDiagnostico getDiagRow(Integer idx, String contexto) {
         if (idx == null || listaDiag == null || idx < 0 || idx >= listaDiag.size()) {
             LOG.info("<<< [{}] idx INVALID => {}", contexto, idx);
             return null;
         }
         return listaDiag.get(idx);
-    }
-
-    public void onKCieCodigoSelect(SelectEvent<String> event) {
-        UIComponent comp = (event != null ? event.getComponent() : null);
-        Integer idx = extraerIdx(comp);
-        String selected = (event != null ? event.getObject() : null);
-
-        LOG.info(">>> [AC-K-COD] itemSelect idx=" + idx
-                + " selected=[" + selected + "] clientId=" + (comp != null ? comp.getClientId() : "null"));
-
-        ConsultaDiagnostico row = getDiagRow(idx, "AC-K-COD itemSelect");
-        if (row == null) {
-            return;
-        }
-
-        if (selected == null || selected.trim().isEmpty()) {
-            LOG.info("<<< [AC-K-COD] itemSelect empty selection => no-op");
-            return;
-        }
-
-        String codigo = selected.trim().toUpperCase();
-        row.setCodigo(codigo);
-
-        Cie10 cie = cie10Service.buscarPorCodigo(codigo);
-        LOG.info("... [AC-K-COD] itemSelect buscarPorCodigo(" + codigo + ") => " + (cie != null ? cie.getCodigo() : "null"));
-
-        if (cie != null) {
-            row.setCodigo(cie.getCodigo());
-            row.setDescripcion(cie.getDescripcion());
-            row.setCie10(cie);
-        } else {
-            row.setDescripcion(null);
-            row.setCie10(null);
-        }
-
-        LOG.info("<<< [AC-K-COD] itemSelect AFTER codigo=[" + row.getCodigo() + "] desc=[" + row.getDescripcion() + "]");
-    }
-
-    public void abrirDialogoDiagnostico(AjaxBehaviorEvent event) {
-        UIComponent comp = (event != null ? event.getComponent() : null);
-        Integer idx = extraerIdx(comp);
-        ConsultaDiagnostico row = getDiagRow(idx, "K-DLG abrir");
-        if (row == null) {
-            return;
-        }
-
-        dialogDiagnosticoIdx = idx;
-        codCie10Ppal = row.getCodigo();
-        descCie10Ppal = row.getDescripcion();
-        PrimeFaces.current().executeScript("PF('kDiagDialogWv').show();");
-    }
-
-    public void aceptarDialogoDiagnostico() {
-        ConsultaDiagnostico row = getDiagRow(dialogDiagnosticoIdx, "K-DLG aceptar");
-        if (row == null) {
-            return;
-        }
-
-        String codigo = codCie10Ppal != null ? codCie10Ppal.trim().toUpperCase() : "";
-        String descripcion = descCie10Ppal != null ? descCie10Ppal.trim() : "";
-
-        Cie10 cie = null;
-        if (!codigo.isEmpty()) {
-            cie = cie10Service.buscarPorCodigo(codigo);
-        }
-        if (cie == null && !descripcion.isEmpty()) {
-            cie = cie10Service.buscarPrimeroPorDescripcion(descripcion);
-        }
-
-        if (cie != null) {
-            row.setCodigo(cie.getCodigo());
-            row.setDescripcion(cie.getDescripcion());
-            row.setCie10(cie);
-        } else {
-            row.setCodigo(codigo.isEmpty() ? null : codigo);
-            row.setDescripcion(descripcion.isEmpty() ? null : descripcion);
-            row.setCie10(null);
-        }
-
-        syncCie10PrincipalFromK();
-        PrimeFaces.current().executeScript("PF('kDiagDialogWv').hide();");
-    }
-
-    public void cerrarDialogoDiagnostico() {
-        PrimeFaces.current().executeScript("PF('kDiagDialogWv').hide();");
-    }
-
-    public void onKCieCodigoBlur(AjaxBehaviorEvent event) {
-        UIComponent comp = event != null ? event.getComponent() : null;
-        Integer idx = extraerIdx(comp);
-
-        String clientId = safeClientId(comp);
-        String typed = getAutoCompleteTypedRobusto(comp);
-
-        LOG.info(">>> [AC-K-COD] blur idx=" + idx + " clientId=" + clientId + " typed=[" + typed + "]");
-
-        ConsultaDiagnostico row = getDiagRow(idx, "AC-K-COD blur");
-        if (row == null) {
-            return;
-        }
-
-        String codigo = typed != null ? typed.trim() : "";
-        if (codigo.isEmpty()) {
-            row.setCodigo(null);
-            row.setDescripcion(null);
-            row.setCie10(null);
-            LOG.info("<<< [AC-K-COD] blur empty => cleared row");
-            return;
-        }
-
-        String codigoUp = codigo.toUpperCase();
-
-        if (codigoUp.length() < 3) {
-            row.setCodigo(codigoUp);
-            row.setDescripcion(null);
-            row.setCie10(null);
-            LOG.info("<<< [AC-K-COD] blur partial [" + codigoUp + "] => keep, no exact lookup");
-            return;
-        }
-
-        Cie10 cie = cie10Service.buscarPorCodigo(codigoUp);
-
-        if (cie == null) {
-            List<Cie10> sugerencias = cie10Service.buscarJerarquiaPorTerm(codigoUp);
-            if (sugerencias != null) {
-                String codigoNorm = codigoUp.replaceAll("[^A-Z0-9]", "");
-                for (Cie10 candidato : sugerencias) {
-                    if (candidato == null || candidato.getCodigo() == null) {
-                        continue;
-                    }
-
-                    String candidatoNorm = candidato.getCodigo().toUpperCase().replaceAll("[^A-Z0-9]", "");
-                    if (candidatoNorm.equals(codigoNorm)) {
-                        cie = candidato;
-                        break;
-                    }
-                }
-            }
-        }
-
-        LOG.debug("... [AC-K-COD] buscarPorCodigo(" + codigoUp + ") => "
-                + (cie != null ? (cie.getCodigo() + " | " + cie.getDescripcion()) : "null"));
-        if (cie != null) {
-            row.setCodigo(cie.getCodigo());
-            row.setDescripcion(cie.getDescripcion());
-            row.setCie10(cie);
-            LOG.info("<<< [AC-K-COD] blur AFTER MATCH codigo=[" + row.getCodigo() + "] desc=[" + row.getDescripcion() + "]");
-            return;
-        }
-
-        row.setCodigo(codigoUp);
-        row.setDescripcion(null);
-        row.setCie10(null);
-        LOG.info("<<< [AC-K-COD] blur AFTER NO-MATCH keep codigo=[" + row.getCodigo() + "]");
-    }
-
-    public void onKDescSelect(SelectEvent<String> event) {
-        String descripcion = event.getObject();
-        UIComponent comp = event.getComponent();
-        Integer idx = extraerIdx(comp);
-
-        LOG.info(">>> [AC-K-DESC] itemSelect ENTER desc=[" + descripcion + "] idx=" + idx);
-
-        ConsultaDiagnostico row = getDiagRow(idx, "AC-K-DESC itemSelect");
-        if (row == null) {
-            return;
-        }
-
-        row.setDescripcion(descripcion);
-
-        if (descripcion != null && !descripcion.trim().isEmpty()) {
-            Cie10 cie = cie10Service.buscarPrimeroPorDescripcion(descripcion.trim());
-            LOG.info("... [AC-K-DESC] buscarPrimeroPorDescripcion => " + (cie != null ? cie.getCodigo() : "null"));
-
-            if (cie != null) {
-                row.setCodigo(cie.getCodigo());
-                row.setCie10(cie);
-            } else {
-                row.setCodigo(null);
-                row.setCie10(null);
-            }
-        }
-
-        LOG.info("<<< [AC-K-DESC] itemSelect row AFTER idx=" + idx
-                + " codigo=[" + row.getCodigo() + "] desc=[" + row.getDescripcion() + "]");
-
-        syncCie10PrincipalFromK();
-    }
-
-    public void onKDescBlur(AjaxBehaviorEvent event) {
-        UIComponent comp = (event != null ? event.getComponent() : null);
-        Integer idx = extraerIdx(comp);
-        String clientId = safeClientId(comp);
-        String typed = getAutoCompleteTypedRobusto(comp);
-
-        LOG.info(">>> [AC-K-DESC] blur idx=" + idx + " clientId=" + clientId + " typed=[" + typed + "]");
-
-        ConsultaDiagnostico row = getDiagRow(idx, "AC-K-DESC blur");
-        if (row == null) {
-            return;
-        }
-
-        String desc = (typed != null ? typed.trim() : "");
-        if (desc.isEmpty()) {
-            row.setDescripcion(null);
-            row.setCie10(null);
-            LOG.info("<<< [AC-K-DESC] blur empty => cleared descripcion");
-            return;
-        }
-
-        row.setDescripcion(desc);
-
-        if (desc.length() < 4) {
-            row.setCie10(null);
-            LOG.info("<<< [AC-K-DESC] blur partial => keep desc only");
-            return;
-        }
-
-        Cie10 cie = null;
-        try {
-            List<Cie10> candidatos = cie10Service.buscarPorDescripcionLike(desc, 20);
-            LOG.info("... [AC-K-DESC] candidatos.size=" + (candidatos == null ? "null" : candidatos.size()));
-            if (candidatos != null && !candidatos.isEmpty()) {
-                cie = cie10LookupService.buscarMejorCoincidenciaPorDescripcion(candidatos, desc);
-            }
-        } catch (RuntimeException e) {
-            LOG.error("!!! [AC-K-DESC] error: {}", e.getMessage(), e);
-        }
-
-        LOG.debug("... [AC-K-DESC] pickBest => "
-                + (cie != null ? (cie.getCodigo() + " | " + cie.getDescripcion()) : "null"));
-
-        if (cie != null) {
-            row.setCodigo(cie.getCodigo());
-            row.setDescripcion(cie.getDescripcion());
-            row.setCie10(cie);
-            LOG.info("<<< [AC-K-DESC] blur AFTER MATCH codigo=[" + row.getCodigo() + "] desc=[" + row.getDescripcion() + "]");
-            return;
-        }
-
-        row.setCie10(null);
-        LOG.info("<<< [AC-K-DESC] blur AFTER NO-MATCH keep desc=[" + row.getDescripcion() + "]");
-    }
-
-    public void onKTipoChange(AjaxBehaviorEvent event) {
-        UIComponent comp = (event != null ? event.getComponent() : null);
-        Integer idx = extraerIdx(comp);
-
-        String clientId = safeClientId(comp);
-
-        LOG.info(">>> [K-TIPO] change ENTER idx=" + idx + " clientId=" + clientId);
-
-        ConsultaDiagnostico row = getDiagRow(idx, "K-TIPO change");
-        if (row == null) {
-            return;
-        }
-
-        LOG.info("<<< [K-TIPO] AFTER idx=" + idx
-                + " codigo=[" + row.getCodigo() + "]"
-                + " desc=[" + row.getDescripcion() + "]"
-                + " tipo=[" + row.getTipoDiag() + "]");
     }
 
     private String getAutoCompleteTypedRobusto(UIComponent comp) {
@@ -3081,60 +3362,9 @@ public class CentroMedicoCtrl implements Serializable {
         }
     }
 
-    private String safeClientId(UIComponent comp) {
-        try {
-            FacesContext fc = FacesContext.getCurrentInstance();
-            return (fc != null && comp != null) ? comp.getClientId(fc) : "null";
-        } catch (RuntimeException e) {
-            return "err:" + e.getMessage();
-        }
-    }
-
     public String getStepProcessId() {
 
         return "@([id$=" + activeStep + "])";
-    }
-
-    private Date toDate(Object value) {
-        if (value == null) {
-            return null;
-        }
-        if (value instanceof Date d) {
-            return d;
-        }
-        if (value instanceof LocalDate ld) {
-            return Date.from(ld.atStartOfDay(ZoneId.systemDefault()).toInstant());
-        }
-        return null;
-    }
-
-    public void autoOpenCedulaIfNeeded() {
-
-        boolean open = false;
-
-        if (!cedulaDlgAutoOpened) {
-
-            if (mostrarDlgCedula && "step1".equals(activeStep)) {
-                open = true;
-                cedulaDlgAutoOpened = true;
-            }
-        }
-
-        org.primefaces.PrimeFaces.current().ajax().addCallbackParam("openCedulaDlg", open);
-    }
-
-    public void consumirAutoOpenCedulaDlg() {
-        boolean open = false;
-
-        if ("step1".equals(activeStep)
-                && empleadoSel == null
-                && !cedulaDlgAutoOpened) {
-
-            open = true;
-            cedulaDlgAutoOpened = true;
-        }
-
-        PrimeFaces.current().ajax().addCallbackParam("openCedulaDlg", open);
     }
 
     public boolean isCedulaDlgAutoOpened() {
@@ -3561,30 +3791,8 @@ public class CentroMedicoCtrl implements Serializable {
         this.fichaExamenCompService = fichaExamenCompService;
     }
 
-    public void onDlgCedulaHide() {
-        mostrarDlgCedula = false;
-    }
-
-    public void onDlgCedulaClose() {
-        mostrarDlgCedula = false;
-    }
-
     public String getPdfTokenCertificado() {
         return pdfTokenCertificado;
-    }
-
-    private static String safe(String s) {
-        if (s == null) {
-            return "";
-        }
-        String out = s;
-        out = out.replace("&", "&amp;");
-        out = out.replace("<", "&lt;");
-        out = out.replace(">", "&gt;");
-        out = out.replace("\"", "&quot;");
-
-        out = out.replace("'", "&#39;");
-        return out;
     }
 
     /**
@@ -3592,21 +3800,6 @@ public class CentroMedicoCtrl implements Serializable {
      * vacío. - Si es "S"/"SI"/"TRUE"/"1"/"X" => "X" - Caso contrario (incluye
      * "N"/"NO"/null) => ""
      */
-    private static String markX(Object v) {
-        if (v == null) {
-            return "";
-        }
-        String s = String.valueOf(v).trim();
-        if (s.isEmpty()) {
-            return "";
-        }
-        s = s.toUpperCase();
-        if ("S".equals(s) || "SI".equals(s) || "TRUE".equals(s) || "1".equals(s) || "X".equals(s) || "✔".equals(s)) {
-            return "X";
-        }
-        return "";
-    }
-
     private static boolean isYes(Object v) {
         if (v == null) {
             return false;
@@ -3621,65 +3814,6 @@ public class CentroMedicoCtrl implements Serializable {
         }
         String s = String.valueOf(v).trim().toUpperCase();
         return "N".equals(s) || "NO".equals(s) || "FALSE".equals(s) || "0".equals(s);
-    }
-
-    private static String normalizarXhtml(String html) {
-        if (html == null) {
-            return "";
-        }
-        String out = html;
-
-        out = out.replace("&nbsp;", " ");
-
-        out = out.replaceAll("(?i)<br(\s*)>", "<br/>");
-
-        out = out.replaceAll("(?i)<hr(\s*)>", "<hr/>");
-
-        return out;
-    }
-
-    private String val(Object root, String path) {
-        if (root == null || path == null || path.isBlank()) {
-            return "";
-        }
-        Object cur = root;
-        for (String part : path.split("\\.")) {
-            if (cur == null) {
-                return "";
-            }
-            cur = readProperty(cur, part);
-        }
-        return cur == null ? "" : String.valueOf(cur);
-    }
-
-    private Object readProperty(Object obj, String prop) {
-        try {
-            // intenta getProp()
-            String m = "get" + Character.toUpperCase(prop.charAt(0)) + prop.substring(1);
-            return obj.getClass().getMethod(m).invoke(obj);
-        } catch (Exception ignore) {
-            try {
-                // intenta isProp()
-                String m = "is" + Character.toUpperCase(prop.charAt(0)) + prop.substring(1);
-                return obj.getClass().getMethod(m).invoke(obj);
-            } catch (Exception ignore2) {
-                try {
-                    // intenta campo directo
-                    java.lang.reflect.Field f = obj.getClass().getDeclaredField(prop);
-                    f.setAccessible(true);
-                    return f.get(obj);
-                } catch (Exception ignore3) {
-                    return null;
-                }
-            }
-        }
-    }
-
-    private String fmtDate(java.util.Date d) {
-        if (d == null) {
-            return "";
-        }
-        return new java.text.SimpleDateFormat("dd/MM/yyyy").format(d);
     }
 
     public String getAntTerapeutica() {
@@ -3827,40 +3961,9 @@ public class CentroMedicoCtrl implements Serializable {
 
     }
 
-    private void cargarActividadLaboralArrays(Map<String, String> rep) {
-        for (int i = 0; i < H_ROWS; i++) {
-            int idx = i + 1; // índice 1-based
-            rep.put("h_centro_" + idx, safe(getSafe(actLabCentroTrabajo, i)));
-            rep.put("h_actividad_" + idx, safe(getSafe(actLabActividad, i)));
-            rep.put("h_tiempo_" + idx, safe(getSafe(actLabTiempo, i)));
-            rep.put("h_anterior_" + idx, isTrue(getSafe(actLabTrabajoAnterior, i)) ? "X" : "");
-            rep.put("h_actual_" + idx, isTrue(getSafe(actLabTrabajoActual, i)) ? "X" : "");
-            rep.put("h_incidente_" + idx, isTrue(getSafe(actLabIncidenteChk, i)) ? "X" : "");
-            rep.put("h_accidente_" + idx, isTrue(getSafe(actLabAccidenteChk, i)) ? "X" : "");
-            rep.put("h_enfermedad_" + idx, isTrue(getSafe(actLabEnfermedadChk, i)) ? "X" : "");
-            rep.put("h_iess_si_" + idx, isTrue(getSafe(iessSi, i)) ? "X" : "");
-            rep.put("h_iess_no_" + idx, isTrue(getSafe(iessNo, i)) ? "X" : "");
-            rep.put("h_iess_fecha_" + idx, fmtDate(toDate(getSafe(iessFecha, i))));
-            rep.put("h_iess_especificar_" + idx, safe(getSafe(iessEspecificar, i)));
-            rep.put("h_obs_" + idx, safe(getSafe(actLabObservaciones, i)));
-        }
-    }
-
     /**
      * Retorna el primer String no nulo y no vacío (trim).
      */
-    private static String firstNonEmpty(String... vals) {
-        if (vals == null) {
-            return null;
-        }
-        for (String v : vals) {
-            if (v != null && !v.trim().isEmpty()) {
-                return v;
-            }
-        }
-        return null;
-    }
-
     /**
      * Intenta obtener un String desde la entidad Ficha mediante reflexión. Útil
      * cuando el bean del controlador no tiene el valor pero la entidad sí.
@@ -3889,33 +3992,11 @@ public class CentroMedicoCtrl implements Serializable {
         return null;
     }
 
-    public void onToggleDiscapacidad() {
-        if (!apDiscapacidad) {
-            discapTipo = null;
-            discapDesc = null;
-            discapPorc = null;
-        }
-    }
-
-    public void onToggleCatastrofica() {
-        if (!apCatastrofica) {
-            catasDiagnostico = null;
-            catasCalificada = null;
-        }
-    }
-
     /**
      * PARA MANEJAR LA GENERACION Y REGENERACION
      *
      * @return
      */
-    public void reloadFichaDesdeBd() {
-        if (this.ficha == null || this.ficha.getIdFicha() == null) {
-            return;
-        }
-        this.ficha = fichaService.findById(this.ficha.getIdFicha());
-    }
-
     public String getDiscapTipo() {
         return discapTipo;
     }
