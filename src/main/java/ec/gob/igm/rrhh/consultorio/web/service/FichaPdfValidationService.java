@@ -51,7 +51,7 @@ public class FichaPdfValidationService implements Serializable {
     }
 
     private boolean hasPersonaAux(PersonaAux personaAux, FichaOcupacional ficha) {
-        if (personaAux != null && !isBlank(personaAux.getCedula())) {
+        if (hasCedulaLoaded(personaAux)) {
             return true;
         }
         if (ficha.getPersonaAux() == null) {
@@ -64,6 +64,22 @@ public class FichaPdfValidationService implements Serializable {
                 return true;
             }
             return !isBlank(ficha.getPersonaAux().getCedula());
+        } catch (RuntimeException ex) {
+            return true;
+        }
+    }
+
+    private boolean hasCedulaLoaded(PersonaAux personaAux) {
+        if (personaAux == null) {
+            return false;
+        }
+
+        try {
+            boolean loaded = Persistence.getPersistenceUtil().isLoaded(personaAux, "cedula");
+            if (!loaded) {
+                return true;
+            }
+            return !isBlank(personaAux.getCedula());
         } catch (RuntimeException ex) {
             return true;
         }
