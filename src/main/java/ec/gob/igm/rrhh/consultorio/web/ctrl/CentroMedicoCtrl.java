@@ -71,6 +71,7 @@ import ec.gob.igm.rrhh.consultorio.web.service.CedulaDialogUiCoordinator;
 import ec.gob.igm.rrhh.consultorio.web.service.CedulaSearchService;
 import ec.gob.igm.rrhh.consultorio.web.service.Cie10LookupService;
 import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoFormInitializer;
+import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoFormStateService;
 import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoPdfWorkflowService;
 import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoWizardService;
 import ec.gob.igm.rrhh.consultorio.web.service.FichaPdfDataMapper;
@@ -450,6 +451,9 @@ public class CentroMedicoCtrl implements Serializable {
     private transient CentroMedicoFormInitializer centroMedicoFormInitializer;
 
     @Inject
+    private transient CentroMedicoFormStateService centroMedicoFormStateService;
+
+    @Inject
     private transient PersonaAuxFlowService personaAuxFlowService;
 
     @Inject
@@ -505,14 +509,10 @@ public class CentroMedicoCtrl implements Serializable {
             }
 
             if (!preRenderDone) {
-                centroMedicoFormInitializer.initExamenes(this, 5);
-                ensureActLabSize();
-                centroMedicoFormInitializer.ensureDiagSize(this, 6);
+                centroMedicoFormStateService.prepareStep3Collections(this, H_ROWS, DIAG_ROWS, 5);
                 preRenderDone = true;
             } else {
-
-                ensureActLabSize();
-                centroMedicoFormInitializer.ensureDiagSize(this, 6);
+                centroMedicoFormStateService.prepareStep3Collections(this, H_ROWS, DIAG_ROWS, 5);
             }
 
             LOG.info("GET? {} activeStep={} empleadoSel={} mostrarDlgCedula={}",
@@ -539,7 +539,7 @@ public class CentroMedicoCtrl implements Serializable {
         centroMedicoFormInitializer.initDomainDefaults(this);
         centroMedicoFormInitializer.initStep2Defaults(this, STATIC_RISK_COLS);
         centroMedicoFormInitializer.initStep3Defaults(this, H_ROWS, DIAG_ROWS);
-        ensureActLabSize();
+        centroMedicoFormStateService.prepareStep3Collections(this, H_ROWS, DIAG_ROWS, 5);
     }
 
     public void onNoConsumeChange(int idx) {
@@ -554,22 +554,11 @@ public class CentroMedicoCtrl implements Serializable {
         mostrarDlgCedula = false;
     }
 
-    private ConsultaDiagnostico ensureDiag(int index) {
-
-        while (listaDiag.size() <= index) {
-            listaDiag.add(new ConsultaDiagnostico());
-        }
-
-        ConsultaDiagnostico d = listaDiag.get(index);
-        if (d == null) {
-            d = new ConsultaDiagnostico();
-            listaDiag.set(index, d);
-        }
-        return d;
-    }
-
     public void onCie10BlurCodigo(int index) {
-        ConsultaDiagnostico diag = ensureDiag(index);
+        ConsultaDiagnostico diag = centroMedicoFormStateService.ensureDiag(this, index);
+        if (diag == null) {
+            return;
+        }
         cie10LookupService.completarDiagnosticoPorCodigo(diag);
     }
 
@@ -764,16 +753,6 @@ public class CentroMedicoCtrl implements Serializable {
 
     private boolean esVacio(String s) {
         return s == null || s.trim().isEmpty();
-    }
-
-    private java.util.List<Date> ensureSize(List<Date> list, int size) {
-        if (list == null) {
-            list = new ArrayList<>();
-        }
-        while (list.size() < size) {
-            list.add(null);
-        }
-        return list;
     }
 
     private String usuarioReal() {
@@ -1026,7 +1005,7 @@ public class CentroMedicoCtrl implements Serializable {
                     now,
                     user,
                     this::asegurarPersonaAuxPersistida,
-                    this::ensureActLabSize,
+                    () -> centroMedicoFormStateService.ensureActLabSize(this, H_ROWS),
                     actLabCentroTrabajo,
                     actLabActividad,
                     actLabTiempo,
@@ -2133,93 +2112,6 @@ public class CentroMedicoCtrl implements Serializable {
 
     public void setDescAct(List<String> descAct) {
         this.descAct = descAct;
-    }
-
-    private void ensureActLabSize() {
-        final int n = H_ROWS;
-
-        initActivityLabListsIfNull();
-
-        ensureListSize(actLabCentroTrabajo, n, null);
-        ensureListSize(actLabActividad, n, null);
-        ensureListSize(actLabTiempo, n, null);
-        ensureListSize(actLabObservaciones, n, null);
-        ensureListSize(iessEspecificar, n, null);
-
-        ensureListSize(actLabTrabajoAnterior, n, null);
-        ensureListSize(actLabTrabajoActual, n, null);
-        ensureListSize(actLabIncidenteChk, n, null);
-        ensureListSize(actLabAccidenteChk, n, null);
-        ensureListSize(actLabEnfermedadChk, n, null);
-        ensureListSize(iessSi, n, null);
-        ensureListSize(iessNo, n, null);
-
-        ensureListSize(iessFecha, n, null);
-
-        rebuildActivityLabRowNumbers(n);
-    }
-
-    private void initActivityLabListsIfNull() {
-        if (actLabRows == null) {
-            actLabRows = new ArrayList<String>();
-        }
-        if (actLabCentroTrabajo == null) {
-            actLabCentroTrabajo = new ArrayList<String>();
-        }
-        if (actLabActividad == null) {
-            actLabActividad = new ArrayList<String>();
-        }
-        if (actLabTiempo == null) {
-            actLabTiempo = new ArrayList<String>();
-        }
-        if (actLabObservaciones == null) {
-            actLabObservaciones = new ArrayList<String>();
-        }
-
-        if (actLabTrabajoAnterior == null) {
-            actLabTrabajoAnterior = new ArrayList<Boolean>();
-        }
-        if (actLabTrabajoActual == null) {
-            actLabTrabajoActual = new ArrayList<Boolean>();
-        }
-        if (actLabIncidenteChk == null) {
-            actLabIncidenteChk = new ArrayList<Boolean>();
-        }
-        if (actLabAccidenteChk == null) {
-            actLabAccidenteChk = new ArrayList<Boolean>();
-        }
-        if (actLabEnfermedadChk == null) {
-            actLabEnfermedadChk = new ArrayList<Boolean>();
-        }
-
-        if (iessSi == null) {
-            iessSi = new ArrayList<Boolean>();
-        }
-        if (iessNo == null) {
-            iessNo = new ArrayList<Boolean>();
-        }
-        if (iessFecha == null) {
-            iessFecha = new ArrayList<Date>();
-        }
-        if (iessEspecificar == null) {
-            iessEspecificar = new ArrayList<String>();
-        }
-    }
-
-    private <T> void ensureListSize(List<T> list, int size, T defaultValue) {
-        while (list.size() < size) {
-            list.add(defaultValue);
-        }
-        if (list.size() > size) {
-            list.subList(size, list.size()).clear();
-        }
-    }
-
-    private void rebuildActivityLabRowNumbers(int n) {
-        actLabRows.clear();
-        for (int i = 1; i <= n; i++) {
-            actLabRows.add(String.valueOf(i));
-        }
     }
 
     private boolean filaActLabTieneAlgo(int i) {
