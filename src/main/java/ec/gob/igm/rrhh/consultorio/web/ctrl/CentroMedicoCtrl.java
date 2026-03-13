@@ -565,45 +565,6 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
         centroMedicoFormStateService.prepareStep3Collections(this, H_ROWS, DIAG_ROWS, 5);
     }
 
-    public void preRenderInit() {
-        try {
-            FacesContext fc = FacesContext.getCurrentInstance();
-            if (fc == null) {
-                return;
-            }
-            applyPacienteUiFlow(pacienteUiFlowCoordinator.ensureEmpleadoSelEnViewScope(
-                    permitirIngresoManual,
-                    empleadoSel,
-                    noPersonaSel,
-                    ficha,
-                    personaAux));
-            final boolean postback = fc.isPostback();
-
-            if (!"step1".equals(activeStep)) {
-                mostrarDlgCedula = false;
-            } else {
-                mostrarDlgCedula = (empleadoSel == null);
-            }
-
-            if (!preRenderDone) {
-                centroMedicoFormStateService.prepareStep3Collections(this, H_ROWS, DIAG_ROWS, 5);
-                preRenderDone = true;
-            } else {
-                centroMedicoFormStateService.prepareStep3Collections(this, H_ROWS, DIAG_ROWS, 5);
-            }
-
-            LOG.info("GET? {} activeStep={} empleadoSel={} mostrarDlgCedula={}",
-                    !FacesContext.getCurrentInstance().isPostback(),
-                    activeStep,
-                    (empleadoSel == null),
-                    mostrarDlgCedula);
-
-        } catch (RuntimeException e) {
-            LOG.error("preRenderInit failed. activeStep={}, noPersonaSel={}, cedulaBusqueda={}",
-                    activeStep, noPersonaSel, cedulaBusqueda, e);
-        }
-    }
-
     // =========================
     // NAVEGACIÓN DEL WIZARD
     // =========================
