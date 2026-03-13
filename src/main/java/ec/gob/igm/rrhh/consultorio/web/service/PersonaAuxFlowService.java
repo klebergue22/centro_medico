@@ -81,6 +81,7 @@ public class PersonaAuxFlowService implements Serializable {
 
         if (ficha != null) {
             ficha.setPersonaAux(personaAux);
+            ficha.setEmpleado(null);
         }
 
         return new EnsurePersonaAuxResult(ficha, personaAux);

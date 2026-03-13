@@ -1016,6 +1016,15 @@ public class CentroMedicoCtrl implements Serializable {
             return;
         }
 
+        if (ficha.getEmpleado() != null && ficha.getPersonaAux() != null) {
+            if (permitirIngresoManual && personaAux != null) {
+                ficha.setEmpleado(null);
+            } else {
+                ficha.setPersonaAux(null);
+            }
+            return;
+        }
+
         if (ficha.getEmpleado() != null || ficha.getPersonaAux() != null) {
             return;
         }
@@ -1033,6 +1042,7 @@ public class CentroMedicoCtrl implements Serializable {
 
         if (permitirIngresoManual && personaAux != null) {
             ficha.setPersonaAux(personaAux);
+            ficha.setEmpleado(null);
             return;
         }
 
