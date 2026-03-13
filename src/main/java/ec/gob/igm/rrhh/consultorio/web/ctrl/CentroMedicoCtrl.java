@@ -94,6 +94,11 @@ import ec.gob.igm.rrhh.consultorio.web.validation.Step1Validator;
 import ec.gob.igm.rrhh.consultorio.web.validation.Step2Validator;
 import ec.gob.igm.rrhh.consultorio.web.validation.Step3Validator;
 import ec.gob.igm.rrhh.consultorio.web.validation.ValidationResult;
+import ec.gob.igm.rrhh.consultorio.web.viewstate.PacienteViewState;
+import ec.gob.igm.rrhh.consultorio.web.viewstate.PdfPreviewState;
+import ec.gob.igm.rrhh.consultorio.web.viewstate.Step1FormModel;
+import ec.gob.igm.rrhh.consultorio.web.viewstate.Step2FormModel;
+import ec.gob.igm.rrhh.consultorio.web.viewstate.Step3FormModel;
 
 /**
  *
@@ -132,6 +137,11 @@ public class CentroMedicoCtrl implements Serializable {
         if (result == null) {
             return;
         }
+        pacienteViewState.setEmpleadoSel(result.getEmpleadoSel());
+        pacienteViewState.setNoPersonaSel(result.getNoPersonaSel());
+        pacienteViewState.setPersonaAux(result.getPersonaAux());
+        pacienteViewState.setPermitirIngresoManual(result.isPermitirIngresoManual());
+
         ficha = result.getFicha();
         empleadoSel = result.getEmpleadoSel();
         noPersonaSel = result.getNoPersonaSel();
@@ -147,6 +157,12 @@ public class CentroMedicoCtrl implements Serializable {
     private final Step2Validator step2Validator = new Step2Validator();
     private final Step3Validator step3Validator = new Step3Validator();
     private final FichaCompletaValidator fichaCompletaValidator = new FichaCompletaValidator();
+
+    private final Step1FormModel step1FormModel = new Step1FormModel();
+    private final Step2FormModel step2FormModel = new Step2FormModel();
+    private final Step3FormModel step3FormModel = new Step3FormModel();
+    private final PdfPreviewState pdfPreviewState = new PdfPreviewState();
+    private final PacienteViewState pacienteViewState = new PacienteViewState();
 
     private String activeStep = "step1";
     private boolean cedulaDlgAutoOpened = false;
@@ -690,6 +706,11 @@ public class CentroMedicoCtrl implements Serializable {
     }
 
     private void resetStep4PdfState() {
+        pdfPreviewState.setFichaPdfListo(false);
+        pdfPreviewState.setCertificadoListo(false);
+        pdfPreviewState.setPdfTokenFicha(null);
+        pdfPreviewState.setPdfTokenCertificado(null);
+
         this.fichaPdfListo = false;
         this.certificadoListo = false;
         this.pdfTokenFicha = null;
@@ -701,11 +722,15 @@ public class CentroMedicoCtrl implements Serializable {
             this.ficha = state.ficha;
             this.pdfTokenFicha = state.pdfTokenFicha;
             this.fichaPdfListo = true;
+            pdfPreviewState.setFichaPdfListo(true);
+            pdfPreviewState.setPdfTokenFicha(state.pdfTokenFicha);
         }
 
         if (state.certificadoListo) {
             this.pdfTokenCertificado = state.pdfTokenCertificado;
             this.certificadoListo = true;
+            pdfPreviewState.setCertificadoListo(true);
+            pdfPreviewState.setPdfTokenCertificado(state.pdfTokenCertificado);
         }
     }
 
@@ -1415,6 +1440,10 @@ public class CentroMedicoCtrl implements Serializable {
         certificadoListo = state.certificadoListo;
         pdfTokenCertificado = state.pdfTokenCertificado;
         pdfObjectUrl = state.pdfObjectUrl;
+
+        pdfPreviewState.setCertificadoListo(state.certificadoListo);
+        pdfPreviewState.setPdfTokenCertificado(state.pdfTokenCertificado);
+        pdfPreviewState.setPdfObjectUrl(state.pdfObjectUrl);
     }
 
     // PDF - Certificado Médico
@@ -4180,6 +4209,26 @@ public class CentroMedicoCtrl implements Serializable {
 
     public String getPdfTokenFicha() {
         return pdfTokenFicha;
+    }
+
+    public Step1FormModel getStep1FormModel() {
+        return step1FormModel;
+    }
+
+    public Step2FormModel getStep2FormModel() {
+        return step2FormModel;
+    }
+
+    public Step3FormModel getStep3FormModel() {
+        return step3FormModel;
+    }
+
+    public PdfPreviewState getPdfPreviewState() {
+        return pdfPreviewState;
+    }
+
+    public PacienteViewState getPacienteViewState() {
+        return pacienteViewState;
     }
 
 }
