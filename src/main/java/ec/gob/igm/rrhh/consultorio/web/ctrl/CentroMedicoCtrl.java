@@ -511,7 +511,9 @@ public class CentroMedicoCtrl implements Serializable {
     @Inject
     private transient CentroMedicoPdfUiCoordinator centroMedicoPdfUiCoordinator;
 
-    // JSF Lifecycle / Inicialización
+    // =========================
+    // Ciclo de vida y navegación
+    // =========================
     public void preRenderInit() {
         try {
             FacesContext fc = FacesContext.getCurrentInstance();
@@ -567,32 +569,8 @@ public class CentroMedicoCtrl implements Serializable {
         centroMedicoFormStateService.prepareStep3Collections(this, H_ROWS, DIAG_ROWS, 5);
     }
 
-    public void onNoConsumeChange(int idx) {
-        if (Boolean.TRUE.equals(consNoConsume[idx])) {
-            consExConsumidor[idx] = false;
-            consTiempoConsumoMeses[idx] = 0;
-            consTiempoAbstinenciaMeses[idx] = 0;
-        }
-    }
-
     public void onDlgCedulaShown() {
         mostrarDlgCedula = false;
-    }
-
-    public void onCie10BlurCodigo(int index) {
-        ConsultaDiagnostico diag = centroMedicoFormStateService.ensureDiag(this, index);
-        if (diag == null) {
-            return;
-        }
-        cie10LookupService.completarDiagnosticoPorCodigo(diag);
-    }
-
-    public void onCie10FilaSelect(int idx) {
-        if (listaDiag == null || idx < 0 || idx >= listaDiag.size()) {
-            return;
-        }
-
-        cie10LookupService.sincronizarFilaSeleccionada(listaDiag.get(idx));
     }
 
     public void onFechaNacimientoSelect(SelectEvent e) {
@@ -667,6 +645,9 @@ public class CentroMedicoCtrl implements Serializable {
         this.imc = calcUtil.recalcularIMC(peso, tallaCm);
     }
 
+    // =========================
+    // Utilidades de cálculo/auditoría
+    // =========================
     private void registrarAuditoria(String accion, String tabla, String campo, String observaciones) {
         s3("registrarAuditoria() accion=" + accion + " tabla=" + tabla + " campo=" + campo);
 
@@ -681,6 +662,9 @@ public class CentroMedicoCtrl implements Serializable {
     /**
      * guarda el step actual
      */
+    // =========================
+    // Flujo Wizard (Step 1,2,3 y navegación)
+    // =========================
     public void guardarStepActual() {
         LOG.info(">>> ENTRO A guardarStepActual, step={}", activeStep);
         controllerActionTemplate.executeWithResult(
@@ -857,15 +841,6 @@ public class CentroMedicoCtrl implements Serializable {
                     ficha));
         } catch (Step1FichaService.Step1ValidationException ex) {
             throw new BusinessValidationException(ex.getMessage());
-        }
-    }
-
-    public void onBuscarPorCedulaRh() {
-        try {
-            buscarCedula();
-        } catch (RuntimeException ex) {
-            messageService.handleUnexpected(LOG, "onBuscarPorCedulaRh", ex, activeStep, noPersonaSel, cedulaBusqueda);
-            cedulaDialogUiCoordinator.onRhError();
         }
     }
 
@@ -1305,6 +1280,9 @@ public class CentroMedicoCtrl implements Serializable {
                 value -> this.mostrarDlgCedula = value);
     }
 
+    // =========================
+    // CIE10 y diagnóstico
+    // =========================
     public void syncTipoEvaluacion() {
         this.tipoEvaluacion = this.tipoEval;
     }
@@ -1343,6 +1321,23 @@ public class CentroMedicoCtrl implements Serializable {
             codCie10Ppal = best.getCodigo();
             descCie10Ppal = best.getDescripcion();
         }
+    }
+
+
+    public void onCie10BlurCodigo(int index) {
+        ConsultaDiagnostico diag = centroMedicoFormStateService.ensureDiag(this, index);
+        if (diag == null) {
+            return;
+        }
+        cie10LookupService.completarDiagnosticoPorCodigo(diag);
+    }
+
+    public void onCie10FilaSelect(int idx) {
+        if (listaDiag == null || idx < 0 || idx >= listaDiag.size()) {
+            return;
+        }
+
+        cie10LookupService.sincronizarFilaSeleccionada(listaDiag.get(idx));
     }
 
     public List<Cie10> completarCie10(String query) {
@@ -1419,6 +1414,9 @@ public class CentroMedicoCtrl implements Serializable {
         }
     }
 
+    // =========================
+    // Gestión de paciente / cédula / persona auxiliar
+    // =========================
     public void abrirPersonaAuxManual() {
         PacienteUiFlowCoordinator.UiFlowResult result = pacienteUiFlowCoordinator.abrirPersonaAuxManual(
                 cedulaBusqueda,
@@ -1479,6 +1477,16 @@ public class CentroMedicoCtrl implements Serializable {
     }
 
     // Búsqueda de Cédula / Diálogo Inicial
+
+    public void onBuscarPorCedulaRh() {
+        try {
+            buscarCedula();
+        } catch (RuntimeException ex) {
+            messageService.handleUnexpected(LOG, "onBuscarPorCedulaRh", ex, activeStep, noPersonaSel, cedulaBusqueda);
+            cedulaDialogUiCoordinator.onRhError();
+        }
+    }
+
     public void buscarCedula() {
         try {
             PacienteUiFlowCoordinator.UiFlowResult result = pacienteUiFlowCoordinator.buscarCedula(
@@ -1762,6 +1770,9 @@ public class CentroMedicoCtrl implements Serializable {
         return ":wiz:" + activeStep;
     }
 
+    // =========================
+    // Consumo, hábitos y estructuras auxiliares del formulario
+    // =========================
     private static final int CONS_ROWS = 3;
 
     private void initConsumoVidaCond() {
@@ -1806,6 +1817,15 @@ public class CentroMedicoCtrl implements Serializable {
 
         if (consumoVidaCondObs == null) {
             consumoVidaCondObs = "";
+        }
+    }
+
+
+    public void onNoConsumeChange(int idx) {
+        if (Boolean.TRUE.equals(consNoConsume[idx])) {
+            consExConsumidor[idx] = false;
+            consTiempoConsumoMeses[idx] = 0;
+            consTiempoAbstinenciaMeses[idx] = 0;
         }
     }
 
