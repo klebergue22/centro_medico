@@ -79,6 +79,7 @@ import ec.gob.igm.rrhh.consultorio.web.service.FichaPdfMappedData;
 import ec.gob.igm.rrhh.consultorio.web.service.FichaPdfPlaceholderBuilder;
 import ec.gob.igm.rrhh.consultorio.web.service.FichaPdfViewModelBuilder;
 import ec.gob.igm.rrhh.consultorio.web.service.PacienteUiFlowCoordinator;
+import ec.gob.igm.rrhh.consultorio.web.service.PacienteUiStateApplier;
 import ec.gob.igm.rrhh.consultorio.web.service.PacienteViewBinder;
 import ec.gob.igm.rrhh.consultorio.web.service.PersonaAuxDialogUiCoordinator;
 import ec.gob.igm.rrhh.consultorio.web.service.PersonaAuxFlowService;
@@ -105,7 +106,7 @@ import ec.gob.igm.rrhh.consultorio.web.viewstate.Step3FormModel;
  */
 @Named("centroMedicoCtrl")
 @ViewScoped
-public class CentroMedicoCtrl implements Serializable {
+public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.PacienteUiStateTarget {
 
     // =========================
     // CONSTANTES ESTÁTICAS
@@ -220,6 +221,8 @@ public class CentroMedicoCtrl implements Serializable {
     private transient PacienteUiFlowCoordinator pacienteUiFlowCoordinator;
     @Inject
     private transient PacienteViewBinder pacienteViewBinder;
+    @Inject
+    private transient PacienteUiStateApplier pacienteUiStateApplier;
     @Inject
     private transient PersonaAuxDialogUiCoordinator personaAuxDialogUiCoordinator;
     @Inject
@@ -1534,62 +1537,7 @@ public class CentroMedicoCtrl implements Serializable {
     }
 
     private void applyPacienteUiPatch(PacienteViewBinder.PacienteUiPatch patch) {
-        if (patch == null) {
-            return;
-        }
-
-        if (patch.appliesFicha()) {
-            ficha = patch.getFicha();
-        }
-        if (patch.appliesEmpleadoSel()) {
-            empleadoSel = patch.getEmpleadoSel();
-            pacienteViewState.setEmpleadoSel(empleadoSel);
-        }
-        if (patch.appliesNoPersonaSel()) {
-            noPersonaSel = patch.getNoPersonaSel();
-            pacienteViewState.setNoPersonaSel(noPersonaSel);
-        }
-        if (patch.appliesPersonaAux()) {
-            personaAux = patch.getPersonaAux();
-            pacienteViewState.setPersonaAux(personaAux);
-        }
-        if (patch.appliesPermitirIngresoManual()) {
-            permitirIngresoManual = patch.getPermitirIngresoManual();
-            pacienteViewState.setPermitirIngresoManual(permitirIngresoManual);
-        }
-        if (patch.appliesCedulaBusqueda()) {
-            cedulaBusqueda = patch.getCedulaBusqueda();
-        }
-        if (patch.appliesApellido1()) {
-            apellido1 = patch.getApellido1();
-        }
-        if (patch.appliesApellido2()) {
-            apellido2 = patch.getApellido2();
-        }
-        if (patch.appliesNombre1()) {
-            nombre1 = patch.getNombre1();
-        }
-        if (patch.appliesNombre2()) {
-            nombre2 = patch.getNombre2();
-        }
-        if (patch.appliesSexo()) {
-            sexo = patch.getSexo();
-        }
-        if (patch.appliesFechaNacimiento()) {
-            fechaNacimiento = patch.getFechaNacimiento();
-        }
-        if (patch.appliesEdad()) {
-            edad = patch.getEdad();
-        }
-        if (patch.appliesNoHistoria()) {
-            noHistoria = patch.getNoHistoria();
-        }
-        if (patch.appliesMostrarDlgCedula()) {
-            mostrarDlgCedula = patch.getMostrarDlgCedula();
-        }
-        if (patch.appliesMostrarDialogoAux()) {
-            mostrarDiaLOGoAux = patch.getMostrarDialogoAux();
-        }
+        pacienteUiStateApplier.apply(patch, this);
     }
 
     // =========================
