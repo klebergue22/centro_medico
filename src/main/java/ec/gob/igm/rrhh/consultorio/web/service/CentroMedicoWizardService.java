@@ -9,20 +9,6 @@ public class CentroMedicoWizardService implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    public String guardarStepActual(
-            String activeStep,
-            Runnable guardarStep1,
-            Runnable guardarStep2,
-            Runnable guardarStep3,
-            Runnable onEnterStep4) {
-
-        String next = saveCurrentStepAndGetNext(activeStep, guardarStep1, guardarStep2, guardarStep3);
-        if ("step4".equals(next) && onEnterStep4 != null) {
-            onEnterStep4.run();
-        }
-        return next;
-    }
-
     public String saveCurrentStepAndGetNext(
             String activeStep,
             Runnable guardarStep1,
