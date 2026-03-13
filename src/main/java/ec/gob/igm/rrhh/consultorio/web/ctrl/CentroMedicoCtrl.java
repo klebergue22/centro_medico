@@ -78,6 +78,7 @@ import ec.gob.igm.rrhh.consultorio.web.service.FichaPdfMappedData;
 import ec.gob.igm.rrhh.consultorio.web.service.FichaPdfPlaceholderBuilder;
 import ec.gob.igm.rrhh.consultorio.web.service.FichaPdfViewModelBuilder;
 import ec.gob.igm.rrhh.consultorio.web.service.PacienteUiFlowCoordinator;
+import ec.gob.igm.rrhh.consultorio.web.service.PersonaAuxDialogUiCoordinator;
 import ec.gob.igm.rrhh.consultorio.web.service.PersonaAuxFlowService;
 import ec.gob.igm.rrhh.consultorio.web.service.Step2OrchestratorService;
 import ec.gob.igm.rrhh.consultorio.web.service.Step2OrchestratorService.Step2RiskCommand;
@@ -473,6 +474,9 @@ public class CentroMedicoCtrl implements Serializable {
 
     @Inject
     private transient PacienteUiFlowCoordinator pacienteUiFlowCoordinator;
+
+    @Inject
+    private transient PersonaAuxDialogUiCoordinator personaAuxDialogUiCoordinator;
 
     @Inject
     private transient Step1CommandAssembler step1CommandAssembler;
@@ -1435,8 +1439,6 @@ public class CentroMedicoCtrl implements Serializable {
     public void guardarPersonaAuxYUsar() {
 
         LOG.info(String.valueOf("INGRESA AL METODO DE GUARDAR "));
-        FacesContext ctx = FacesContext.getCurrentInstance();
-
         LOG.info(String.valueOf("PERSONA AUXILIAR ANTES VALIDAR: " + personaAux));
 
         try {
@@ -1458,19 +1460,7 @@ public class CentroMedicoCtrl implements Serializable {
             this.mostrarDiaLOGoAux = result.isMostrarDialogoAux();
             this.mostrarDlgCedula = result.isMostrarDlgCedula();
 
-            for (String update : result.getUpdates()) {
-                PrimeFaces.current().ajax().update(update);
-            }
-            PrimeFaces.current().ajax().addCallbackParam("validationFailed", false);
-            for (String script : result.getScripts()) {
-                PrimeFaces.current().executeScript(script);
-            }
-
-            ctx.addMessage(null, new FacesMessage(
-                    FacesMessage.SEVERITY_INFO,
-                    "Datos guardados",
-                    "Se guardó la persona auxiliar y se cargaron los datos en la ficha."
-            ));
+            personaAuxDialogUiCoordinator.onGuardarSuccess(result);
 
             LOG.info("PersonaAux guardada manualmente: {} {} / {} {} (cedula={})",
                     personaAux.getApellido1(),
@@ -1481,20 +1471,10 @@ public class CentroMedicoCtrl implements Serializable {
 
         } catch (PersonaAuxFlowService.PersonaAuxValidationException e) {
             LOG.warn("Validación PersonaAux en flujo manual: {}", e.getMessage());
-            ctx.addMessage(null, new FacesMessage(
-                    FacesMessage.SEVERITY_WARN,
-                    "Datos incompletos",
-                    e.getMessage()
-            ));
-            PrimeFaces.current().ajax().addCallbackParam("validationFailed", true);
+            personaAuxDialogUiCoordinator.onValidationFailure(e.getMessage());
         } catch (RuntimeException e) {
             LOG.error("Error guardando datos manuales", e);
-            ctx.addMessage(null, new FacesMessage(
-                    FacesMessage.SEVERITY_ERROR,
-                    "Error",
-                    "Ocurrió un error al procesar y guardar los datos."
-            ));
-            PrimeFaces.current().ajax().addCallbackParam("validationFailed", true);
+            personaAuxDialogUiCoordinator.onTechnicalFailure();
         }
     }
 
