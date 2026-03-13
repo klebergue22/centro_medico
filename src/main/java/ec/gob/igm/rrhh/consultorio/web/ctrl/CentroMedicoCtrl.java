@@ -77,6 +77,7 @@ import ec.gob.igm.rrhh.consultorio.web.service.FichaPdfPlaceholderBuilder;
 import ec.gob.igm.rrhh.consultorio.web.service.FichaPdfPreparationService;
 import ec.gob.igm.rrhh.consultorio.web.service.FichaPdfViewModelBuilder;
 import ec.gob.igm.rrhh.consultorio.web.service.FichaPdfViewModelBuilder.FichaPdfViewModelContext;
+import ec.gob.igm.rrhh.consultorio.web.service.PersonaAuxFlowService;
 import ec.gob.igm.rrhh.consultorio.web.service.Step2OrchestratorService;
 import ec.gob.igm.rrhh.consultorio.web.service.Step2OrchestratorService.Step2RiskCommand;
 import ec.gob.igm.rrhh.consultorio.web.service.Step3OrchestratorService;
@@ -425,6 +426,9 @@ public class CentroMedicoCtrl implements Serializable {
     @Inject
     private transient CentroMedicoFormInitializer centroMedicoFormInitializer;
 
+    @Inject
+    private transient PersonaAuxFlowService personaAuxFlowService;
+
     @EJB
     private transient Step3OrchestratorService step3OrchestratorService;
 
@@ -694,37 +698,12 @@ public class CentroMedicoCtrl implements Serializable {
         }
     }
     private void asegurarPersonaAuxPersistida() {
-
-        // Si NO es ingreso manual, la ficha no debe conservar referencia a PersonaAux.
-        if (!permitirIngresoManual) {
-            if (ficha != null) {
-                ficha.setPersonaAux(null);
-            }
-            personaAux = null;
-            return;
-        }
-
-        // Debe existir personaAux en flujo manual.
-        if (personaAux == null) {
-            return;
-        }
-
-        // Si ya está persistida, solo asegurar relación.
-        if (personaAux.getIdPersonaAux() != null) {
-            if (ficha != null) {
-                ficha.setPersonaAux(personaAux);
-            }
-            return;
-        }
-
-        // Persistir PersonaAux primero.
-        PersonaAux saved = personaAuxService.guardar(personaAux);
-
-        this.personaAux = saved;
-
-        if (ficha != null) {
-            ficha.setPersonaAux(saved);
-        }
+        PersonaAuxFlowService.EnsurePersonaAuxResult result = personaAuxFlowService.asegurarPersonaAuxPersistida(
+                permitirIngresoManual,
+                ficha,
+                personaAux);
+        this.ficha = result.getFicha();
+        this.personaAux = result.getPersonaAux();
     }
     public void retrocederStep() {
         activeStep = centroMedicoWizardService.retrocederStep(activeStep);
@@ -2531,17 +2510,9 @@ public class CentroMedicoCtrl implements Serializable {
     }
 
     public void abrirPersonaAuxManual() {
-
-        if (personaAux == null) {
-            personaAux = new PersonaAux();
-        }
-
-        if (!esVacio(cedulaBusqueda)
-                && (personaAux.getCedula() == null || personaAux.getCedula().isEmpty())) {
-            personaAux.setCedula(cedulaBusqueda.trim());
-        }
-
-        mostrarDiaLOGoAux = true;
+        PersonaAuxFlowService.OpenManualResult result = personaAuxFlowService.abrirPersonaAuxManual(cedulaBusqueda, personaAux);
+        this.personaAux = result.getPersonaAux();
+        this.mostrarDiaLOGoAux = result.isMostrarDialogoAux();
         PrimeFaces.current().executeScript("PF('dlgPersonaAux').show();");
     }
 
@@ -2551,77 +2522,24 @@ public class CentroMedicoCtrl implements Serializable {
         LOG.info(String.valueOf("INGRESA AL METODO DE GUARDAR "));
         FacesContext ctx = FacesContext.getCurrentInstance();
 
-        if (personaAux == null) {
-            ctx.addMessage(null, new FacesMessage(
-                    FacesMessage.SEVERITY_ERROR,
-                    "Error",
-                    "No existe información de la persona para guardar."
-            ));
-            PrimeFaces.current().ajax().addCallbackParam("validationFailed", true);
-            return;
-        }
-
         LOG.info(String.valueOf("PERSONA AUXILIAR ANTES VALIDAR: " + personaAux));
 
-        if (esVacio(personaAux.getCedula())
-                || esVacio(personaAux.getApellido1())
-                || esVacio(personaAux.getNombre1())
-                || esVacio(personaAux.getSexo())
-                || personaAux.getFechaNac() == null) {
-
-            ctx.addMessage(null, new FacesMessage(
-                    FacesMessage.SEVERITY_WARN,
-                    "Datos incompletos",
-                    "Cédula, primer apellido, primer nombre, sexo y fecha de nacimiento son obligatorios."
-            ));
-            PrimeFaces.current().ajax().addCallbackParam("validationFailed", true);
-            return;
-        }
-
         try {
+            PersonaAuxFlowService.SavePersonaAuxResult result = personaAuxFlowService.guardarPersonaAuxYUsar(personaAux);
 
-            personaAux.setCedula(personaAux.getCedula().trim());
+            this.personaAux = result.getPersonaAux();
+            this.cedulaBusqueda = result.getCedulaBusqueda();
+            this.apellido1 = result.getApellido1();
+            this.apellido2 = result.getApellido2();
+            this.nombre1 = result.getNombre1();
+            this.nombre2 = result.getNombre2();
+            this.sexo = result.getSexo();
+            this.fechaNacimiento = result.getFechaNacimiento();
+            this.noHistoria = result.getNoHistoria();
+            this.mostrarDiaLOGoAux = result.isMostrarDialogoAux();
+            this.mostrarDlgCedula = result.isMostrarDialogoCedula();
+            this.permitirIngresoManual = result.isPermitirIngresoManual();
 
-            if (!esVacio(personaAux.getApellido1())) {
-                personaAux.setApellido1(personaAux.getApellido1().trim().toUpperCase());
-            }
-            if (!esVacio(personaAux.getApellido2())) {
-                personaAux.setApellido2(personaAux.getApellido2().trim().toUpperCase());
-            }
-            if (!esVacio(personaAux.getNombre1())) {
-                personaAux.setNombre1(personaAux.getNombre1().trim().toUpperCase());
-            }
-            if (!esVacio(personaAux.getNombre2())) {
-                personaAux.setNombre2(personaAux.getNombre2().trim().toUpperCase());
-            }
-            if (!esVacio(personaAux.getSexo())) {
-                personaAux.setSexo(personaAux.getSexo().trim().toUpperCase());
-            }
-
-            Date ahora = new Date();
-            if (personaAux.getIdPersonaAux() == null) {
-                personaAux.setEstado("A");
-                personaAux.setFechaCreacion(ahora);
-                personaAux.setUsrCreacion("SISTEMA");
-            } else {
-                personaAux.setFechaActualizacion(ahora);
-                personaAux.setUsrActualizacion("SISTEMA");
-            }
-
-            personaAux = personaAuxService.guardar(personaAux);
-
-            this.cedulaBusqueda = personaAux.getCedula();
-            this.apellido1 = personaAux.getApellido1();
-            this.apellido2 = personaAux.getApellido2();
-            this.nombre1 = personaAux.getNombre1();
-            this.nombre2 = personaAux.getNombre2();
-            this.sexo = personaAux.getSexo();
-            this.fechaNacimiento = personaAux.getFechaNac();
-            this.noHistoria = personaAux.getCedula();
-
-            mostrarDiaLOGoAux = false;
-            mostrarDlgCedula = false;
-            permitirIngresoManual = false;
             PrimeFaces.current().ajax().update(":noHistoriaClinica");
             PrimeFaces.current().ajax().addCallbackParam("validationFailed", false);
             PrimeFaces.current().executeScript(
@@ -2641,6 +2559,14 @@ public class CentroMedicoCtrl implements Serializable {
                     personaAux.getNombre2(),
                     personaAux.getCedula());
 
+        } catch (PersonaAuxFlowService.PersonaAuxValidationException e) {
+            LOG.warn("Validación PersonaAux en flujo manual: {}", e.getMessage());
+            ctx.addMessage(null, new FacesMessage(
+                    FacesMessage.SEVERITY_WARN,
+                    "Datos incompletos",
+                    e.getMessage()
+            ));
+            PrimeFaces.current().ajax().addCallbackParam("validationFailed", true);
         } catch (RuntimeException e) {
             LOG.error("Error guardando datos manuales", e);
             ctx.addMessage(null, new FacesMessage(
@@ -2773,30 +2699,19 @@ public class CentroMedicoCtrl implements Serializable {
 
     public void prepararIngresoManual() {
         FacesContext ctx = FacesContext.getCurrentInstance();
-
-        if (esVacio(cedulaBusqueda)) {
+        try {
+            PersonaAuxFlowService.ManualPreparationResult result = personaAuxFlowService.prepararIngresoManual(
+                    cedulaBusqueda,
+                    personaAux);
+            this.personaAux = result.getPersonaAux();
+            this.permitirIngresoManual = result.isPermitirIngresoManual();
+        } catch (PersonaAuxFlowService.PersonaAuxValidationException ex) {
             ctx.addMessage(null, new FacesMessage(
                     FacesMessage.SEVERITY_WARN,
                     "Cédula requerida",
-                    "Ingrese la cédula antes de continuar."
+                    ex.getMessage()
             ));
-            return;
         }
-
-        if (personaAux == null) {
-            personaAux = new PersonaAux();
-        }
-
-        personaAux.setCedula(cedulaBusqueda.trim());
-
-        personaAux.setApellido1(null);
-        personaAux.setApellido2(null);
-        personaAux.setNombre1(null);
-        personaAux.setNombre2(null);
-        personaAux.setSexo(null);
-        personaAux.setFechaNac(null);
-
-        permitirIngresoManual = true;
     }
 
     private String primerToken(String texto) {
