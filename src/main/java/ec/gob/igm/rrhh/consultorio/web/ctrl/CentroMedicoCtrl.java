@@ -1384,6 +1384,9 @@ public class CentroMedicoCtrl implements Serializable {
         state.actLabTiempo = actLabTiempo;
         state.actLabTrabajoAnterior = actLabTrabajoAnterior;
         state.actLabTrabajoActual = actLabTrabajoActual;
+        state.actLabIncidenteChk = actLabIncidenteChk;
+        state.actLabAccidenteChk = actLabAccidenteChk;
+        state.actLabEnfermedadChk = actLabEnfermedadChk;
         state.iessSi = iessSi;
         state.iessNo = iessNo;
         state.iessFecha = iessFecha;
