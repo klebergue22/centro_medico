@@ -4,8 +4,6 @@ import static ec.gob.igm.rrhh.consultorio.web.util.CentroMedicoViewUtils.esVacio
 import static ec.gob.igm.rrhh.consultorio.web.util.CentroMedicoViewUtils.getSafe;
 import static ec.gob.igm.rrhh.consultorio.web.util.CentroMedicoViewUtils.isBlank;
 import static ec.gob.igm.rrhh.consultorio.web.util.CentroMedicoViewUtils.isTrue;
-import static ec.gob.igm.rrhh.consultorio.web.util.CentroMedicoViewUtils.s;
-import static ec.gob.igm.rrhh.consultorio.web.util.CentroMedicoViewUtils.sn;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -13,11 +11,9 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
-import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -36,7 +32,6 @@ import jakarta.faces.event.AjaxBehaviorEvent;
 import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
-import jakarta.servlet.http.HttpSession;
 
 import org.primefaces.PrimeFaces;
 import org.primefaces.event.FlowEvent;
@@ -48,8 +43,6 @@ import ec.gob.igm.rrhh.consultorio.domain.model.Cie10;
 import ec.gob.igm.rrhh.consultorio.domain.model.ConsultaDiagnostico;
 import ec.gob.igm.rrhh.consultorio.domain.model.ConsultaMedica;
 import ec.gob.igm.rrhh.consultorio.domain.model.DatEmpleado;
-import ec.gob.igm.rrhh.consultorio.domain.model.FichaActLaboral;
-import ec.gob.igm.rrhh.consultorio.domain.model.FichaExamenComp;
 import ec.gob.igm.rrhh.consultorio.domain.model.FichaOcupacional;
 import ec.gob.igm.rrhh.consultorio.domain.model.FichaRiesgo;
 import ec.gob.igm.rrhh.consultorio.domain.model.PersonaAux;
@@ -96,7 +89,7 @@ import ec.gob.igm.rrhh.consultorio.web.service.Step2OrchestratorService.Step2Ris
 import ec.gob.igm.rrhh.consultorio.web.service.Step3OrchestratorService;
 import ec.gob.igm.rrhh.consultorio.web.session.PdfSessionStore;
 import ec.gob.igm.rrhh.consultorio.web.util.CentroMedicoCalcUtil;
-import ec.gob.igm.rrhh.consultorio.web.util.SnUtils;
+import ec.gob.igm.rrhh.consultorio.web.util.CentroMedicoViewUtils;
 import ec.gob.igm.rrhh.consultorio.web.validation.FichaCompletaValidator;
 import ec.gob.igm.rrhh.consultorio.web.validation.Step1Validator;
 import ec.gob.igm.rrhh.consultorio.web.validation.Step2Validator;
