@@ -1040,10 +1040,28 @@ public class CentroMedicoCtrl implements Serializable {
             return;
         }
 
-        if (permitirIngresoManual && personaAux != null) {
+        if (personaAux != null) {
             ficha.setPersonaAux(personaAux);
             ficha.setEmpleado(null);
             return;
+        }
+
+        // Fallback: si el estado en memoria perdió la referencia del paciente
+        // (ej. empleadoSel/noPersonaSel no cargados), reutilizamos lo persistido.
+        if (ficha.getIdFicha() != null) {
+            FichaOcupacional persisted = fichaService.findById(ficha.getIdFicha());
+            if (persisted != null) {
+                if (persisted.getEmpleado() != null) {
+                    ficha.setEmpleado(persisted.getEmpleado());
+                    ficha.setPersonaAux(null);
+                    return;
+                }
+                if (persisted.getPersonaAux() != null) {
+                    ficha.setPersonaAux(persisted.getPersonaAux());
+                    ficha.setEmpleado(null);
+                    return;
+                }
+            }
         }
 
         fail("Debe seleccionar un empleado o registrar una persona auxiliar antes de guardar el Step 3.");
