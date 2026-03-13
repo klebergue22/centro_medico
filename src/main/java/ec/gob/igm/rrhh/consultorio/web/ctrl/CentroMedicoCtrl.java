@@ -103,13 +103,18 @@ import ec.gob.igm.rrhh.consultorio.web.viewstate.Step3FormModel;
  */
 @Named("centroMedicoCtrl")
 @ViewScoped
-
 public class CentroMedicoCtrl implements Serializable {
 
+    // =========================
+    // CONSTANTES ESTÁTICAS
+    // =========================
     private static final Logger LOG = LoggerFactory.getLogger(CentroMedicoCtrl.class);
-
     private static final long serialVersionUID = 2L;
     private static final List<String> STATIC_RISK_COLS = new ArrayList<>();
+    private static final int H_ROWS = 4;
+    private static final int CONSUMO_ROWS = 3;
+    private static final int DIAG_ROWS = 6;
+    private static final int CONS_ROWS = 3;
 
     static {
         for (int i = 1; i <= 7; i++) {
@@ -117,8 +122,10 @@ public class CentroMedicoCtrl implements Serializable {
         }
     }
 
+    // =========================
+    // CLASE INTERNA - EXCEPCIÓN
+    // =========================
     public static class BusinessValidationException extends RuntimeException {
-
         private static final long serialVersionUID = 2L;
 
         public BusinessValidationException(String message) {
@@ -126,83 +133,177 @@ public class CentroMedicoCtrl implements Serializable {
         }
     }
 
-    private void fail(String message) {
-        throw new BusinessValidationException(message);
-    }
+    // =========================
+    // INYECCIONES DE DEPENDENCIAS - EJB
+    // =========================
+    @EJB
+    private EmpleadoRhService empleadoRhService;
+    @EJB
+    private transient Cie10Service cie10Service;
+    @EJB
+    private transient FichaOcupacionalService fichaService;
+    @EJB
+    private transient Step1FichaService step1FichaService;
+    @EJB
+    private transient FichaDiagnosticoService fichaDiagnosticoService;
+    @EJB
+    private transient EmpleadoService empleadoService;
+    @EJB
+    private transient PersonaAuxService personaAuxService;
+    @EJB
+    private transient FichaActLaboralService fichaActLaboralService;
+    @EJB
+    private transient Step2OrchestratorService step2OrchestratorService;
+    @EJB
+    private transient FichaExamenCompService fichaExamenCompService;
+    @EJB
+    private transient ExamenFisicoRegionalService examenFisicoRegionalService;
+    @EJB
+    private transient CentroMedicoAuditService centroMedicoAuditService;
+    @EJB
+    private transient FichaPdfTemplateService fichaPdfTemplateService;
+    @EJB
+    private transient Cie10LookupService cie10LookupService;
+    @EJB
+    private transient Step3OrchestratorService step3OrchestratorService;
+    @EJB
+    private transient FichaPdfDataMapper fichaPdfDataMapper;
+    @EJB
+    private transient FichaPdfPlaceholderBuilder fichaPdfPlaceholderBuilder;
+    @EJB
+    private transient FichaPdfViewModelBuilder fichaPdfViewModelBuilder;
+    @EJB
+    private transient FichaPdfContextAssembler fichaPdfContextAssembler;
+    @EJB
+    private transient FichaPdfPlaceholderAssembler fichaPdfPlaceholderAssembler;
+    @EJB
+    private transient CentroMedicoPdfWorkflowService centroMedicoPdfWorkflowService;
+    @EJB
+    private transient CentroMedicoPdfFacadeService centroMedicoPdfFacadeService;
 
-    private void applyPacienteUiFlow(PacienteUiFlowCoordinator.UiFlowResult result) {
-        if (result == null) {
-            return;
-        }
-        pacienteViewState.setEmpleadoSel(result.getEmpleadoSel());
-        pacienteViewState.setNoPersonaSel(result.getNoPersonaSel());
-        pacienteViewState.setPersonaAux(result.getPersonaAux());
-        pacienteViewState.setPermitirIngresoManual(result.isPermitirIngresoManual());
+    // =========================
+    // INYECCIONES DE DEPENDENCIAS - INJECT
+    // =========================
+    @Inject
+    private transient PdfSessionStore pdfSessionStore;
+    @Inject
+    private transient PdfTemplateEngine pdfTemplateEngine;
+    @Inject
+    private transient PdfResourceResolver pdfResourceResolver;
+    @Inject
+    private transient CertificadoPdfTemplateService certificadoPdfTemplateService;
+    @Inject
+    private transient CentroMedicoPdfFacade centroMedicoPdfFacade;
+    @Inject
+    private transient CentroMedicoWizardNavigationCoordinator wizardNavigationCoordinator;
+    @Inject
+    private transient CentroMedicoMessageService messageService;
+    @Inject
+    private transient ControllerActionTemplate controllerActionTemplate;
+    @Inject
+    private transient CentroMedicoCalcUtil calcUtil;
+    @Inject
+    private transient CedulaSearchService cedulaSearchService;
+    @Inject
+    private transient CedulaDialogUiCoordinator cedulaDialogUiCoordinator;
+    @Inject
+    private transient CentroMedicoFormInitializer centroMedicoFormInitializer;
+    @Inject
+    private transient CentroMedicoFormStateService centroMedicoFormStateService;
+    @Inject
+    private transient PersonaAuxFlowService personaAuxFlowService;
+    @Inject
+    private transient PacienteUiFlowCoordinator pacienteUiFlowCoordinator;
+    @Inject
+    private transient PersonaAuxDialogUiCoordinator personaAuxDialogUiCoordinator;
+    @Inject
+    private transient Step1CommandAssembler step1CommandAssembler;
+    @Inject
+    private transient Step3CommandAssembler step3CommandAssembler;
+    @Inject
+    private transient CentroMedicoPdfUiCoordinator centroMedicoPdfUiCoordinator;
 
-        ficha = result.getFicha();
-        empleadoSel = result.getEmpleadoSel();
-        noPersonaSel = result.getNoPersonaSel();
-        personaAux = result.getPersonaAux();
-        permitirIngresoManual = result.isPermitirIngresoManual();
-    }
-
-    private static final int H_ROWS = 4;
-    private static final int CONSUMO_ROWS = 3;
-    private static final int DIAG_ROWS = 6;
-
+    // =========================
+    // VALIDADORES
+    // =========================
     private final Step1Validator step1Validator = new Step1Validator();
     private final Step2Validator step2Validator = new Step2Validator();
     private final Step3Validator step3Validator = new Step3Validator();
     private final FichaCompletaValidator fichaCompletaValidator = new FichaCompletaValidator();
 
+    // =========================
+    // MODELOS DE FORMULARIO
+    // =========================
     private final Step1FormModel step1FormModel = new Step1FormModel();
     private final Step2FormModel step2FormModel = new Step2FormModel();
     private final Step3FormModel step3FormModel = new Step3FormModel();
     private final PdfPreviewState pdfPreviewState = new PdfPreviewState();
     private final PacienteViewState pacienteViewState = new PacienteViewState();
 
+    // =========================
+    // VARIABLES DE ESTADO DEL WIZARD
+    // =========================
     private String activeStep = "step1";
     private boolean cedulaDlgAutoOpened = false;
-
-    private boolean mostrarDlgCedula = true;
+    private int stepIndex = 1;
     private boolean preRenderDone = false;
+
+    // =========================
+    // VARIABLES DE DIÁLOGO
+    // =========================
+    private boolean mostrarDlgCedula = true;
     private boolean mostrarDiaLOGoAux;
     private boolean permitirIngresoManual;
 
+    // =========================
+    // VARIABLES DE PACIENTE
+    // =========================
     private String cedulaBusqueda;
     private Integer noPersonaSel;
     private DatEmpleado empleadoSel;
     private PersonaAux personaAux;
 
+    // =========================
+    // VARIABLES DE INSTITUCIÓN
+    // =========================
     private String institucion;
     private String ruc;
     private String ciiu;
     private String centroTrabajo;
 
+    // =========================
+    // VARIABLES DE HISTORIA CLÍNICA
+    // =========================
     private String noHistoria;
     private String noArchivo;
 
+    // =========================
+    // VARIABLES DE DATOS PERSONALES
+    // =========================
     private String apellido1;
     private String apellido2;
     private String nombre1;
     private String nombre2;
-
     private String sexo;
     private Date fechaNacimiento;
     private Integer edad;
 
+    // =========================
+    // VARIABLES DE EVALUACIÓN
+    // =========================
     private Date fechaAtencion;
     private String tipoEval;
     private String tipoEvaluacion;
-
     private Date fecIngreso;
     private Date fecReintegro;
     private Date fecRetiro;
-
     private String grupoSanguineo;
     private String lateralidad;
     private String motivoObs;
 
+    // =========================
+    // VARIABLES DE ATENCIÓN PRIORITARIA
+    // =========================
     private boolean apEmbarazada;
     private boolean apDiscapacidad;
     private boolean apCatastrofica;
@@ -211,23 +312,30 @@ public class CentroMedicoCtrl implements Serializable {
     private String discapTipo;
     private String discapDesc;
     private Integer discapPorc;
-
     private String catasDiagnostico;
-    private Boolean catasCalificada; // en UI como boolean
+    private Boolean catasCalificada;
 
+    // =========================
+    // VARIABLES DE ANTECEDENTES
+    // =========================
     private String antClinicoQuirurgico;
     private String antFamiliares;
     private String antTerapeutica;
     private String antObs;
     private String condicionEspecial;
-
     private String autorizaTransfusion;
     private String tratamientoHormonal;
     private String tratamientoHormonalCual;
 
+    // =========================
+    // VARIABLES DE EXAMEN REPRODUCTIVO MASCULINO
+    // =========================
     private String examenReproMasculino;
     private Integer tiempoReproMasculino;
 
+    // =========================
+    // VARIABLES GINECO-OBSTÉTRICAS
+    // =========================
     private String ginecoExamen1;
     private String ginecoTiempo1;
     private String ginecoResultado1;
@@ -243,6 +351,9 @@ public class CentroMedicoCtrl implements Serializable {
     private String planificacion;
     private String planificacionCual;
 
+    // =========================
+    // VARIABLES DE SIGNOS VITALES
+    // =========================
     private Double peso;
     private Double tallaCm;
     private Double imc;
@@ -253,22 +364,25 @@ public class CentroMedicoCtrl implements Serializable {
     private Integer satO2;
     private Double perimetroAbd;
 
+    // =========================
+    // VARIABLES DE CONSUMO/HÁBITOS
+    // =========================
     private Integer[] consTiempoConsumoMeses;
     private Boolean[] consExConsumidor;
     private Integer[] consTiempoAbstinenciaMeses;
     private Boolean[] consNoConsume;
     private String consOtrasCual;
-
     private String[] afCual;
     private String[] afTiempo;
-
     private String[] medCual;
     private Integer[] medCant;
-
     private String consumoObservacion;
     private String consumoVidaCondObs;
     private String obsJ;
 
+    // =========================
+    // VARIABLES DE RIESGOS LABORALES
+    // =========================
     private FichaRiesgo fichaRiesgo;
     private java.util.List<String> actividadesLab = new ArrayList<>();
     private java.util.Map<String, Boolean> riesgos = new LinkedHashMap<>();
@@ -276,25 +390,28 @@ public class CentroMedicoCtrl implements Serializable {
     private java.util.List<String> medidasPreventivas = new ArrayList<>();
     private java.util.List<String> riskCols;
 
+    // =========================
+    // VARIABLES DE DIAGNÓSTICO Y OBSERVACIONES
+    // =========================
     private Date fechaEmision;
     private String aptitudSel;
     private String detalleObservaciones;
     private String recomendaciones;
     private String medicoNombre;
     private String medicoCodigo;
-
     private String nRealizaEvaluacion;
     private String nRelacionTrabajo;
     private String nObsRetiro;
-
     private String codCie10Ppal;
     private String descCie10Ppal;
     private String dialogDiagnosticoCodigo;
     private String dialogDiagnosticoDescripcion;
     private Integer dialogDiagnosticoIdx;
-
     private java.util.List<ConsultaDiagnostico> listaDiag = new ArrayList<>();
 
+    // =========================
+    // VARIABLES DE HISTORIA LABORAL (H)
+    // =========================
     private String[] hCentroTrabajo;
     private String[] hActividad;
     private String[] hCargo;
@@ -311,50 +428,44 @@ public class CentroMedicoCtrl implements Serializable {
     private String[] hEspecificacion;
     private String[] hObservacion;
 
+    // =========================
+    // VARIABLES DE ACTIVIDADES LABORALES (LISTAS)
+    // =========================
     private java.util.List<Date> iessFecha;
     private java.util.List<Date> fechaAct;
-
     private java.util.List<String> tipoAct;
-
     private java.util.List<String> descAct;
-
-    private FichaOcupacional ficha;
-    private SignosVitales signos;
-    private ConsultaMedica consulta;
-
-    private boolean certificadoListo;
-    private boolean fichaPdfListo;
-    private String pdfObjectUrl;
-    private String pdfTokenFicha;
-    private String pdfTokenCertificado;
-
     private java.util.List<String> actLabRows;
     private java.util.List<String> actLabCentroTrabajo;
     private java.util.List<String> actLabActividad;
     private java.util.List<String> actLabIncidente;
     private java.util.List<Date> actLabFecha;
-
     private java.util.List<String> actLabTiempo;
-
     private java.util.List<Boolean> actLabTrabajoAnterior;
     private java.util.List<Boolean> actLabTrabajoActual;
     private java.util.List<Boolean> actLabIncidenteChk;
     private java.util.List<Boolean> actLabAccidenteChk;
     private java.util.List<Boolean> actLabEnfermedadChk;
-
     private java.util.List<Boolean> iessSi;
     private java.util.List<Boolean> iessNo;
     private java.util.List<String> iessEspecificar;
     private java.util.List<String> actLabObservaciones;
 
+    // =========================
+    // VARIABLES DE EXÁMENES COMPLEMENTARIOS
+    // =========================
     private java.util.List<String> examNombre = new ArrayList<>();
     private java.util.List<String> examResultado = new ArrayList<>();
     private java.util.List<Date> examFecha = new ArrayList<>();
 
-// D. ENFERMEDAD O PROBLEMA ACTUAL
+    // =========================
+    // VARIABLES DE ENFERMEDAD ACTUAL
+    // =========================
     private String enfermedadActual;
 
-// F. EXAMEN FÍSICO REGIONAL
+    // =========================
+    // VARIABLES DE EXAMEN FÍSICO REGIONAL
+    // =========================
     private String exfPielCicatrices;
     private String exfOjosParpados;
     private String exfOjosConjuntivas;
@@ -372,148 +483,83 @@ public class CentroMedicoCtrl implements Serializable {
     private String exfNarizTabique;
     private String exfNarizCornetes;
     private String exfNarizMucosas;
-    private String exfNarizSenos;           // Mapeará a exfNarizSenosParanasa
-    private String exfCuelloTiroides;       // Mapeará a exfCuelloTiroidesMasas
+    private String exfNarizSenos;
+    private String exfCuelloTiroides;
     private String exfCuelloMovilidad;
     private String exfToraxMamas;
     private String exfToraxPulmones;
     private String exfToraxCorazon;
-    private String exfToraxParrilla;         // Mapeará a exfToraxParrillaCostal
-    private String exfAbdomenVisceras;       // Mapeará a exfAbdVisceras
-    private String exfAbdomenPared;          // Mapeará a exfAbdParedAbdominal
-    private String exfColumnaFlexibilidad;   // Mapeará a exfColFlexibilidad
-    private String exfColumnaDesviacion;     // Mapeará a exfColDesviacion
-    private String exfColumnaDolor;          // Mapeará a exfColDolor
+    private String exfToraxParrilla;
+    private String exfAbdomenVisceras;
+    private String exfAbdomenPared;
+    private String exfColumnaFlexibilidad;
+    private String exfColumnaDesviacion;
+    private String exfColumnaDolor;
     private String exfPelvisPelvis;
     private String exfPelvisGenitales;
     private String exfExtVascular;
-    private String exfExtSup;                // Mapeará a exfExtMiembrosSup
-    private String exfExtInf;                // Mapeará a exfExtMiembrosInf
+    private String exfExtSup;
+    private String exfExtInf;
     private String exfNeuroFuerza;
     private String exfNeuroSensibilidad;
     private String exfNeuroMarcha;
     private String exfNeuroReflejos;
-    private String obsExamenFisico;          // Mapeará a obsExamenFisicoRegional o obsExamenFisicoReg
-
-    @EJB
-    private EmpleadoRhService empleadoRhService;
-    @EJB
-    private transient Cie10Service cie10Service;
-    @EJB
-    private transient FichaOcupacionalService fichaService;
-    @EJB
-    private transient Step1FichaService step1FichaService;
-    @EJB
-    private transient FichaDiagnosticoService fichaDiagnosticoService;
-    @EJB
-    private transient EmpleadoService empleadoService;
-    @EJB
-    private transient PersonaAuxService personaAuxService;
-    @EJB
-    private transient FichaActLaboralService fichaActLaboralService;
-
-    @EJB
-    private transient Step2OrchestratorService step2OrchestratorService;
-
-    @EJB
-    private transient FichaExamenCompService fichaExamenCompService;
-    @EJB
-    private transient ExamenFisicoRegionalService examenFisicoRegionalService;
-
-    @EJB
-    private transient CentroMedicoAuditService centroMedicoAuditService;
-
-    @Inject
-    private transient PdfSessionStore pdfSessionStore;
-
-    @Inject
-    private transient PdfTemplateEngine pdfTemplateEngine;
-
-    @Inject
-    private transient PdfResourceResolver pdfResourceResolver;
-
-    @EJB
-    private transient FichaPdfTemplateService fichaPdfTemplateService;
-
-    @Inject
-    private transient CertificadoPdfTemplateService certificadoPdfTemplateService;
-
-    @Inject
-    private transient CentroMedicoPdfFacade centroMedicoPdfFacade;
-
-
-    @Inject
-    private transient CentroMedicoWizardNavigationCoordinator wizardNavigationCoordinator;
-
-    @Inject
-    private transient CentroMedicoMessageService messageService;
-
-    @Inject
-    private transient ControllerActionTemplate controllerActionTemplate;
-
-    @EJB
-    private transient Cie10LookupService cie10LookupService;
-
-    @Inject
-    private transient CentroMedicoCalcUtil calcUtil;
-
-    @Inject
-    private transient CedulaSearchService cedulaSearchService;
-
-    @Inject
-    private transient CedulaDialogUiCoordinator cedulaDialogUiCoordinator;
-
-    @Inject
-    private transient CentroMedicoFormInitializer centroMedicoFormInitializer;
-
-    @Inject
-    private transient CentroMedicoFormStateService centroMedicoFormStateService;
-
-    @Inject
-    private transient PersonaAuxFlowService personaAuxFlowService;
-
-    @Inject
-    private transient PacienteUiFlowCoordinator pacienteUiFlowCoordinator;
-
-    @Inject
-    private transient PersonaAuxDialogUiCoordinator personaAuxDialogUiCoordinator;
-
-    @Inject
-    private transient Step1CommandAssembler step1CommandAssembler;
-
-    @Inject
-    private transient Step3CommandAssembler step3CommandAssembler;
-
-    @EJB
-    private transient Step3OrchestratorService step3OrchestratorService;
-
-    @EJB
-    private transient FichaPdfDataMapper fichaPdfDataMapper;
-
-    @EJB
-    private transient FichaPdfPlaceholderBuilder fichaPdfPlaceholderBuilder;
-
-    @EJB
-    private transient FichaPdfViewModelBuilder fichaPdfViewModelBuilder;
-
-    @EJB
-    private transient FichaPdfContextAssembler fichaPdfContextAssembler;
-
-    @EJB
-    private transient FichaPdfPlaceholderAssembler fichaPdfPlaceholderAssembler;
-
-    @EJB
-    private transient CentroMedicoPdfWorkflowService centroMedicoPdfWorkflowService;
-
-    @EJB
-    private transient CentroMedicoPdfFacadeService centroMedicoPdfFacadeService;
-
-    @Inject
-    private transient CentroMedicoPdfUiCoordinator centroMedicoPdfUiCoordinator;
+    private String obsExamenFisico;
 
     // =========================
-    // Ciclo de vida y navegación
+    // VARIABLES DE ENTIDADES DE DOMINIO
     // =========================
+    private FichaOcupacional ficha;
+    private SignosVitales signos;
+    private ConsultaMedica consulta;
+
+    // =========================
+    // VARIABLES DE PDF
+    // =========================
+    private boolean certificadoListo;
+    private boolean fichaPdfListo;
+    private String pdfObjectUrl;
+    private String pdfTokenFicha;
+    private String pdfTokenCertificado;
+
+    // =========================
+    // MÉTODOS DE EXCEPCIÓN Y VALIDACIÓN PRIVADOS
+    // =========================
+    private void fail(String message) {
+        throw new BusinessValidationException(message);
+    }
+
+    private void s3(String msg) {
+        LOG.info("[STEP3] {}", msg);
+        LOG.info(String.valueOf("[STEP3] " + msg));
+    }
+
+    private void s3e(String msg, Throwable t) {
+        LOG.error("[STEP3] " + msg, t);
+        LOG.info(String.valueOf("[STEP3-ERROR] " + msg));
+        if (t != null) {
+            LOG.error("Unexpected error.", t);
+        }
+    }
+
+    // =========================
+    // CICLO DE VIDA
+    // =========================
+    @PostConstruct
+    public void init() {
+        centroMedicoFormInitializer.initUiDefaults(this);
+
+        FacesContext fc = FacesContext.getCurrentInstance();
+        if (fc != null && fc.getViewRoot() != null) {
+            fc.getViewRoot().setLocale(new Locale("es", "EC"));
+        }
+
+        centroMedicoFormInitializer.initDomainDefaults(this);
+        centroMedicoFormInitializer.initStep2Defaults(this, STATIC_RISK_COLS);
+        centroMedicoFormInitializer.initStep3Defaults(this, H_ROWS, DIAG_ROWS);
+        centroMedicoFormStateService.prepareStep3Collections(this, H_ROWS, DIAG_ROWS, 5);
+    }
+
     public void preRenderInit() {
         try {
             FacesContext fc = FacesContext.getCurrentInstance();
@@ -531,7 +577,6 @@ public class CentroMedicoCtrl implements Serializable {
             if (!"step1".equals(activeStep)) {
                 mostrarDlgCedula = false;
             } else {
-
                 mostrarDlgCedula = (empleadoSel == null);
             }
 
@@ -554,60 +599,10 @@ public class CentroMedicoCtrl implements Serializable {
         }
     }
 
-    @PostConstruct
-    public void init() {
-        centroMedicoFormInitializer.initUiDefaults(this);
-
-        FacesContext fc = FacesContext.getCurrentInstance();
-        if (fc != null && fc.getViewRoot() != null) {
-            fc.getViewRoot().setLocale(new Locale("es", "EC"));
-        }
-
-        centroMedicoFormInitializer.initDomainDefaults(this);
-        centroMedicoFormInitializer.initStep2Defaults(this, STATIC_RISK_COLS);
-        centroMedicoFormInitializer.initStep3Defaults(this, H_ROWS, DIAG_ROWS);
-        centroMedicoFormStateService.prepareStep3Collections(this, H_ROWS, DIAG_ROWS, 5);
-    }
-
-    public void onDlgCedulaShown() {
-        mostrarDlgCedula = false;
-    }
-
-    public void onFechaNacimientoSelect(SelectEvent e) {
-        this.fechaNacimiento = (java.util.Date) e.getObject();
-        recalculateEdadAndNotify();
-    }
-
-    public void onFechaNacimientoChange() {
-        recalculateEdadAndNotify();
-    }
-
-    private void recalculateEdadAndNotify() {
-        this.edad = calcUtil.calcularEdad(this.fechaNacimiento);
-        FacesContext.getCurrentInstance().addMessage(null,
-                new FacesMessage(FacesMessage.SEVERITY_INFO, "Cálculo de edad",
-                        "Edad calculada: " + (edad == null ? "(sin fecha)" : edad + " años")));
-    }
-
-    public Date getFechaNacimiento() {
-        return fechaNacimiento;
-    }
-
-    public void setFechaNacimiento(Date f) {
-        this.fechaNacimiento = f;
-        this.edad = calcUtil.calcularEdad(f);
-    }
-
-    /**
-     * cambio de step
-     *
-     * @param event
-     * @return
-     */
+    // =========================
+    // NAVEGACIÓN DEL WIZARD
+    // =========================
     public String onFlow(FlowEvent event) {
-        // Navegación del wizard (PrimeFaces)
-        // NOTA: La persistencia/validación por paso se maneja en los botones (guardarStepActual / retrocederStep)
-        // para evitar doble guardado cuando se ejecuta PF('wdzFicha').next()/back().
         final String nextStep = event.getNewStep();
         this.activeStep = nextStep;
         if ("step1".equals(nextStep)) {
@@ -616,55 +611,10 @@ public class CentroMedicoCtrl implements Serializable {
         return nextStep;
     }
 
-    /**
-     * Metodo que se usa en la vista
-     */
-    public void calcularEdad() {
-        this.edad = calcUtil.calcularEdad(this.fechaNacimiento);
+    public void retrocederStep() {
+        activeStep = wizardNavigationCoordinator.retrocederStep(activeStep);
     }
 
-    public Date getFechaMaximaNacimiento() {
-        return calcUtil.getFechaMaximaNacimiento();
-    }
-
-    /**
-     * Se usa en calculo de la edad para ejercer un trabajo
-     */
-    public void validarEdadMinima() {
-        if (!calcUtil.validarEdadMinima(edad)) {
-            messageService.error("La edad debe ser ≥ 18 años");
-            fechaNacimiento = null;
-            edad = null;
-        }
-    }
-
-    /**
-     * calculo del Indice de masa corporal
-     */
-    public void recalcularIMC() {
-        this.imc = calcUtil.recalcularIMC(peso, tallaCm);
-    }
-
-    // =========================
-    // Utilidades de cálculo/auditoría
-    // =========================
-    private void registrarAuditoria(String accion, String tabla, String campo, String observaciones) {
-        s3("registrarAuditoria() accion=" + accion + " tabla=" + tabla + " campo=" + campo);
-
-        try {
-            centroMedicoAuditService.registrar(accion, tabla, campo, observaciones);
-            s3("registrarAuditoria() OK");
-        } catch (RuntimeException e) {
-            s3e("registrarAuditoria() FALLÓ", e);
-        }
-    }
-
-    /**
-     * guarda el step actual
-     */
-    // =========================
-    // Flujo Wizard (Step 1,2,3 y navegación)
-    // =========================
     public void guardarStepActual() {
         LOG.info(">>> ENTRO A guardarStepActual, step={}", activeStep);
         controllerActionTemplate.executeWithResult(
@@ -693,26 +643,9 @@ public class CentroMedicoCtrl implements Serializable {
                 cedulaBusqueda);
     }
 
-    private void resetStep4PdfState() {
-        applyPdfUiState(centroMedicoPdfUiCoordinator.resetStep4PdfState());
-    }
-
-    private void applyStep4State(CentroMedicoWizardNavigationCoordinator.Step4UiState state) {
-        applyPdfUiState(centroMedicoPdfUiCoordinator.applyStep4State(state, null));
-    }
-
-    private void asegurarPersonaAuxPersistida() {
-        PacienteUiFlowCoordinator.UiFlowResult result = pacienteUiFlowCoordinator.asegurarPersonaAuxPersistida(
-                permitirIngresoManual,
-                ficha,
-                personaAux);
-        applyPacienteUiFlow(result);
-    }
-
-    public void retrocederStep() {
-        activeStep = wizardNavigationCoordinator.retrocederStep(activeStep);
-    }
-
+    // =========================
+    // VALIDACIÓN DE STEPS
+    // =========================
     private boolean validarStep1() {
         ValidationResult result = step1Validator.validate(
                 apellido1,
@@ -732,16 +665,52 @@ public class CentroMedicoCtrl implements Serializable {
         return result.isValid();
     }
 
-    private String usuarioReal() {
-        try {
-
-            return "USR_APP";
-        } catch (RuntimeException e) {
-            return "USR_APP";
-        }
+    private boolean validarStep2() {
+        ValidationResult result = step2Validator.validate(fichaRiesgo, actividadesLab, medidasPreventivas);
+        messageService.addValidationMessages("Step 2", result);
+        return result.isValid();
     }
 
-    // Wizard - Guardado Step 1
+    private boolean validarStep3() {
+        s3("validarStep3() INICIO");
+        ValidationResult result = step3Validator.validate(listaDiag, aptitudSel, recomendaciones, medicoNombre, medicoCodigo);
+        if (!result.isValid()) {
+            for (String error : result.getErrors()) {
+                s3("validarStep3() FAIL: " + error);
+            }
+        }
+        messageService.addValidationMessages("Step 3", result);
+        s3("validarStep3() FIN -> " + result.isValid());
+        return result.isValid();
+    }
+
+    private boolean verificarFichaCompleta() {
+        ValidationResult result = fichaCompletaValidator.validate(
+                ficha,
+                permitirIngresoManual,
+                personaAux,
+                empleadoSel,
+                aptitudSel,
+                fechaEmision,
+                this::inferCie10PrincipalFromListaK);
+
+        if (!result.isValid()) {
+            StringBuilder sb = new StringBuilder();
+            for (String error : result.getErrors()) {
+                sb.append("- ").append(error).append("\n");
+            }
+            FacesContext.getCurrentInstance().addMessage(null,
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                            "Validación antes de generar el certificado",
+                            sb.toString()));
+        }
+
+        return result.isValid();
+    }
+
+    // =========================
+    // GUARDADO DE STEPS
+    // =========================
     public void guardarStep1() {
         controllerActionTemplate.execute(
                 "guardarStep1",
@@ -844,13 +813,6 @@ public class CentroMedicoCtrl implements Serializable {
         }
     }
 
-    private boolean validarStep2() {
-        ValidationResult result = step2Validator.validate(fichaRiesgo, actividadesLab, medidasPreventivas);
-        messageService.addValidationMessages("Step 2", result);
-        return result.isValid();
-    }
-
-    // Wizard - Guardado Step 2
     public void guardarStep2() {
         controllerActionTemplate.execute(
                 "guardarStep2",
@@ -902,26 +864,6 @@ public class CentroMedicoCtrl implements Serializable {
                 "Step 2 guardado. ID_FICHA=" + ficha.getIdFicha());
     }
 
-    private void ensureFichaSavedOrThrow() {
-        if (ficha == null || ficha.getIdFicha() == null) {
-            throw new BusinessValidationException("Primero debe existir y estar guardada la ficha (ID_FICHA).");
-        }
-    }
-
-    private boolean validarStep3() {
-        s3("validarStep3() INICIO");
-        ValidationResult result = step3Validator.validate(listaDiag, aptitudSel, recomendaciones, medicoNombre, medicoCodigo);
-        if (!result.isValid()) {
-            for (String error : result.getErrors()) {
-                s3("validarStep3() FAIL: " + error);
-            }
-        }
-        messageService.addValidationMessages("Step 3", result);
-        s3("validarStep3() FIN -> " + result.isValid());
-        return result.isValid();
-    }
-
-    // Wizard - Guardado Step 3
     public void guardarStep3() {
         controllerActionTemplate.execute(
                 "guardarStep3",
@@ -1000,31 +942,15 @@ public class CentroMedicoCtrl implements Serializable {
                 "Step 3 guardado. ID_FICHA=" + ficha.getIdFicha());
     }
 
-    private boolean verificarFichaCompleta() {
-        ValidationResult result = fichaCompletaValidator.validate(
-                ficha,
-                permitirIngresoManual,
-                personaAux,
-                empleadoSel,
-                aptitudSel,
-                fechaEmision,
-                this::inferCie10PrincipalFromListaK);
-
-        if (!result.isValid()) {
-            StringBuilder sb = new StringBuilder();
-            for (String error : result.getErrors()) {
-                sb.append("- ").append(error).append("\n");
-            }
-            FacesContext.getCurrentInstance().addMessage(null,
-                    new FacesMessage(FacesMessage.SEVERITY_ERROR,
-                            "Validación antes de generar el certificado",
-                            sb.toString()));
+    private void ensureFichaSavedOrThrow() {
+        if (ficha == null || ficha.getIdFicha() == null) {
+            throw new BusinessValidationException("Primero debe existir y estar guardada la ficha (ID_FICHA).");
         }
-
-        return result.isValid();
     }
 
-    // PDF - Ficha Ocupacional
+    // =========================
+    // PDF - FICHA OCUPACIONAL
+    // =========================
     public void prepararVistaPreviaFicha() {
         onPrepararFichaPdf();
     }
@@ -1069,6 +995,80 @@ public class CentroMedicoCtrl implements Serializable {
         PrimeFaces.current().ajax().update(":msgs", "@([id$=wdzFicha])");
     }
 
+    // =========================
+    // PDF - CERTIFICADO MÉDICO
+    // =========================
+    public void prepararVistaPreviaCertificado() {
+        onPrepararCertificadoPdf();
+    }
+
+    public void onPrepararCertificadoPdf() {
+        controllerActionTemplate.executeWithResult(
+                "onPrepararCertificadoPdf",
+                () -> centroMedicoPdfWorkflowService.onPrepararCertificadoPdf(
+                        new CentroMedicoPdfWorkflowService.PrepareCertificadoFlowCommand(
+                                fichaPdfListo,
+                                pdfTokenFicha,
+                                buildPrepareFichaCommand(),
+                                buildPrepareCertificadoCommand())),
+                this::onPrepararCertificadoPdfSuccess,
+                LOG,
+                activeStep,
+                noPersonaSel,
+                cedulaBusqueda);
+    }
+
+    private void onPrepararCertificadoPdfSuccess(CentroMedicoPdfWorkflowService.CertificadoFlowResult result) {
+        applyPdfUiState(centroMedicoPdfUiCoordinator.onPrepararCertificadoPdfSuccess(
+                result,
+                FacesContext.getCurrentInstance(),
+                pdfSessionStore,
+                pdfTokenCertificado));
+    }
+
+    // =========================
+    // PDF - VISTA PREVIA GENERAL
+    // =========================
+    public void prepararVistaPrevia() {
+        controllerActionTemplate.executeWithResult(
+                "prepararVistaPrevia",
+                () -> centroMedicoPdfWorkflowService.prepararVistaPrevia(
+                        new CentroMedicoPdfWorkflowService.PreparePreviewFlowCommand(
+                                fichaPdfListo,
+                                pdfTokenFicha,
+                                this::verificarFichaCompleta,
+                                buildPrepareFichaCommand(),
+                                buildPrepareCertificadoCommand())),
+                this::onPrepararVistaPreviaSuccess,
+                LOG,
+                activeStep,
+                noPersonaSel,
+                cedulaBusqueda);
+    }
+
+    private void onPrepararVistaPreviaSuccess(CentroMedicoPdfWorkflowService.PreviewFlowResult result) {
+        applyPdfUiState(centroMedicoPdfUiCoordinator.onPrepararVistaPreviaSuccess(
+                result,
+                FacesContext.getCurrentInstance(),
+                pdfSessionStore,
+                pdfTokenCertificado));
+    }
+
+    public void limpiarVistaPrevia() {
+        centroMedicoPdfFacadeService.cleanupPdfPreview(
+                FacesContext.getCurrentInstance(),
+                pdfSessionStore,
+                pdfTokenCertificado);
+        applyCleanupPdfPreviewState();
+    }
+
+    private void cleanupPdfPreview(FacesContext ctx) {
+        applyPdfUiState(centroMedicoPdfUiCoordinator.cleanupPdfPreview(ctx, pdfSessionStore, pdfTokenCertificado));
+    }
+
+    // =========================
+    // PDF - MÉTODOS DE CONSTRUCCIÓN
+    // =========================
     private CentroMedicoPdfWorkflowService.PrepareFichaCommandData buildPrepareFichaCommand() {
         CentroMedicoPdfUiCoordinator.BuildPrepareFichaUiCommand cmd = new CentroMedicoPdfUiCoordinator.BuildPrepareFichaUiCommand();
         cmd.ficha = ficha;
@@ -1119,125 +1119,6 @@ public class CentroMedicoCtrl implements Serializable {
         return centroMedicoPdfFacadeService.construirHtmlFichaDesdePlantilla(cmd);
     }
 
-    private String obtenerTipoEvaluacionPdf() {
-        String tipo = PdfTextUtil.trimToNull(tipoEval);
-        if (tipo == null) {
-            tipo = PdfTextUtil.trimToNull(tipoEvaluacion);
-        }
-        return tipo;
-    }
-
-    private void syncCamposDesdeObjetosInternal() {
-        FichaPdfMappedData data = fichaPdfContextAssembler.syncCamposDesdeObjetos(
-                fichaPdfDataMapper,
-                ficha,
-                empleadoSel,
-                fechaNacimiento);
-        this.institucion = data.institucion;
-        this.ruc = data.ruc;
-        this.centroTrabajo = data.centroTrabajo;
-        this.ciiu = data.ciiu;
-        this.noHistoria = data.noHistoria;
-        this.noArchivo = data.noArchivo;
-        this.ginecoExamen1 = data.ginecoExamen1;
-        this.ginecoTiempo1 = data.ginecoTiempo1;
-        this.ginecoResultado1 = data.ginecoResultado1;
-        this.ginecoExamen2 = data.ginecoExamen2;
-        this.ginecoTiempo2 = data.ginecoTiempo2;
-        this.ginecoResultado2 = data.ginecoResultado2;
-        this.ginecoObservacion = data.ginecoObservacion;
-        this.enfermedadActual = data.enfermedadActual;
-        if (data.apellido1 != null) {
-            this.apellido1 = data.apellido1;
-        }
-        if (data.apellido2 != null) {
-            this.apellido2 = data.apellido2;
-        }
-        if (data.nombre1 != null) {
-            this.nombre1 = data.nombre1;
-        }
-        if (data.nombre2 != null) {
-            this.nombre2 = data.nombre2;
-        }
-        if (data.edad != null) {
-            this.edad = data.edad;
-        }
-    }
-
-    public void prepararVistaPrevia() {
-        controllerActionTemplate.executeWithResult(
-                "prepararVistaPrevia",
-                () -> centroMedicoPdfWorkflowService.prepararVistaPrevia(
-                        new CentroMedicoPdfWorkflowService.PreparePreviewFlowCommand(
-                                fichaPdfListo,
-                                pdfTokenFicha,
-                                this::verificarFichaCompleta,
-                                buildPrepareFichaCommand(),
-                                buildPrepareCertificadoCommand())),
-                this::onPrepararVistaPreviaSuccess,
-                LOG,
-                activeStep,
-                noPersonaSel,
-                cedulaBusqueda);
-    }
-
-    private void onPrepararVistaPreviaSuccess(CentroMedicoPdfWorkflowService.PreviewFlowResult result) {
-        applyPdfUiState(centroMedicoPdfUiCoordinator.onPrepararVistaPreviaSuccess(
-                result,
-                FacesContext.getCurrentInstance(),
-                pdfSessionStore,
-                pdfTokenCertificado));
-    }
-
-    private void cleanupPdfPreview(FacesContext ctx) {
-        applyPdfUiState(centroMedicoPdfUiCoordinator.cleanupPdfPreview(ctx, pdfSessionStore, pdfTokenCertificado));
-    }
-
-    public void limpiarVistaPrevia() {
-        centroMedicoPdfFacadeService.cleanupPdfPreview(
-                FacesContext.getCurrentInstance(),
-                pdfSessionStore,
-                pdfTokenCertificado);
-        applyCleanupPdfPreviewState();
-    }
-
-    private void applyCleanupPdfPreviewState() {
-        applyPdfUiState(centroMedicoPdfUiCoordinator.applyCleanupPdfPreviewState(null));
-    }
-
-    // PDF - Certificado Médico
-    public void prepararVistaPreviaCertificado() {
-        onPrepararCertificadoPdf();
-    }
-
-    public void onPrepararCertificadoPdf() {
-        controllerActionTemplate.executeWithResult(
-                "onPrepararCertificadoPdf",
-                () -> centroMedicoPdfWorkflowService.onPrepararCertificadoPdf(
-                        new CentroMedicoPdfWorkflowService.PrepareCertificadoFlowCommand(
-                                fichaPdfListo,
-                                pdfTokenFicha,
-                                buildPrepareFichaCommand(),
-                                buildPrepareCertificadoCommand())),
-                this::onPrepararCertificadoPdfSuccess,
-                LOG,
-                activeStep,
-                noPersonaSel,
-                cedulaBusqueda);
-    }
-
-    private void onPrepararCertificadoPdfSuccess(CentroMedicoPdfWorkflowService.CertificadoFlowResult result) {
-        applyPdfUiState(centroMedicoPdfUiCoordinator.onPrepararCertificadoPdfSuccess(
-                result,
-                FacesContext.getCurrentInstance(),
-                pdfSessionStore,
-                pdfTokenCertificado));
-    }
-
-    private void showValidationMessage(FacesContext ctx, String summary, List<String> errors) {
-        centroMedicoPdfFacadeService.showValidationMessage(ctx, summary, errors);
-    }
-
     private String construirHtmlDesdePlantilla() throws java.io.IOException {
         CentroMedicoPdfUiCoordinator.ConstruirCertificadoHtmlCommand cmd = new CentroMedicoPdfUiCoordinator.ConstruirCertificadoHtmlCommand();
         cmd.ficha = ficha;
@@ -1280,15 +1161,30 @@ public class CentroMedicoCtrl implements Serializable {
                 value -> this.mostrarDlgCedula = value);
     }
 
+    private void resetStep4PdfState() {
+        applyPdfUiState(centroMedicoPdfUiCoordinator.resetStep4PdfState());
+    }
+
+    private void applyStep4State(CentroMedicoWizardNavigationCoordinator.Step4UiState state) {
+        applyPdfUiState(centroMedicoPdfUiCoordinator.applyStep4State(state, null));
+    }
+
+    private void applyCleanupPdfPreviewState() {
+        applyPdfUiState(centroMedicoPdfUiCoordinator.applyCleanupPdfPreviewState(null));
+    }
+
+    private void showValidationMessage(FacesContext ctx, String summary, List<String> errors) {
+        centroMedicoPdfFacadeService.showValidationMessage(ctx, summary, errors);
+    }
+
     // =========================
-    // CIE10 y diagnóstico
+    // CIE10 Y DIAGNÓSTICO
     // =========================
     public void syncTipoEvaluacion() {
         this.tipoEvaluacion = this.tipoEval;
     }
 
     private void syncCie10PrincipalFromK() {
-
         if (codCie10Ppal != null && !codCie10Ppal.trim().isEmpty()) {
             return;
         }
@@ -1322,7 +1218,6 @@ public class CentroMedicoCtrl implements Serializable {
             descCie10Ppal = best.getDescripcion();
         }
     }
-
 
     public void onCie10BlurCodigo(int index) {
         ConsultaDiagnostico diag = centroMedicoFormStateService.ensureDiag(this, index);
@@ -1414,70 +1309,270 @@ public class CentroMedicoCtrl implements Serializable {
         }
     }
 
-    // =========================
-    // Gestión de paciente / cédula / persona auxiliar
-    // =========================
-    public void abrirPersonaAuxManual() {
-        PacienteUiFlowCoordinator.UiFlowResult result = pacienteUiFlowCoordinator.abrirPersonaAuxManual(
-                cedulaBusqueda,
-                personaAux,
-                ficha,
-                empleadoSel,
-                noPersonaSel,
-                permitirIngresoManual,
-                mostrarDlgCedula);
-        applyPacienteUiFlow(result);
-        this.mostrarDiaLOGoAux = result.isMostrarDialogoAux();
-        for (String script : result.getScripts()) {
-            PrimeFaces.current().executeScript(script);
+    public void onKCieCodigoSelect(SelectEvent<String> event) {
+        UIComponent comp = (event != null ? event.getComponent() : null);
+        Integer idx = extraerIdx(comp);
+        String selected = (event != null ? event.getObject() : null);
+
+        LOG.info(">>> [AC-K-COD] itemSelect idx=" + idx
+                + " selected=[" + selected + "] clientId=" + (comp != null ? comp.getClientId() : "null"));
+
+        ConsultaDiagnostico row = getDiagRow(idx, "AC-K-COD itemSelect");
+        if (row == null) {
+            return;
         }
+
+        if (selected == null || selected.trim().isEmpty()) {
+            LOG.info("<<< [AC-K-COD] itemSelect empty selection => no-op");
+            return;
+        }
+
+        String codigo = selected.trim().toUpperCase();
+        row.setCodigo(codigo);
+
+        Cie10 cie = cie10Service.buscarPorCodigo(codigo);
+        LOG.info("... [AC-K-COD] itemSelect buscarPorCodigo(" + codigo + ") => " + (cie != null ? cie.getCodigo() : "null"));
+
+        if (cie != null) {
+            row.setCodigo(cie.getCodigo());
+            row.setDescripcion(cie.getDescripcion());
+            row.setCie10(cie);
+        } else {
+            row.setDescripcion(null);
+            row.setCie10(null);
+        }
+
+        LOG.info("<<< [AC-K-COD] itemSelect AFTER codigo=[" + row.getCodigo() + "] desc=[" + row.getDescripcion() + "]");
     }
 
-    // Persona Auxiliar - Registro y Selección
-    public void guardarPersonaAuxYUsar() {
+    public void onKCieCodigoBlur(AjaxBehaviorEvent event) {
+        UIComponent comp = event != null ? event.getComponent() : null;
+        Integer idx = extraerIdx(comp);
 
-        LOG.info(String.valueOf("INGRESA AL METODO DE GUARDAR "));
-        LOG.info(String.valueOf("PERSONA AUXILIAR ANTES VALIDAR: " + personaAux));
+        String clientId = safeClientId(comp);
+        String typed = getAutoCompleteTypedRobusto(comp);
 
+        LOG.info(">>> [AC-K-COD] blur idx=" + idx + " clientId=" + clientId + " typed=[" + typed + "]");
+
+        ConsultaDiagnostico row = getDiagRow(idx, "AC-K-COD blur");
+        if (row == null) {
+            return;
+        }
+
+        String codigo = typed != null ? typed.trim() : "";
+        if (codigo.isEmpty()) {
+            row.setCodigo(null);
+            row.setDescripcion(null);
+            row.setCie10(null);
+            LOG.info("<<< [AC-K-COD] blur empty => cleared row");
+            return;
+        }
+
+        String codigoUp = codigo.toUpperCase();
+
+        if (codigoUp.length() < 3) {
+            row.setCodigo(codigoUp);
+            row.setDescripcion(null);
+            row.setCie10(null);
+            LOG.info("<<< [AC-K-COD] blur partial [" + codigoUp + "] => keep, no exact lookup");
+            return;
+        }
+
+        Cie10 cie = cie10Service.buscarPorCodigo(codigoUp);
+
+        if (cie == null) {
+            List<Cie10> sugerencias = cie10Service.buscarJerarquiaPorTerm(codigoUp);
+            if (sugerencias != null) {
+                String codigoNorm = codigoUp.replaceAll("[^A-Z0-9]", "");
+                for (Cie10 candidato : sugerencias) {
+                    if (candidato == null || candidato.getCodigo() == null) {
+                        continue;
+                    }
+
+                    String candidatoNorm = candidato.getCodigo().toUpperCase().replaceAll("[^A-Z0-9]", "");
+                    if (candidatoNorm.equals(codigoNorm)) {
+                        cie = candidato;
+                        break;
+                    }
+                }
+            }
+        }
+
+        LOG.debug("... [AC-K-COD] buscarPorCodigo(" + codigoUp + ") => "
+                + (cie != null ? (cie.getCodigo() + " | " + cie.getDescripcion()) : "null"));
+        if (cie != null) {
+            row.setCodigo(cie.getCodigo());
+            row.setDescripcion(cie.getDescripcion());
+            row.setCie10(cie);
+            LOG.info("<<< [AC-K-COD] blur AFTER MATCH codigo=[" + row.getCodigo() + "] desc=[" + row.getDescripcion() + "]");
+            return;
+        }
+
+        row.setCodigo(codigoUp);
+        row.setDescripcion(null);
+        row.setCie10(null);
+        LOG.info("<<< [AC-K-COD] blur AFTER NO-MATCH keep codigo=[" + row.getCodigo() + "]");
+    }
+
+    public void onKDescSelect(SelectEvent<String> event) {
+        String descripcion = event.getObject();
+        UIComponent comp = event.getComponent();
+        Integer idx = extraerIdx(comp);
+
+        LOG.info(">>> [AC-K-DESC] itemSelect ENTER desc=[" + descripcion + "] idx=" + idx);
+
+        ConsultaDiagnostico row = getDiagRow(idx, "AC-K-DESC itemSelect");
+        if (row == null) {
+            return;
+        }
+
+        row.setDescripcion(descripcion);
+
+        if (descripcion != null && !descripcion.trim().isEmpty()) {
+            Cie10 cie = cie10Service.buscarPrimeroPorDescripcion(descripcion.trim());
+            LOG.info("... [AC-K-DESC] buscarPrimeroPorDescripcion => " + (cie != null ? cie.getCodigo() : "null"));
+
+            if (cie != null) {
+                row.setCodigo(cie.getCodigo());
+                row.setCie10(cie);
+            } else {
+                row.setCodigo(null);
+                row.setCie10(null);
+            }
+        }
+
+        LOG.info("<<< [AC-K-DESC] itemSelect row AFTER idx=" + idx
+                + " codigo=[" + row.getCodigo() + "] desc=[" + row.getDescripcion() + "]");
+
+        syncCie10PrincipalFromK();
+    }
+
+    public void onKDescBlur(AjaxBehaviorEvent event) {
+        UIComponent comp = (event != null ? event.getComponent() : null);
+        Integer idx = extraerIdx(comp);
+        String clientId = safeClientId(comp);
+        String typed = getAutoCompleteTypedRobusto(comp);
+
+        LOG.info(">>> [AC-K-DESC] blur idx=" + idx + " clientId=" + clientId + " typed=[" + typed + "]");
+
+        ConsultaDiagnostico row = getDiagRow(idx, "AC-K-DESC blur");
+        if (row == null) {
+            return;
+        }
+
+        String desc = (typed != null ? typed.trim() : "");
+        if (desc.isEmpty()) {
+            row.setDescripcion(null);
+            row.setCie10(null);
+            LOG.info("<<< [AC-K-DESC] blur empty => cleared descripcion");
+            return;
+        }
+
+        row.setDescripcion(desc);
+
+        if (desc.length() < 4) {
+            row.setCie10(null);
+            LOG.info("<<< [AC-K-DESC] blur partial => keep desc only");
+            return;
+        }
+
+        Cie10 cie = null;
         try {
-            PacienteUiFlowCoordinator.UiFlowResult result = pacienteUiFlowCoordinator.guardarPersonaAuxYUsar(
-                    personaAux,
-                    ficha,
-                    empleadoSel,
-                    noPersonaSel);
-
-            applyPacienteUiFlow(result);
-            this.cedulaBusqueda = result.getCedulaBusqueda();
-            this.apellido1 = result.getApellido1();
-            this.apellido2 = result.getApellido2();
-            this.nombre1 = result.getNombre1();
-            this.nombre2 = result.getNombre2();
-            this.sexo = result.getSexo();
-            this.fechaNacimiento = result.getFechaNacimiento();
-            this.noHistoria = result.getNoHistoria();
-            this.mostrarDiaLOGoAux = result.isMostrarDialogoAux();
-            this.mostrarDlgCedula = result.isMostrarDlgCedula();
-
-            personaAuxDialogUiCoordinator.onGuardarSuccess(result);
-
-            LOG.info("PersonaAux guardada manualmente: {} {} / {} {} (cedula={})",
-                    personaAux.getApellido1(),
-                    personaAux.getApellido2(),
-                    personaAux.getNombre1(),
-                    personaAux.getNombre2(),
-                    personaAux.getCedula());
-
-        } catch (PersonaAuxFlowService.PersonaAuxValidationException e) {
-            LOG.warn("Validación PersonaAux en flujo manual: {}", e.getMessage());
-            personaAuxDialogUiCoordinator.onValidationFailure(e.getMessage());
+            List<Cie10> candidatos = cie10Service.buscarPorDescripcionLike(desc, 20);
+            LOG.info("... [AC-K-DESC] candidatos.size=" + (candidatos == null ? "null" : candidatos.size()));
+            if (candidatos != null && !candidatos.isEmpty()) {
+                cie = cie10LookupService.buscarMejorCoincidenciaPorDescripcion(candidatos, desc);
+            }
         } catch (RuntimeException e) {
-            LOG.error("Error guardando datos manuales", e);
-            personaAuxDialogUiCoordinator.onTechnicalFailure();
+            LOG.error("!!! [AC-K-DESC] error: {}", e.getMessage(), e);
         }
+
+        LOG.debug("... [AC-K-DESC] pickBest => "
+                + (cie != null ? (cie.getCodigo() + " | " + cie.getDescripcion()) : "null"));
+
+        if (cie != null) {
+            row.setCodigo(cie.getCodigo());
+            row.setDescripcion(cie.getDescripcion());
+            row.setCie10(cie);
+            LOG.info("<<< [AC-K-DESC] blur AFTER MATCH codigo=[" + row.getCodigo() + "] desc=[" + row.getDescripcion() + "]");
+            return;
+        }
+
+        row.setCie10(null);
+        LOG.info("<<< [AC-K-DESC] blur AFTER NO-MATCH keep desc=[" + row.getDescripcion() + "]");
     }
 
-    // Búsqueda de Cédula / Diálogo Inicial
+    public void onKTipoChange(AjaxBehaviorEvent event) {
+        UIComponent comp = (event != null ? event.getComponent() : null);
+        Integer idx = extraerIdx(comp);
 
+        String clientId = safeClientId(comp);
+
+        LOG.info(">>> [K-TIPO] change ENTER idx=" + idx + " clientId=" + clientId);
+
+        ConsultaDiagnostico row = getDiagRow(idx, "K-TIPO change");
+        if (row == null) {
+            return;
+        }
+
+        LOG.info("<<< [K-TIPO] AFTER idx=" + idx
+                + " codigo=[" + row.getCodigo() + "]"
+                + " desc=[" + row.getDescripcion() + "]"
+                + " tipo=[" + row.getTipoDiag() + "]");
+    }
+
+    public void abrirDialogoDiagnostico(AjaxBehaviorEvent event) {
+        UIComponent comp = (event != null ? event.getComponent() : null);
+        Integer idx = extraerIdx(comp);
+        ConsultaDiagnostico row = getDiagRow(idx, "K-DLG abrir");
+        if (row == null) {
+            return;
+        }
+
+        dialogDiagnosticoIdx = idx;
+        codCie10Ppal = row.getCodigo();
+        descCie10Ppal = row.getDescripcion();
+        PrimeFaces.current().executeScript("PF('kDiagDialogWv').show();");
+    }
+
+    public void aceptarDialogoDiagnostico() {
+        ConsultaDiagnostico row = getDiagRow(dialogDiagnosticoIdx, "K-DLG aceptar");
+        if (row == null) {
+            return;
+        }
+
+        String codigo = codCie10Ppal != null ? codCie10Ppal.trim().toUpperCase() : "";
+        String descripcion = descCie10Ppal != null ? descCie10Ppal.trim() : "";
+
+        Cie10 cie = null;
+        if (!codigo.isEmpty()) {
+            cie = cie10Service.buscarPorCodigo(codigo);
+        }
+        if (cie == null && !descripcion.isEmpty()) {
+            cie = cie10Service.buscarPrimeroPorDescripcion(descripcion);
+        }
+
+        if (cie != null) {
+            row.setCodigo(cie.getCodigo());
+            row.setDescripcion(cie.getDescripcion());
+            row.setCie10(cie);
+        } else {
+            row.setCodigo(codigo.isEmpty() ? null : codigo);
+            row.setDescripcion(descripcion.isEmpty() ? null : descripcion);
+            row.setCie10(null);
+        }
+
+        syncCie10PrincipalFromK();
+        PrimeFaces.current().executeScript("PF('kDiagDialogWv').hide();");
+    }
+
+    public void cerrarDialogoDiagnostico() {
+        PrimeFaces.current().executeScript("PF('kDiagDialogWv').hide();");
+    }
+
+    // =========================
+    // GESTIÓN DE PACIENTE / CÉDULA
+    // =========================
     public void onBuscarPorCedulaRh() {
         try {
             buscarCedula();
@@ -1549,21 +1644,299 @@ public class CentroMedicoCtrl implements Serializable {
         applyPacienteUiFlow(result);
     }
 
-    private void safeUpdate(String clientId) {
+    public void prepararIngresoManual() {
+        FacesContext ctx = FacesContext.getCurrentInstance();
         try {
-
-            PrimeFaces.current().ajax().update(clientId);
-        } catch (RuntimeException ex) {
-
+            PersonaAuxFlowService.ManualPreparationResult result = personaAuxFlowService.prepararIngresoManual(
+                    cedulaBusqueda,
+                    personaAux);
+            this.personaAux = result.getPersonaAux();
+            this.permitirIngresoManual = result.isPermitirIngresoManual();
+        } catch (PersonaAuxFlowService.PersonaAuxValidationException ex) {
+            ctx.addMessage(null, new FacesMessage(
+                    FacesMessage.SEVERITY_WARN,
+                    "Cédula requerida",
+                    ex.getMessage()
+            ));
         }
     }
 
-    public boolean isMostrarDlgCedula() {
-        return mostrarDlgCedula;
+    public void abrirPersonaAuxManual() {
+        PacienteUiFlowCoordinator.UiFlowResult result = pacienteUiFlowCoordinator.abrirPersonaAuxManual(
+                cedulaBusqueda,
+                personaAux,
+                ficha,
+                empleadoSel,
+                noPersonaSel,
+                permitirIngresoManual,
+                mostrarDlgCedula);
+        applyPacienteUiFlow(result);
+        this.mostrarDiaLOGoAux = result.isMostrarDialogoAux();
+        for (String script : result.getScripts()) {
+            PrimeFaces.current().executeScript(script);
+        }
     }
 
-    public void setMostrarDlgCedula(boolean mostrarDlgCedula) {
-        this.mostrarDlgCedula = mostrarDlgCedula;
+    public void guardarPersonaAuxYUsar() {
+        LOG.info(String.valueOf("INGRESA AL METODO DE GUARDAR "));
+        LOG.info(String.valueOf("PERSONA AUXILIAR ANTES VALIDAR: " + personaAux));
+
+        try {
+            PacienteUiFlowCoordinator.UiFlowResult result = pacienteUiFlowCoordinator.guardarPersonaAuxYUsar(
+                    personaAux,
+                    ficha,
+                    empleadoSel,
+                    noPersonaSel);
+
+            applyPacienteUiFlow(result);
+            this.cedulaBusqueda = result.getCedulaBusqueda();
+            this.apellido1 = result.getApellido1();
+            this.apellido2 = result.getApellido2();
+            this.nombre1 = result.getNombre1();
+            this.nombre2 = result.getNombre2();
+            this.sexo = result.getSexo();
+            this.fechaNacimiento = result.getFechaNacimiento();
+            this.noHistoria = result.getNoHistoria();
+            this.mostrarDiaLOGoAux = result.isMostrarDialogoAux();
+            this.mostrarDlgCedula = result.isMostrarDlgCedula();
+
+            personaAuxDialogUiCoordinator.onGuardarSuccess(result);
+
+            LOG.info("PersonaAux guardada manualmente: {} {} / {} {} (cedula={})",
+                    personaAux.getApellido1(),
+                    personaAux.getApellido2(),
+                    personaAux.getNombre1(),
+                    personaAux.getNombre2(),
+                    personaAux.getCedula());
+
+        } catch (PersonaAuxFlowService.PersonaAuxValidationException e) {
+            LOG.warn("Validación PersonaAux en flujo manual: {}", e.getMessage());
+            personaAuxDialogUiCoordinator.onValidationFailure(e.getMessage());
+        } catch (RuntimeException e) {
+            LOG.error("Error guardando datos manuales", e);
+            personaAuxDialogUiCoordinator.onTechnicalFailure();
+        }
+    }
+
+    private void asegurarPersonaAuxPersistida() {
+        PacienteUiFlowCoordinator.UiFlowResult result = pacienteUiFlowCoordinator.asegurarPersonaAuxPersistida(
+                permitirIngresoManual,
+                ficha,
+                personaAux);
+        applyPacienteUiFlow(result);
+    }
+
+    private void applyPacienteUiFlow(PacienteUiFlowCoordinator.UiFlowResult result) {
+        if (result == null) {
+            return;
+        }
+        pacienteViewState.setEmpleadoSel(result.getEmpleadoSel());
+        pacienteViewState.setNoPersonaSel(result.getNoPersonaSel());
+        pacienteViewState.setPersonaAux(result.getPersonaAux());
+        pacienteViewState.setPermitirIngresoManual(result.isPermitirIngresoManual());
+
+        ficha = result.getFicha();
+        empleadoSel = result.getEmpleadoSel();
+        noPersonaSel = result.getNoPersonaSel();
+        personaAux = result.getPersonaAux();
+        permitirIngresoManual = result.isPermitirIngresoManual();
+    }
+
+    // =========================
+    // DIÁLOGO DE CÉDULA
+    // =========================
+    public void onDlgCedulaShown() {
+        mostrarDlgCedula = false;
+    }
+
+    public void onDlgCedulaHide() {
+        mostrarDlgCedula = false;
+    }
+
+    public void onDlgCedulaClose() {
+        mostrarDlgCedula = false;
+    }
+
+    public void autoOpenCedulaIfNeeded() {
+        boolean open = false;
+
+        if (!cedulaDlgAutoOpened) {
+            if (mostrarDlgCedula && "step1".equals(activeStep)) {
+                open = true;
+                cedulaDlgAutoOpened = true;
+            }
+        }
+
+        org.primefaces.PrimeFaces.current().ajax().addCallbackParam("openCedulaDlg", open);
+    }
+
+    public void consumirAutoOpenCedulaDlg() {
+        boolean open = false;
+
+        if ("step1".equals(activeStep)
+                && empleadoSel == null
+                && !cedulaDlgAutoOpened) {
+
+            open = true;
+            cedulaDlgAutoOpened = true;
+        }
+
+        PrimeFaces.current().ajax().addCallbackParam("openCedulaDlg", open);
+    }
+
+    // =========================
+    // CÁLCULOS Y UTILIDADES
+    // =========================
+    public void onFechaNacimientoSelect(SelectEvent e) {
+        this.fechaNacimiento = (java.util.Date) e.getObject();
+        recalculateEdadAndNotify();
+    }
+
+    public void onFechaNacimientoChange() {
+        recalculateEdadAndNotify();
+    }
+
+    private void recalculateEdadAndNotify() {
+        this.edad = calcUtil.calcularEdad(this.fechaNacimiento);
+        FacesContext.getCurrentInstance().addMessage(null,
+                new FacesMessage(FacesMessage.SEVERITY_INFO, "Cálculo de edad",
+                        "Edad calculada: " + (edad == null ? "(sin fecha)" : edad + " años")));
+    }
+
+    public void calcularEdad() {
+        this.edad = calcUtil.calcularEdad(this.fechaNacimiento);
+    }
+
+    public Date getFechaMaximaNacimiento() {
+        return calcUtil.getFechaMaximaNacimiento();
+    }
+
+    public void validarEdadMinima() {
+        if (!calcUtil.validarEdadMinima(edad)) {
+            messageService.error("La edad debe ser ≥ 18 años");
+            fechaNacimiento = null;
+            edad = null;
+        }
+    }
+
+    public void recalcularIMC() {
+        this.imc = calcUtil.recalcularIMC(peso, tallaCm);
+    }
+
+    private void registrarAuditoria(String accion, String tabla, String campo, String observaciones) {
+        s3("registrarAuditoria() accion=" + accion + " tabla=" + tabla + " campo=" + campo);
+
+        try {
+            centroMedicoAuditService.registrar(accion, tabla, campo, observaciones);
+            s3("registrarAuditoria() OK");
+        } catch (RuntimeException e) {
+            s3e("registrarAuditoria() FALLÓ", e);
+        }
+    }
+
+    private String usuarioReal() {
+        try {
+            return "USR_APP";
+        } catch (RuntimeException e) {
+            return "USR_APP";
+        }
+    }
+
+    // =========================
+    // CONSUMO, HÁBITOS Y ESTRUCTURAS AUXILIARES
+    // =========================
+    private void initConsumoVidaCond() {
+        final int N = CONS_ROWS;
+
+        if (consTiempoConsumoMeses == null) {
+            consTiempoConsumoMeses = new Integer[N];
+        }
+        if (consExConsumidor == null) {
+            consExConsumidor = new Boolean[N];
+        }
+        if (consTiempoAbstinenciaMeses == null) {
+            consTiempoAbstinenciaMeses = new Integer[N];
+        }
+        if (consNoConsume == null) {
+            consNoConsume = new Boolean[N];
+        }
+
+        if (afCual == null) {
+            afCual = new String[N];
+        }
+        if (afTiempo == null) {
+            afTiempo = new String[N];
+        }
+
+        if (medCual == null) {
+            medCual = new String[N];
+        }
+        if (medCant == null) {
+            medCant = new Integer[N];
+        }
+
+        for (int i = 0; i < N; i++) {
+            if (consExConsumidor[i] == null) {
+                consExConsumidor[i] = Boolean.FALSE;
+            }
+            if (consNoConsume[i] == null) {
+                consNoConsume[i] = Boolean.FALSE;
+            }
+        }
+
+        if (consumoVidaCondObs == null) {
+            consumoVidaCondObs = "";
+        }
+    }
+
+    public void initConsumoVidaCondDefaults() {
+        initConsumoVidaCond();
+    }
+
+    public void onNoConsumeChange(int idx) {
+        if (Boolean.TRUE.equals(consNoConsume[idx])) {
+            consExConsumidor[idx] = false;
+            consTiempoConsumoMeses[idx] = 0;
+            consTiempoAbstinenciaMeses[idx] = 0;
+        }
+    }
+
+    // =========================
+    // ATENCIÓN PRIORITARIA - TOGGLES
+    // =========================
+    public void onToggleDiscapacidad() {
+        if (!apDiscapacidad) {
+            discapTipo = null;
+            discapDesc = null;
+            discapPorc = null;
+        }
+    }
+
+    public void onToggleCatastrofica() {
+        if (!apCatastrofica) {
+            catasDiagnostico = null;
+            catasCalificada = null;
+        }
+    }
+
+    // =========================
+    // RECARGA DE FICHA
+    // =========================
+    public void reloadFichaDesdeBd() {
+        if (this.ficha == null || this.ficha.getIdFicha() == null) {
+            return;
+        }
+        this.ficha = fichaService.findById(this.ficha.getIdFicha());
+    }
+
+    // =========================
+    // UTILIDADES DE UI
+    // =========================
+    private void safeUpdate(String clientId) {
+        try {
+            PrimeFaces.current().ajax().update(clientId);
+        } catch (RuntimeException ex) {
+        }
     }
 
     private String esNulo(String s) {
@@ -1596,23 +1969,6 @@ public class CentroMedicoCtrl implements Serializable {
         return new String[]{res1, res2};
     }
 
-    public void prepararIngresoManual() {
-        FacesContext ctx = FacesContext.getCurrentInstance();
-        try {
-            PersonaAuxFlowService.ManualPreparationResult result = personaAuxFlowService.prepararIngresoManual(
-                    cedulaBusqueda,
-                    personaAux);
-            this.personaAux = result.getPersonaAux();
-            this.permitirIngresoManual = result.isPermitirIngresoManual();
-        } catch (PersonaAuxFlowService.PersonaAuxValidationException ex) {
-            ctx.addMessage(null, new FacesMessage(
-                    FacesMessage.SEVERITY_WARN,
-                    "Cédula requerida",
-                    ex.getMessage()
-            ));
-        }
-    }
-
     private String primerToken(String texto) {
         if (esVacio(texto)) {
             return null;
@@ -1637,6 +1993,476 @@ public class CentroMedicoCtrl implements Serializable {
             sb.append(partes[i]);
         }
         return sb.toString();
+    }
+
+    private boolean filaActLabTieneAlgo(int i) {
+        if (!isBlank(actLabCentroTrabajo.get(i))) {
+            return true;
+        }
+        if (!isBlank(actLabActividad.get(i))) {
+            return true;
+        }
+        if (!isBlank(actLabTiempo.get(i))) {
+            return true;
+        }
+        if (!isBlank(actLabObservaciones.get(i))) {
+            return true;
+        }
+        if (!isBlank(iessEspecificar.get(i))) {
+            return true;
+        }
+
+        if (Boolean.TRUE.equals(actLabTrabajoAnterior.get(i))) {
+            return true;
+        }
+        if (Boolean.TRUE.equals(actLabTrabajoActual.get(i))) {
+            return true;
+        }
+        if (Boolean.TRUE.equals(actLabIncidenteChk.get(i))) {
+            return true;
+        }
+        if (Boolean.TRUE.equals(actLabAccidenteChk.get(i))) {
+            return true;
+        }
+        if (Boolean.TRUE.equals(actLabEnfermedadChk.get(i))) {
+            return true;
+        }
+        if (Boolean.TRUE.equals(iessSi.get(i))) {
+            return true;
+        }
+        if (Boolean.TRUE.equals(iessNo.get(i))) {
+            return true;
+        }
+
+        if (iessFecha.get(i) != null) {
+            return true;
+        }
+
+        return false;
+    }
+
+    public String getStepProcessId() {
+        return "@([id$=" + activeStep + "])";
+    }
+
+    public String getProcessStepId() {
+        return ":wiz:" + activeStep;
+    }
+
+    public long getTs() {
+        return System.currentTimeMillis();
+    }
+
+    // =========================
+    // UTILIDADES DE COMPONENTES UI
+    // =========================
+    private String getCompValueDebug(UIComponent comp) {
+        if (comp == null) {
+            LOG.info("... [VAL] comp=null");
+            return null;
+        }
+
+        String clientId;
+        try {
+            clientId = comp.getClientId(FacesContext.getCurrentInstance());
+        } catch (RuntimeException e) {
+            clientId = String.valueOf(comp.getId());
+        }
+
+        Object idxAttr = comp.getAttributes() != null ? comp.getAttributes().get("idx") : null;
+
+        Object submitted = null;
+        Object local = null;
+        Object value = null;
+
+        if (comp instanceof UIInput) {
+            UIInput in = (UIInput) comp;
+            submitted = in.getSubmittedValue();
+            local = in.getLocalValue();
+            value = in.getValue();
+        }
+
+        LOG.debug("... [VAL] compId=" + comp.getId()
+                + " clientId=" + clientId
+                + " idxAttr=" + idxAttr
+                + " submitted=" + submitted
+                + " local=" + local
+                + " value=" + value);
+
+        if (submitted != null) {
+            return submitted.toString();
+        }
+        if (value != null) {
+            return value.toString();
+        }
+        if (local != null) {
+            return local.toString();
+        }
+        return null;
+    }
+
+    private Integer extraerIdx(UIComponent comp) {
+        if (comp == null) {
+            LOG.info("... [IDX] extraerIdx comp=null");
+            return null;
+        }
+        Object idxObj = comp.getAttributes().get("idx");
+
+        String clientId;
+        try {
+            clientId = comp.getClientId(FacesContext.getCurrentInstance());
+        } catch (RuntimeException e) {
+            clientId = String.valueOf(comp.getId());
+        }
+
+        LOG.debug("... [IDX] extraerIdx compId=" + comp.getId()
+                + " clientId=" + clientId
+                + " idxAttr=" + idxObj);
+
+        if (idxObj == null) {
+            return null;
+        }
+        try {
+            return Integer.parseInt(idxObj.toString());
+        } catch (NumberFormatException e) {
+            LOG.info("... [IDX] extraerIdx parse ERROR idxAttr={} ex={}", idxObj, e.toString());
+            return null;
+        }
+    }
+
+    private ConsultaDiagnostico getDiagRow(Integer idx, String contexto) {
+        if (idx == null || listaDiag == null || idx < 0 || idx >= listaDiag.size()) {
+            LOG.info("<<< [{}] idx INVALID => {}", contexto, idx);
+            return null;
+        }
+        return listaDiag.get(idx);
+    }
+
+    private String getAutoCompleteTypedRobusto(UIComponent comp) {
+        try {
+            FacesContext fc = FacesContext.getCurrentInstance();
+            if (fc == null || comp == null) {
+                return null;
+            }
+
+            String base = comp.getClientId(fc);
+            Map<String, String> params = fc.getExternalContext().getRequestParameterMap();
+
+            String[] keys = new String[]{
+                base + "_input",
+                base,
+                base + "_hinput",
+                base + "_query"
+            };
+
+            for (String k : keys) {
+                String v = params.get(k);
+                if (v != null) {
+                    LOG.info("... [REQ] AC typed key=" + k + " => [" + v + "]");
+                    return v;
+                }
+            }
+
+            LOG.warn("!!! [REQ] AC typed NOT FOUND for base=" + base
+                    + " (tried _input, base, _hinput, _query)");
+            return null;
+
+        } catch (RuntimeException e) {
+            LOG.error("!!! [REQ] getAutoCompleteTypedRobusto ERROR: {}", e.getMessage(), e);
+            return null;
+        }
+    }
+
+    private String safeClientId(UIComponent comp) {
+        try {
+            FacesContext fc = FacesContext.getCurrentInstance();
+            return (fc != null && comp != null) ? comp.getClientId(fc) : "null";
+        } catch (RuntimeException e) {
+            return "err:" + e.getMessage();
+        }
+    }
+
+    // =========================
+    // UTILIDADES DE SINCRONIZACIÓN PDF
+    // =========================
+    private String obtenerTipoEvaluacionPdf() {
+        String tipo = PdfTextUtil.trimToNull(tipoEval);
+        if (tipo == null) {
+            tipo = PdfTextUtil.trimToNull(tipoEvaluacion);
+        }
+        return tipo;
+    }
+
+    private void syncCamposDesdeObjetosInternal() {
+        FichaPdfMappedData data = fichaPdfContextAssembler.syncCamposDesdeObjetos(
+                fichaPdfDataMapper,
+                ficha,
+                empleadoSel,
+                fechaNacimiento);
+        this.institucion = data.institucion;
+        this.ruc = data.ruc;
+        this.centroTrabajo = data.centroTrabajo;
+        this.ciiu = data.ciiu;
+        this.noHistoria = data.noHistoria;
+        this.noArchivo = data.noArchivo;
+        this.ginecoExamen1 = data.ginecoExamen1;
+        this.ginecoTiempo1 = data.ginecoTiempo1;
+        this.ginecoResultado1 = data.ginecoResultado1;
+        this.ginecoExamen2 = data.ginecoExamen2;
+        this.ginecoTiempo2 = data.ginecoTiempo2;
+        this.ginecoResultado2 = data.ginecoResultado2;
+        this.ginecoObservacion = data.ginecoObservacion;
+        this.enfermedadActual = data.enfermedadActual;
+        if (data.apellido1 != null) {
+            this.apellido1 = data.apellido1;
+        }
+        if (data.apellido2 != null) {
+            this.apellido2 = data.apellido2;
+        }
+        if (data.nombre1 != null) {
+            this.nombre1 = data.nombre1;
+        }
+        if (data.nombre2 != null) {
+            this.nombre2 = data.nombre2;
+        }
+        if (data.edad != null) {
+            this.edad = data.edad;
+        }
+    }
+
+    // =========================
+    // UTILIDADES DE CARGA DE DATOS PDF
+    // =========================
+    void cargarAtencionPrioritaria(Map<String, String> rep) {
+        rep.put("apCatastrofica_sn", apCatastrofica ? "SI" : "NO");
+        rep.put("apDiscapacidad_sn", apDiscapacidad ? "SI" : "NO");
+        rep.put("apEmbarazada_sn", apEmbarazada ? "SI" : "NO");
+        rep.put("apLactancia_sn", apLactancia ? "SI" : "NO");
+        rep.put("apAdultoMayor_sn", apAdultoMayor ? "SI" : "NO");
+
+        boolean aplicaDis = false;
+        boolean aplicaCat = false;
+
+        if (ficha != null) {
+            aplicaDis = "S".equalsIgnoreCase(safe(ficha.getApDiscapacidad()));
+            aplicaCat = "S".equalsIgnoreCase(safe(ficha.getApCatastrofica()));
+        } else {
+            aplicaDis = apDiscapacidad;
+            aplicaCat = apCatastrofica;
+        }
+
+        rep.put("apDiscapacidad_style", aplicaDis ? "" : "display:none;");
+        rep.put("apCatastrofica_style", aplicaCat ? "" : "display:none;");
+
+        rep.put("disTipo", safe(ficha != null ? ficha.getDisTipo() : null));
+        rep.put("disDescripcion", safe(ficha != null ? ficha.getDisDescripcion() : null));
+
+        Integer porc = (ficha != null ? ficha.getDisPorcentaje() : null);
+        rep.put("disPorcentaje", porc == null ? "" : String.valueOf(porc));
+
+        rep.put("catDiagnostico", safe(ficha != null ? ficha.getCatDiagnostico() : null));
+
+        String catCal = safe(ficha != null ? ficha.getCatCalificada() : null);
+        if ("S".equalsIgnoreCase(catCal) || "TRUE".equalsIgnoreCase(catCal)) {
+            rep.put("catCalificada", "SI");
+        } else if ("N".equalsIgnoreCase(catCal) || "FALSE".equalsIgnoreCase(catCal)) {
+            rep.put("catCalificada", "NO");
+        } else {
+            rep.put("catCalificada", catCal);
+        }
+        LOG.info("[PDF] disTipo=" + rep.get("disTipo")
+                + " disDescripcion=" + rep.get("disDescripcion")
+                + " disPorcentaje=" + rep.get("disPorcentaje")
+                + " catDiagnostico=" + rep.get("catDiagnostico")
+                + " catCalificada=" + rep.get("catCalificada")
+                + " styleDis=" + rep.get("apDiscapacidad_style")
+                + " styleCat=" + rep.get("apCatastrofica_style"));
+    }
+
+    private void cargarActividadLaboralArrays(Map<String, String> rep) {
+        for (int i = 0; i < H_ROWS; i++) {
+            int idx = i + 1;
+            rep.put("h_centro_" + idx, safe(getSafe(actLabCentroTrabajo, i)));
+            rep.put("h_actividad_" + idx, safe(getSafe(actLabActividad, i)));
+            rep.put("h_tiempo_" + idx, safe(getSafe(actLabTiempo, i)));
+            rep.put("h_anterior_" + idx, isTrue(getSafe(actLabTrabajoAnterior, i)) ? "X" : "");
+            rep.put("h_actual_" + idx, isTrue(getSafe(actLabTrabajoActual, i)) ? "X" : "");
+            rep.put("h_incidente_" + idx, isTrue(getSafe(actLabIncidenteChk, i)) ? "X" : "");
+            rep.put("h_accidente_" + idx, isTrue(getSafe(actLabAccidenteChk, i)) ? "X" : "");
+            rep.put("h_enfermedad_" + idx, isTrue(getSafe(actLabEnfermedadChk, i)) ? "X" : "");
+            rep.put("h_iess_si_" + idx, isTrue(getSafe(iessSi, i)) ? "X" : "");
+            rep.put("h_iess_no_" + idx, isTrue(getSafe(iessNo, i)) ? "X" : "");
+            rep.put("h_iess_fecha_" + idx, fmtDate(toDate(getSafe(iessFecha, i))));
+            rep.put("h_iess_especificar_" + idx, safe(getSafe(iessEspecificar, i)));
+            rep.put("h_obs_" + idx, safe(getSafe(actLabObservaciones, i)));
+        }
+    }
+
+    // =========================
+    // UTILIDADES DE FORMATO Y CONVERSIÓN
+    // =========================
+    private Date toDate(Object value) {
+        if (value == null) {
+            return null;
+        }
+        if (value instanceof Date d) {
+            return d;
+        }
+        if (value instanceof LocalDate ld) {
+            return Date.from(ld.atStartOfDay(ZoneId.systemDefault()).toInstant());
+        }
+        return null;
+    }
+
+    private String fmtDate(java.util.Date d) {
+        if (d == null) {
+            return "";
+        }
+        return new java.text.SimpleDateFormat("dd/MM/yyyy").format(d);
+    }
+
+    private static String safe(String s) {
+        if (s == null) {
+            return "";
+        }
+        String out = s;
+        out = out.replace("&", "&amp;");
+        out = out.replace("<", "&lt;");
+        out = out.replace(">", "&gt;");
+        out = out.replace("\"", "&quot;");
+        out = out.replace("'", "&#39;");
+        return out;
+    }
+
+    private static String markX(Object v) {
+        if (v == null) {
+            return "";
+        }
+        String s = String.valueOf(v).trim();
+        if (s.isEmpty()) {
+            return "";
+        }
+        s = s.toUpperCase();
+        if ("S".equals(s) || "SI".equals(s) || "TRUE".equals(s) || "1".equals(s) || "X".equals(s) || "✔".equals(s)) {
+            return "X";
+        }
+        return "";
+    }
+
+    private static boolean isYes(Object v) {
+        if (v == null) {
+            return false;
+        }
+        String s = String.valueOf(v).trim().toUpperCase();
+        return "S".equals(s) || "SI".equals(s) || "TRUE".equals(s) || "1".equals(s) || "X".equals(s) || "✔".equals(s);
+    }
+
+    private static boolean isNo(Object v) {
+        if (v == null) {
+            return false;
+        }
+        String s = String.valueOf(v).trim().toUpperCase();
+        return "N".equals(s) || "NO".equals(s) || "FALSE".equals(s) || "0".equals(s);
+    }
+
+    private static String normalizarXhtml(String html) {
+        if (html == null) {
+            return "";
+        }
+        String out = html;
+        out = out.replace("&nbsp;", " ");
+        out = out.replaceAll("(?i)<br(\\s*)>", "<br/>");
+        out = out.replaceAll("(?i)<hr(\\s*)>", "<hr/>");
+        return out;
+    }
+
+    private String val(Object root, String path) {
+        if (root == null || path == null || path.isBlank()) {
+            return "";
+        }
+        Object cur = root;
+        for (String part : path.split("\\.")) {
+            if (cur == null) {
+                return "";
+            }
+            cur = readProperty(cur, part);
+        }
+        return cur == null ? "" : String.valueOf(cur);
+    }
+
+    private Object readProperty(Object obj, String prop) {
+        try {
+            String m = "get" + Character.toUpperCase(prop.charAt(0)) + prop.substring(1);
+            return obj.getClass().getMethod(m).invoke(obj);
+        } catch (Exception ignore) {
+            try {
+                String m = "is" + Character.toUpperCase(prop.charAt(0)) + prop.substring(1);
+                return obj.getClass().getMethod(m).invoke(obj);
+            } catch (Exception ignore2) {
+                try {
+                    java.lang.reflect.Field f = obj.getClass().getDeclaredField(prop);
+                    f.setAccessible(true);
+                    return f.get(obj);
+                } catch (Exception ignore3) {
+                    return null;
+                }
+            }
+        }
+    }
+
+    private static String firstNonEmpty(String... vals) {
+        if (vals == null) {
+            return null;
+        }
+        for (String v : vals) {
+            if (v != null && !v.trim().isEmpty()) {
+                return v;
+            }
+        }
+        return null;
+    }
+
+    private static String getFichaStringByReflection(Object fo, String... getterNames) {
+        if (fo == null || getterNames == null) {
+            return null;
+        }
+        for (String g : getterNames) {
+            if (g == null || g.trim().isEmpty()) {
+                continue;
+            }
+            try {
+                java.lang.reflect.Method m = fo.getClass().getMethod(g);
+                Object r = m.invoke(fo);
+                if (r != null) {
+                    String s = String.valueOf(r);
+                    if (!s.trim().isEmpty()) {
+                        return s;
+                    }
+                }
+            } catch (Exception ignore) {
+            }
+        }
+        return null;
+    }
+
+    // =========================
+    // GETTERS Y SETTERS
+    // =========================
+    public Date getFechaNacimiento() {
+        return fechaNacimiento;
+    }
+
+    public void setFechaNacimiento(Date f) {
+        this.fechaNacimiento = f;
+        this.edad = calcUtil.calcularEdad(f);
+    }
+
+    public boolean isMostrarDlgCedula() {
+        return mostrarDlgCedula;
+    }
+
+    public void setMostrarDlgCedula(boolean mostrarDlgCedula) {
+        this.mostrarDlgCedula = mostrarDlgCedula;
     }
 
     public PersonaAux getPersonaAux() {
@@ -1710,123 +2536,12 @@ public class CentroMedicoCtrl implements Serializable {
         this.descAct = descAct;
     }
 
-    private boolean filaActLabTieneAlgo(int i) {
-
-        if (!isBlank(actLabCentroTrabajo.get(i))) {
-            return true;
-        }
-        if (!isBlank(actLabActividad.get(i))) {
-            return true;
-        }
-        if (!isBlank(actLabTiempo.get(i))) {
-            return true;
-        }
-        if (!isBlank(actLabObservaciones.get(i))) {
-            return true;
-        }
-        if (!isBlank(iessEspecificar.get(i))) {
-            return true;
-        }
-
-        if (Boolean.TRUE.equals(actLabTrabajoAnterior.get(i))) {
-            return true;
-        }
-        if (Boolean.TRUE.equals(actLabTrabajoActual.get(i))) {
-            return true;
-        }
-        if (Boolean.TRUE.equals(actLabIncidenteChk.get(i))) {
-            return true;
-        }
-        if (Boolean.TRUE.equals(actLabAccidenteChk.get(i))) {
-            return true;
-        }
-        if (Boolean.TRUE.equals(actLabEnfermedadChk.get(i))) {
-            return true;
-        }
-        if (Boolean.TRUE.equals(iessSi.get(i))) {
-            return true;
-        }
-        if (Boolean.TRUE.equals(iessNo.get(i))) {
-            return true;
-        }
-
-        if (iessFecha.get(i) != null) {
-            return true;
-        }
-
-        return false;
-    }
-
     public int getStepIndex() {
         return stepIndex;
     }
 
     public void setStepIndex(int stepIndex) {
         this.stepIndex = stepIndex;
-    }
-
-    public String getProcessStepId() {
-
-        return ":wiz:" + activeStep;
-    }
-
-    // =========================
-    // Consumo, hábitos y estructuras auxiliares del formulario
-    // =========================
-    private static final int CONS_ROWS = 3;
-
-    private void initConsumoVidaCond() {
-
-        final int N = CONS_ROWS;
-
-        if (consTiempoConsumoMeses == null) {
-            consTiempoConsumoMeses = new Integer[N];
-        }
-        if (consExConsumidor == null) {
-            consExConsumidor = new Boolean[N];
-        }
-        if (consTiempoAbstinenciaMeses == null) {
-            consTiempoAbstinenciaMeses = new Integer[N];
-        }
-        if (consNoConsume == null) {
-            consNoConsume = new Boolean[N];
-        }
-
-        if (afCual == null) {
-            afCual = new String[N];
-        }
-        if (afTiempo == null) {
-            afTiempo = new String[N];
-        }
-
-        if (medCual == null) {
-            medCual = new String[N];
-        }
-        if (medCant == null) {
-            medCant = new Integer[N];
-        }
-
-        for (int i = 0; i < N; i++) {
-            if (consExConsumidor[i] == null) {
-                consExConsumidor[i] = Boolean.FALSE;
-            }
-            if (consNoConsume[i] == null) {
-                consNoConsume[i] = Boolean.FALSE;
-            }
-        }
-
-        if (consumoVidaCondObs == null) {
-            consumoVidaCondObs = "";
-        }
-    }
-
-
-    public void onNoConsumeChange(int idx) {
-        if (Boolean.TRUE.equals(consNoConsume[idx])) {
-            consExConsumidor[idx] = false;
-            consTiempoConsumoMeses[idx] = 0;
-            consTiempoAbstinenciaMeses[idx] = 0;
-        }
     }
 
     public Integer[] getConsTiempoConsumo() {
@@ -1899,27 +2614,7 @@ public class CentroMedicoCtrl implements Serializable {
         return otrosRiesgos;
     }
 
-    private void s3(String msg) {
-
-        LOG.info("[STEP3] {}", msg);
-
-        LOG.info(String.valueOf("[STEP3] " + msg));
-    }
-
-    private void s3e(String msg, Throwable t) {
-        LOG.error("[STEP3] " + msg, t);
-        LOG.info(String.valueOf("[STEP3-ERROR] " + msg));
-        if (t != null) {
-            LOG.error("Unexpected error.", t);
-        }
-    }
-
-    public long getTs() {
-        return System.currentTimeMillis();
-    }
-
     public List<String> getRiskCols() {
-
         return riskCols != null ? riskCols : STATIC_RISK_COLS;
     }
 
@@ -2081,10 +2776,6 @@ public class CentroMedicoCtrl implements Serializable {
 
     public void setExfNeuroReflejos(String exfNeuroReflejos) {
         this.exfNeuroReflejos = exfNeuroReflejos;
-    }
-
-    public void initConsumoVidaCondDefaults() {
-        initConsumoVidaCond();
     }
 
     public Integer getAbortos() {
@@ -2703,444 +3394,6 @@ public class CentroMedicoCtrl implements Serializable {
         this.tratamientoHormonalCual = tratamientoHormonalCual;
     }
 
-    private String getCompValueDebug(UIComponent comp) {
-        if (comp == null) {
-            LOG.info("... [VAL] comp=null");
-            return null;
-        }
-
-        String clientId;
-        try {
-            clientId = comp.getClientId(FacesContext.getCurrentInstance());
-        } catch (RuntimeException e) {
-            clientId = String.valueOf(comp.getId());
-        }
-
-        Object idxAttr = comp.getAttributes() != null ? comp.getAttributes().get("idx") : null;
-
-        Object submitted = null;
-        Object local = null;
-        Object value = null;
-
-        if (comp instanceof UIInput) {
-            UIInput in = (UIInput) comp;
-            submitted = in.getSubmittedValue();
-            local = in.getLocalValue();
-            value = in.getValue();
-        }
-
-        LOG.debug("... [VAL] compId=" + comp.getId()
-                + " clientId=" + clientId
-                + " idxAttr=" + idxAttr
-                + " submitted=" + submitted
-                + " local=" + local
-                + " value=" + value);
-
-        if (submitted != null) {
-            return submitted.toString();
-        }
-        if (value != null) {
-            return value.toString();
-        }
-        if (local != null) {
-            return local.toString();
-        }
-        return null;
-    }
-
-    private Integer extraerIdx(UIComponent comp) {
-        if (comp == null) {
-            LOG.info("... [IDX] extraerIdx comp=null");
-            return null;
-        }
-        Object idxObj = comp.getAttributes().get("idx");
-
-        String clientId;
-        try {
-            clientId = comp.getClientId(FacesContext.getCurrentInstance());
-        } catch (RuntimeException e) {
-            clientId = String.valueOf(comp.getId());
-        }
-
-        LOG.debug("... [IDX] extraerIdx compId=" + comp.getId()
-                + " clientId=" + clientId
-                + " idxAttr=" + idxObj);
-
-        if (idxObj == null) {
-            return null;
-        }
-        try {
-            return Integer.parseInt(idxObj.toString());
-        } catch (NumberFormatException e) {
-            LOG.info("... [IDX] extraerIdx parse ERROR idxAttr={} ex={}", idxObj, e.toString());
-            return null;
-        }
-    }
-
-    private ConsultaDiagnostico getDiagRow(Integer idx, String contexto) {
-        if (idx == null || listaDiag == null || idx < 0 || idx >= listaDiag.size()) {
-            LOG.info("<<< [{}] idx INVALID => {}", contexto, idx);
-            return null;
-        }
-        return listaDiag.get(idx);
-    }
-
-    public void onKCieCodigoSelect(SelectEvent<String> event) {
-        UIComponent comp = (event != null ? event.getComponent() : null);
-        Integer idx = extraerIdx(comp);
-        String selected = (event != null ? event.getObject() : null);
-
-        LOG.info(">>> [AC-K-COD] itemSelect idx=" + idx
-                + " selected=[" + selected + "] clientId=" + (comp != null ? comp.getClientId() : "null"));
-
-        ConsultaDiagnostico row = getDiagRow(idx, "AC-K-COD itemSelect");
-        if (row == null) {
-            return;
-        }
-
-        if (selected == null || selected.trim().isEmpty()) {
-            LOG.info("<<< [AC-K-COD] itemSelect empty selection => no-op");
-            return;
-        }
-
-        String codigo = selected.trim().toUpperCase();
-        row.setCodigo(codigo);
-
-        Cie10 cie = cie10Service.buscarPorCodigo(codigo);
-        LOG.info("... [AC-K-COD] itemSelect buscarPorCodigo(" + codigo + ") => " + (cie != null ? cie.getCodigo() : "null"));
-
-        if (cie != null) {
-            row.setCodigo(cie.getCodigo());
-            row.setDescripcion(cie.getDescripcion());
-            row.setCie10(cie);
-        } else {
-            row.setDescripcion(null);
-            row.setCie10(null);
-        }
-
-        LOG.info("<<< [AC-K-COD] itemSelect AFTER codigo=[" + row.getCodigo() + "] desc=[" + row.getDescripcion() + "]");
-    }
-
-    public void abrirDialogoDiagnostico(AjaxBehaviorEvent event) {
-        UIComponent comp = (event != null ? event.getComponent() : null);
-        Integer idx = extraerIdx(comp);
-        ConsultaDiagnostico row = getDiagRow(idx, "K-DLG abrir");
-        if (row == null) {
-            return;
-        }
-
-        dialogDiagnosticoIdx = idx;
-        codCie10Ppal = row.getCodigo();
-        descCie10Ppal = row.getDescripcion();
-        PrimeFaces.current().executeScript("PF('kDiagDialogWv').show();");
-    }
-
-    public void aceptarDialogoDiagnostico() {
-        ConsultaDiagnostico row = getDiagRow(dialogDiagnosticoIdx, "K-DLG aceptar");
-        if (row == null) {
-            return;
-        }
-
-        String codigo = codCie10Ppal != null ? codCie10Ppal.trim().toUpperCase() : "";
-        String descripcion = descCie10Ppal != null ? descCie10Ppal.trim() : "";
-
-        Cie10 cie = null;
-        if (!codigo.isEmpty()) {
-            cie = cie10Service.buscarPorCodigo(codigo);
-        }
-        if (cie == null && !descripcion.isEmpty()) {
-            cie = cie10Service.buscarPrimeroPorDescripcion(descripcion);
-        }
-
-        if (cie != null) {
-            row.setCodigo(cie.getCodigo());
-            row.setDescripcion(cie.getDescripcion());
-            row.setCie10(cie);
-        } else {
-            row.setCodigo(codigo.isEmpty() ? null : codigo);
-            row.setDescripcion(descripcion.isEmpty() ? null : descripcion);
-            row.setCie10(null);
-        }
-
-        syncCie10PrincipalFromK();
-        PrimeFaces.current().executeScript("PF('kDiagDialogWv').hide();");
-    }
-
-    public void cerrarDialogoDiagnostico() {
-        PrimeFaces.current().executeScript("PF('kDiagDialogWv').hide();");
-    }
-
-    public void onKCieCodigoBlur(AjaxBehaviorEvent event) {
-        UIComponent comp = event != null ? event.getComponent() : null;
-        Integer idx = extraerIdx(comp);
-
-        String clientId = safeClientId(comp);
-        String typed = getAutoCompleteTypedRobusto(comp);
-
-        LOG.info(">>> [AC-K-COD] blur idx=" + idx + " clientId=" + clientId + " typed=[" + typed + "]");
-
-        ConsultaDiagnostico row = getDiagRow(idx, "AC-K-COD blur");
-        if (row == null) {
-            return;
-        }
-
-        String codigo = typed != null ? typed.trim() : "";
-        if (codigo.isEmpty()) {
-            row.setCodigo(null);
-            row.setDescripcion(null);
-            row.setCie10(null);
-            LOG.info("<<< [AC-K-COD] blur empty => cleared row");
-            return;
-        }
-
-        String codigoUp = codigo.toUpperCase();
-
-        if (codigoUp.length() < 3) {
-            row.setCodigo(codigoUp);
-            row.setDescripcion(null);
-            row.setCie10(null);
-            LOG.info("<<< [AC-K-COD] blur partial [" + codigoUp + "] => keep, no exact lookup");
-            return;
-        }
-
-        Cie10 cie = cie10Service.buscarPorCodigo(codigoUp);
-
-        if (cie == null) {
-            List<Cie10> sugerencias = cie10Service.buscarJerarquiaPorTerm(codigoUp);
-            if (sugerencias != null) {
-                String codigoNorm = codigoUp.replaceAll("[^A-Z0-9]", "");
-                for (Cie10 candidato : sugerencias) {
-                    if (candidato == null || candidato.getCodigo() == null) {
-                        continue;
-                    }
-
-                    String candidatoNorm = candidato.getCodigo().toUpperCase().replaceAll("[^A-Z0-9]", "");
-                    if (candidatoNorm.equals(codigoNorm)) {
-                        cie = candidato;
-                        break;
-                    }
-                }
-            }
-        }
-
-        LOG.debug("... [AC-K-COD] buscarPorCodigo(" + codigoUp + ") => "
-                + (cie != null ? (cie.getCodigo() + " | " + cie.getDescripcion()) : "null"));
-        if (cie != null) {
-            row.setCodigo(cie.getCodigo());
-            row.setDescripcion(cie.getDescripcion());
-            row.setCie10(cie);
-            LOG.info("<<< [AC-K-COD] blur AFTER MATCH codigo=[" + row.getCodigo() + "] desc=[" + row.getDescripcion() + "]");
-            return;
-        }
-
-        row.setCodigo(codigoUp);
-        row.setDescripcion(null);
-        row.setCie10(null);
-        LOG.info("<<< [AC-K-COD] blur AFTER NO-MATCH keep codigo=[" + row.getCodigo() + "]");
-    }
-
-    public void onKDescSelect(SelectEvent<String> event) {
-        String descripcion = event.getObject();
-        UIComponent comp = event.getComponent();
-        Integer idx = extraerIdx(comp);
-
-        LOG.info(">>> [AC-K-DESC] itemSelect ENTER desc=[" + descripcion + "] idx=" + idx);
-
-        ConsultaDiagnostico row = getDiagRow(idx, "AC-K-DESC itemSelect");
-        if (row == null) {
-            return;
-        }
-
-        row.setDescripcion(descripcion);
-
-        if (descripcion != null && !descripcion.trim().isEmpty()) {
-            Cie10 cie = cie10Service.buscarPrimeroPorDescripcion(descripcion.trim());
-            LOG.info("... [AC-K-DESC] buscarPrimeroPorDescripcion => " + (cie != null ? cie.getCodigo() : "null"));
-
-            if (cie != null) {
-                row.setCodigo(cie.getCodigo());
-                row.setCie10(cie);
-            } else {
-                row.setCodigo(null);
-                row.setCie10(null);
-            }
-        }
-
-        LOG.info("<<< [AC-K-DESC] itemSelect row AFTER idx=" + idx
-                + " codigo=[" + row.getCodigo() + "] desc=[" + row.getDescripcion() + "]");
-
-        syncCie10PrincipalFromK();
-    }
-
-    public void onKDescBlur(AjaxBehaviorEvent event) {
-        UIComponent comp = (event != null ? event.getComponent() : null);
-        Integer idx = extraerIdx(comp);
-        String clientId = safeClientId(comp);
-        String typed = getAutoCompleteTypedRobusto(comp);
-
-        LOG.info(">>> [AC-K-DESC] blur idx=" + idx + " clientId=" + clientId + " typed=[" + typed + "]");
-
-        ConsultaDiagnostico row = getDiagRow(idx, "AC-K-DESC blur");
-        if (row == null) {
-            return;
-        }
-
-        String desc = (typed != null ? typed.trim() : "");
-        if (desc.isEmpty()) {
-            row.setDescripcion(null);
-            row.setCie10(null);
-            LOG.info("<<< [AC-K-DESC] blur empty => cleared descripcion");
-            return;
-        }
-
-        row.setDescripcion(desc);
-
-        if (desc.length() < 4) {
-            row.setCie10(null);
-            LOG.info("<<< [AC-K-DESC] blur partial => keep desc only");
-            return;
-        }
-
-        Cie10 cie = null;
-        try {
-            List<Cie10> candidatos = cie10Service.buscarPorDescripcionLike(desc, 20);
-            LOG.info("... [AC-K-DESC] candidatos.size=" + (candidatos == null ? "null" : candidatos.size()));
-            if (candidatos != null && !candidatos.isEmpty()) {
-                cie = cie10LookupService.buscarMejorCoincidenciaPorDescripcion(candidatos, desc);
-            }
-        } catch (RuntimeException e) {
-            LOG.error("!!! [AC-K-DESC] error: {}", e.getMessage(), e);
-        }
-
-        LOG.debug("... [AC-K-DESC] pickBest => "
-                + (cie != null ? (cie.getCodigo() + " | " + cie.getDescripcion()) : "null"));
-
-        if (cie != null) {
-            row.setCodigo(cie.getCodigo());
-            row.setDescripcion(cie.getDescripcion());
-            row.setCie10(cie);
-            LOG.info("<<< [AC-K-DESC] blur AFTER MATCH codigo=[" + row.getCodigo() + "] desc=[" + row.getDescripcion() + "]");
-            return;
-        }
-
-        row.setCie10(null);
-        LOG.info("<<< [AC-K-DESC] blur AFTER NO-MATCH keep desc=[" + row.getDescripcion() + "]");
-    }
-
-    public void onKTipoChange(AjaxBehaviorEvent event) {
-        UIComponent comp = (event != null ? event.getComponent() : null);
-        Integer idx = extraerIdx(comp);
-
-        String clientId = safeClientId(comp);
-
-        LOG.info(">>> [K-TIPO] change ENTER idx=" + idx + " clientId=" + clientId);
-
-        ConsultaDiagnostico row = getDiagRow(idx, "K-TIPO change");
-        if (row == null) {
-            return;
-        }
-
-        LOG.info("<<< [K-TIPO] AFTER idx=" + idx
-                + " codigo=[" + row.getCodigo() + "]"
-                + " desc=[" + row.getDescripcion() + "]"
-                + " tipo=[" + row.getTipoDiag() + "]");
-    }
-
-    private String getAutoCompleteTypedRobusto(UIComponent comp) {
-        try {
-            FacesContext fc = FacesContext.getCurrentInstance();
-            if (fc == null || comp == null) {
-                return null;
-            }
-
-            String base = comp.getClientId(fc);
-            Map<String, String> params = fc.getExternalContext().getRequestParameterMap();
-
-            String[] keys = new String[]{
-                base + "_input",
-                base,
-                base + "_hinput",
-                base + "_query"
-            };
-
-            for (String k : keys) {
-                String v = params.get(k);
-                if (v != null) {
-                    LOG.info("... [REQ] AC typed key=" + k + " => [" + v + "]");
-                    return v;
-                }
-            }
-
-            LOG.warn("!!! [REQ] AC typed NOT FOUND for base=" + base
-                    + " (tried _input, base, _hinput, _query)");
-            return null;
-
-        } catch (RuntimeException e) {
-            LOG.error("!!! [REQ] getAutoCompleteTypedRobusto ERROR: {}", e.getMessage(), e);
-            return null;
-        }
-    }
-
-    private String safeClientId(UIComponent comp) {
-        try {
-            FacesContext fc = FacesContext.getCurrentInstance();
-            return (fc != null && comp != null) ? comp.getClientId(fc) : "null";
-        } catch (RuntimeException e) {
-            return "err:" + e.getMessage();
-        }
-    }
-
-    public String getStepProcessId() {
-
-        return "@([id$=" + activeStep + "])";
-    }
-
-    private Date toDate(Object value) {
-        if (value == null) {
-            return null;
-        }
-        if (value instanceof Date d) {
-            return d;
-        }
-        if (value instanceof LocalDate ld) {
-            return Date.from(ld.atStartOfDay(ZoneId.systemDefault()).toInstant());
-        }
-        return null;
-    }
-
-    public void autoOpenCedulaIfNeeded() {
-
-        boolean open = false;
-
-        if (!cedulaDlgAutoOpened) {
-
-            if (mostrarDlgCedula && "step1".equals(activeStep)) {
-                open = true;
-                cedulaDlgAutoOpened = true;
-            }
-        }
-
-        org.primefaces.PrimeFaces.current().ajax().addCallbackParam("openCedulaDlg", open);
-    }
-
-    public void consumirAutoOpenCedulaDlg() {
-        boolean open = false;
-
-        if ("step1".equals(activeStep)
-                && empleadoSel == null
-                && !cedulaDlgAutoOpened) {
-
-            open = true;
-            cedulaDlgAutoOpened = true;
-        }
-
-        PrimeFaces.current().ajax().addCallbackParam("openCedulaDlg", open);
-    }
-
-    public boolean isCedulaDlgAutoOpened() {
-        return cedulaDlgAutoOpened;
-    }
-
     public String getDialogDiagnosticoCodigo() {
         return dialogDiagnosticoCodigo;
     }
@@ -3155,6 +3408,10 @@ public class CentroMedicoCtrl implements Serializable {
 
     public void setDialogDiagnosticoDescripcion(String dialogDiagnosticoDescripcion) {
         this.dialogDiagnosticoDescripcion = dialogDiagnosticoDescripcion;
+    }
+
+    public boolean isCedulaDlgAutoOpened() {
+        return cedulaDlgAutoOpened;
     }
 
     public void setCedulaDlgAutoOpened(boolean cedulaDlgAutoOpened) {
@@ -3561,125 +3818,8 @@ public class CentroMedicoCtrl implements Serializable {
         this.fichaExamenCompService = fichaExamenCompService;
     }
 
-    public void onDlgCedulaHide() {
-        mostrarDlgCedula = false;
-    }
-
-    public void onDlgCedulaClose() {
-        mostrarDlgCedula = false;
-    }
-
     public String getPdfTokenCertificado() {
         return pdfTokenCertificado;
-    }
-
-    private static String safe(String s) {
-        if (s == null) {
-            return "";
-        }
-        String out = s;
-        out = out.replace("&", "&amp;");
-        out = out.replace("<", "&lt;");
-        out = out.replace(">", "&gt;");
-        out = out.replace("\"", "&quot;");
-
-        out = out.replace("'", "&#39;");
-        return out;
-    }
-
-    /**
-     * Convierte valores tipo SI/NO (S/N, SI/NO, true/false) a marca "X" o
-     * vacío. - Si es "S"/"SI"/"TRUE"/"1"/"X" => "X" - Caso contrario (incluye
-     * "N"/"NO"/null) => ""
-     */
-    private static String markX(Object v) {
-        if (v == null) {
-            return "";
-        }
-        String s = String.valueOf(v).trim();
-        if (s.isEmpty()) {
-            return "";
-        }
-        s = s.toUpperCase();
-        if ("S".equals(s) || "SI".equals(s) || "TRUE".equals(s) || "1".equals(s) || "X".equals(s) || "✔".equals(s)) {
-            return "X";
-        }
-        return "";
-    }
-
-    private static boolean isYes(Object v) {
-        if (v == null) {
-            return false;
-        }
-        String s = String.valueOf(v).trim().toUpperCase();
-        return "S".equals(s) || "SI".equals(s) || "TRUE".equals(s) || "1".equals(s) || "X".equals(s) || "✔".equals(s);
-    }
-
-    private static boolean isNo(Object v) {
-        if (v == null) {
-            return false;
-        }
-        String s = String.valueOf(v).trim().toUpperCase();
-        return "N".equals(s) || "NO".equals(s) || "FALSE".equals(s) || "0".equals(s);
-    }
-
-    private static String normalizarXhtml(String html) {
-        if (html == null) {
-            return "";
-        }
-        String out = html;
-
-        out = out.replace("&nbsp;", " ");
-
-        out = out.replaceAll("(?i)<br(\s*)>", "<br/>");
-
-        out = out.replaceAll("(?i)<hr(\s*)>", "<hr/>");
-
-        return out;
-    }
-
-    private String val(Object root, String path) {
-        if (root == null || path == null || path.isBlank()) {
-            return "";
-        }
-        Object cur = root;
-        for (String part : path.split("\\.")) {
-            if (cur == null) {
-                return "";
-            }
-            cur = readProperty(cur, part);
-        }
-        return cur == null ? "" : String.valueOf(cur);
-    }
-
-    private Object readProperty(Object obj, String prop) {
-        try {
-            // intenta getProp()
-            String m = "get" + Character.toUpperCase(prop.charAt(0)) + prop.substring(1);
-            return obj.getClass().getMethod(m).invoke(obj);
-        } catch (Exception ignore) {
-            try {
-                // intenta isProp()
-                String m = "is" + Character.toUpperCase(prop.charAt(0)) + prop.substring(1);
-                return obj.getClass().getMethod(m).invoke(obj);
-            } catch (Exception ignore2) {
-                try {
-                    // intenta campo directo
-                    java.lang.reflect.Field f = obj.getClass().getDeclaredField(prop);
-                    f.setAccessible(true);
-                    return f.get(obj);
-                } catch (Exception ignore3) {
-                    return null;
-                }
-            }
-        }
-    }
-
-    private String fmtDate(java.util.Date d) {
-        if (d == null) {
-            return "";
-        }
-        return new java.text.SimpleDateFormat("dd/MM/yyyy").format(d);
     }
 
     public String getAntTerapeutica() {
@@ -3778,144 +3918,6 @@ public class CentroMedicoCtrl implements Serializable {
         this.hEnfermedad = hEnfermedad;
     }
 
-    void cargarAtencionPrioritaria(Map<String, String> rep) {
-
-        rep.put("apCatastrofica_sn", apCatastrofica ? "SI" : "NO");
-        rep.put("apDiscapacidad_sn", apDiscapacidad ? "SI" : "NO");
-        rep.put("apEmbarazada_sn", apEmbarazada ? "SI" : "NO");
-        rep.put("apLactancia_sn", apLactancia ? "SI" : "NO");
-        rep.put("apAdultoMayor_sn", apAdultoMayor ? "SI" : "NO");
-
-        boolean aplicaDis = false;
-        boolean aplicaCat = false;
-
-        if (ficha != null) {
-            aplicaDis = "S".equalsIgnoreCase(safe(ficha.getApDiscapacidad()));
-            aplicaCat = "S".equalsIgnoreCase(safe(ficha.getApCatastrofica()));
-        } else {
-            aplicaDis = apDiscapacidad;
-            aplicaCat = apCatastrofica;
-        }
-
-        // Engine no soporta if => ocultamos por style
-        rep.put("apDiscapacidad_style", aplicaDis ? "" : "display:none;");
-        rep.put("apCatastrofica_style", aplicaCat ? "" : "display:none;");
-
-        rep.put("disTipo", safe(ficha != null ? ficha.getDisTipo() : null));
-        rep.put("disDescripcion", safe(ficha != null ? ficha.getDisDescripcion() : null));
-
-        Integer porc = (ficha != null ? ficha.getDisPorcentaje() : null);
-        rep.put("disPorcentaje", porc == null ? "" : String.valueOf(porc)); // la plantilla le pone “%” si quieres
-
-        rep.put("catDiagnostico", safe(ficha != null ? ficha.getCatDiagnostico() : null));
-
-        String catCal = safe(ficha != null ? ficha.getCatCalificada() : null);
-        if ("S".equalsIgnoreCase(catCal) || "TRUE".equalsIgnoreCase(catCal)) {
-            rep.put("catCalificada", "SI");
-        } else if ("N".equalsIgnoreCase(catCal) || "FALSE".equalsIgnoreCase(catCal)) {
-            rep.put("catCalificada", "NO");
-        } else {
-            rep.put("catCalificada", catCal); // por si viene vacío o ya viene SI/NO
-        }
-        LOG.info("[PDF] disTipo=" + rep.get("disTipo")
-                + " disDescripcion=" + rep.get("disDescripcion")
-                + " disPorcentaje=" + rep.get("disPorcentaje")
-                + " catDiagnostico=" + rep.get("catDiagnostico")
-                + " catCalificada=" + rep.get("catCalificada")
-                + " styleDis=" + rep.get("apDiscapacidad_style")
-                + " styleCat=" + rep.get("apCatastrofica_style"));
-
-    }
-
-    private void cargarActividadLaboralArrays(Map<String, String> rep) {
-        for (int i = 0; i < H_ROWS; i++) {
-            int idx = i + 1; // índice 1-based
-            rep.put("h_centro_" + idx, safe(getSafe(actLabCentroTrabajo, i)));
-            rep.put("h_actividad_" + idx, safe(getSafe(actLabActividad, i)));
-            rep.put("h_tiempo_" + idx, safe(getSafe(actLabTiempo, i)));
-            rep.put("h_anterior_" + idx, isTrue(getSafe(actLabTrabajoAnterior, i)) ? "X" : "");
-            rep.put("h_actual_" + idx, isTrue(getSafe(actLabTrabajoActual, i)) ? "X" : "");
-            rep.put("h_incidente_" + idx, isTrue(getSafe(actLabIncidenteChk, i)) ? "X" : "");
-            rep.put("h_accidente_" + idx, isTrue(getSafe(actLabAccidenteChk, i)) ? "X" : "");
-            rep.put("h_enfermedad_" + idx, isTrue(getSafe(actLabEnfermedadChk, i)) ? "X" : "");
-            rep.put("h_iess_si_" + idx, isTrue(getSafe(iessSi, i)) ? "X" : "");
-            rep.put("h_iess_no_" + idx, isTrue(getSafe(iessNo, i)) ? "X" : "");
-            rep.put("h_iess_fecha_" + idx, fmtDate(toDate(getSafe(iessFecha, i))));
-            rep.put("h_iess_especificar_" + idx, safe(getSafe(iessEspecificar, i)));
-            rep.put("h_obs_" + idx, safe(getSafe(actLabObservaciones, i)));
-        }
-    }
-
-    /**
-     * Retorna el primer String no nulo y no vacío (trim).
-     */
-    private static String firstNonEmpty(String... vals) {
-        if (vals == null) {
-            return null;
-        }
-        for (String v : vals) {
-            if (v != null && !v.trim().isEmpty()) {
-                return v;
-            }
-        }
-        return null;
-    }
-
-    /**
-     * Intenta obtener un String desde la entidad Ficha mediante reflexión. Útil
-     * cuando el bean del controlador no tiene el valor pero la entidad sí.
-     */
-    private static String getFichaStringByReflection(Object fo, String... getterNames) {
-        if (fo == null || getterNames == null) {
-            return null;
-        }
-        for (String g : getterNames) {
-            if (g == null || g.trim().isEmpty()) {
-                continue;
-            }
-            try {
-                java.lang.reflect.Method m = fo.getClass().getMethod(g);
-                Object r = m.invoke(fo);
-                if (r != null) {
-                    String s = String.valueOf(r);
-                    if (!s.trim().isEmpty()) {
-                        return s;
-                    }
-                }
-            } catch (Exception ignore) {
-                // si no existe el getter, seguimos con el siguiente
-            }
-        }
-        return null;
-    }
-
-    public void onToggleDiscapacidad() {
-        if (!apDiscapacidad) {
-            discapTipo = null;
-            discapDesc = null;
-            discapPorc = null;
-        }
-    }
-
-    public void onToggleCatastrofica() {
-        if (!apCatastrofica) {
-            catasDiagnostico = null;
-            catasCalificada = null;
-        }
-    }
-
-    /**
-     * PARA MANEJAR LA GENERACION Y REGENERACION
-     *
-     * @return
-     */
-    public void reloadFichaDesdeBd() {
-        if (this.ficha == null || this.ficha.getIdFicha() == null) {
-            return;
-        }
-        this.ficha = fichaService.findById(this.ficha.getIdFicha());
-    }
-
     public String getDiscapTipo() {
         return discapTipo;
     }
@@ -3968,8 +3970,6 @@ public class CentroMedicoCtrl implements Serializable {
         return pdfTokenCertificado;
     }
 
-    private int stepIndex = 1;
-
     public boolean isFichaPdfListo() {
         return fichaPdfListo;
     }
@@ -3997,5 +3997,4 @@ public class CentroMedicoCtrl implements Serializable {
     public PacienteViewState getPacienteViewState() {
         return pacienteViewState;
     }
-
 }
