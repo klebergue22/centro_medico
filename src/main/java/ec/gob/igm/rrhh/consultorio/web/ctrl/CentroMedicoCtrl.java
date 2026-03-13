@@ -57,6 +57,7 @@ import ec.gob.igm.rrhh.consultorio.web.mapper.Step1CommandAssembler;
 import ec.gob.igm.rrhh.consultorio.web.mapper.Step3CommandAssembler;
 import ec.gob.igm.rrhh.consultorio.web.audit.CentroMedicoAuditService;
 import ec.gob.igm.rrhh.consultorio.web.pdf.CertificadoPdfTemplateService;
+import ec.gob.igm.rrhh.consultorio.web.pdf.FichaPdfContextAssembler;
 import ec.gob.igm.rrhh.consultorio.web.pdf.PdfResourceResolver;
 import ec.gob.igm.rrhh.consultorio.web.pdf.PdfTextUtil;
 import ec.gob.igm.rrhh.consultorio.web.pdf.PdfTemplateEngine;
@@ -72,6 +73,7 @@ import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoPdfTemplateCoordinato
 import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoPdfUiCoordinator;
 import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoWizardNavigationCoordinator;
 import ec.gob.igm.rrhh.consultorio.web.service.DiagnosticoFilaUiCoordinator;
+import ec.gob.igm.rrhh.consultorio.web.service.FichaPdfDataMapper;
 import ec.gob.igm.rrhh.consultorio.web.service.FichaPdfMappedData;
 import ec.gob.igm.rrhh.consultorio.web.service.PacienteUiFlowCoordinator;
 import ec.gob.igm.rrhh.consultorio.web.service.PacienteUiStateApplier;
@@ -218,6 +220,10 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     private transient CentroMedicoPdfUiCoordinator centroMedicoPdfUiCoordinator;
     @Inject
     private transient CentroMedicoPdfTemplateCoordinator centroMedicoPdfTemplateCoordinator;
+    @Inject
+    private transient FichaPdfContextAssembler fichaPdfContextAssembler;
+    @Inject
+    private transient FichaPdfDataMapper fichaPdfDataMapper;
 
     // =========================
     // VALIDADORES
