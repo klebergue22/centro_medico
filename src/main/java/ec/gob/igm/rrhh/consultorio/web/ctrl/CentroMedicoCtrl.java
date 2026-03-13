@@ -451,6 +451,7 @@ public class CentroMedicoCtrl implements Serializable {
             if (fc == null) {
                 return;
             }
+            ensureEmpleadoSelEnViewScope();
             final boolean postback = fc.isPostback();
 
             if (!"step1".equals(activeStep)) {
@@ -776,6 +777,8 @@ public class CentroMedicoCtrl implements Serializable {
     }
 
     private void saveStep1() {
+        ensureEmpleadoSelEnViewScope();
+
         Step1FichaService.Step1Command command = new Step1FichaService.Step1Command(
                 ficha,
                 empleadoSel,
@@ -845,8 +848,59 @@ public class CentroMedicoCtrl implements Serializable {
             empleadoSel = result.empleadoSel();
             personaAux = result.personaAux();
             signos = result.signos();
+            syncPatientStateAfterStep1();
         } catch (Step1FichaService.Step1ValidationException ex) {
             throw new BusinessValidationException(ex.getMessage());
+        }
+    }
+
+    private void ensureEmpleadoSelEnViewScope() {
+        if (permitirIngresoManual) {
+            return;
+        }
+
+        if (empleadoSel != null) {
+            if (noPersonaSel == null) {
+                noPersonaSel = empleadoSel.getNoPersona();
+            }
+            return;
+        }
+
+        if (ficha != null && ficha.getEmpleado() != null) {
+            empleadoSel = ficha.getEmpleado();
+            if (noPersonaSel == null) {
+                noPersonaSel = empleadoSel.getNoPersona();
+            }
+            return;
+        }
+
+        if (noPersonaSel != null) {
+            empleadoSel = empleadoService.buscarPorId(noPersonaSel);
+            if (ficha != null && empleadoSel != null) {
+                ficha.setEmpleado(empleadoSel);
+                ficha.setPersonaAux(null);
+            }
+        }
+    }
+
+    private void syncPatientStateAfterStep1() {
+        if (ficha == null) {
+            return;
+        }
+
+        if (ficha.getEmpleado() != null) {
+            empleadoSel = ficha.getEmpleado();
+            noPersonaSel = empleadoSel.getNoPersona();
+            personaAux = null;
+            permitirIngresoManual = false;
+            return;
+        }
+
+        if (ficha.getPersonaAux() != null) {
+            personaAux = ficha.getPersonaAux();
+            empleadoSel = null;
+            noPersonaSel = null;
+            permitirIngresoManual = true;
         }
     }
 
@@ -2702,6 +2756,7 @@ public class CentroMedicoCtrl implements Serializable {
             if (this.ficha != null) {
                 this.ficha.setPersonaAux(null);
             }
+            ensureEmpleadoSelEnViewScope();
         } else {
             this.permitirIngresoManual = result.isShowManual();
         }
