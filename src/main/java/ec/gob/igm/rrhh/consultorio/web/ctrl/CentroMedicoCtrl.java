@@ -1200,7 +1200,6 @@ public class CentroMedicoCtrl implements Serializable {
         return PdfTextUtil.normalizarXhtmlPdf(html);
     }
 
-<<<<<<< HEAD
     private String leerRecursoComoString(String classpathLocation) {
 
         InputStream is = null;
@@ -1238,8 +1237,6 @@ public class CentroMedicoCtrl implements Serializable {
         }
     }
 
-=======
->>>>>>> be9985301b84818390e881818c5efcb013fd2b0b
     private String renderFaceletToHtml(String viewId) {
         LOG.info("FichaPrint: renderFaceletToHtml delegado a facade. viewId={}", viewId);
         return centroMedicoPdfFacade.renderFaceletToHtml(viewId);
@@ -1352,13 +1349,7 @@ public class CentroMedicoCtrl implements Serializable {
                 this::buildFichaStateInternal);
     }
 
-<<<<<<< HEAD
-    private FichaState buildFichaState() {
-=======
-
-
     private FichaState buildFichaStateInternal() {
->>>>>>> be9985301b84818390e881818c5efcb013fd2b0b
         return fichaPdfContextAssembler.buildFichaState(
                 this,
                 centroMedicoPdfFacade,
