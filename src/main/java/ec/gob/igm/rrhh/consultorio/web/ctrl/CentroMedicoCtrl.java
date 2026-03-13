@@ -1354,168 +1354,24 @@ public class CentroMedicoCtrl implements Serializable {
     }
 
     private FichaState buildFichaState() {
-        FichaState state = new FichaState();
-        state.centroMedicoPdfFacade = centroMedicoPdfFacade;
-        state.log = LOG;
-        state.fichaPdfViewModelBuilder = fichaPdfViewModelBuilder;
-        state.fichaPdfViewModelContext = buildFichaPdfViewModelContext();
-        state.antClinicoQuirurgico = antClinicoQuirurgico;
-        state.antFamiliares = antFamiliares;
-        state.antTerapeutica = antTerapeutica;
-        state.antObs = antObs;
-        state.riesgos = riesgos;
-        state.actividadesLab = actividadesLab;
-        state.medidasPreventivas = medidasPreventivas;
-        state.actLabCentroTrabajo = actLabCentroTrabajo;
-        state.actLabActividad = actLabActividad;
-        state.actLabTiempo = actLabTiempo;
-        state.actLabTrabajoAnterior = actLabTrabajoAnterior;
-        state.actLabTrabajoActual = actLabTrabajoActual;
-        state.actLabIncidenteChk = actLabIncidenteChk;
-        state.actLabAccidenteChk = actLabAccidenteChk;
-        state.actLabEnfermedadChk = actLabEnfermedadChk;
-        state.iessSi = iessSi;
-        state.iessNo = iessNo;
-        state.iessFecha = iessFecha;
-        state.iessEspecificar = iessEspecificar;
-        state.actLabObservaciones = actLabObservaciones;
-        state.tipoAct = tipoAct;
-        state.fechaAct = fechaAct;
-        state.descAct = descAct;
-        state.examNombre = examNombre;
-        state.examFecha = examFecha;
-        state.examResultado = examResultado;
-        state.obsJ = obsJ;
-        state.listaDiag = listaDiag;
-        state.aptitudSel = aptitudSel;
-        state.detalleObservaciones = detalleObservaciones;
-        state.fallbackObservacion = getFichaStringByReflection(ficha,
-                "getDetalleObs",
-                "getDetalleObservaciones",
-                "getObservaciones",
-                "getObs",
-                "getObservacion");
-        state.nRealizaEvaluacion = nRealizaEvaluacion;
-        state.nRelacionTrabajo = nRelacionTrabajo;
-        state.nObsRetiro = nObsRetiro;
-        state.medicoNombre = medicoNombre;
-        state.medicoCodigo = medicoCodigo;
-        state.otrosRiesgos = otrosRiesgos;
-        state.getSafe = this::getSafe;
-        state.toDateParser = this::toDate;
-        return state;
+        return fichaPdfContextAssembler.buildFichaState(
+                this,
+                centroMedicoPdfFacade,
+                LOG,
+                fichaPdfViewModelBuilder,
+                buildFichaPdfViewModelContext(),
+                getFichaStringByReflection(ficha,
+                        "getDetalleObs",
+                        "getDetalleObservaciones",
+                        "getObservaciones",
+                        "getObs",
+                        "getObservacion"),
+                this::getSafe,
+                this::toDate);
     }
 
     private FichaPdfViewModelContext buildFichaPdfViewModelContext() {
-        FichaPdfViewModelContext ctx = new FichaPdfViewModelContext();
-        ctx.ficha = ficha;
-        ctx.fichaRiesgo = fichaRiesgo;
-        ctx.empleadoSel = empleadoSel;
-        ctx.personaAux = personaAux;
-        ctx.cedulaBusqueda = cedulaBusqueda;
-        ctx.institucion = institucion;
-        ctx.ruc = ruc;
-        ctx.centroTrabajo = centroTrabajo;
-        ctx.ciiu = ciiu;
-        ctx.noHistoria = noHistoria;
-        ctx.noArchivo = noArchivo;
-        ctx.apellido1 = apellido1;
-        ctx.apellido2 = apellido2;
-        ctx.nombre1 = nombre1;
-        ctx.nombre2 = nombre2;
-        ctx.sexo = sexo;
-        ctx.fechaNacimiento = fechaNacimiento;
-        ctx.edad = edad;
-        ctx.grupoSanguineo = grupoSanguineo;
-        ctx.lateralidad = lateralidad;
-        ctx.consTiempoConsumoMeses = consTiempoConsumoMeses;
-        ctx.consExConsumidor = consExConsumidor;
-        ctx.consTiempoAbstinenciaMeses = consTiempoAbstinenciaMeses;
-        ctx.consNoConsume = consNoConsume;
-        ctx.consOtrasCual = consOtrasCual;
-        ctx.afCual = afCual;
-        ctx.afTiempo = afTiempo;
-        ctx.medCual = medCual;
-        ctx.medCant = medCant;
-        ctx.consumoVidaCondObs = consumoVidaCondObs;
-        ctx.recomendaciones = recomendaciones;
-        ctx.fechaAtencion = fechaAtencion;
-        ctx.fecIngreso = fecIngreso;
-        ctx.fecReintegro = fecReintegro;
-        ctx.fecRetiro = fecRetiro;
-        ctx.motivoObs = motivoObs;
-        ctx.condicionEspecial = condicionEspecial;
-        ctx.autorizaTransfusion = autorizaTransfusion;
-        ctx.tratamientoHormonal = tratamientoHormonal;
-        ctx.tratamientoHormonalCual = tratamientoHormonalCual;
-        ctx.examenReproMasculino = examenReproMasculino;
-        ctx.tiempoReproMasculino = tiempoReproMasculino;
-        ctx.fum = fum;
-        ctx.gestas = gestas;
-        ctx.cesareas = cesareas;
-        ctx.partos = partos;
-        ctx.abortos = abortos;
-        ctx.planificacion = planificacion;
-        ctx.planificacionCual = planificacionCual;
-        ctx.temp = temp;
-        ctx.paStr = paStr;
-        ctx.fc = fc;
-        ctx.fr = fr;
-        ctx.satO2 = satO2;
-        ctx.peso = peso;
-        ctx.tallaCm = tallaCm;
-        ctx.imc = imc;
-        ctx.perimetroAbd = perimetroAbd;
-        ctx.ginecoExamen1 = ginecoExamen1;
-        ctx.ginecoTiempo1 = ginecoTiempo1;
-        ctx.ginecoResultado1 = ginecoResultado1;
-        ctx.ginecoExamen2 = ginecoExamen2;
-        ctx.ginecoTiempo2 = ginecoTiempo2;
-        ctx.ginecoResultado2 = ginecoResultado2;
-        ctx.ginecoObservacion = ginecoObservacion;
-        ctx.tipoEval = tipoEval;
-        ctx.enfermedadActual = enfermedadActual;
-        ctx.otrosRiesgos = otrosRiesgos;
-        ctx.exfPielCicatrices = PdfTextUtil.preferCurrent(ficha != null ? ficha.getExfPielCicatrices() : null, exfPielCicatrices);
-        ctx.exfOjosParpados = PdfTextUtil.preferCurrent(ficha != null ? ficha.getExfOjosParpados() : null, exfOjosParpados);
-        ctx.exfOjosConjuntivas = PdfTextUtil.preferCurrent(ficha != null ? ficha.getExfOjosConjuntivas() : null, exfOjosConjuntivas);
-        ctx.exfOjosPupilas = PdfTextUtil.preferCurrent(ficha != null ? ficha.getExfOjosPupilas() : null, exfOjosPupilas);
-        ctx.exfOjosCornea = PdfTextUtil.preferCurrent(ficha != null ? ficha.getExfOjosCornea() : null, exfOjosCornea);
-        ctx.exfOjosMotilidad = PdfTextUtil.preferCurrent(ficha != null ? ficha.getExfOjosMotilidad() : null, exfOjosMotilidad);
-        ctx.exfOidoConducto = PdfTextUtil.preferCurrent(ficha != null ? ficha.getExfOidoConducto() : null, exfOidoConducto);
-        ctx.exfOidoPabellon = PdfTextUtil.preferCurrent(ficha != null ? ficha.getExfOidoPabellon() : null, exfOidoPabellon);
-        ctx.exfOidoTimpanos = PdfTextUtil.preferCurrent(ficha != null ? ficha.getExfOidoTimpanos() : null, exfOidoTimpanos);
-        ctx.exfOroLabios = PdfTextUtil.preferCurrent(ficha != null ? ficha.getExfOroLabios() : null, exfOroLabios);
-        ctx.exfOroLengua = PdfTextUtil.preferCurrent(ficha != null ? ficha.getExfOroLengua() : null, exfOroLengua);
-        ctx.exfOroFaringe = PdfTextUtil.preferCurrent(ficha != null ? ficha.getExfOroFaringe() : null, exfOroFaringe);
-        ctx.exfOroAmigdalas = PdfTextUtil.preferCurrent(ficha != null ? ficha.getExfOroAmigdalas() : null, exfOroAmigdalas);
-        ctx.exfOroDentadura = PdfTextUtil.preferCurrent(ficha != null ? ficha.getExfOroDentadura() : null, exfOroDentadura);
-        ctx.exfNarizTabique = PdfTextUtil.preferCurrent(ficha != null ? ficha.getExfNarizTabique() : null, exfNarizTabique);
-        ctx.exfNarizCornetes = PdfTextUtil.preferCurrent(ficha != null ? ficha.getExfNarizCornetes() : null, exfNarizCornetes);
-        ctx.exfNarizMucosas = PdfTextUtil.preferCurrent(ficha != null ? ficha.getExfNarizMucosas() : null, exfNarizMucosas);
-        ctx.exfNarizSenos = PdfTextUtil.preferCurrent(ficha != null ? ficha.getExfNarizSenosParanasa() : null, exfNarizSenos);
-        ctx.exfCuelloTiroides = PdfTextUtil.preferCurrent(ficha != null ? ficha.getExfCuelloTiroidesMasas() : null, exfCuelloTiroides);
-        ctx.exfCuelloMovilidad = PdfTextUtil.preferCurrent(ficha != null ? ficha.getExfCuelloMovilidad() : null, exfCuelloMovilidad);
-        ctx.exfToraxMamas = PdfTextUtil.preferCurrent(ficha != null ? ficha.getExfToraxMamas() : null, exfToraxMamas);
-        ctx.exfToraxPulmones = PdfTextUtil.preferCurrent(ficha != null ? ficha.getExfToraxPulmones() : null, exfToraxPulmones);
-        ctx.exfToraxCorazon = PdfTextUtil.preferCurrent(ficha != null ? ficha.getExfToraxCorazon() : null, exfToraxCorazon);
-        ctx.exfToraxParrilla = PdfTextUtil.preferCurrent(ficha != null ? ficha.getExfToraxParrillaCostal() : null, exfToraxParrilla);
-        ctx.exfAbdomenVisceras = PdfTextUtil.preferCurrent(ficha != null ? ficha.getExfAbdVisceras() : null, exfAbdomenVisceras);
-        ctx.exfAbdomenPared = PdfTextUtil.preferCurrent(ficha != null ? ficha.getExfAbdParedAbdominal() : null, exfAbdomenPared);
-        ctx.exfColumnaFlexibilidad = PdfTextUtil.preferCurrent(ficha != null ? ficha.getExfColFlexibilidad() : null, exfColumnaFlexibilidad);
-        ctx.exfColumnaDesviacion = PdfTextUtil.preferCurrent(ficha != null ? ficha.getExfColDesviacion() : null, exfColumnaDesviacion);
-        ctx.exfColumnaDolor = PdfTextUtil.preferCurrent(ficha != null ? ficha.getExfColDolor() : null, exfColumnaDolor);
-        ctx.exfPelvisPelvis = PdfTextUtil.preferCurrent(ficha != null ? ficha.getExfPelvisPelvis() : null, exfPelvisPelvis);
-        ctx.exfPelvisGenitales = PdfTextUtil.preferCurrent(ficha != null ? ficha.getExfPelvisGenitales() : null, exfPelvisGenitales);
-        ctx.exfExtVascular = PdfTextUtil.preferCurrent(ficha != null ? ficha.getExfExtVascular() : null, exfExtVascular);
-        ctx.exfExtSup = PdfTextUtil.preferCurrent(ficha != null ? ficha.getExfExtMiembrosSup() : null, exfExtSup);
-        ctx.exfExtInf = PdfTextUtil.preferCurrent(ficha != null ? ficha.getExfExtMiembrosInf() : null, exfExtInf);
-        ctx.exfNeuroFuerza = PdfTextUtil.preferCurrent(ficha != null ? ficha.getExfNeuroFuerza() : null, exfNeuroFuerza);
-        ctx.exfNeuroSensibilidad = PdfTextUtil.preferCurrent(ficha != null ? ficha.getExfNeuroSensibilidad() : null, exfNeuroSensibilidad);
-        ctx.exfNeuroMarcha = PdfTextUtil.preferCurrent(ficha != null ? ficha.getExfNeuroMarcha() : null, exfNeuroMarcha);
-        ctx.exfNeuroReflejos = PdfTextUtil.preferCurrent(ficha != null ? ficha.getExfNeuroReflejos() : null, exfNeuroReflejos);
-        ctx.obsExamenFisico = obsExamenFisico;
-        return fichaPdfContextAssembler.buildFichaPdfViewModelContext(ctx);
+        return fichaPdfContextAssembler.buildFichaPdfViewModelContext(this);
     }
 
     private String normalizeOtrosPlaceholder(String keyLower) {
