@@ -964,6 +964,7 @@ public class CentroMedicoCtrl implements Serializable {
 
     private void saveStep3() {
         ensureFichaSavedOrThrow();
+        ensurePatientAssignedForFicha();
 
         final Date now = new Date();
         final String user = usuarioReal();
@@ -1008,6 +1009,34 @@ public class CentroMedicoCtrl implements Serializable {
 
         registrarAuditoria("GUARDAR_STEP3", "FICHA_OCUPACIONAL / H / I / J / K", "*",
                 "Step 3 guardado. ID_FICHA=" + ficha.getIdFicha());
+    }
+
+    private void ensurePatientAssignedForFicha() {
+        if (ficha == null) {
+            return;
+        }
+
+        if (ficha.getEmpleado() != null || ficha.getPersonaAux() != null) {
+            return;
+        }
+
+        DatEmpleado empleado = empleadoSel;
+        if (empleado == null && noPersonaSel != null) {
+            empleado = empleadoService.buscarPorId(noPersonaSel);
+        }
+
+        if (empleado != null) {
+            ficha.setEmpleado(empleado);
+            ficha.setPersonaAux(null);
+            return;
+        }
+
+        if (permitirIngresoManual && personaAux != null) {
+            ficha.setPersonaAux(personaAux);
+            return;
+        }
+
+        fail("Debe seleccionar un empleado o registrar una persona auxiliar antes de guardar el Step 3.");
     }
 
     private <T> T getSafe(List<T> list, int idx) {
