@@ -11,6 +11,7 @@ import java.util.function.Supplier;
 
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
+import jakarta.inject.Inject;
 
 import org.slf4j.Logger;
 
@@ -31,7 +32,7 @@ public class CentroMedicoPdfTemplateCoordinator implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    @EJB
+    @Inject
     private CentroMedicoPdfUiCoordinator centroMedicoPdfUiCoordinator;
     @EJB
     private CentroMedicoPdfFacadeService centroMedicoPdfFacadeService;
