@@ -594,13 +594,14 @@ public class CentroMedicoCtrl implements Serializable {
 
     public void onFechaNacimientoSelect(SelectEvent e) {
         this.fechaNacimiento = (java.util.Date) e.getObject();
-        this.edad = calcUtil.calcularEdad(this.fechaNacimiento);
-        FacesContext.getCurrentInstance().addMessage(null,
-                new FacesMessage(FacesMessage.SEVERITY_INFO, "Cálculo de edad",
-                        "Edad calculada: " + (edad == null ? "(sin fecha)" : edad + " años")));
+        recalculateEdadAndNotify();
     }
 
     public void onFechaNacimientoChange() {
+        recalculateEdadAndNotify();
+    }
+
+    private void recalculateEdadAndNotify() {
         this.edad = calcUtil.calcularEdad(this.fechaNacimiento);
         FacesContext.getCurrentInstance().addMessage(null,
                 new FacesMessage(FacesMessage.SEVERITY_INFO, "Cálculo de edad",
@@ -1401,11 +1402,7 @@ public class CentroMedicoCtrl implements Serializable {
             return;
         }
 
-        if (result.fichaResult != null && result.fichaResult.listo) {
-            ficha = result.fichaResult.ficha;
-            fichaPdfListo = true;
-            pdfTokenFicha = result.fichaResult.token;
-        }
+        applyFichaPreviewResult(result.fichaResult);
 
         if (!result.listo) {
             certificadoListo = false;
@@ -1473,11 +1470,7 @@ public class CentroMedicoCtrl implements Serializable {
             return;
         }
 
-        if (result.fichaResult != null && result.fichaResult.listo) {
-            ficha = result.fichaResult.ficha;
-            fichaPdfListo = true;
-            pdfTokenFicha = result.fichaResult.token;
-        }
+        applyFichaPreviewResult(result.fichaResult);
 
         if (!result.listo) {
             cleanupPdfPreview(ctx);
@@ -1504,6 +1497,15 @@ public class CentroMedicoCtrl implements Serializable {
 
     private void showValidationMessage(FacesContext ctx, String summary, List<String> errors) {
         centroMedicoPdfFacadeService.showValidationMessage(ctx, summary, errors);
+    }
+
+    private void applyFichaPreviewResult(CentroMedicoPdfWorkflowService.FichaFlowResult fichaResult) {
+        if (fichaResult == null || !fichaResult.listo) {
+            return;
+        }
+        ficha = fichaResult.ficha;
+        fichaPdfListo = true;
+        pdfTokenFicha = fichaResult.token;
     }
 
     private String construirHtmlDesdePlantilla() throws IOException {
