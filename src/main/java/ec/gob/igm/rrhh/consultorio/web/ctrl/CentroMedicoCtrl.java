@@ -76,7 +76,7 @@ import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoFormInitializer;
 import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoFormStateService;
 import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoPdfWorkflowService;
 import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoPdfFacadeService;
-import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoWizardService;
+import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoWizardNavigationCoordinator;
 import ec.gob.igm.rrhh.consultorio.web.service.FichaPdfDataMapper;
 import ec.gob.igm.rrhh.consultorio.web.service.FichaPdfMappedData;
 import ec.gob.igm.rrhh.consultorio.web.service.FichaPdfPlaceholderBuilder;
@@ -428,8 +428,9 @@ public class CentroMedicoCtrl implements Serializable {
     @Inject
     private transient CentroMedicoPdfFacade centroMedicoPdfFacade;
 
+
     @Inject
-    private transient CentroMedicoWizardService centroMedicoWizardService;
+    private transient CentroMedicoWizardNavigationCoordinator wizardNavigationCoordinator;
 
     @Inject
     private transient CentroMedicoMessageService messageService;
@@ -664,60 +665,47 @@ public class CentroMedicoCtrl implements Serializable {
         LOG.info(">>> ENTRO A guardarStepActual, step={}", activeStep);
         controllerActionTemplate.executeWithResult(
                 "guardarStepActual",
-                () -> centroMedicoWizardService.guardarStepActual(
-                        activeStep,
-                        this::guardarStep1,
-                        this::guardarStep2,
-                        this::guardarStep3,
-                        this::onEnterStep4AutoRegenerar),
-                this::onGuardarStepActualSuccess,
+                () -> {
+                    wizardNavigationCoordinator.guardarStepActual(
+                            new CentroMedicoWizardNavigationCoordinator.GuardarStepActualCommand(
+                                    activeStep,
+                                    this::guardarStep1,
+                                    this::guardarStep2,
+                                    this::guardarStep3,
+                                    next -> this.activeStep = next,
+                                    () -> PrimeFaces.current().ajax().update("@([id$=wdzFicha])"),
+                                    this::resetStep4PdfState,
+                                    this::applyStep4State,
+                                    ficha,
+                                    buildPrepareFichaCommand(),
+                                    buildPrepareCertificadoCommand()));
+                    return activeStep;
+                },
+                ignored -> {
+                },
                 LOG,
                 activeStep,
                 noPersonaSel,
                 cedulaBusqueda);
     }
 
-    private void onGuardarStepActualSuccess(String next) {
-        FacesContext ctx = FacesContext.getCurrentInstance();
-        if (ctx == null || ctx.isValidationFailed() || next == null) {
-            return;
-        }
-        activeStep = next;
-        if ("step4".equals(next)) {
-            PrimeFaces.current().ajax().update("@([id$=wdzFicha])");
-        }
+    private void resetStep4PdfState() {
+        this.fichaPdfListo = false;
+        this.certificadoListo = false;
+        this.pdfTokenFicha = null;
+        this.pdfTokenCertificado = null;
     }
 
-    private void onEnterStep4AutoRegenerar() {
-        try {
-            this.fichaPdfListo = false;
-            this.certificadoListo = false;
-            this.pdfTokenFicha = null;
-            this.pdfTokenCertificado = null;
+    private void applyStep4State(CentroMedicoWizardNavigationCoordinator.Step4UiState state) {
+        if (state.fichaPdfListo) {
+            this.ficha = state.ficha;
+            this.pdfTokenFicha = state.pdfTokenFicha;
+            this.fichaPdfListo = true;
+        }
 
-            CentroMedicoPdfWorkflowService.Step4FlowResult result = centroMedicoPdfWorkflowService.onEnterStep4AutoRegenerar(
-                    new CentroMedicoPdfWorkflowService.Step4FlowCommand(
-                            ficha,
-                            buildPrepareFichaCommand(),
-                            buildPrepareCertificadoCommand()));
-
-            if (result == null || result.skipped || result.ficha == null) {
-                return;
-            }
-
-            if (result.fichaLista) {
-                this.ficha = result.ficha;
-                this.pdfTokenFicha = result.fichaToken;
-                this.fichaPdfListo = true;
-            }
-
-            if (result.certificadoListo) {
-                this.pdfTokenCertificado = result.certificadoToken;
-                this.certificadoListo = true;
-            }
-
-        } catch (Exception ex) {
-            LOG.warn("Auto-regeneración Step4 falló", ex);
+        if (state.certificadoListo) {
+            this.pdfTokenCertificado = state.pdfTokenCertificado;
+            this.certificadoListo = true;
         }
     }
 
@@ -730,7 +718,7 @@ public class CentroMedicoCtrl implements Serializable {
     }
 
     public void retrocederStep() {
-        activeStep = centroMedicoWizardService.retrocederStep(activeStep);
+        activeStep = wizardNavigationCoordinator.retrocederStep(activeStep);
     }
 
     private boolean validarStep1() {
