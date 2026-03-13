@@ -1238,11 +1238,6 @@ public class CentroMedicoCtrl implements Serializable {
         }
     }
 
-
-
-
-
-
     private String renderFaceletToHtml(String viewId) {
         LOG.info("FichaPrint: renderFaceletToHtml delegado a facade. viewId={}", viewId);
         return centroMedicoPdfFacade.renderFaceletToHtml(viewId);
@@ -1358,8 +1353,6 @@ public class CentroMedicoCtrl implements Serializable {
         return rep;
     }
 
-
-
     private FichaState buildFichaState() {
         FichaState state = new FichaState();
         state.centroMedicoPdfFacade = centroMedicoPdfFacade;
@@ -1412,6 +1405,7 @@ public class CentroMedicoCtrl implements Serializable {
         state.toDateParser = this::toDate;
         return state;
     }
+
     private FichaPdfViewModelContext buildFichaPdfViewModelContext() {
         FichaPdfViewModelContext ctx = new FichaPdfViewModelContext();
         ctx.ficha = ficha;
@@ -1523,22 +1517,6 @@ public class CentroMedicoCtrl implements Serializable {
         ctx.obsExamenFisico = obsExamenFisico;
         return fichaPdfContextAssembler.buildFichaPdfViewModelContext(ctx);
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     private String normalizeOtrosPlaceholder(String keyLower) {
         if (isBlank(keyLower)) {
