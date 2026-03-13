@@ -56,9 +56,6 @@ import ec.gob.igm.rrhh.consultorio.web.jsf.CentroMedicoMessageService;
 import ec.gob.igm.rrhh.consultorio.web.mapper.Step1CommandAssembler;
 import ec.gob.igm.rrhh.consultorio.web.mapper.Step3CommandAssembler;
 import ec.gob.igm.rrhh.consultorio.web.audit.CentroMedicoAuditService;
-import ec.gob.igm.rrhh.consultorio.web.pdf.FichaPdfContextAssembler;
-import ec.gob.igm.rrhh.consultorio.web.pdf.FichaPdfPlaceholderAssembler;
-import ec.gob.igm.rrhh.consultorio.web.pdf.FichaPdfTemplateService;
 import ec.gob.igm.rrhh.consultorio.web.pdf.CertificadoPdfTemplateService;
 import ec.gob.igm.rrhh.consultorio.web.pdf.PdfResourceResolver;
 import ec.gob.igm.rrhh.consultorio.web.pdf.PdfTextUtil;
@@ -71,13 +68,11 @@ import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoFormInitializer;
 import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoFormStateService;
 import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoPdfWorkflowService;
 import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoPdfFacadeService;
+import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoPdfTemplateCoordinator;
 import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoPdfUiCoordinator;
 import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoWizardNavigationCoordinator;
 import ec.gob.igm.rrhh.consultorio.web.service.DiagnosticoFilaUiCoordinator;
-import ec.gob.igm.rrhh.consultorio.web.service.FichaPdfDataMapper;
 import ec.gob.igm.rrhh.consultorio.web.service.FichaPdfMappedData;
-import ec.gob.igm.rrhh.consultorio.web.service.FichaPdfPlaceholderBuilder;
-import ec.gob.igm.rrhh.consultorio.web.service.FichaPdfViewModelBuilder;
 import ec.gob.igm.rrhh.consultorio.web.service.PacienteUiFlowCoordinator;
 import ec.gob.igm.rrhh.consultorio.web.service.PacienteUiStateApplier;
 import ec.gob.igm.rrhh.consultorio.web.service.PacienteViewBinder;
@@ -164,21 +159,9 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     @EJB
     private transient CentroMedicoAuditService centroMedicoAuditService;
     @EJB
-    private transient FichaPdfTemplateService fichaPdfTemplateService;
-    @EJB
     private transient Cie10LookupService cie10LookupService;
     @EJB
     private transient Step3OrchestratorService step3OrchestratorService;
-    @EJB
-    private transient FichaPdfDataMapper fichaPdfDataMapper;
-    @EJB
-    private transient FichaPdfPlaceholderBuilder fichaPdfPlaceholderBuilder;
-    @EJB
-    private transient FichaPdfViewModelBuilder fichaPdfViewModelBuilder;
-    @EJB
-    private transient FichaPdfContextAssembler fichaPdfContextAssembler;
-    @EJB
-    private transient FichaPdfPlaceholderAssembler fichaPdfPlaceholderAssembler;
     @EJB
     private transient CentroMedicoPdfWorkflowService centroMedicoPdfWorkflowService;
     @EJB
@@ -233,6 +216,8 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     private transient Step3CommandAssembler step3CommandAssembler;
     @Inject
     private transient CentroMedicoPdfUiCoordinator centroMedicoPdfUiCoordinator;
+    @Inject
+    private transient CentroMedicoPdfTemplateCoordinator centroMedicoPdfTemplateCoordinator;
 
     // =========================
     // VALIDADORES
@@ -1081,81 +1066,61 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     // PDF - MÉTODOS DE CONSTRUCCIÓN
     // =========================
     private CentroMedicoPdfWorkflowService.PrepareFichaCommandData buildPrepareFichaCommand() {
-        CentroMedicoPdfUiCoordinator.BuildPrepareFichaUiCommand cmd = new CentroMedicoPdfUiCoordinator.BuildPrepareFichaUiCommand();
-        cmd.ficha = ficha;
-        cmd.empleadoSel = empleadoSel;
-        cmd.personaAux = personaAux;
-        cmd.permitirIngresoManual = permitirIngresoManual;
-        cmd.asegurarPersonaAuxPersistida = this::asegurarPersonaAuxPersistida;
-        cmd.htmlFichaSupplier = this::construirHtmlFichaDesdePlantilla;
-        cmd.centroMedicoPdfFacade = centroMedicoPdfFacade;
-        return centroMedicoPdfUiCoordinator.buildPrepareFichaCommand(cmd);
-    }
-
-    private CentroMedicoPdfWorkflowService.PrepareCertificadoCommandData buildPrepareCertificadoCommand() {
-        CentroMedicoPdfUiCoordinator.BuildPrepareCertificadoUiCommand cmd = new CentroMedicoPdfUiCoordinator.BuildPrepareCertificadoUiCommand();
-        cmd.ficha = ficha;
-        cmd.verificarFichaCompleta = this::verificarFichaCompleta;
-        cmd.htmlCertificadoSupplier = this::construirHtmlDesdePlantilla;
-        cmd.fechaEmisionSetter = fecha -> this.fechaEmision = fecha;
-        cmd.centroMedicoPdfFacade = centroMedicoPdfFacade;
-        return centroMedicoPdfUiCoordinator.buildPrepareCertificadoCommand(cmd);
-    }
-
-    private String construirHtmlFichaDesdePlantilla() {
-        CentroMedicoPdfFacadeService.FichaTemplateCommand cmd = new CentroMedicoPdfFacadeService.FichaTemplateCommand();
-        cmd.source = this;
-        cmd.log = LOG;
-        cmd.fichaPdfTemplateService = fichaPdfTemplateService;
-        cmd.fichaPdfPlaceholderBuilder = fichaPdfPlaceholderBuilder;
-        cmd.pdfResourceResolver = pdfResourceResolver;
-        cmd.fichaPdfPlaceholderAssembler = fichaPdfPlaceholderAssembler;
-        cmd.fichaPdfContextAssembler = fichaPdfContextAssembler;
-        cmd.fichaPdfDataMapper = fichaPdfDataMapper;
-        cmd.fichaPdfViewModelBuilder = fichaPdfViewModelBuilder;
-        cmd.centroMedicoPdfFacade = centroMedicoPdfFacade;
-        cmd.syncCamposDesdeObjetos = this::syncCamposDesdeObjetosInternal;
-        cmd.obtenerTipoEvaluacionPdf = this::obtenerTipoEvaluacionPdf;
-        cmd.recalcularIMC = this::recalcularIMC;
-        cmd.cargarAtencionPrioritaria = this::cargarAtencionPrioritaria;
-        cmd.cargarActividadLaboralArrays = this::cargarActividadLaboralArrays;
-        cmd.fallbackObservacionSupplier = () -> getFichaStringByReflection(ficha,
+        CentroMedicoPdfTemplateCoordinator.PrepareFichaRequest req = new CentroMedicoPdfTemplateCoordinator.PrepareFichaRequest();
+        req.source = this;
+        req.log = LOG;
+        req.ficha = ficha;
+        req.empleadoSel = empleadoSel;
+        req.personaAux = personaAux;
+        req.permitirIngresoManual = permitirIngresoManual;
+        req.asegurarPersonaAuxPersistida = this::asegurarPersonaAuxPersistida;
+        req.centroMedicoPdfFacade = centroMedicoPdfFacade;
+        req.pdfResourceResolver = pdfResourceResolver;
+        req.syncCamposDesdeObjetos = this::syncCamposDesdeObjetosInternal;
+        req.obtenerTipoEvaluacionPdf = this::obtenerTipoEvaluacionPdf;
+        req.recalcularIMC = this::recalcularIMC;
+        req.cargarAtencionPrioritaria = this::cargarAtencionPrioritaria;
+        req.cargarActividadLaboralArrays = this::cargarActividadLaboralArrays;
+        req.fallbackObservacionSupplier = () -> getFichaStringByReflection(ficha,
                 "getDetalleObs",
                 "getDetalleObservaciones",
                 "getObservaciones",
                 "getObs",
                 "getObservacion");
-        cmd.getSafe = CentroMedicoViewUtils::getSafe;
-        cmd.toDate = this::toDate;
-        return centroMedicoPdfFacadeService.construirHtmlFichaDesdePlantilla(cmd);
+        req.getSafe = CentroMedicoViewUtils::getSafe;
+        req.toDate = this::toDate;
+        return centroMedicoPdfTemplateCoordinator.buildPrepareFichaCommand(req);
     }
 
-    private String construirHtmlDesdePlantilla() throws java.io.IOException {
-        CentroMedicoPdfUiCoordinator.ConstruirCertificadoHtmlCommand cmd = new CentroMedicoPdfUiCoordinator.ConstruirCertificadoHtmlCommand();
-        cmd.ficha = ficha;
-        cmd.fechaEmision = fechaEmision;
-        cmd.aptitudSel = aptitudSel;
-        cmd.tipoEval = tipoEval;
-        cmd.tipoEvaluacion = tipoEvaluacion;
-        cmd.institucion = institucion;
-        cmd.ruc = ruc;
-        cmd.noHistoria = noHistoria;
-        cmd.noArchivo = noArchivo;
-        cmd.centroTrabajo = centroTrabajo;
-        cmd.ciiu = ciiu;
-        cmd.apellido1 = apellido1;
-        cmd.apellido2 = apellido2;
-        cmd.nombre1 = nombre1;
-        cmd.nombre2 = nombre2;
-        cmd.sexo = sexo;
-        cmd.detalleObservaciones = detalleObservaciones;
-        cmd.recomendaciones = recomendaciones;
-        cmd.medicoNombre = medicoNombre;
-        cmd.medicoCodigo = medicoCodigo;
-        cmd.pdfResourceResolver = pdfResourceResolver;
-        cmd.pdfTemplateEngine = pdfTemplateEngine;
-        cmd.certificadoPdfTemplateService = certificadoPdfTemplateService;
-        return centroMedicoPdfUiCoordinator.construirHtmlDesdePlantilla(cmd);
+    private CentroMedicoPdfWorkflowService.PrepareCertificadoCommandData buildPrepareCertificadoCommand() {
+        CentroMedicoPdfTemplateCoordinator.PrepareCertificadoRequest req = new CentroMedicoPdfTemplateCoordinator.PrepareCertificadoRequest();
+        req.ficha = ficha;
+        req.verificarFichaCompleta = this::verificarFichaCompleta;
+        req.fechaEmisionSetter = fecha -> this.fechaEmision = fecha;
+        req.centroMedicoPdfFacade = centroMedicoPdfFacade;
+        req.fechaEmision = fechaEmision;
+        req.aptitudSel = aptitudSel;
+        req.tipoEval = tipoEval;
+        req.tipoEvaluacion = tipoEvaluacion;
+        req.institucion = institucion;
+        req.ruc = ruc;
+        req.noHistoria = noHistoria;
+        req.noArchivo = noArchivo;
+        req.centroTrabajo = centroTrabajo;
+        req.ciiu = ciiu;
+        req.apellido1 = apellido1;
+        req.apellido2 = apellido2;
+        req.nombre1 = nombre1;
+        req.nombre2 = nombre2;
+        req.sexo = sexo;
+        req.detalleObservaciones = detalleObservaciones;
+        req.recomendaciones = recomendaciones;
+        req.medicoNombre = medicoNombre;
+        req.medicoCodigo = medicoCodigo;
+        req.pdfResourceResolver = pdfResourceResolver;
+        req.pdfTemplateEngine = pdfTemplateEngine;
+        req.certificadoPdfTemplateService = certificadoPdfTemplateService;
+        return centroMedicoPdfTemplateCoordinator.buildPrepareCertificadoCommand(req);
     }
 
     private void applyPdfUiState(CentroMedicoPdfUiCoordinator.PdfUiState state) {
