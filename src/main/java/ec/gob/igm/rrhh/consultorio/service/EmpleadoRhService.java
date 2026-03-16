@@ -1,19 +1,18 @@
 package ec.gob.igm.rrhh.consultorio.service;
 
 import ec.gob.igm.rrhh.consultorio.domain.dto.EmpleadoCargoDTO;
-import ec.gob.igm.rrhh.consultorio.web.ctrl.CentroMedicoCtrl;
 import jakarta.ejb.Stateless;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.Query;
 
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.util.Date;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Servicio de integración con RRHH para consultar el cargo vigente de un empleado por cédula.
+ */
 @Stateless
 public class EmpleadoRhService {
 
@@ -91,28 +90,5 @@ public class EmpleadoRhService {
         } catch (Exception e) {
             return null;
         }
-    }
-
-    private Object getSafe(Object[] row, int idx) {
-        if (row == null || idx < 0 || idx >= row.length) return null;
-        return row[idx];
-    }
-
-    private String toStr(Object o) {
-        return o == null ? null : String.valueOf(o);
-    }
-
-    private Long toLong(Object o) {
-        if (o == null) return null;
-        if (o instanceof BigDecimal bd) return bd.longValue();
-        if (o instanceof Number n) return n.longValue();
-        try { return Long.parseLong(String.valueOf(o)); } catch (Exception e) { return null; }
-    }
-
-    private Date toDate(Object o) {
-        if (o == null) return null;
-        if (o instanceof Date d) return d;
-        if (o instanceof Timestamp ts) return new Date(ts.getTime());
-        return null;
     }
 }
