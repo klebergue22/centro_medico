@@ -827,6 +827,13 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     }
 
     private PdfFichaViewData capturePdfFichaViewData() {
+        CentroMedicoPdfControllerSupport.CapturePdfFichaInput input = buildBasePdfFichaInput();
+        populatePdfFichaAttentionFlags(input);
+        populatePdfFichaWorkRiskData(input);
+        return centroMedicoPdfControllerSupport.capturePdfFichaViewData(input);
+    }
+
+    private CentroMedicoPdfControllerSupport.CapturePdfFichaInput buildBasePdfFichaInput() {
         CentroMedicoPdfControllerSupport.CapturePdfFichaInput input = new CentroMedicoPdfControllerSupport.CapturePdfFichaInput();
         input.source = this;
         input.log = LOG;
@@ -841,12 +848,19 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
         input.tipoEval = tipoEval;
         input.tipoEvaluacion = tipoEvaluacion;
         input.recalcularIMC = this::recalcularIMC;
+        return input;
+    }
+
+    private void populatePdfFichaAttentionFlags(CentroMedicoPdfControllerSupport.CapturePdfFichaInput input) {
         input.apDiscapacidad = apDiscapacidad;
         input.apCatastrofica = apCatastrofica;
         input.apEmbarazada = apEmbarazada;
         input.apLactancia = apLactancia;
         input.apAdultoMayor = apAdultoMayor;
         input.hRows = H_ROWS;
+    }
+
+    private void populatePdfFichaWorkRiskData(CentroMedicoPdfControllerSupport.CapturePdfFichaInput input) {
         input.actLabCentroTrabajo = actLabCentroTrabajo;
         input.actLabActividad = actLabActividad;
         input.actLabTiempo = actLabTiempo;
@@ -860,7 +874,6 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
         input.iessFecha = iessFecha;
         input.iessEspecificar = iessEspecificar;
         input.actLabObservaciones = actLabObservaciones;
-        return centroMedicoPdfControllerSupport.capturePdfFichaViewData(input);
     }
 
     private PdfCertificadoViewData capturePdfCertificadoViewData() {
@@ -1393,44 +1406,34 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     private void initConsumoVidaCond() {
         final int N = CONS_ROWS;
 
-        if (consTiempoConsumoMeses == null) {
-            consTiempoConsumoMeses = new Integer[N];
-        }
-        if (consExConsumidor == null) {
-            consExConsumidor = new Boolean[N];
-        }
-        if (consTiempoAbstinenciaMeses == null) {
-            consTiempoAbstinenciaMeses = new Integer[N];
-        }
-        if (consNoConsume == null) {
-            consNoConsume = new Boolean[N];
-        }
+        initializeConsumoArrays(N);
+        initializeHabitosArrays(N);
+        initializeMedicacionArrays(N);
+        initializeConsumoDefaults(N);
+        consumoVidaCondObs = consumoVidaCondObs == null ? "" : consumoVidaCondObs;
+    }
 
-        if (afCual == null) {
-            afCual = new String[N];
-        }
-        if (afTiempo == null) {
-            afTiempo = new String[N];
-        }
+    private void initializeConsumoArrays(int size) {
+        consTiempoConsumoMeses = consTiempoConsumoMeses == null ? new Integer[size] : consTiempoConsumoMeses;
+        consExConsumidor = consExConsumidor == null ? new Boolean[size] : consExConsumidor;
+        consTiempoAbstinenciaMeses = consTiempoAbstinenciaMeses == null ? new Integer[size] : consTiempoAbstinenciaMeses;
+        consNoConsume = consNoConsume == null ? new Boolean[size] : consNoConsume;
+    }
 
-        if (medCual == null) {
-            medCual = new String[N];
-        }
-        if (medCant == null) {
-            medCant = new Integer[N];
-        }
+    private void initializeHabitosArrays(int size) {
+        afCual = afCual == null ? new String[size] : afCual;
+        afTiempo = afTiempo == null ? new String[size] : afTiempo;
+    }
 
-        for (int i = 0; i < N; i++) {
-            if (consExConsumidor[i] == null) {
-                consExConsumidor[i] = Boolean.FALSE;
-            }
-            if (consNoConsume[i] == null) {
-                consNoConsume[i] = Boolean.FALSE;
-            }
-        }
+    private void initializeMedicacionArrays(int size) {
+        medCual = medCual == null ? new String[size] : medCual;
+        medCant = medCant == null ? new Integer[size] : medCant;
+    }
 
-        if (consumoVidaCondObs == null) {
-            consumoVidaCondObs = "";
+    private void initializeConsumoDefaults(int size) {
+        for (int i = 0; i < size; i++) {
+            consExConsumidor[i] = consExConsumidor[i] == null ? Boolean.FALSE : consExConsumidor[i];
+            consNoConsume[i] = consNoConsume[i] == null ? Boolean.FALSE : consNoConsume[i];
         }
     }
 
@@ -1495,49 +1498,27 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     }
 
     private boolean filaActLabTieneAlgo(int i) {
-        if (!isBlank(actLabCentroTrabajo.get(i))) {
-            return true;
-        }
-        if (!isBlank(actLabActividad.get(i))) {
-            return true;
-        }
-        if (!isBlank(actLabTiempo.get(i))) {
-            return true;
-        }
-        if (!isBlank(actLabObservaciones.get(i))) {
-            return true;
-        }
-        if (!isBlank(iessEspecificar.get(i))) {
-            return true;
-        }
+        return hasTextualActLabData(i)
+                || hasBooleanActLabFlags(i)
+                || iessFecha.get(i) != null;
+    }
 
-        if (Boolean.TRUE.equals(actLabTrabajoAnterior.get(i))) {
-            return true;
-        }
-        if (Boolean.TRUE.equals(actLabTrabajoActual.get(i))) {
-            return true;
-        }
-        if (Boolean.TRUE.equals(actLabIncidenteChk.get(i))) {
-            return true;
-        }
-        if (Boolean.TRUE.equals(actLabAccidenteChk.get(i))) {
-            return true;
-        }
-        if (Boolean.TRUE.equals(actLabEnfermedadChk.get(i))) {
-            return true;
-        }
-        if (Boolean.TRUE.equals(iessSi.get(i))) {
-            return true;
-        }
-        if (Boolean.TRUE.equals(iessNo.get(i))) {
-            return true;
-        }
+    private boolean hasTextualActLabData(int i) {
+        return !isBlank(actLabCentroTrabajo.get(i))
+                || !isBlank(actLabActividad.get(i))
+                || !isBlank(actLabTiempo.get(i))
+                || !isBlank(actLabObservaciones.get(i))
+                || !isBlank(iessEspecificar.get(i));
+    }
 
-        if (iessFecha.get(i) != null) {
-            return true;
-        }
-
-        return false;
+    private boolean hasBooleanActLabFlags(int i) {
+        return isTrue(actLabTrabajoAnterior.get(i))
+                || isTrue(actLabTrabajoActual.get(i))
+                || isTrue(actLabIncidenteChk.get(i))
+                || isTrue(actLabAccidenteChk.get(i))
+                || isTrue(actLabEnfermedadChk.get(i))
+                || isTrue(iessSi.get(i))
+                || isTrue(iessNo.get(i));
     }
 
     public String getStepProcessId() {
