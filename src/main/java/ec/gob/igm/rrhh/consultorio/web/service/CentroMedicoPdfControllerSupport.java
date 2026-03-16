@@ -1,11 +1,9 @@
 package ec.gob.igm.rrhh.consultorio.web.service;
 
 import static ec.gob.igm.rrhh.consultorio.web.util.CentroMedicoPdfValueUtil.safe;
-import static ec.gob.igm.rrhh.consultorio.web.util.CentroMedicoViewUtils.getSafe;
 import static ec.gob.igm.rrhh.consultorio.web.util.CentroMedicoViewUtils.isBlank;
 import static ec.gob.igm.rrhh.consultorio.web.util.CentroMedicoViewUtils.isTrue;
 import static ec.gob.igm.rrhh.consultorio.web.util.DateFormatUtil.fmtDate;
-import static ec.gob.igm.rrhh.consultorio.web.util.DateFormatUtil.toDate;
 import static ec.gob.igm.rrhh.consultorio.web.util.ReflectionPropertyUtil.getFichaStringByReflection;
 
 import java.io.Serializable;
@@ -26,6 +24,8 @@ import ec.gob.igm.rrhh.consultorio.web.pdf.FichaPdfContextAssembler;
 import ec.gob.igm.rrhh.consultorio.web.pdf.PdfResourceResolver;
 import ec.gob.igm.rrhh.consultorio.web.pdf.PdfTemplateEngine;
 import ec.gob.igm.rrhh.consultorio.web.pdf.PdfTextUtil;
+import ec.gob.igm.rrhh.consultorio.web.util.CentroMedicoViewUtils;
+import ec.gob.igm.rrhh.consultorio.web.util.DateFormatUtil;
 import ec.gob.igm.rrhh.consultorio.web.viewstate.PdfCertificadoViewData;
 import ec.gob.igm.rrhh.consultorio.web.viewstate.PdfFichaViewData;
 import ec.gob.igm.rrhh.consultorio.web.viewstate.PdfPreviewState;
@@ -69,8 +69,8 @@ public class CentroMedicoPdfControllerSupport implements Serializable {
                         "getObservaciones",
                         "getObs",
                         "getObservacion"),
-                getSafe,
-                toDate);
+                CentroMedicoViewUtils::getSafe,
+                DateFormatUtil::toDate);
     }
 
     public PdfCertificadoViewData capturePdfCertificadoViewData(CapturePdfCertificadoInput input) {
