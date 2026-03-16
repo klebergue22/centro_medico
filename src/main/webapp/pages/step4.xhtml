@@ -21,7 +21,7 @@
                     <p:commandButton value="Generar Ficha (PDF)"
                                      icon="pi pi-file-pdf"
                                      styleClass="ui-button-success"
-                                     actionListener="#{centroMedicoCtrl.onPrepararFichaPdf}"
+                                     actionListener="#{centroMedicoCtrl.prepararVistaPreviaFicha}"
                                      process="@this"
                                      update="panelFicha panelCert msgsStep4"
                                      />
@@ -81,7 +81,7 @@
                         <p:commandButton value="Generar Certificado (PDF)"
                                          icon="pi pi-file-pdf"
                                          styleClass="ui-button-help"
-                                         actionListener="#{centroMedicoCtrl.onPrepararCertificadoPdf}"
+                                         actionListener="#{centroMedicoCtrl.prepararVistaPreviaCertificado}"
                                          process="@this"
                                          update="panelCert msgsStep4"
                                          />

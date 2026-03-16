@@ -49,6 +49,7 @@ import ec.gob.igm.rrhh.consultorio.web.mapper.PdfCertificadoInputAssembler;
 import ec.gob.igm.rrhh.consultorio.web.mapper.PdfFichaInputAssembler;
 import ec.gob.igm.rrhh.consultorio.web.facade.DiagnosticoSectionFacade;
 import ec.gob.igm.rrhh.consultorio.web.facade.PacienteSectionFacade;
+import ec.gob.igm.rrhh.consultorio.web.facade.PdfPreviewFacade;
 import ec.gob.igm.rrhh.consultorio.web.facade.PdfSectionFacade;
 import ec.gob.igm.rrhh.consultorio.web.facade.Step1Facade;
 import ec.gob.igm.rrhh.consultorio.web.facade.WizardSectionFacade;
@@ -63,8 +64,6 @@ import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoFormStateService;
 import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoPdfTemplateCoordinator;
 import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoReactiveUiService;
 import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoWizardNavigationCoordinator;
-import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoPdfWorkflowService;
-import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoPdfUiCoordinator;
 import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoValidationCoordinator.FichaCompletaValidationInput;
 import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoValidationCoordinator.Step1ValidationInput;
 import ec.gob.igm.rrhh.consultorio.web.service.ValidationUiResult;
@@ -75,8 +74,6 @@ import ec.gob.igm.rrhh.consultorio.web.session.PdfSessionStore;
 import ec.gob.igm.rrhh.consultorio.web.util.CentroMedicoCalcUtil;
 import ec.gob.igm.rrhh.consultorio.web.viewstate.PacienteViewState;
 import ec.gob.igm.rrhh.consultorio.web.viewstate.PacienteFormData;
-import ec.gob.igm.rrhh.consultorio.web.viewstate.PdfCertificadoViewData;
-import ec.gob.igm.rrhh.consultorio.web.viewstate.PdfFichaViewData;
 import ec.gob.igm.rrhh.consultorio.web.viewstate.PdfPreviewState;
 import ec.gob.igm.rrhh.consultorio.web.viewstate.Step1FormModel;
 import ec.gob.igm.rrhh.consultorio.web.viewstate.Step2FormModel;
@@ -198,6 +195,8 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     private transient PacienteSectionFacade pacienteSectionFacade;
     @Inject
     private transient PdfSectionFacade pdfSectionFacade;
+    @Inject
+    private transient PdfPreviewFacade pdfPreviewFacade;
 
     // =========================
     // MODELOS DE FORMULARIO
@@ -509,11 +508,15 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
                                     this::guardarStep3,
                                     wizardViewState::setActiveStep,
                                     "@([id$=wdzFicha])",
-                                    this::resetStep4PdfState,
+                                    () -> pdfPreviewFacade.resetStep4PdfState(
+                                            pdfPreviewState,
+                                            value -> this.ficha = value,
+                                            wizardViewState::setActiveStep,
+                                            value -> this.mostrarDlgCedula = value),
                                     this::applyStep4State,
                                     ficha,
-                                    this::buildPrepareFichaCommand,
-                                    this::buildPrepareCertificadoCommand));
+                                    () -> pdfPreviewFacade.buildPrepareFichaCommandData(buildBasePrepareCommand()),
+                                    () -> pdfPreviewFacade.buildPrepareCertificadoCommandData(buildBasePrepareCommand())));
                     return wizardViewState.getActiveStep();
                 },
                 ignored -> {
@@ -723,156 +726,71 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
         }
     }
 
-    private PdfFichaViewData capturePdfFichaViewData() {
-        return pdfSectionFacade.capturePdfFichaViewData(
-                pdfFichaInputAssembler.capture(this,
-                        LOG,
-                        () -> pacienteSectionFacade.asegurarPersonaAuxPersistida(this),
-                        this::syncCamposDesdeObjetosInternal,
-                        this::recalcularIMC,
-                        centroMedicoPdfFacade,
-                        pdfResourceResolver,
-                        H_ROWS));
-    }
-
-    private PdfCertificadoViewData capturePdfCertificadoViewData() {
-        return pdfSectionFacade.capturePdfCertificadoViewData(
-                pdfCertificadoInputAssembler.capture(this,
-                        this::verificarFichaCompleta,
-                        fecha -> diagnosticoFormModel.setFechaEmision(fecha),
-                        centroMedicoPdfFacade,
-                        pdfResourceResolver,
-                        pdfTemplateEngine,
-                        certificadoPdfTemplateService));
-    }
-
     // =========================
     // PDF - FICHA OCUPACIONAL
     // =========================
     public void prepararVistaPreviaFicha() {
-        onPrepararFichaPdf();
-    }
-
-    public void onPrepararFichaPdf() {
-        controllerActionTemplate.executeWithResult(
-                "onPrepararFichaPdf",
-                () -> pdfSectionFacade.onPrepararFichaPdf(
-                        new CentroMedicoPdfWorkflowService.PrepareFichaFlowCommand(buildPrepareFichaCommand())),
-                this::onPrepararFichaPdfSuccess,
-                LOG,
-                wizardViewState.getActiveStep(),
-                noPersonaSel,
-                cedulaBusqueda);
-    }
-
-    private void onPrepararFichaPdfSuccess(CentroMedicoPdfWorkflowService.FichaFlowResult result) {
-        pdfSectionFacade.onPrepararFichaPdfSuccess(
-                result,
-                FacesContext.getCurrentInstance(),
-                pdfPreviewState,
-                value -> this.ficha = value,
-                wizardViewState::setActiveStep,
-                value -> this.mostrarDlgCedula = value);
+        pdfPreviewFacade.prepararVistaPreviaFicha(
+                new PdfPreviewFacade.PrepareVistaPreviaFichaCommand(
+                        controllerActionTemplate,
+                        pdfPreviewState,
+                        buildBasePrepareCommand()));
     }
 
     // =========================
     // PDF - CERTIFICADO MÉDICO
     // =========================
     public void prepararVistaPreviaCertificado() {
-        onPrepararCertificadoPdf();
-    }
-
-    public void onPrepararCertificadoPdf() {
-        controllerActionTemplate.executeWithResult(
-                "onPrepararCertificadoPdf",
-                () -> pdfSectionFacade.onPrepararCertificadoPdf(
-                        new CentroMedicoPdfWorkflowService.PrepareCertificadoFlowCommand(
-                                pdfPreviewState.isFichaPdfListo(),
-                                pdfPreviewState.getPdfTokenFicha(),
-                                buildPrepareFichaCommand(),
-                                buildPrepareCertificadoCommand())),
-                this::onPrepararCertificadoPdfSuccess,
-                LOG,
-                wizardViewState.getActiveStep(),
-                noPersonaSel,
-                cedulaBusqueda);
-    }
-
-    private void onPrepararCertificadoPdfSuccess(CentroMedicoPdfWorkflowService.CertificadoFlowResult result) {
-        applyPdfUiState(pdfSectionFacade.onPrepararCertificadoPdfSuccess(
-                result,
-                FacesContext.getCurrentInstance(),
-                pdfSessionStore,
-                pdfPreviewState.getPdfTokenCertificado()));
+        pdfPreviewFacade.prepararVistaPreviaCertificado(
+                new PdfPreviewFacade.PrepareVistaPreviaCertificadoCommand(
+                        controllerActionTemplate,
+                        pdfPreviewState,
+                        pdfSessionStore,
+                        buildBasePrepareCommand()));
     }
 
     // =========================
     // PDF - VISTA PREVIA GENERAL
     // =========================
     public void prepararVistaPrevia() {
-        controllerActionTemplate.executeWithResult(
-                "prepararVistaPrevia",
-                () -> pdfSectionFacade.prepararVistaPrevia(
-                        new CentroMedicoPdfWorkflowService.PreparePreviewFlowCommand(
-                                pdfPreviewState.isFichaPdfListo(),
-                                pdfPreviewState.getPdfTokenFicha(),
-                                this::verificarFichaCompleta,
-                                buildPrepareFichaCommand(),
-                                buildPrepareCertificadoCommand())),
-                this::onPrepararVistaPreviaSuccess,
-                LOG,
-                wizardViewState.getActiveStep(),
-                noPersonaSel,
-                cedulaBusqueda);
-    }
-
-    private void onPrepararVistaPreviaSuccess(CentroMedicoPdfWorkflowService.PreviewFlowResult result) {
-        applyPdfUiState(pdfSectionFacade.onPrepararVistaPreviaSuccess(
-                result,
-                FacesContext.getCurrentInstance(),
-                pdfSessionStore,
-                pdfPreviewState.getPdfTokenCertificado()));
+        pdfPreviewFacade.prepararVistaPrevia(
+                new PdfPreviewFacade.PrepareVistaPreviaCommand(
+                        controllerActionTemplate,
+                        pdfPreviewState,
+                        pdfSessionStore,
+                        this::verificarFichaCompleta,
+                        buildBasePrepareCommand()));
     }
 
     public void limpiarVistaPrevia() {
-        pdfSectionFacade.cleanupPdfPreview(
-                FacesContext.getCurrentInstance(),
+        pdfPreviewFacade.limpiarVistaPrevia(new PdfPreviewFacade.LimpiarVistaPreviaCommand(
                 pdfSessionStore,
-                pdfPreviewState.getPdfTokenCertificado());
-        applyCleanupPdfPreviewState();
-    }
-
-    private void cleanupPdfPreview(FacesContext ctx) {
-        applyPdfUiState(pdfSectionFacade.cleanupPdfPreviewState(ctx, pdfSessionStore, pdfPreviewState.getPdfTokenCertificado()));
-    }
-
-    // =========================
-    // PDF - MÉTODOS DE CONSTRUCCIÓN
-    // =========================
-    private CentroMedicoPdfWorkflowService.PrepareFichaCommandData buildPrepareFichaCommand() {
-        return pdfSectionFacade.buildPrepareFichaCommand(
-                centroMedicoPdfTemplateCoordinator,
-                capturePdfFichaViewData());
-    }
-
-    private CentroMedicoPdfWorkflowService.PrepareCertificadoCommandData buildPrepareCertificadoCommand() {
-        return pdfSectionFacade.buildPrepareCertificadoCommand(
-                centroMedicoPdfTemplateCoordinator,
-                capturePdfCertificadoViewData());
-    }
-
-    private void applyPdfUiState(CentroMedicoPdfUiCoordinator.PdfUiState state) {
-        pdfSectionFacade.applyPdfUiState(
-                state,
                 pdfPreviewState,
                 value -> this.ficha = value,
                 wizardViewState::setActiveStep,
-                value -> this.mostrarDlgCedula = value);
+                value -> this.mostrarDlgCedula = value));
     }
 
-    private void resetStep4PdfState() {
-        pdfSectionFacade.resetStep4PdfState(
-                pdfPreviewState,
+    private PdfPreviewFacade.BasePrepareCommand buildBasePrepareCommand() {
+        return new PdfPreviewFacade.BasePrepareCommand(
+                this,
+                LOG,
+                wizardViewState.getActiveStep(),
+                noPersonaSel,
+                cedulaBusqueda,
+                () -> pacienteSectionFacade.asegurarPersonaAuxPersistida(this),
+                this::syncCamposDesdeObjetosInternal,
+                this::recalcularIMC,
+                this::verificarFichaCompleta,
+                fecha -> diagnosticoFormModel.setFechaEmision(fecha),
+                H_ROWS,
+                pdfFichaInputAssembler,
+                pdfCertificadoInputAssembler,
+                centroMedicoPdfTemplateCoordinator,
+                centroMedicoPdfFacade,
+                pdfResourceResolver,
+                pdfTemplateEngine,
+                certificadoPdfTemplateService,
                 value -> this.ficha = value,
                 wizardViewState::setActiveStep,
                 value -> this.mostrarDlgCedula = value);
@@ -881,14 +799,6 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     private void applyStep4State(CentroMedicoWizardNavigationCoordinator.Step4UiState state) {
         pdfSectionFacade.applyStep4State(
                 state,
-                pdfPreviewState,
-                value -> this.ficha = value,
-                wizardViewState::setActiveStep,
-                value -> this.mostrarDlgCedula = value);
-    }
-
-    private void applyCleanupPdfPreviewState() {
-        pdfSectionFacade.applyCleanupPdfPreviewState(
                 pdfPreviewState,
                 value -> this.ficha = value,
                 wizardViewState::setActiveStep,
