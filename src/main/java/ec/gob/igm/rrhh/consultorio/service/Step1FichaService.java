@@ -130,7 +130,18 @@ public class Step1FichaService {
     private void mapStep1ToOccupationalRecord(FichaOcupacional ficha, Step1Command cmd) {
         ficha.setFechaEvaluacion(cmd.fechaAtencion());
         ficha.setTipoEvaluacion(cmd.tipoEval());
+        mapGinecologicalData(ficha, cmd);
+        mapSpecialConditions(ficha, cmd);
+        mapClinicalHistory(ficha, cmd);
+        mapReproductiveHealth(ficha, cmd);
+        normalizeCurrentDisease(ficha);
+        mapDisabilityData(ficha, cmd);
+        mapCatastrophicData(ficha, cmd);
+        mapRetiroData(ficha, cmd);
+        mapConsumoVidaCondToFicha(ficha, cmd);
+    }
 
+    private void mapGinecologicalData(FichaOcupacional ficha, Step1Command cmd) {
         ficha.setGinecoExamen1(cmd.ginecoExamen1());
         ficha.setGinecoTiempo1(cmd.ginecoTiempo1());
         ficha.setGinecoResultado1(cmd.ginecoResultado1());
@@ -138,24 +149,28 @@ public class Step1FichaService {
         ficha.setGinecoTiempo2(cmd.ginecoTiempo2());
         ficha.setGinecoResultado2(cmd.ginecoResultado2());
         ficha.setGinecoObservacion(cmd.ginecoObservacion());
+    }
 
+    private void mapSpecialConditions(FichaOcupacional ficha, Step1Command cmd) {
         ficha.setApEmbarazada(SnUtils.fromBoolean(cmd.apEmbarazada()));
         ficha.setApDiscapacidad(SnUtils.fromBoolean(cmd.apDiscapacidad()));
         ficha.setApCatastrofica(SnUtils.fromBoolean(cmd.apCatastrofica()));
         ficha.setApLactancia(SnUtils.fromBoolean(cmd.apLactancia()));
         ficha.setApAdultoMayor(SnUtils.fromBoolean(cmd.apAdultoMayor()));
+    }
 
+    private void mapClinicalHistory(FichaOcupacional ficha, Step1Command cmd) {
         ficha.setAntClinicoQuir(cmd.antClinicoQuirurgico());
         ficha.setAntFamiliares(cmd.antFamiliares());
         ficha.setCondicionEspecial(cmd.condicionEspecial());
-
         ficha.setAutorizaTransfusion(cmd.autorizaTransfusion());
         ficha.setTratHormonal(cmd.tratamientoHormonal());
         ficha.setTratHormonalCual(cmd.tratamientoHormonalCual());
+    }
 
+    private void mapReproductiveHealth(FichaOcupacional ficha, Step1Command cmd) {
         ficha.setExamReproMasc(cmd.examenReproMasculino());
         ficha.setTiempoReproMasc(cmd.tiempoReproMasculino());
-
         ficha.setFum(cmd.fum());
         ficha.setGestas(cmd.gestas());
         ficha.setPartos(cmd.partos());
@@ -163,11 +178,15 @@ public class Step1FichaService {
         ficha.setAbortos(cmd.abortos());
         ficha.setPlanificacion(cmd.planificacion());
         ficha.setPlanificacionCual(cmd.planificacionCual());
+    }
 
+    private void normalizeCurrentDisease(FichaOcupacional ficha) {
         if (ficha.getEnfermedadProbActual() != null) {
             ficha.setEnfermedadProbActual(ficha.getEnfermedadProbActual().trim());
         }
+    }
 
+    private void mapDisabilityData(FichaOcupacional ficha, Step1Command cmd) {
         if (Boolean.TRUE.equals(cmd.apDiscapacidad())) {
             ficha.setDisTipo(trimToNull(cmd.discapTipo()));
             ficha.setDisDescripcion(trimToNull(cmd.discapDesc()));
@@ -177,7 +196,9 @@ public class Step1FichaService {
             ficha.setDisDescripcion(null);
             ficha.setDisPorcentaje(null);
         }
+    }
 
+    private void mapCatastrophicData(FichaOcupacional ficha, Step1Command cmd) {
         if (Boolean.TRUE.equals(cmd.apCatastrofica())) {
             ficha.setCatDiagnostico(trimToNull(cmd.catasDiagnostico()));
             ficha.setCatCalificada(Boolean.TRUE.equals(cmd.catasCalificada()) ? "S" : "N");
@@ -185,7 +206,9 @@ public class Step1FichaService {
             ficha.setCatDiagnostico(null);
             ficha.setCatCalificada(null);
         }
+    }
 
+    private void mapRetiroData(FichaOcupacional ficha, Step1Command cmd) {
         String tipo = trimToNull(cmd.tipoEval());
         if ("RETIRO".equalsIgnoreCase(tipo)) {
             String realiza = trimToNull(cmd.nRealizaEvaluacion());
@@ -199,51 +222,68 @@ public class Step1FichaService {
             ficha.setnRetRelTrab("N");
             ficha.setnRetObs(null);
         }
-
-        mapConsumoVidaCondToFicha(ficha, cmd);
     }
 
     private void mapConsumoVidaCondToFicha(FichaOcupacional ficha, Step1Command cmd) {
-        Integer[] consTiempoConsumoMeses = ensureSize3(cmd.consTiempoConsumoMeses(), new Integer[3]);
-        Boolean[] consExConsumidor = ensureSize3(cmd.consExConsumidor(), new Boolean[3]);
-        Integer[] consTiempoAbstinenciaMeses = ensureSize3(cmd.consTiempoAbstinenciaMeses(), new Integer[3]);
-        Boolean[] consNoConsume = ensureSize3(cmd.consNoConsume(), new Boolean[3]);
-        String[] afCual = ensureSize3(cmd.afCual(), new String[3]);
-        String[] afTiempo = ensureSize3(cmd.afTiempo(), new String[3]);
-        String[] medCual = ensureSize3(cmd.medCual(), new String[3]);
-        Integer[] medCant = ensureSize3(cmd.medCant(), new Integer[3]);
-
-        ficha.setTabConsMeses(consTiempoConsumoMeses[0]);
-        ficha.setTabExCons(SnUtils.fromBoolean(consExConsumidor[0]));
-        ficha.setTabAbsMeses(consTiempoAbstinenciaMeses[0]);
-        ficha.setTabNoCons(SnUtils.fromBoolean(consNoConsume[0]));
-
-        ficha.setAlcConsMeses(consTiempoConsumoMeses[1]);
-        ficha.setAlcExCons(SnUtils.fromBoolean(consExConsumidor[1]));
-        ficha.setAlcAbsMeses(consTiempoAbstinenciaMeses[1]);
-        ficha.setAlcNoCons(SnUtils.fromBoolean(consNoConsume[1]));
-
-        ficha.setOtrCual(cmd.consOtrasCual());
-        ficha.setOtrConsMeses(consTiempoConsumoMeses[2]);
-        ficha.setOtrExCons(SnUtils.fromBoolean(consExConsumidor[2]));
-        ficha.setOtrAbsMeses(consTiempoAbstinenciaMeses[2]);
-        ficha.setOtrNoCons(SnUtils.fromBoolean(consNoConsume[2]));
-
-        ficha.setAfCual1(afCual[0]);
-        ficha.setAfTiempo1(afTiempo[0]);
-        ficha.setAfCual2(afCual[1]);
-        ficha.setAfTiempo2(afTiempo[1]);
-        ficha.setAfCual3(afCual[2]);
-        ficha.setAfTiempo3(afTiempo[2]);
-
-        ficha.setMedCual1(medCual[0]);
-        ficha.setMedCant1(medCant[0]);
-        ficha.setMedCual2(medCual[1]);
-        ficha.setMedCant2(medCant[1]);
-        ficha.setMedCual3(medCual[2]);
-        ficha.setMedCant3(medCant[2]);
-
+        ConsumptionArrays arrays = buildConsumptionArrays(cmd);
+        applyTabacoData(ficha, arrays);
+        applyAlcoholData(ficha, arrays);
+        applyOtrosData(ficha, cmd, arrays);
+        applyActividadFisicaData(ficha, arrays);
+        applyMedicacionData(ficha, arrays);
         ficha.setObsConsumoVidaCond(cmd.consumoVidaCondObs());
+    }
+
+    private ConsumptionArrays buildConsumptionArrays(Step1Command cmd) {
+        return new ConsumptionArrays(
+                ensureSize3(cmd.consTiempoConsumoMeses(), new Integer[3]),
+                ensureSize3(cmd.consExConsumidor(), new Boolean[3]),
+                ensureSize3(cmd.consTiempoAbstinenciaMeses(), new Integer[3]),
+                ensureSize3(cmd.consNoConsume(), new Boolean[3]),
+                ensureSize3(cmd.afCual(), new String[3]),
+                ensureSize3(cmd.afTiempo(), new String[3]),
+                ensureSize3(cmd.medCual(), new String[3]),
+                ensureSize3(cmd.medCant(), new Integer[3]));
+    }
+
+    private void applyTabacoData(FichaOcupacional ficha, ConsumptionArrays arrays) {
+        ficha.setTabConsMeses(arrays.consTiempoConsumoMeses()[0]);
+        ficha.setTabExCons(SnUtils.fromBoolean(arrays.consExConsumidor()[0]));
+        ficha.setTabAbsMeses(arrays.consTiempoAbstinenciaMeses()[0]);
+        ficha.setTabNoCons(SnUtils.fromBoolean(arrays.consNoConsume()[0]));
+    }
+
+    private void applyAlcoholData(FichaOcupacional ficha, ConsumptionArrays arrays) {
+        ficha.setAlcConsMeses(arrays.consTiempoConsumoMeses()[1]);
+        ficha.setAlcExCons(SnUtils.fromBoolean(arrays.consExConsumidor()[1]));
+        ficha.setAlcAbsMeses(arrays.consTiempoAbstinenciaMeses()[1]);
+        ficha.setAlcNoCons(SnUtils.fromBoolean(arrays.consNoConsume()[1]));
+    }
+
+    private void applyOtrosData(FichaOcupacional ficha, Step1Command cmd, ConsumptionArrays arrays) {
+        ficha.setOtrCual(cmd.consOtrasCual());
+        ficha.setOtrConsMeses(arrays.consTiempoConsumoMeses()[2]);
+        ficha.setOtrExCons(SnUtils.fromBoolean(arrays.consExConsumidor()[2]));
+        ficha.setOtrAbsMeses(arrays.consTiempoAbstinenciaMeses()[2]);
+        ficha.setOtrNoCons(SnUtils.fromBoolean(arrays.consNoConsume()[2]));
+    }
+
+    private void applyActividadFisicaData(FichaOcupacional ficha, ConsumptionArrays arrays) {
+        ficha.setAfCual1(arrays.afCual()[0]);
+        ficha.setAfTiempo1(arrays.afTiempo()[0]);
+        ficha.setAfCual2(arrays.afCual()[1]);
+        ficha.setAfTiempo2(arrays.afTiempo()[1]);
+        ficha.setAfCual3(arrays.afCual()[2]);
+        ficha.setAfTiempo3(arrays.afTiempo()[2]);
+    }
+
+    private void applyMedicacionData(FichaOcupacional ficha, ConsumptionArrays arrays) {
+        ficha.setMedCual1(arrays.medCual()[0]);
+        ficha.setMedCant1(arrays.medCant()[0]);
+        ficha.setMedCual2(arrays.medCual()[1]);
+        ficha.setMedCant2(arrays.medCant()[1]);
+        ficha.setMedCual3(arrays.medCual()[2]);
+        ficha.setMedCant3(arrays.medCant()[2]);
     }
 
     private SignosVitales upsertVitalSigns(FichaOcupacional ficha, Step1Command cmd, Date now, String user) {
@@ -340,6 +380,17 @@ public class Step1FichaService {
     }
 
     private record PatientAssignment(PersonaAux personaAux) {
+    }
+
+    private record ConsumptionArrays(
+            Integer[] consTiempoConsumoMeses,
+            Boolean[] consExConsumidor,
+            Integer[] consTiempoAbstinenciaMeses,
+            Boolean[] consNoConsume,
+            String[] afCual,
+            String[] afTiempo,
+            String[] medCual,
+            Integer[] medCant) {
     }
 
     public static class Step1ValidationException extends RuntimeException {
