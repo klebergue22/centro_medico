@@ -199,7 +199,6 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     @Inject
     private transient CentroMedicoCalcUtil calcUtil;
     @Inject
-    @Inject
     private transient CedulaDialogStateService cedulaDialogStateService;
     @Inject
     private transient CentroMedicoFormInitializer centroMedicoFormInitializer;
@@ -209,7 +208,7 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     private transient CentroMedicoReactiveUiService reactiveUiService;
     @Inject
     private transient PacienteUiStateApplier pacienteUiStateApplier;
-    @Inject
+    
     @Inject
     private transient DiagnosticoFilaUiCoordinator diagnosticoFilaUiCoordinator;
     @Inject
