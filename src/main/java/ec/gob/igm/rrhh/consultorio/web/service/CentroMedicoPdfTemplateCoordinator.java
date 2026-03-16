@@ -26,6 +26,8 @@ import ec.gob.igm.rrhh.consultorio.web.pdf.FichaPdfTemplateService;
 import ec.gob.igm.rrhh.consultorio.web.pdf.PdfResourceResolver;
 import ec.gob.igm.rrhh.consultorio.web.pdf.PdfTemplateEngine;
 import ec.gob.igm.rrhh.consultorio.web.util.CentroMedicoViewUtils;
+import ec.gob.igm.rrhh.consultorio.web.viewstate.PdfCertificadoViewData;
+import ec.gob.igm.rrhh.consultorio.web.viewstate.PdfFichaViewData;
 
 @Stateless
 public class CentroMedicoPdfTemplateCoordinator implements Serializable {
@@ -49,6 +51,28 @@ public class CentroMedicoPdfTemplateCoordinator implements Serializable {
     @EJB
     private FichaPdfViewModelBuilder fichaPdfViewModelBuilder;
 
+    public CentroMedicoPdfWorkflowService.PrepareFichaCommandData buildPrepareFichaCommand(PdfFichaViewData viewData) {
+        PrepareFichaRequest req = new PrepareFichaRequest();
+        req.source = viewData.source;
+        req.log = viewData.log;
+        req.ficha = viewData.ficha;
+        req.empleadoSel = viewData.empleadoSel;
+        req.personaAux = viewData.personaAux;
+        req.permitirIngresoManual = viewData.permitirIngresoManual;
+        req.asegurarPersonaAuxPersistida = viewData.asegurarPersonaAuxPersistida;
+        req.centroMedicoPdfFacade = viewData.centroMedicoPdfFacade;
+        req.pdfResourceResolver = viewData.pdfResourceResolver;
+        req.syncCamposDesdeObjetos = viewData.syncCamposDesdeObjetos;
+        req.obtenerTipoEvaluacionPdf = viewData.obtenerTipoEvaluacionPdf;
+        req.recalcularIMC = viewData.recalcularIMC;
+        req.cargarAtencionPrioritaria = viewData.cargarAtencionPrioritaria;
+        req.cargarActividadLaboralArrays = viewData.cargarActividadLaboralArrays;
+        req.fallbackObservacionSupplier = viewData.fallbackObservacionSupplier;
+        req.getSafe = viewData.getSafe;
+        req.toDate = viewData.toDate;
+        return buildPrepareFichaCommand(req);
+    }
+
     public CentroMedicoPdfWorkflowService.PrepareFichaCommandData buildPrepareFichaCommand(PrepareFichaRequest req) {
         CentroMedicoPdfUiCoordinator.BuildPrepareFichaUiCommand cmd = new CentroMedicoPdfUiCoordinator.BuildPrepareFichaUiCommand();
         cmd.ficha = req.ficha;
@@ -59,6 +83,37 @@ public class CentroMedicoPdfTemplateCoordinator implements Serializable {
         cmd.htmlFichaSupplier = () -> construirHtmlFichaDesdePlantilla(req);
         cmd.centroMedicoPdfFacade = req.centroMedicoPdfFacade;
         return centroMedicoPdfUiCoordinator.buildPrepareFichaCommand(cmd);
+    }
+
+    public CentroMedicoPdfWorkflowService.PrepareCertificadoCommandData buildPrepareCertificadoCommand(PdfCertificadoViewData viewData) {
+        PrepareCertificadoRequest req = new PrepareCertificadoRequest();
+        req.ficha = viewData.ficha;
+        req.verificarFichaCompleta = viewData.verificarFichaCompleta;
+        req.fechaEmisionSetter = viewData.fechaEmisionSetter;
+        req.centroMedicoPdfFacade = viewData.centroMedicoPdfFacade;
+        req.fechaEmision = viewData.fechaEmision;
+        req.aptitudSel = viewData.aptitudSel;
+        req.tipoEval = viewData.tipoEval;
+        req.tipoEvaluacion = viewData.tipoEvaluacion;
+        req.institucion = viewData.institucion;
+        req.ruc = viewData.ruc;
+        req.noHistoria = viewData.noHistoria;
+        req.noArchivo = viewData.noArchivo;
+        req.centroTrabajo = viewData.centroTrabajo;
+        req.ciiu = viewData.ciiu;
+        req.apellido1 = viewData.apellido1;
+        req.apellido2 = viewData.apellido2;
+        req.nombre1 = viewData.nombre1;
+        req.nombre2 = viewData.nombre2;
+        req.sexo = viewData.sexo;
+        req.detalleObservaciones = viewData.detalleObservaciones;
+        req.recomendaciones = viewData.recomendaciones;
+        req.medicoNombre = viewData.medicoNombre;
+        req.medicoCodigo = viewData.medicoCodigo;
+        req.pdfResourceResolver = viewData.pdfResourceResolver;
+        req.pdfTemplateEngine = viewData.pdfTemplateEngine;
+        req.certificadoPdfTemplateService = viewData.certificadoPdfTemplateService;
+        return buildPrepareCertificadoCommand(req);
     }
 
     public CentroMedicoPdfWorkflowService.PrepareCertificadoCommandData buildPrepareCertificadoCommand(PrepareCertificadoRequest req) {
