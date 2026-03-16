@@ -87,6 +87,7 @@ import ec.gob.igm.rrhh.consultorio.web.viewstate.AtencionPrioritariaModel;
 import ec.gob.igm.rrhh.consultorio.web.viewstate.DiagnosticoFormModel;
 import ec.gob.igm.rrhh.consultorio.web.viewstate.SignosVitalesFormModel;
 import ec.gob.igm.rrhh.consultorio.web.viewstate.Step3FormModel;
+import ec.gob.igm.rrhh.consultorio.web.viewstate.WizardViewState;
 
 /**
  * Controlador principal de la vista del Centro Médico: orquesta el flujo del
@@ -228,15 +229,10 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     private final DiagnosticoFormModel diagnosticoFormModel = new DiagnosticoFormModel();
     private final PdfPreviewState pdfPreviewState = new PdfPreviewState();
     private final PacienteViewState pacienteViewState = new PacienteViewState();
+    private final WizardViewState wizardViewState = new WizardViewState();
 
     // =========================
     // VARIABLES DE ESTADO DEL WIZARD
-    // =========================
-    private String activeStep = "step1";
-    private boolean cedulaDlgAutoOpened = false;
-    private int stepIndex = 1;
-    private boolean preRenderDone = false;
-
     // =========================
     // VARIABLES DE DIÁLOGO
     // =========================
@@ -508,41 +504,41 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     // =========================
     public String onFlow(FlowEvent event) {
         final String nextStep = event.getNewStep();
-        this.activeStep = nextStep;
+        this.wizardViewState.setActiveStep(nextStep);
         if ("step1".equals(nextStep)) {
-            cedulaDlgAutoOpened = false;
+            wizardViewState.setCedulaDlgAutoOpened(false);
         }
         return nextStep;
     }
 
     public void retrocederStep() {
-        activeStep = wizardNavigationCoordinator.retrocederStep(activeStep);
+        wizardViewState.setActiveStep(wizardNavigationCoordinator.retrocederStep(wizardViewState.getActiveStep()));
     }
 
     public void guardarStepActual() {
-        LOG.info(">>> ENTRO A guardarStepActual, step={}", activeStep);
+        LOG.info(">>> ENTRO A guardarStepActual, step={}", wizardViewState.getActiveStep());
         controllerActionTemplate.executeWithResult(
                 "guardarStepActual",
                 () -> {
                     centroMedicoWizardFacade.guardarStepActual(
                             new CentroMedicoWizardFacade.GuardarStepActualCommand(
-                                    activeStep,
+                                    wizardViewState.getActiveStep(),
                                     this::guardarStep1,
                                     this::guardarStep2,
                                     this::guardarStep3,
-                                    next -> this.activeStep = next,
+                                    wizardViewState::setActiveStep,
                                     "@([id$=wdzFicha])",
                                     this::resetStep4PdfState,
                                     this::applyStep4State,
                                     ficha,
                                     this::buildPrepareFichaCommand,
                                     this::buildPrepareCertificadoCommand));
-                    return activeStep;
+                    return wizardViewState.getActiveStep();
                 },
                 ignored -> {
                 },
                 LOG,
-                activeStep,
+                wizardViewState.getActiveStep(),
                 noPersonaSel,
                 cedulaBusqueda);
     }
@@ -627,7 +623,7 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
                 },
                 () -> messageService.info("Step 1 guardado correctamente (BORRADOR)."),
                 LOG,
-                activeStep,
+                wizardViewState.getActiveStep(),
                 noPersonaSel,
                 cedulaBusqueda);
     }
@@ -668,7 +664,7 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
                     }
                 },
                 LOG,
-                activeStep,
+                wizardViewState.getActiveStep(),
                 noPersonaSel,
                 cedulaBusqueda);
     }
@@ -709,7 +705,7 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
                     }
                 },
                 LOG,
-                activeStep,
+                wizardViewState.getActiveStep(),
                 noPersonaSel,
                 cedulaBusqueda);
     }
@@ -784,7 +780,7 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
                         new CentroMedicoPdfWorkflowService.PrepareFichaFlowCommand(buildPrepareFichaCommand())),
                 this::onPrepararFichaPdfSuccess,
                 LOG,
-                activeStep,
+                wizardViewState.getActiveStep(),
                 noPersonaSel,
                 cedulaBusqueda);
     }
@@ -795,7 +791,7 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
                 FacesContext.getCurrentInstance(),
                 pdfPreviewState,
                 value -> this.ficha = value,
-                value -> this.activeStep = value,
+                wizardViewState::setActiveStep,
                 value -> this.mostrarDlgCedula = value);
     }
 
@@ -817,7 +813,7 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
                                 buildPrepareCertificadoCommand())),
                 this::onPrepararCertificadoPdfSuccess,
                 LOG,
-                activeStep,
+                wizardViewState.getActiveStep(),
                 noPersonaSel,
                 cedulaBusqueda);
     }
@@ -845,7 +841,7 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
                                 buildPrepareCertificadoCommand())),
                 this::onPrepararVistaPreviaSuccess,
                 LOG,
-                activeStep,
+                wizardViewState.getActiveStep(),
                 noPersonaSel,
                 cedulaBusqueda);
     }
@@ -891,7 +887,7 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
                 state,
                 pdfPreviewState,
                 value -> this.ficha = value,
-                value -> this.activeStep = value,
+                wizardViewState::setActiveStep,
                 value -> this.mostrarDlgCedula = value);
     }
 
@@ -900,7 +896,7 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
                 centroMedicoPdfUiCoordinator,
                 pdfPreviewState,
                 value -> this.ficha = value,
-                value -> this.activeStep = value,
+                wizardViewState::setActiveStep,
                 value -> this.mostrarDlgCedula = value);
     }
 
@@ -910,7 +906,7 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
                 state,
                 pdfPreviewState,
                 value -> this.ficha = value,
-                value -> this.activeStep = value,
+                wizardViewState::setActiveStep,
                 value -> this.mostrarDlgCedula = value);
     }
 
@@ -919,7 +915,7 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
                 centroMedicoPdfUiCoordinator,
                 pdfPreviewState,
                 value -> this.ficha = value,
-                value -> this.activeStep = value,
+                wizardViewState::setActiveStep,
                 value -> this.mostrarDlgCedula = value);
     }
 
@@ -1059,19 +1055,19 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     public void autoOpenCedulaIfNeeded() {
         CedulaDialogStateService.AutoOpenState state = cedulaDialogControllerSupport.autoOpenIfNeeded(
                 cedulaDialogStateService,
-                activeStep,
+                wizardViewState.getActiveStep(),
                 mostrarDlgCedula,
-                cedulaDlgAutoOpened);
-        cedulaDlgAutoOpened = state.isAutoOpened();
+                wizardViewState.isCedulaDlgAutoOpened());
+        wizardViewState.setCedulaDlgAutoOpened(state.isAutoOpened());
     }
 
     public void consumirAutoOpenCedulaDlg() {
         CedulaDialogStateService.AutoOpenState state = cedulaDialogControllerSupport.consumeAutoOpen(
                 cedulaDialogStateService,
-                activeStep,
+                wizardViewState.getActiveStep(),
                 empleadoSel == null,
-                cedulaDlgAutoOpened);
-        cedulaDlgAutoOpened = state.isAutoOpened();
+                wizardViewState.isCedulaDlgAutoOpened());
+        wizardViewState.setCedulaDlgAutoOpened(state.isAutoOpened());
     }
 
     // =========================
@@ -1162,11 +1158,11 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     }
 
     public String getStepProcessId() {
-        return "@([id$=" + activeStep + "])";
+        return "@([id$=" + wizardViewState.getActiveStep() + "])";
     }
 
     public String getProcessStepId() {
-        return ":wiz:" + activeStep;
+        return ":wiz:" + wizardViewState.getActiveStep();
     }
 
     public long getTs() {
@@ -1251,19 +1247,19 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     }
 
     public String getStepActual() {
-        return activeStep;
+        return wizardViewState.getActiveStep();
     }
 
     public void setStepActual(String stepActual) {
-        this.activeStep = stepActual;
+        wizardViewState.setActiveStep(stepActual);
     }
 
     public String getActiveStep() {
-        return this.activeStep;
+        return wizardViewState.getActiveStep();
     }
 
     public void setActiveStep(String activeStep) {
-        this.activeStep = activeStep;
+        wizardViewState.setActiveStep(activeStep);
     }
 
     public Date getFechaAtencion() {
@@ -1311,11 +1307,11 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     }
 
     public int getStepIndex() {
-        return stepIndex;
+        return wizardViewState.getStepIndex();
     }
 
     public void setStepIndex(int stepIndex) {
-        this.stepIndex = stepIndex;
+        wizardViewState.setStepIndex(stepIndex);
     }
 
     public Integer[] getConsTiempoConsumo() {
@@ -2193,19 +2189,19 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     }
 
     public boolean isCedulaDlgAutoOpened() {
-        return cedulaDlgAutoOpened;
+        return wizardViewState.isCedulaDlgAutoOpened();
     }
 
     public void setCedulaDlgAutoOpened(boolean cedulaDlgAutoOpened) {
-        this.cedulaDlgAutoOpened = cedulaDlgAutoOpened;
+        wizardViewState.setCedulaDlgAutoOpened(cedulaDlgAutoOpened);
     }
 
     public boolean isPreRenderDone() {
-        return preRenderDone;
+        return wizardViewState.isPreRenderDone();
     }
 
     public void setPreRenderDone(boolean preRenderDone) {
-        this.preRenderDone = preRenderDone;
+        wizardViewState.setPreRenderDone(preRenderDone);
     }
 
     public boolean isMostrarDiaLOGoAux() {
