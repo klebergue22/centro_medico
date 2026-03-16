@@ -5,6 +5,7 @@ import java.io.Serializable;
 import ec.gob.igm.rrhh.consultorio.domain.model.ConsultaDiagnostico;
 import ec.gob.igm.rrhh.consultorio.domain.model.FichaOcupacional;
 import ec.gob.igm.rrhh.consultorio.domain.model.FichaRiesgo;
+import ec.gob.igm.rrhh.consultorio.service.FichaOcupacionalService;
 import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoValidationCoordinator;
 import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoValidationCoordinator.FichaCompletaValidationInput;
 import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoValidationCoordinator.Step1ValidationInput;
@@ -37,6 +38,8 @@ public class WizardSectionFacade implements Serializable {
     private Step2OrchestratorService step2OrchestratorService;
     @EJB
     private Step3OrchestratorService step3OrchestratorService;
+    @EJB
+    private FichaOcupacionalService fichaOcupacionalService;
 
     public String retrocederStep(String activeStep) { return wizardNavigationCoordinator.retrocederStep(activeStep); }
     public void guardarStepActual(CentroMedicoWizardFacade.GuardarStepActualCommand cmd) { centroMedicoWizardFacade.guardarStepActual(cmd); }
@@ -53,6 +56,7 @@ public class WizardSectionFacade implements Serializable {
     public Step1Facade.SaveStep1Result guardarStep1(Step1Facade.SaveStep1Command cmd) { return step1Facade.guardar(cmd); }
     public FichaRiesgo guardarStep2(Step2RiskCommand cmd) { return step2OrchestratorService.save(cmd); }
     public FichaOcupacional guardarStep3(Step3SaveCommand command) { return step3OrchestratorService.saveStep3(command); }
+    public FichaOcupacional recargarFicha(Long idFicha) { return fichaOcupacionalService.findById(idFicha); }
 
     public void registrarAuditoria(String accion, String entidad, String recurso, String detalle) {
         auditFacade.registrar(accion, entidad, recurso, detalle);
