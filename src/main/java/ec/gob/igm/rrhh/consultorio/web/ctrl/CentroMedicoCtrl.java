@@ -72,7 +72,7 @@ import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoPdfFacadeService;
 import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoPdfTemplateCoordinator;
 import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoPdfUiCoordinator;
 import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoWizardNavigationCoordinator;
-import ec.gob.igm.rrhh.consultorio.web.facade.CentroMedicoWizardFacade;
+import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoWizardFacade;
 import ec.gob.igm.rrhh.consultorio.web.service.DiagnosticoFilaUiCoordinator;
 import ec.gob.igm.rrhh.consultorio.web.service.FichaPdfDataMapper;
 import ec.gob.igm.rrhh.consultorio.web.service.FichaPdfMappedData;
@@ -93,7 +93,11 @@ import ec.gob.igm.rrhh.consultorio.web.validation.Step2Validator;
 import ec.gob.igm.rrhh.consultorio.web.validation.Step3Validator;
 import ec.gob.igm.rrhh.consultorio.web.validation.ValidationResult;
 import ec.gob.igm.rrhh.consultorio.web.viewstate.PacienteViewState;
+import ec.gob.igm.rrhh.consultorio.web.viewstate.PdfCertificadoViewData;
+import ec.gob.igm.rrhh.consultorio.web.viewstate.PdfFichaViewData;
 import ec.gob.igm.rrhh.consultorio.web.viewstate.PdfPreviewState;
+import ec.gob.igm.rrhh.consultorio.web.viewstate.Step1ViewData;
+import ec.gob.igm.rrhh.consultorio.web.viewstate.Step3ViewData;
 import ec.gob.igm.rrhh.consultorio.web.viewstate.Step1FormModel;
 import ec.gob.igm.rrhh.consultorio.web.viewstate.Step2FormModel;
 import ec.gob.igm.rrhh.consultorio.web.viewstate.Step3FormModel;
@@ -699,68 +703,7 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
                 ficha,
                 personaAux));
 
-        Step1FichaService.Step1Command command = step1CommandAssembler.toCommand(
-                ficha,
-                empleadoSel,
-                personaAux,
-                signos,
-                noPersonaSel,
-                fechaAtencion,
-                tipoEval,
-                paStr,
-                temp,
-                fc,
-                fr,
-                satO2,
-                peso,
-                tallaCm,
-                perimetroAbd,
-                apEmbarazada,
-                apDiscapacidad,
-                apCatastrofica,
-                apLactancia,
-                apAdultoMayor,
-                antClinicoQuirurgico,
-                antFamiliares,
-                condicionEspecial,
-                autorizaTransfusion,
-                tratamientoHormonal,
-                tratamientoHormonalCual,
-                examenReproMasculino,
-                tiempoReproMasculino,
-                ginecoExamen1,
-                ginecoTiempo1,
-                ginecoResultado1,
-                ginecoExamen2,
-                ginecoTiempo2,
-                ginecoResultado2,
-                ginecoObservacion,
-                fum,
-                gestas,
-                partos,
-                cesareas,
-                abortos,
-                planificacion,
-                planificacionCual,
-                discapTipo,
-                discapDesc,
-                discapPorc,
-                catasDiagnostico,
-                catasCalificada,
-                nRealizaEvaluacion,
-                nRelacionTrabajo,
-                nObsRetiro,
-                consTiempoConsumoMeses,
-                consExConsumidor,
-                consTiempoAbstinenciaMeses,
-                consNoConsume,
-                consOtrasCual,
-                afCual,
-                afTiempo,
-                medCual,
-                medCant,
-                consumoVidaCondObs,
-                usuarioReal());
+        Step1FichaService.Step1Command command = step1CommandAssembler.toCommand(captureStep1ViewData());
 
         try {
             Step1FichaService.Step1Result result = step1FichaService.guardar(command);
@@ -868,38 +811,7 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
 
         try {
             ficha = step3OrchestratorService.saveStep3(step3CommandAssembler.toCommand(
-                    ficha,
-                    codCie10Ppal,
-                    obsExamenFisico,
-                    aptitudSel,
-                    detalleObservaciones,
-                    recomendaciones,
-                    nObsRetiro,
-                    medicoNombre,
-                    medicoCodigo,
-                    fechaEmision,
-                    now,
-                    user,
-                    this::asegurarPersonaAuxPersistida,
-                    () -> centroMedicoFormStateService.ensureActLabSize(this, H_ROWS),
-                    actLabCentroTrabajo,
-                    actLabActividad,
-                    actLabTiempo,
-                    actLabTrabajoAnterior,
-                    actLabTrabajoActual,
-                    actLabIncidenteChk,
-                    actLabAccidenteChk,
-                    actLabEnfermedadChk,
-                    iessFecha,
-                    iessEspecificar,
-                    actLabObservaciones,
-                    tipoAct,
-                    fechaAct,
-                    descAct,
-                    examNombre,
-                    examFecha,
-                    examResultado,
-                    listaDiag));
+                    captureStep3ViewData(now, user)));
         } catch (IllegalArgumentException ex) {
             fail(ex.getMessage());
         }
@@ -912,6 +824,85 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
         if (ficha == null || ficha.getIdFicha() == null) {
             throw new BusinessValidationException("Primero debe existir y estar guardada la ficha (ID_FICHA).");
         }
+    }
+
+    private Step1ViewData captureStep1ViewData() {
+        return new Step1ViewData(
+                ficha, empleadoSel, personaAux, signos, noPersonaSel, fechaAtencion, tipoEval, paStr, temp, fc, fr, satO2,
+                peso, tallaCm, perimetroAbd, apEmbarazada, apDiscapacidad, apCatastrofica, apLactancia, apAdultoMayor,
+                antClinicoQuirurgico, antFamiliares, condicionEspecial, autorizaTransfusion, tratamientoHormonal,
+                tratamientoHormonalCual, examenReproMasculino, tiempoReproMasculino, ginecoExamen1, ginecoTiempo1,
+                ginecoResultado1, ginecoExamen2, ginecoTiempo2, ginecoResultado2, ginecoObservacion, fum, gestas,
+                partos, cesareas, abortos, planificacion, planificacionCual, discapTipo, discapDesc, discapPorc,
+                catasDiagnostico, catasCalificada, nRealizaEvaluacion, nRelacionTrabajo, nObsRetiro,
+                consTiempoConsumoMeses, consExConsumidor, consTiempoAbstinenciaMeses, consNoConsume, consOtrasCual,
+                afCual, afTiempo, medCual, medCant, consumoVidaCondObs, usuarioReal());
+    }
+
+    private Step3ViewData captureStep3ViewData(Date now, String user) {
+        return new Step3ViewData(
+                ficha, codCie10Ppal, obsExamenFisico, aptitudSel, detalleObservaciones, recomendaciones, nObsRetiro,
+                medicoNombre, medicoCodigo, fechaEmision, now, user, this::asegurarPersonaAuxPersistida,
+                () -> centroMedicoFormStateService.ensureActLabSize(this, H_ROWS),
+                actLabCentroTrabajo, actLabActividad, actLabTiempo, actLabTrabajoAnterior, actLabTrabajoActual,
+                actLabIncidenteChk, actLabAccidenteChk, actLabEnfermedadChk, iessFecha, iessEspecificar,
+                actLabObservaciones, tipoAct, fechaAct, descAct, examNombre, examFecha, examResultado, listaDiag);
+    }
+
+    private PdfFichaViewData capturePdfFichaViewData() {
+        return new PdfFichaViewData(
+                this,
+                LOG,
+                ficha,
+                empleadoSel,
+                personaAux,
+                permitirIngresoManual,
+                this::asegurarPersonaAuxPersistida,
+                centroMedicoPdfFacade,
+                pdfResourceResolver,
+                this::syncCamposDesdeObjetosInternal,
+                this::obtenerTipoEvaluacionPdf,
+                this::recalcularIMC,
+                this::cargarAtencionPrioritaria,
+                this::cargarActividadLaboralArrays,
+                () -> getFichaStringByReflection(ficha,
+                        "getDetalleObs",
+                        "getDetalleObservaciones",
+                        "getObservaciones",
+                        "getObs",
+                        "getObservacion"),
+                CentroMedicoViewUtils::getSafe,
+                this::toDate);
+    }
+
+    private PdfCertificadoViewData capturePdfCertificadoViewData() {
+        return new PdfCertificadoViewData(
+                ficha,
+                this::verificarFichaCompleta,
+                fecha -> this.fechaEmision = fecha,
+                centroMedicoPdfFacade,
+                fechaEmision,
+                aptitudSel,
+                tipoEval,
+                tipoEvaluacion,
+                institucion,
+                ruc,
+                noHistoria,
+                noArchivo,
+                centroTrabajo,
+                ciiu,
+                apellido1,
+                apellido2,
+                nombre1,
+                nombre2,
+                sexo,
+                detalleObservaciones,
+                recomendaciones,
+                medicoNombre,
+                medicoCodigo,
+                pdfResourceResolver,
+                pdfTemplateEngine,
+                certificadoPdfTemplateService);
     }
 
     // =========================
@@ -1036,61 +1027,11 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     // PDF - MÉTODOS DE CONSTRUCCIÓN
     // =========================
     private CentroMedicoPdfWorkflowService.PrepareFichaCommandData buildPrepareFichaCommand() {
-        CentroMedicoPdfTemplateCoordinator.PrepareFichaRequest req = new CentroMedicoPdfTemplateCoordinator.PrepareFichaRequest();
-        req.source = this;
-        req.log = LOG;
-        req.ficha = ficha;
-        req.empleadoSel = empleadoSel;
-        req.personaAux = personaAux;
-        req.permitirIngresoManual = permitirIngresoManual;
-        req.asegurarPersonaAuxPersistida = this::asegurarPersonaAuxPersistida;
-        req.centroMedicoPdfFacade = centroMedicoPdfFacade;
-        req.pdfResourceResolver = pdfResourceResolver;
-        req.syncCamposDesdeObjetos = this::syncCamposDesdeObjetosInternal;
-        req.obtenerTipoEvaluacionPdf = this::obtenerTipoEvaluacionPdf;
-        req.recalcularIMC = this::recalcularIMC;
-        req.cargarAtencionPrioritaria = this::cargarAtencionPrioritaria;
-        req.cargarActividadLaboralArrays = this::cargarActividadLaboralArrays;
-        req.fallbackObservacionSupplier = () -> getFichaStringByReflection(ficha,
-                "getDetalleObs",
-                "getDetalleObservaciones",
-                "getObservaciones",
-                "getObs",
-                "getObservacion");
-        req.getSafe = CentroMedicoViewUtils::getSafe;
-        req.toDate = this::toDate;
-        return centroMedicoPdfTemplateCoordinator.buildPrepareFichaCommand(req);
+        return centroMedicoPdfTemplateCoordinator.buildPrepareFichaCommand(capturePdfFichaViewData());
     }
 
     private CentroMedicoPdfWorkflowService.PrepareCertificadoCommandData buildPrepareCertificadoCommand() {
-        CentroMedicoPdfTemplateCoordinator.PrepareCertificadoRequest req = new CentroMedicoPdfTemplateCoordinator.PrepareCertificadoRequest();
-        req.ficha = ficha;
-        req.verificarFichaCompleta = this::verificarFichaCompleta;
-        req.fechaEmisionSetter = fecha -> this.fechaEmision = fecha;
-        req.centroMedicoPdfFacade = centroMedicoPdfFacade;
-        req.fechaEmision = fechaEmision;
-        req.aptitudSel = aptitudSel;
-        req.tipoEval = tipoEval;
-        req.tipoEvaluacion = tipoEvaluacion;
-        req.institucion = institucion;
-        req.ruc = ruc;
-        req.noHistoria = noHistoria;
-        req.noArchivo = noArchivo;
-        req.centroTrabajo = centroTrabajo;
-        req.ciiu = ciiu;
-        req.apellido1 = apellido1;
-        req.apellido2 = apellido2;
-        req.nombre1 = nombre1;
-        req.nombre2 = nombre2;
-        req.sexo = sexo;
-        req.detalleObservaciones = detalleObservaciones;
-        req.recomendaciones = recomendaciones;
-        req.medicoNombre = medicoNombre;
-        req.medicoCodigo = medicoCodigo;
-        req.pdfResourceResolver = pdfResourceResolver;
-        req.pdfTemplateEngine = pdfTemplateEngine;
-        req.certificadoPdfTemplateService = certificadoPdfTemplateService;
-        return centroMedicoPdfTemplateCoordinator.buildPrepareCertificadoCommand(req);
+        return centroMedicoPdfTemplateCoordinator.buildPrepareCertificadoCommand(capturePdfCertificadoViewData());
     }
 
     private void applyPdfUiState(CentroMedicoPdfUiCoordinator.PdfUiState state) {
