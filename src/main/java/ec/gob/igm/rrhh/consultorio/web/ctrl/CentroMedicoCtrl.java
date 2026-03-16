@@ -70,6 +70,7 @@ import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoPdfWorkflowService;
 import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoPdfFacadeService;
 import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoPdfTemplateCoordinator;
 import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoPdfUiCoordinator;
+import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoReactiveUiService;
 import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoWizardNavigationCoordinator;
 import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoValidationCoordinator;
 import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoValidationCoordinator.FichaCompletaValidationInput;
@@ -209,6 +210,8 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     private transient CentroMedicoFormInitializer centroMedicoFormInitializer;
     @Inject
     private transient CentroMedicoFormStateService centroMedicoFormStateService;
+    @Inject
+    private transient CentroMedicoReactiveUiService reactiveUiService;
     @Inject
     private transient PacienteUiStateApplier pacienteUiStateApplier;
     @Inject
@@ -1411,10 +1414,9 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     }
 
     private void recalculateEdadAndNotify() {
-        this.edad = calcUtil.calcularEdad(this.fechaNacimiento);
-        FacesContext.getCurrentInstance().addMessage(null,
-                new FacesMessage(FacesMessage.SEVERITY_INFO, "Cálculo de edad",
-                        "Edad calculada: " + (edad == null ? "(sin fecha)" : edad + " años")));
+        this.edad = reactiveUiService.recalculateEdad(this.fechaNacimiento, calcUtil);
+        messageService.addMsg(FacesMessage.SEVERITY_INFO, "Cálculo de edad",
+                reactiveUiService.buildEdadCalculationMessage(edad));
     }
 
     public void calcularEdad() {
@@ -1426,7 +1428,7 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     }
 
     public void validarEdadMinima() {
-        if (!calcUtil.validarEdadMinima(edad)) {
+        if (!reactiveUiService.validarEdadMinima(edad, calcUtil)) {
             messageService.error("La edad debe ser ≥ 18 años");
             fechaNacimiento = null;
             edad = null;
@@ -1434,7 +1436,7 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     }
 
     public void recalcularIMC() {
-        this.imc = calcUtil.recalcularIMC(peso, tallaCm);
+        this.imc = reactiveUiService.recalculateImc(peso, tallaCm, calcUtil);
     }
 
     private void registrarAuditoria(String accion, String tabla, String campo, String observaciones) {
@@ -1508,28 +1510,38 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     }
 
     public void onNoConsumeChange(int idx) {
-        if (Boolean.TRUE.equals(consNoConsume[idx])) {
-            consExConsumidor[idx] = false;
-            consTiempoConsumoMeses[idx] = 0;
-            consTiempoAbstinenciaMeses[idx] = 0;
-        }
+        reactiveUiService.onNoConsumeChange(
+                consNoConsume,
+                consExConsumidor,
+                consTiempoConsumoMeses,
+                consTiempoAbstinenciaMeses,
+                idx);
     }
 
     // =========================
     // ATENCIÓN PRIORITARIA - TOGGLES
     // =========================
     public void onToggleDiscapacidad() {
+        CentroMedicoReactiveUiService.AttentionPriorityState state = reactiveUiService.onToggleDiscapacidad(
+                apDiscapacidad,
+                discapTipo,
+                discapDesc,
+                discapPorc);
         if (!apDiscapacidad) {
-            discapTipo = null;
-            discapDesc = null;
-            discapPorc = null;
+            discapTipo = state.getDiscapTipo();
+            discapDesc = state.getDiscapDesc();
+            discapPorc = state.getDiscapPorc();
         }
     }
 
     public void onToggleCatastrofica() {
+        CentroMedicoReactiveUiService.AttentionPriorityState state = reactiveUiService.onToggleCatastrofica(
+                apCatastrofica,
+                catasDiagnostico,
+                catasCalificada);
         if (!apCatastrofica) {
-            catasDiagnostico = null;
-            catasCalificada = null;
+            catasDiagnostico = state.getCatasDiagnostico();
+            catasCalificada = state.getCatasCalificada();
         }
     }
 
