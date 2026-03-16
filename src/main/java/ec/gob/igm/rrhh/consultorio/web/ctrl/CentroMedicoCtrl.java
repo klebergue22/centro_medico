@@ -49,7 +49,12 @@ import ec.gob.igm.rrhh.consultorio.web.facade.CentroMedicoPdfFacade;
 import ec.gob.igm.rrhh.consultorio.web.jsf.CentroMedicoMessageService;
 import ec.gob.igm.rrhh.consultorio.web.facade.PacienteRegistrationFacade;
 import ec.gob.igm.rrhh.consultorio.web.mapper.Step1CommandAssembler;
+import ec.gob.igm.rrhh.consultorio.web.mapper.Step1ViewDataAssembler;
 import ec.gob.igm.rrhh.consultorio.web.mapper.Step3CommandAssembler;
+import ec.gob.igm.rrhh.consultorio.web.mapper.Step3ViewDataAssembler;
+import ec.gob.igm.rrhh.consultorio.web.mapper.PacienteSearchInputAssembler;
+import ec.gob.igm.rrhh.consultorio.web.mapper.PdfCertificadoInputAssembler;
+import ec.gob.igm.rrhh.consultorio.web.mapper.PdfFichaInputAssembler;
 import ec.gob.igm.rrhh.consultorio.web.audit.CentroMedicoAuditService;
 import ec.gob.igm.rrhh.consultorio.web.pdf.CertificadoPdfTemplateService;
 import ec.gob.igm.rrhh.consultorio.web.pdf.FichaPdfContextAssembler;
@@ -90,8 +95,6 @@ import ec.gob.igm.rrhh.consultorio.web.viewstate.PacienteFormData;
 import ec.gob.igm.rrhh.consultorio.web.viewstate.PdfCertificadoViewData;
 import ec.gob.igm.rrhh.consultorio.web.viewstate.PdfFichaViewData;
 import ec.gob.igm.rrhh.consultorio.web.viewstate.PdfPreviewState;
-import ec.gob.igm.rrhh.consultorio.web.viewstate.Step1ViewData;
-import ec.gob.igm.rrhh.consultorio.web.viewstate.Step3ViewData;
 import ec.gob.igm.rrhh.consultorio.web.viewstate.Step1FormModel;
 import ec.gob.igm.rrhh.consultorio.web.viewstate.Step2FormModel;
 import ec.gob.igm.rrhh.consultorio.web.viewstate.Step3FormModel;
@@ -216,7 +219,17 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     @Inject
     private transient Step1CommandAssembler step1CommandAssembler;
     @Inject
+    private transient Step1ViewDataAssembler step1ViewDataAssembler;
+    @Inject
     private transient Step3CommandAssembler step3CommandAssembler;
+    @Inject
+    private transient Step3ViewDataAssembler step3ViewDataAssembler;
+    @Inject
+    private transient PdfFichaInputAssembler pdfFichaInputAssembler;
+    @Inject
+    private transient PdfCertificadoInputAssembler pdfCertificadoInputAssembler;
+    @Inject
+    private transient PacienteSearchInputAssembler pacienteSearchInputAssembler;
     @Inject
     private transient CentroMedicoPdfUiCoordinator centroMedicoPdfUiCoordinator;
     @Inject
@@ -679,7 +692,9 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
                 ficha,
                 personaAux));
 
-        Step1FichaService.Step1Command command = step1CommandAssembler.toCommand(captureStep1ViewData());
+        final String user = usuarioReal();
+        Step1FichaService.Step1Command command = step1CommandAssembler.toCommand(
+                step1ViewDataAssembler.capture(this, user));
 
         try {
             Step1FichaService.Step1Result result = step1FichaService.guardar(command);
@@ -783,7 +798,8 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
 
         try {
             ficha = step3OrchestratorService.saveStep3(step3CommandAssembler.toCommand(
-                    captureStep3ViewData(now, user)));
+                    step3ViewDataAssembler.capture(this, now, user, this::asegurarPersonaAuxPersistida,
+                            () -> centroMedicoFormStateService.ensureActLabSize(this, H_ROWS))));
         } catch (IllegalArgumentException ex) {
             fail(ex.getMessage());
         }
@@ -798,109 +814,27 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
         }
     }
 
-    private Step1ViewData captureStep1ViewData() {
-        return new Step1ViewData(
-                ficha, empleadoSel, personaAux, signos, noPersonaSel, fechaAtencion, tipoEval, paStr, temp, fc, fr, satO2,
-                peso, tallaCm, perimetroAbd, apEmbarazada, apDiscapacidad, apCatastrofica, apLactancia, apAdultoMayor,
-                antClinicoQuirurgico, antFamiliares, condicionEspecial, autorizaTransfusion, tratamientoHormonal,
-                tratamientoHormonalCual, examenReproMasculino, tiempoReproMasculino, ginecoExamen1, ginecoTiempo1,
-                ginecoResultado1, ginecoExamen2, ginecoTiempo2, ginecoResultado2, ginecoObservacion, fum, gestas,
-                partos, cesareas, abortos, planificacion, planificacionCual, discapTipo, discapDesc, discapPorc,
-                catasDiagnostico, catasCalificada, nRealizaEvaluacion, nRelacionTrabajo, nObsRetiro,
-                consTiempoConsumoMeses, consExConsumidor, consTiempoAbstinenciaMeses, consNoConsume, consOtrasCual,
-                afCual, afTiempo, medCual, medCant, consumoVidaCondObs, usuarioReal());
-    }
-
-    private Step3ViewData captureStep3ViewData(Date now, String user) {
-        return new Step3ViewData(
-                ficha, step3FormModel.getCodCie10Ppal(), obsExamenFisico, aptitudSel, detalleObservaciones, recomendaciones, nObsRetiro,
-                medicoNombre, medicoCodigo, fechaEmision, now, user, this::asegurarPersonaAuxPersistida,
-                () -> centroMedicoFormStateService.ensureActLabSize(this, H_ROWS),
-                actLabCentroTrabajo, actLabActividad, actLabTiempo, actLabTrabajoAnterior, actLabTrabajoActual,
-                actLabIncidenteChk, actLabAccidenteChk, actLabEnfermedadChk, iessFecha, iessEspecificar,
-                actLabObservaciones, tipoAct, fechaAct, descAct, examNombre, examFecha, examResultado,
-                step3FormModel.getListaDiag());
-    }
-
     private PdfFichaViewData capturePdfFichaViewData() {
-        CentroMedicoPdfControllerSupport.CapturePdfFichaInput input = buildBasePdfFichaInput();
-        populatePdfFichaAttentionFlags(input);
-        populatePdfFichaWorkRiskData(input);
-        return centroMedicoPdfControllerSupport.capturePdfFichaViewData(input);
-    }
-
-    private CentroMedicoPdfControllerSupport.CapturePdfFichaInput buildBasePdfFichaInput() {
-        CentroMedicoPdfControllerSupport.CapturePdfFichaInput input = new CentroMedicoPdfControllerSupport.CapturePdfFichaInput();
-        input.source = this;
-        input.log = LOG;
-        input.ficha = ficha;
-        input.empleadoSel = empleadoSel;
-        input.personaAux = personaAux;
-        input.permitirIngresoManual = permitirIngresoManual;
-        input.asegurarPersonaAuxPersistida = this::asegurarPersonaAuxPersistida;
-        input.centroMedicoPdfFacade = centroMedicoPdfFacade;
-        input.pdfResourceResolver = pdfResourceResolver;
-        input.syncCamposDesdeObjetos = this::syncCamposDesdeObjetosInternal;
-        input.tipoEval = tipoEval;
-        input.tipoEvaluacion = tipoEvaluacion;
-        input.recalcularIMC = this::recalcularIMC;
-        return input;
-    }
-
-    private void populatePdfFichaAttentionFlags(CentroMedicoPdfControllerSupport.CapturePdfFichaInput input) {
-        input.apDiscapacidad = apDiscapacidad;
-        input.apCatastrofica = apCatastrofica;
-        input.apEmbarazada = apEmbarazada;
-        input.apLactancia = apLactancia;
-        input.apAdultoMayor = apAdultoMayor;
-        input.hRows = H_ROWS;
-    }
-
-    private void populatePdfFichaWorkRiskData(CentroMedicoPdfControllerSupport.CapturePdfFichaInput input) {
-        input.actLabCentroTrabajo = actLabCentroTrabajo;
-        input.actLabActividad = actLabActividad;
-        input.actLabTiempo = actLabTiempo;
-        input.actLabTrabajoAnterior = actLabTrabajoAnterior;
-        input.actLabTrabajoActual = actLabTrabajoActual;
-        input.actLabIncidenteChk = actLabIncidenteChk;
-        input.actLabAccidenteChk = actLabAccidenteChk;
-        input.actLabEnfermedadChk = actLabEnfermedadChk;
-        input.iessSi = iessSi;
-        input.iessNo = iessNo;
-        input.iessFecha = iessFecha;
-        input.iessEspecificar = iessEspecificar;
-        input.actLabObservaciones = actLabObservaciones;
+        return centroMedicoPdfControllerSupport.capturePdfFichaViewData(
+                pdfFichaInputAssembler.capture(this,
+                        LOG,
+                        this::asegurarPersonaAuxPersistida,
+                        this::syncCamposDesdeObjetosInternal,
+                        this::recalcularIMC,
+                        centroMedicoPdfFacade,
+                        pdfResourceResolver,
+                        H_ROWS));
     }
 
     private PdfCertificadoViewData capturePdfCertificadoViewData() {
-        CentroMedicoPdfControllerSupport.CapturePdfCertificadoInput input = new CentroMedicoPdfControllerSupport.CapturePdfCertificadoInput();
-        input.ficha = ficha;
-        input.verificarFichaCompleta = this::verificarFichaCompleta;
-        input.fechaEmisionSetter = fecha -> this.fechaEmision = fecha;
-        input.centroMedicoPdfFacade = centroMedicoPdfFacade;
-        input.fechaEmision = fechaEmision;
-        input.aptitudSel = aptitudSel;
-        input.tipoEval = tipoEval;
-        input.tipoEvaluacion = tipoEvaluacion;
-        input.institucion = institucion;
-        input.ruc = ruc;
-        input.noHistoria = noHistoria;
-        input.noArchivo = noArchivo;
-        input.centroTrabajo = centroTrabajo;
-        input.ciiu = ciiu;
-        input.apellido1 = pacienteFormData.getApellido1();
-        input.apellido2 = pacienteFormData.getApellido2();
-        input.nombre1 = pacienteFormData.getNombre1();
-        input.nombre2 = pacienteFormData.getNombre2();
-        input.sexo = pacienteFormData.getSexo();
-        input.detalleObservaciones = detalleObservaciones;
-        input.recomendaciones = recomendaciones;
-        input.medicoNombre = medicoNombre;
-        input.medicoCodigo = medicoCodigo;
-        input.pdfResourceResolver = pdfResourceResolver;
-        input.pdfTemplateEngine = pdfTemplateEngine;
-        input.certificadoPdfTemplateService = certificadoPdfTemplateService;
-        return centroMedicoPdfControllerSupport.capturePdfCertificadoViewData(input);
+        return centroMedicoPdfControllerSupport.capturePdfCertificadoViewData(
+                pdfCertificadoInputAssembler.capture(this,
+                        this::verificarFichaCompleta,
+                        fecha -> this.fechaEmision = fecha,
+                        centroMedicoPdfFacade,
+                        pdfResourceResolver,
+                        pdfTemplateEngine,
+                        certificadoPdfTemplateService));
     }
 
     // =========================
@@ -1272,16 +1206,7 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     }
 
     private PacienteControllerSupport.BuscarCedulaInput buildBuscarCedulaInput() {
-        return PacienteControllerSupport.BuscarCedulaInput.builder()
-                .cedulaBusqueda(cedulaBusqueda)
-                .ficha(ficha)
-                .personaAux(personaAux)
-                .permitirIngresoManual(permitirIngresoManual)
-                .activeStep(activeStep)
-                .noPersonaSel(noPersonaSel)
-                .logger(LOG)
-                .applyUiResult(this::applyPacienteUiResult)
-                .build();
+        return pacienteSearchInputAssembler.buildBuscarCedulaInput(this, LOG, this::applyPacienteUiResult);
     }
 
     private void asegurarPersonaAuxPersistida() {
@@ -1503,32 +1428,8 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     }
 
     private void syncCamposDesdeObjetosInternal() {
-        CentroMedicoPdfControllerSupport.SyncCamposDesdeObjetosInput input = new CentroMedicoPdfControllerSupport.SyncCamposDesdeObjetosInput();
-        input.fichaPdfContextAssembler = fichaPdfContextAssembler;
-        input.fichaPdfDataMapper = fichaPdfDataMapper;
-        input.ficha = ficha;
-        input.empleadoSel = empleadoSel;
-        input.fechaNacimiento = pacienteFormData.getFechaNacimiento();
-        input.institucionSetter = value -> this.institucion = value;
-        input.rucSetter = value -> this.ruc = value;
-        input.centroTrabajoSetter = value -> this.centroTrabajo = value;
-        input.ciiuSetter = value -> this.ciiu = value;
-        input.noHistoriaSetter = value -> this.noHistoria = value;
-        input.noArchivoSetter = value -> this.noArchivo = value;
-        input.ginecoExamen1Setter = value -> this.ginecoExamen1 = value;
-        input.ginecoTiempo1Setter = value -> this.ginecoTiempo1 = value;
-        input.ginecoResultado1Setter = value -> this.ginecoResultado1 = value;
-        input.ginecoExamen2Setter = value -> this.ginecoExamen2 = value;
-        input.ginecoTiempo2Setter = value -> this.ginecoTiempo2 = value;
-        input.ginecoResultado2Setter = value -> this.ginecoResultado2 = value;
-        input.ginecoObservacionSetter = value -> this.ginecoObservacion = value;
-        input.enfermedadActualSetter = value -> this.enfermedadActual = value;
-        input.apellido1Setter = value -> pacienteFormData.setApellido1(value);
-        input.apellido2Setter = value -> pacienteFormData.setApellido2(value);
-        input.nombre1Setter = value -> pacienteFormData.setNombre1(value);
-        input.nombre2Setter = value -> pacienteFormData.setNombre2(value);
-        input.edadSetter = value -> pacienteFormData.setEdad(value);
-        centroMedicoPdfControllerSupport.syncCamposDesdeObjetosInternal(input);
+        centroMedicoPdfControllerSupport.syncCamposDesdeObjetosInternal(
+                pdfFichaInputAssembler.buildSyncCamposDesdeObjetosInput(this, fichaPdfContextAssembler, fichaPdfDataMapper));
     }
 
     // =========================
