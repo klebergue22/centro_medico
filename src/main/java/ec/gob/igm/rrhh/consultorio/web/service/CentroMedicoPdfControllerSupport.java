@@ -26,6 +26,8 @@ import ec.gob.igm.rrhh.consultorio.web.pdf.FichaPdfContextAssembler;
 import ec.gob.igm.rrhh.consultorio.web.pdf.PdfResourceResolver;
 import ec.gob.igm.rrhh.consultorio.web.pdf.PdfTemplateEngine;
 import ec.gob.igm.rrhh.consultorio.web.pdf.PdfTextUtil;
+import static ec.gob.igm.rrhh.consultorio.web.util.CentroMedicoViewUtils.getSafe;
+import static ec.gob.igm.rrhh.consultorio.web.util.DateFormatUtil.toDate;
 import ec.gob.igm.rrhh.consultorio.web.viewstate.PdfCertificadoViewData;
 import ec.gob.igm.rrhh.consultorio.web.viewstate.PdfFichaViewData;
 import ec.gob.igm.rrhh.consultorio.web.viewstate.PdfPreviewState;
