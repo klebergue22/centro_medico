@@ -72,6 +72,10 @@ import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoPdfFacadeService;
 import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoPdfTemplateCoordinator;
 import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoPdfUiCoordinator;
 import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoWizardNavigationCoordinator;
+import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoValidationCoordinator;
+import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoValidationCoordinator.FichaCompletaValidationInput;
+import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoValidationCoordinator.Step1ValidationInput;
+import ec.gob.igm.rrhh.consultorio.web.service.ValidationUiResult;
 import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoWizardFacade;
 import ec.gob.igm.rrhh.consultorio.web.service.DiagnosticoFilaUiCoordinator;
 import ec.gob.igm.rrhh.consultorio.web.service.FichaPdfDataMapper;
@@ -87,11 +91,6 @@ import ec.gob.igm.rrhh.consultorio.web.service.Step3OrchestratorService;
 import ec.gob.igm.rrhh.consultorio.web.session.PdfSessionStore;
 import ec.gob.igm.rrhh.consultorio.web.util.CentroMedicoCalcUtil;
 import ec.gob.igm.rrhh.consultorio.web.util.CentroMedicoViewUtils;
-import ec.gob.igm.rrhh.consultorio.web.validation.FichaCompletaValidator;
-import ec.gob.igm.rrhh.consultorio.web.validation.Step1Validator;
-import ec.gob.igm.rrhh.consultorio.web.validation.Step2Validator;
-import ec.gob.igm.rrhh.consultorio.web.validation.Step3Validator;
-import ec.gob.igm.rrhh.consultorio.web.validation.ValidationResult;
 import ec.gob.igm.rrhh.consultorio.web.viewstate.PacienteViewState;
 import ec.gob.igm.rrhh.consultorio.web.viewstate.PdfCertificadoViewData;
 import ec.gob.igm.rrhh.consultorio.web.viewstate.PdfFichaViewData;
@@ -194,6 +193,8 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     @Inject
     private transient CentroMedicoMessageService messageService;
     @Inject
+    private transient CentroMedicoValidationCoordinator validationCoordinator;
+    @Inject
     private transient ControllerActionTemplate controllerActionTemplate;
     @Inject
     private transient CentroMedicoCalcUtil calcUtil;
@@ -231,14 +232,6 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     private transient FichaPdfContextAssembler fichaPdfContextAssembler;
     @Inject
     private transient FichaPdfDataMapper fichaPdfDataMapper;
-
-    // =========================
-    // VALIDADORES
-    // =========================
-    private final Step1Validator step1Validator = new Step1Validator();
-    private final Step2Validator step2Validator = new Step2Validator();
-    private final Step3Validator step3Validator = new Step3Validator();
-    private final FichaCompletaValidator fichaCompletaValidator = new FichaCompletaValidator();
 
     // =========================
     // MODELOS DE FORMULARIO
@@ -617,65 +610,67 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     // VALIDACIÓN DE STEPS
     // =========================
     private boolean validarStep1() {
-        ValidationResult result = step1Validator.validate(
-                apellido1,
-                apellido2,
-                nombre1,
-                nombre2,
-                sexo,
-                tipoEval,
-                paStr,
-                fc,
-                peso,
-                tallaCm,
-                signos,
-                fichaRiesgo != null ? fichaRiesgo.getPuestoTrabajo() : null,
-                fichaRiesgo);
-        messageService.addValidationMessages("Step 1", result);
-        return result.isValid();
+        Step1ValidationInput input = new Step1ValidationInput();
+        input.apellido1 = apellido1;
+        input.apellido2 = apellido2;
+        input.nombre1 = nombre1;
+        input.nombre2 = nombre2;
+        input.sexo = sexo;
+        input.tipoEval = tipoEval;
+        input.paStr = paStr;
+        input.fc = fc;
+        input.peso = peso;
+        input.tallaCm = tallaCm;
+        input.signos = signos;
+        input.puestoTrabajoCiuo = fichaRiesgo != null ? fichaRiesgo.getPuestoTrabajo() : null;
+        input.fichaRiesgo = fichaRiesgo;
+
+        ValidationUiResult uiResult = validationCoordinator.validarStep1(input);
+        uiResult.applyUi(messageService);
+        return uiResult.isValid();
     }
 
     private boolean validarStep2() {
-        ValidationResult result = step2Validator.validate(fichaRiesgo, actividadesLab, medidasPreventivas);
-        messageService.addValidationMessages("Step 2", result);
-        return result.isValid();
+        ValidationUiResult uiResult = validationCoordinator.validarStep2(
+                fichaRiesgo,
+                actividadesLab,
+                medidasPreventivas,
+                true);
+        uiResult.applyUi(messageService);
+        return uiResult.isValid();
     }
 
     private boolean validarStep3() {
         s3("validarStep3() INICIO");
-        ValidationResult result = step3Validator.validate(listaDiag, aptitudSel, recomendaciones, medicoNombre, medicoCodigo);
-        if (!result.isValid()) {
-            for (String error : result.getErrors()) {
+        ValidationUiResult uiResult = validationCoordinator.validarStep3(
+                listaDiag,
+                aptitudSel,
+                recomendaciones,
+                medicoNombre,
+                medicoCodigo);
+        if (!uiResult.isValid()) {
+            for (String error : uiResult.getValidationResult().getErrors()) {
                 s3("validarStep3() FAIL: " + error);
             }
         }
-        messageService.addValidationMessages("Step 3", result);
-        s3("validarStep3() FIN -> " + result.isValid());
-        return result.isValid();
+        uiResult.applyUi(messageService);
+        s3("validarStep3() FIN -> " + uiResult.isValid());
+        return uiResult.isValid();
     }
 
     private boolean verificarFichaCompleta() {
-        ValidationResult result = fichaCompletaValidator.validate(
-                ficha,
-                permitirIngresoManual,
-                personaAux,
-                empleadoSel,
-                aptitudSel,
-                fechaEmision,
-                this::inferCie10PrincipalFromListaK);
+        FichaCompletaValidationInput input = new FichaCompletaValidationInput();
+        input.ficha = ficha;
+        input.permitirIngresoManual = permitirIngresoManual;
+        input.personaAux = personaAux;
+        input.empleadoSel = empleadoSel;
+        input.aptitudSel = aptitudSel;
+        input.fechaEmision = fechaEmision;
+        input.cie10PrincipalSupplier = this::inferCie10PrincipalFromListaK;
 
-        if (!result.isValid()) {
-            StringBuilder sb = new StringBuilder();
-            for (String error : result.getErrors()) {
-                sb.append("- ").append(error).append("\n");
-            }
-            FacesContext.getCurrentInstance().addMessage(null,
-                    new FacesMessage(FacesMessage.SEVERITY_ERROR,
-                            "Validación antes de generar el certificado",
-                            sb.toString()));
-        }
-
-        return result.isValid();
+        ValidationUiResult uiResult = validationCoordinator.verificarFichaCompleta(input);
+        uiResult.applyUi(messageService);
+        return uiResult.isValid();
     }
 
     // =========================
@@ -726,11 +721,7 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
         controllerActionTemplate.execute(
                 "guardarStep2",
                 () -> {
-                    FacesContext ctx = FacesContext.getCurrentInstance();
                     if (!validarStep2()) {
-                        if (ctx != null) {
-                            ctx.validationFailed();
-                        }
                         return false;
                     }
                     saveStep2();
