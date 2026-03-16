@@ -43,10 +43,6 @@ import ec.gob.igm.rrhh.consultorio.domain.model.SignosVitales;
 import ec.gob.igm.rrhh.consultorio.service.Cie10Service;
 import ec.gob.igm.rrhh.consultorio.service.EmpleadoRhService;
 import ec.gob.igm.rrhh.consultorio.service.EmpleadoService;
-import ec.gob.igm.rrhh.consultorio.service.ExamenFisicoRegionalService;
-import ec.gob.igm.rrhh.consultorio.service.FichaActLaboralService;
-import ec.gob.igm.rrhh.consultorio.service.FichaDiagnosticoService;
-import ec.gob.igm.rrhh.consultorio.service.FichaExamenCompService;
 import ec.gob.igm.rrhh.consultorio.service.FichaOcupacionalService;
 import ec.gob.igm.rrhh.consultorio.service.PersonaAuxService;
 import ec.gob.igm.rrhh.consultorio.service.Step1FichaService;
@@ -3295,13 +3291,6 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
         this.personaAuxService = personaAuxService;
     }
 
-    public FichaActLaboralService getFichaActLaboralService() {
-        return fichaActLaboralService;
-    }
-
-    public void setFichaActLaboralService(FichaActLaboralService fichaActLaboralService) {
-        this.fichaActLaboralService = fichaActLaboralService;
-    }
 
     public FichaExamenCompService getFichaExamenCompService() {
         return fichaExamenCompService;
