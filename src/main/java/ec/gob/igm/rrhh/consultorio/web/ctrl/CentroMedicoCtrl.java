@@ -62,7 +62,6 @@ import ec.gob.igm.rrhh.consultorio.web.pdf.PdfTextUtil;
 import ec.gob.igm.rrhh.consultorio.web.pdf.PdfTemplateEngine;
 import ec.gob.igm.rrhh.consultorio.web.service.CedulaDialogUiCoordinator;
 import ec.gob.igm.rrhh.consultorio.web.service.CedulaDialogStateService;
-import ec.gob.igm.rrhh.consultorio.web.service.CedulaSearchService;
 import ec.gob.igm.rrhh.consultorio.web.service.Cie10LookupService;
 import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoFormInitializer;
 import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoFormStateService;
@@ -82,11 +81,10 @@ import ec.gob.igm.rrhh.consultorio.web.service.DiagnosticoFilaUiCoordinator;
 import ec.gob.igm.rrhh.consultorio.web.service.DiagnosticoPrincipalService;
 import ec.gob.igm.rrhh.consultorio.web.service.FichaPdfDataMapper;
 import ec.gob.igm.rrhh.consultorio.web.service.FichaPdfMappedData;
-import ec.gob.igm.rrhh.consultorio.web.service.PacienteUiFlowCoordinator;
+import ec.gob.igm.rrhh.consultorio.web.service.PacienteControllerSupport;
 import ec.gob.igm.rrhh.consultorio.web.service.PacienteViewBinder;
 import ec.gob.igm.rrhh.consultorio.web.service.PacienteUiStateApplier;
 import ec.gob.igm.rrhh.consultorio.web.service.PersonaAuxDialogUiCoordinator;
-import ec.gob.igm.rrhh.consultorio.web.service.PersonaAuxFlowService;
 import ec.gob.igm.rrhh.consultorio.web.service.Step2OrchestratorService;
 import ec.gob.igm.rrhh.consultorio.web.service.Step2OrchestratorService.Step2RiskCommand;
 import ec.gob.igm.rrhh.consultorio.web.service.Step3OrchestratorService;
@@ -201,9 +199,6 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     @Inject
     private transient CentroMedicoCalcUtil calcUtil;
     @Inject
-    private transient CedulaSearchService cedulaSearchService;
-    @Inject
-    private transient CedulaDialogUiCoordinator cedulaDialogUiCoordinator;
     @Inject
     private transient CedulaDialogStateService cedulaDialogStateService;
     @Inject
@@ -215,7 +210,6 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     @Inject
     private transient PacienteUiStateApplier pacienteUiStateApplier;
     @Inject
-    private transient PersonaAuxDialogUiCoordinator personaAuxDialogUiCoordinator;
     @Inject
     private transient DiagnosticoFilaUiCoordinator diagnosticoFilaUiCoordinator;
     @Inject
@@ -236,6 +230,8 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     private transient FichaPdfDataMapper fichaPdfDataMapper;
     @Inject
     private transient PacienteRegistrationFacade pacienteRegistrationFacade;
+    @Inject
+    private transient PacienteControllerSupport pacienteControllerSupport;
 
     // =========================
     // MODELOS DE FORMULARIO
@@ -1226,113 +1222,50 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     // GESTIÓN DE PACIENTE / CÉDULA
     // =========================
     public void onBuscarPorCedulaRh() {
-        try {
-            buscarCedula();
-        } catch (RuntimeException ex) {
-            messageService.handleUnexpected(LOG, "onBuscarPorCedulaRh", ex, activeStep, noPersonaSel, cedulaBusqueda);
-            cedulaDialogUiCoordinator.onRhError();
-        }
+        pacienteControllerSupport.onBuscarPorCedulaRh(buildBuscarCedulaInput());
     }
 
     public void buscarCedula() {
-        try {
-            PacienteRegistrationFacade.UiResult uiResult = pacienteRegistrationFacade.buscarPorCedula(
-                    cedulaBusqueda,
-                    ficha,
-                    personaAux,
-                    permitirIngresoManual);
-            applyPacienteUiResult(uiResult);
-
-            PacienteUiFlowCoordinator.UiFlowResult flowResult = uiResult.getFlowResult();
-            if (flowResult != null && flowResult.isFound()) {
-                cedulaDialogUiCoordinator.onFound(CedulaSearchService.CedulaSearchResult.found(
-                        flowResult.getCedulaBusqueda(),
-                        flowResult.getFicha(),
-                        flowResult.getPersonaAux(),
-                        flowResult.getEmpleadoSel(),
-                        flowResult.getNoPersonaSel(),
-                        flowResult.getApellido1(),
-                        flowResult.getApellido2(),
-                        flowResult.getNombre1(),
-                        flowResult.getNombre2(),
-                        flowResult.getSexo(),
-                        flowResult.getFechaNacimiento(),
-                        flowResult.getEdad()));
-                if (flowResult.isCargoNoEncontrado()) {
-                    cedulaDialogUiCoordinator.showCargoMissing();
-                }
-            } else if (flowResult != null && flowResult.isShowManual()) {
-                cedulaDialogUiCoordinator.onManualEnabled(CedulaSearchService.CedulaSearchResult.manual(
-                        flowResult.getCedulaBusqueda(),
-                        flowResult.getFicha(),
-                        flowResult.getPersonaAux()));
-            }
-
-            cedulaDialogUiCoordinator.refreshMainViews();
-        } catch (CedulaSearchService.CedulaValidationException ex) {
-            cedulaDialogUiCoordinator.onValidationWarning(ex.getMessage());
-        } catch (RuntimeException ex) {
-            messageService.handleUnexpected(LOG, "buscarCedula", ex, activeStep, noPersonaSel, cedulaBusqueda);
-            cedulaDialogUiCoordinator.onSearchError();
-        }
+        pacienteControllerSupport.buscarCedula(buildBuscarCedulaInput());
     }
 
     public void prepararIngresoManual() {
-        FacesContext ctx = FacesContext.getCurrentInstance();
-        try {
-            applyPacienteUiResult(pacienteRegistrationFacade.habilitarIngresoManual(
-                    cedulaBusqueda,
-                    personaAux));
-        } catch (PersonaAuxFlowService.PersonaAuxValidationException ex) {
-            ctx.addMessage(null, new FacesMessage(
-                    FacesMessage.SEVERITY_WARN,
-                    "Cédula requerida",
-                    ex.getMessage()
-            ));
-        }
+        pacienteControllerSupport.prepararIngresoManual(cedulaBusqueda, personaAux, this::applyPacienteUiResult);
     }
 
     public void abrirPersonaAuxManual() {
-        PacienteRegistrationFacade.UiResult uiResult = pacienteRegistrationFacade.abrirPersonaAuxManual(
+        pacienteControllerSupport.abrirPersonaAuxManual(
                 cedulaBusqueda,
                 personaAux,
                 ficha,
                 empleadoSel,
                 noPersonaSel,
                 permitirIngresoManual,
-                mostrarDlgCedula);
-        applyPacienteUiResult(uiResult);
+                mostrarDlgCedula,
+                this::applyPacienteUiResult);
     }
 
     public void guardarPersonaAuxYUsar() {
-        LOG.info(String.valueOf("INGRESA AL METODO DE GUARDAR "));
-        LOG.info(String.valueOf("PERSONA AUXILIAR ANTES VALIDAR: " + personaAux));
+        pacienteControllerSupport.guardarPersonaAuxYUsar(
+                personaAux,
+                ficha,
+                empleadoSel,
+                noPersonaSel,
+                this::applyPacienteUiResult,
+                LOG);
+    }
 
-        try {
-            PacienteRegistrationFacade.UiResult uiResult = pacienteRegistrationFacade.guardarPersonaAux(
-                    personaAux,
-                    ficha,
-                    empleadoSel,
-                    noPersonaSel);
-
-            applyPacienteUiResult(uiResult);
-
-            personaAuxDialogUiCoordinator.onGuardarSuccess(uiResult.getFlowResult());
-
-            LOG.info("PersonaAux guardada manualmente: {} {} / {} {} (cedula={})",
-                    personaAux.getApellido1(),
-                    personaAux.getApellido2(),
-                    personaAux.getNombre1(),
-                    personaAux.getNombre2(),
-                    personaAux.getCedula());
-
-        } catch (PersonaAuxFlowService.PersonaAuxValidationException e) {
-            LOG.warn("Validación PersonaAux en flujo manual: {}", e.getMessage());
-            personaAuxDialogUiCoordinator.onValidationFailure(e.getMessage());
-        } catch (RuntimeException e) {
-            LOG.error("Error guardando datos manuales", e);
-            personaAuxDialogUiCoordinator.onTechnicalFailure();
-        }
+    private PacienteControllerSupport.BuscarCedulaInput buildBuscarCedulaInput() {
+        return PacienteControllerSupport.BuscarCedulaInput.builder()
+                .cedulaBusqueda(cedulaBusqueda)
+                .ficha(ficha)
+                .personaAux(personaAux)
+                .permitirIngresoManual(permitirIngresoManual)
+                .activeStep(activeStep)
+                .noPersonaSel(noPersonaSel)
+                .logger(LOG)
+                .applyUiResult(this::applyPacienteUiResult)
+                .build();
     }
 
     private void asegurarPersonaAuxPersistida() {
