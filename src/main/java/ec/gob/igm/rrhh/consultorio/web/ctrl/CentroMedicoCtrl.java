@@ -40,13 +40,17 @@ import ec.gob.igm.rrhh.consultorio.service.FichaExamenCompService;
 import ec.gob.igm.rrhh.consultorio.service.FichaOcupacionalService;
 import ec.gob.igm.rrhh.consultorio.service.PersonaAuxService;
 import ec.gob.igm.rrhh.consultorio.web.facade.CentroMedicoPdfFacade;
+import ec.gob.igm.rrhh.consultorio.web.facade.CentroMedicoWizardFacade;
 import ec.gob.igm.rrhh.consultorio.web.jsf.CentroMedicoMessageService;
-import ec.gob.igm.rrhh.consultorio.web.facade.Step1Facade;
 import ec.gob.igm.rrhh.consultorio.web.mapper.Step3CommandAssembler;
 import ec.gob.igm.rrhh.consultorio.web.mapper.Step3ViewDataAssembler;
 import ec.gob.igm.rrhh.consultorio.web.mapper.PdfCertificadoInputAssembler;
 import ec.gob.igm.rrhh.consultorio.web.mapper.PdfFichaInputAssembler;
-import ec.gob.igm.rrhh.consultorio.web.facade.AuditFacade;
+import ec.gob.igm.rrhh.consultorio.web.facade.DiagnosticoSectionFacade;
+import ec.gob.igm.rrhh.consultorio.web.facade.PacienteSectionFacade;
+import ec.gob.igm.rrhh.consultorio.web.facade.PdfSectionFacade;
+import ec.gob.igm.rrhh.consultorio.web.facade.Step1Facade;
+import ec.gob.igm.rrhh.consultorio.web.facade.WizardSectionFacade;
 import ec.gob.igm.rrhh.consultorio.web.pdf.CertificadoPdfTemplateService;
 import ec.gob.igm.rrhh.consultorio.web.pdf.FichaPdfContextAssembler;
 import ec.gob.igm.rrhh.consultorio.web.pdf.PdfResourceResolver;
@@ -55,25 +59,17 @@ import ec.gob.igm.rrhh.consultorio.web.service.CedulaDialogControllerSupport;
 import ec.gob.igm.rrhh.consultorio.web.service.CedulaDialogStateService;
 import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoFormInitializer;
 import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoFormStateService;
-import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoPdfWorkflowService;
-import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoPdfFacadeService;
-import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoPdfControllerSupport;
 import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoPdfTemplateCoordinator;
-import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoPdfUiCoordinator;
 import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoReactiveUiService;
 import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoWizardNavigationCoordinator;
-import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoValidationCoordinator;
+import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoPdfWorkflowService;
+import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoPdfUiCoordinator;
 import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoValidationCoordinator.FichaCompletaValidationInput;
 import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoValidationCoordinator.Step1ValidationInput;
 import ec.gob.igm.rrhh.consultorio.web.service.ValidationUiResult;
-import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoWizardFacade;
-import ec.gob.igm.rrhh.consultorio.web.service.DiagnosticoViewDelegate;
 import ec.gob.igm.rrhh.consultorio.web.service.FichaPdfDataMapper;
 import ec.gob.igm.rrhh.consultorio.web.service.PacienteUiStateApplier;
-import ec.gob.igm.rrhh.consultorio.web.service.PacienteViewFlowDelegate;
-import ec.gob.igm.rrhh.consultorio.web.service.Step2OrchestratorService;
 import ec.gob.igm.rrhh.consultorio.web.service.Step2OrchestratorService.Step2RiskCommand;
-import ec.gob.igm.rrhh.consultorio.web.service.Step3OrchestratorService;
 import ec.gob.igm.rrhh.consultorio.web.session.PdfSessionStore;
 import ec.gob.igm.rrhh.consultorio.web.util.CentroMedicoCalcUtil;
 import ec.gob.igm.rrhh.consultorio.web.viewstate.PacienteViewState;
@@ -143,17 +139,9 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     @EJB
     private transient FichaActLaboralService fichaActLaboralService;
     @EJB
-    private transient Step2OrchestratorService step2OrchestratorService;
-    @EJB
     private transient FichaExamenCompService fichaExamenCompService;
     @EJB
     private transient ExamenFisicoRegionalService examenFisicoRegionalService;
-    @EJB
-    private transient Step3OrchestratorService step3OrchestratorService;
-    @EJB
-    private transient CentroMedicoPdfWorkflowService centroMedicoPdfWorkflowService;
-    @EJB
-    private transient CentroMedicoPdfFacadeService centroMedicoPdfFacadeService;
 
     // =========================
     // INYECCIONES DE DEPENDENCIAS - INJECT
@@ -169,13 +157,9 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     @Inject
     private transient CentroMedicoPdfFacade centroMedicoPdfFacade;
     @Inject
-    private transient CentroMedicoWizardNavigationCoordinator wizardNavigationCoordinator;
-    @Inject
-    private transient CentroMedicoWizardFacade centroMedicoWizardFacade;
+    private transient WizardSectionFacade wizardSectionFacade;
     @Inject
     private transient CentroMedicoMessageService messageService;
-    @Inject
-    private transient CentroMedicoValidationCoordinator validationCoordinator;
     @Inject
     private transient ControllerActionTemplate controllerActionTemplate;
     @Inject
@@ -192,8 +176,6 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     private transient CentroMedicoReactiveUiService reactiveUiService;
     
     @Inject
-    private transient DiagnosticoViewDelegate diagnosticoViewDelegate;
-    @Inject
     private transient Step3CommandAssembler step3CommandAssembler;
     @Inject
     private transient Step3ViewDataAssembler step3ViewDataAssembler;
@@ -202,21 +184,17 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     @Inject
     private transient PdfCertificadoInputAssembler pdfCertificadoInputAssembler;
     @Inject
-    private transient CentroMedicoPdfUiCoordinator centroMedicoPdfUiCoordinator;
-    @Inject
     private transient CentroMedicoPdfTemplateCoordinator centroMedicoPdfTemplateCoordinator;
     @Inject
     private transient FichaPdfContextAssembler fichaPdfContextAssembler;
     @Inject
     private transient FichaPdfDataMapper fichaPdfDataMapper;
     @Inject
-    private transient Step1Facade step1Facade;
+    private transient DiagnosticoSectionFacade diagnosticoSectionFacade;
     @Inject
-    private transient AuditFacade auditFacade;
+    private transient PacienteSectionFacade pacienteSectionFacade;
     @Inject
-    private transient PacienteViewFlowDelegate pacienteViewFlowDelegate;
-    @Inject
-    private transient CentroMedicoPdfControllerSupport centroMedicoPdfControllerSupport;
+    private transient PdfSectionFacade pdfSectionFacade;
 
     // =========================
     // MODELOS DE FORMULARIO
@@ -512,7 +490,7 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     }
 
     public void retrocederStep() {
-        wizardViewState.setActiveStep(wizardNavigationCoordinator.retrocederStep(wizardViewState.getActiveStep()));
+        wizardViewState.setActiveStep(wizardSectionFacade.retrocederStep(wizardViewState.getActiveStep()));
     }
 
     public void guardarStepActual() {
@@ -520,7 +498,7 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
         controllerActionTemplate.executeWithResult(
                 "guardarStepActual",
                 () -> {
-                    centroMedicoWizardFacade.guardarStepActual(
+                    wizardSectionFacade.guardarStepActual(
                             new CentroMedicoWizardFacade.GuardarStepActualCommand(
                                     wizardViewState.getActiveStep(),
                                     this::guardarStep1,
@@ -563,13 +541,13 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
         input.puestoTrabajoCiuo = fichaRiesgo != null ? fichaRiesgo.getPuestoTrabajo() : null;
         input.fichaRiesgo = fichaRiesgo;
 
-        ValidationUiResult uiResult = validationCoordinator.validarStep1(input);
+        ValidationUiResult uiResult = wizardSectionFacade.validarStep1(input);
         uiResult.applyUi(messageService);
         return uiResult.isValid();
     }
 
     private boolean validarStep2() {
-        ValidationUiResult uiResult = validationCoordinator.validarStep2(
+        ValidationUiResult uiResult = wizardSectionFacade.validarStep2(
                 step2FormModel.getFichaRiesgo(),
                 step2FormModel.getActividadesLab(),
                 step2FormModel.getMedidasPreventivas(),
@@ -580,7 +558,7 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
 
     private boolean validarStep3() {
         s3("validarStep3() INICIO");
-        ValidationUiResult uiResult = validationCoordinator.validarStep3(
+        ValidationUiResult uiResult = wizardSectionFacade.validarStep3(
                 step3FormModel.getListaDiag(),
                 diagnosticoFormModel.getAptitudSel(),
                 diagnosticoFormModel.getRecomendaciones(),
@@ -606,7 +584,7 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
         input.fechaEmision = diagnosticoFormModel.getFechaEmision();
         input.cie10PrincipalSupplier = this::inferCie10PrincipalFromListaK;
 
-        ValidationUiResult uiResult = validationCoordinator.verificarFichaCompleta(input);
+        ValidationUiResult uiResult = wizardSectionFacade.verificarFichaCompleta(input);
         uiResult.applyUi(messageService);
         return uiResult.isValid();
     }
@@ -629,7 +607,7 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     }
 
     private void saveStep1() {
-        Step1Facade.SaveStep1Result result = step1Facade.guardar(new Step1Facade.SaveStep1Command(
+        Step1Facade.SaveStep1Result result = wizardSectionFacade.guardarStep1(new Step1Facade.SaveStep1Command(
                 permitirIngresoManual,
                 empleadoSel,
                 noPersonaSel,
@@ -637,12 +615,12 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
                 personaAux,
                 this));
 
-        pacienteViewFlowDelegate.applyPacienteUiResult(this, result.preUiResult);
+        pacienteSectionFacade.applyPacienteUiResult(this, result.preUiResult);
         ficha = result.ficha;
         empleadoSel = result.empleadoSel;
         personaAux = result.personaAux;
         signos = result.signos;
-        pacienteViewFlowDelegate.applyPacienteUiResult(this, result.postUiResult);
+        pacienteSectionFacade.applyPacienteUiResult(this, result.postUiResult);
     }
 
     public void guardarStep2() {
@@ -673,7 +651,7 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
         final Date now = new Date();
 
         try {
-            step2FormModel.setFichaRiesgo(step2OrchestratorService.save(new Step2RiskCommand(
+            step2FormModel.setFichaRiesgo(wizardSectionFacade.guardarStep2(new Step2RiskCommand(
                     ficha,
                     step2FormModel.getFichaRiesgo(),
                     step2FormModel.getActividadesLab(),
@@ -686,7 +664,7 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
             throw new BusinessValidationException(ex.getMessage());
         }
 
-        auditFacade.registrar("GUARDAR_STEP2", "FICHA_RIESGO / FICHA_RIESGO_DET", "*",
+        wizardSectionFacade.registrarAuditoria("GUARDAR_STEP2", "FICHA_RIESGO / FICHA_RIESGO_DET", "*",
                 "Step 2 guardado. ID_FICHA=" + ficha.getIdFicha());
     }
 
@@ -713,7 +691,7 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     private void saveStep3() {
         ensureFichaSavedOrThrow();
         try {
-            pacienteViewFlowDelegate.asegurarPacienteAsignado(this,
+            pacienteSectionFacade.asegurarPacienteAsignado(this,
                     permitirIngresoManual,
                     empleadoSel,
                     noPersonaSel,
@@ -726,14 +704,14 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
         final Date now = new Date();
 
         try {
-            ficha = step3OrchestratorService.saveStep3(step3CommandAssembler.toCommand(
-                    step3ViewDataAssembler.capture(this, now, () -> pacienteViewFlowDelegate.asegurarPersonaAuxPersistida(this),
+            ficha = wizardSectionFacade.guardarStep3(step3CommandAssembler.toCommand(
+                    step3ViewDataAssembler.capture(this, now, () -> pacienteSectionFacade.asegurarPersonaAuxPersistida(this),
                             () -> centroMedicoFormStateService.ensureActLabSize(this, H_ROWS))));
         } catch (IllegalArgumentException ex) {
             fail(ex.getMessage());
         }
 
-        auditFacade.registrar("GUARDAR_STEP3", "FICHA_OCUPACIONAL / H / I / J / K", "*",
+        wizardSectionFacade.registrarAuditoria("GUARDAR_STEP3", "FICHA_OCUPACIONAL / H / I / J / K", "*",
                 "Step 3 guardado. ID_FICHA=" + ficha.getIdFicha());
     }
 
@@ -744,10 +722,10 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     }
 
     private PdfFichaViewData capturePdfFichaViewData() {
-        return centroMedicoPdfControllerSupport.capturePdfFichaViewData(
+        return pdfSectionFacade.capturePdfFichaViewData(
                 pdfFichaInputAssembler.capture(this,
                         LOG,
-                        () -> pacienteViewFlowDelegate.asegurarPersonaAuxPersistida(this),
+                        () -> pacienteSectionFacade.asegurarPersonaAuxPersistida(this),
                         this::syncCamposDesdeObjetosInternal,
                         this::recalcularIMC,
                         centroMedicoPdfFacade,
@@ -756,7 +734,7 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     }
 
     private PdfCertificadoViewData capturePdfCertificadoViewData() {
-        return centroMedicoPdfControllerSupport.capturePdfCertificadoViewData(
+        return pdfSectionFacade.capturePdfCertificadoViewData(
                 pdfCertificadoInputAssembler.capture(this,
                         this::verificarFichaCompleta,
                         fecha -> diagnosticoFormModel.setFechaEmision(fecha),
@@ -776,7 +754,7 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     public void onPrepararFichaPdf() {
         controllerActionTemplate.executeWithResult(
                 "onPrepararFichaPdf",
-                () -> centroMedicoPdfWorkflowService.onPrepararFichaPdf(
+                () -> pdfSectionFacade.onPrepararFichaPdf(
                         new CentroMedicoPdfWorkflowService.PrepareFichaFlowCommand(buildPrepareFichaCommand())),
                 this::onPrepararFichaPdfSuccess,
                 LOG,
@@ -786,7 +764,7 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     }
 
     private void onPrepararFichaPdfSuccess(CentroMedicoPdfWorkflowService.FichaFlowResult result) {
-        centroMedicoPdfControllerSupport.onPrepararFichaPdfSuccess(
+        pdfSectionFacade.onPrepararFichaPdfSuccess(
                 result,
                 FacesContext.getCurrentInstance(),
                 pdfPreviewState,
@@ -805,7 +783,7 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     public void onPrepararCertificadoPdf() {
         controllerActionTemplate.executeWithResult(
                 "onPrepararCertificadoPdf",
-                () -> centroMedicoPdfWorkflowService.onPrepararCertificadoPdf(
+                () -> pdfSectionFacade.onPrepararCertificadoPdf(
                         new CentroMedicoPdfWorkflowService.PrepareCertificadoFlowCommand(
                                 pdfPreviewState.isFichaPdfListo(),
                                 pdfPreviewState.getPdfTokenFicha(),
@@ -819,7 +797,7 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     }
 
     private void onPrepararCertificadoPdfSuccess(CentroMedicoPdfWorkflowService.CertificadoFlowResult result) {
-        applyPdfUiState(centroMedicoPdfUiCoordinator.onPrepararCertificadoPdfSuccess(
+        applyPdfUiState(pdfSectionFacade.onPrepararCertificadoPdfSuccess(
                 result,
                 FacesContext.getCurrentInstance(),
                 pdfSessionStore,
@@ -832,7 +810,7 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     public void prepararVistaPrevia() {
         controllerActionTemplate.executeWithResult(
                 "prepararVistaPrevia",
-                () -> centroMedicoPdfWorkflowService.prepararVistaPrevia(
+                () -> pdfSectionFacade.prepararVistaPrevia(
                         new CentroMedicoPdfWorkflowService.PreparePreviewFlowCommand(
                                 pdfPreviewState.isFichaPdfListo(),
                                 pdfPreviewState.getPdfTokenFicha(),
@@ -847,7 +825,7 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     }
 
     private void onPrepararVistaPreviaSuccess(CentroMedicoPdfWorkflowService.PreviewFlowResult result) {
-        applyPdfUiState(centroMedicoPdfUiCoordinator.onPrepararVistaPreviaSuccess(
+        applyPdfUiState(pdfSectionFacade.onPrepararVistaPreviaSuccess(
                 result,
                 FacesContext.getCurrentInstance(),
                 pdfSessionStore,
@@ -855,7 +833,7 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     }
 
     public void limpiarVistaPrevia() {
-        centroMedicoPdfFacadeService.cleanupPdfPreview(
+        pdfSectionFacade.cleanupPdfPreview(
                 FacesContext.getCurrentInstance(),
                 pdfSessionStore,
                 pdfPreviewState.getPdfTokenCertificado());
@@ -863,27 +841,26 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     }
 
     private void cleanupPdfPreview(FacesContext ctx) {
-        applyPdfUiState(centroMedicoPdfUiCoordinator.cleanupPdfPreview(ctx, pdfSessionStore, pdfPreviewState.getPdfTokenCertificado()));
+        applyPdfUiState(pdfSectionFacade.cleanupPdfPreviewState(ctx, pdfSessionStore, pdfPreviewState.getPdfTokenCertificado()));
     }
 
     // =========================
     // PDF - MÉTODOS DE CONSTRUCCIÓN
     // =========================
     private CentroMedicoPdfWorkflowService.PrepareFichaCommandData buildPrepareFichaCommand() {
-        return centroMedicoPdfControllerSupport.buildPrepareFichaCommand(
+        return pdfSectionFacade.buildPrepareFichaCommand(
                 centroMedicoPdfTemplateCoordinator,
                 capturePdfFichaViewData());
     }
 
     private CentroMedicoPdfWorkflowService.PrepareCertificadoCommandData buildPrepareCertificadoCommand() {
-        return centroMedicoPdfControllerSupport.buildPrepareCertificadoCommand(
+        return pdfSectionFacade.buildPrepareCertificadoCommand(
                 centroMedicoPdfTemplateCoordinator,
                 capturePdfCertificadoViewData());
     }
 
     private void applyPdfUiState(CentroMedicoPdfUiCoordinator.PdfUiState state) {
-        centroMedicoPdfControllerSupport.applyPdfUiState(
-                centroMedicoPdfUiCoordinator,
+        pdfSectionFacade.applyPdfUiState(
                 state,
                 pdfPreviewState,
                 value -> this.ficha = value,
@@ -892,8 +869,7 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     }
 
     private void resetStep4PdfState() {
-        centroMedicoPdfControllerSupport.resetStep4PdfState(
-                centroMedicoPdfUiCoordinator,
+        pdfSectionFacade.resetStep4PdfState(
                 pdfPreviewState,
                 value -> this.ficha = value,
                 wizardViewState::setActiveStep,
@@ -901,8 +877,7 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     }
 
     private void applyStep4State(CentroMedicoWizardNavigationCoordinator.Step4UiState state) {
-        centroMedicoPdfControllerSupport.applyStep4State(
-                centroMedicoPdfUiCoordinator,
+        pdfSectionFacade.applyStep4State(
                 state,
                 pdfPreviewState,
                 value -> this.ficha = value,
@@ -911,8 +886,7 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     }
 
     private void applyCleanupPdfPreviewState() {
-        centroMedicoPdfControllerSupport.applyCleanupPdfPreviewState(
-                centroMedicoPdfUiCoordinator,
+        pdfSectionFacade.applyCleanupPdfPreviewState(
                 pdfPreviewState,
                 value -> this.ficha = value,
                 wizardViewState::setActiveStep,
@@ -920,7 +894,7 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     }
 
     private void showValidationMessage(FacesContext ctx, String summary, List<String> errors) {
-        centroMedicoPdfControllerSupport.showValidationMessage(ctx, summary, errors);
+        pdfSectionFacade.showValidationMessage(ctx, summary, errors);
     }
 
     // =========================
@@ -931,110 +905,110 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     }
 
     private void syncCie10PrincipalFromK() {
-        diagnosticoViewDelegate.syncCie10PrincipalFromK(this);
+        diagnosticoSectionFacade.syncCie10PrincipalFromK(this);
     }
 
     public void onCie10BlurCodigo(int index) {
-        diagnosticoViewDelegate.onCie10BlurCodigo(this, index);
+        diagnosticoSectionFacade.onCie10BlurCodigo(this, index);
     }
 
     public void onCie10FilaSelect(int idx) {
-        diagnosticoViewDelegate.onCie10FilaSelect(this, idx);
+        diagnosticoSectionFacade.onCie10FilaSelect(this, idx);
     }
 
     public List<Cie10> completarCie10(String query) {
-        return diagnosticoViewDelegate.completarCie10(query);
+        return diagnosticoSectionFacade.completarCie10(query);
     }
 
     public List<Cie10> completarCie10PorCodigo(String query) {
-        return diagnosticoViewDelegate.completarCie10PorCodigo(query);
+        return diagnosticoSectionFacade.completarCie10PorCodigo(query);
     }
 
     public List<Cie10> completarCie10PorDescripcion(String query) {
-        return diagnosticoViewDelegate.completarCie10PorDescripcion(query);
+        return diagnosticoSectionFacade.completarCie10PorDescripcion(query);
     }
 
     public void onCie10CodigoSelect(SelectEvent event) {
-        diagnosticoViewDelegate.onCie10CodigoSelect(this, event);
+        diagnosticoSectionFacade.onCie10CodigoSelect(this, event);
     }
 
     public void onCie10CodigoBlur() {
-        diagnosticoViewDelegate.onCie10CodigoBlur(this);
+        diagnosticoSectionFacade.onCie10CodigoBlur(this);
     }
 
     public void onCie10DescripcionSelect(SelectEvent event) {
-        diagnosticoViewDelegate.onCie10DescripcionSelect(this, event);
+        diagnosticoSectionFacade.onCie10DescripcionSelect(this, event);
     }
 
     public void onCie10DescripcionBlur() {
-        diagnosticoViewDelegate.onCie10DescripcionBlur(this);
+        diagnosticoSectionFacade.onCie10DescripcionBlur(this);
     }
 
     private Cie10 inferCie10PrincipalFromListaK() {
-        return diagnosticoViewDelegate.inferCie10PrincipalFromListaK(this);
+        return diagnosticoSectionFacade.inferCie10PrincipalFromListaK(this);
     }
 
     public List<String> completarCie10FilaPorCodigo(String query) {
-        return diagnosticoViewDelegate.completarCie10FilaPorCodigo(query);
+        return diagnosticoSectionFacade.completarCie10FilaPorCodigo(query);
     }
 
     public List<String> completarCie10FilaPorDescripcion(String query) {
-        return diagnosticoViewDelegate.completarCie10FilaPorDescripcion(query);
+        return diagnosticoSectionFacade.completarCie10FilaPorDescripcion(query);
     }
 
     public void onKCieCodigoSelect(SelectEvent<String> event) {
-        diagnosticoViewDelegate.onKCieCodigoSelect(this, event);
+        diagnosticoSectionFacade.onKCieCodigoSelect(this, event);
     }
 
     public void onKCieCodigoBlur(AjaxBehaviorEvent event) {
-        diagnosticoViewDelegate.onKCieCodigoBlur(this, event);
+        diagnosticoSectionFacade.onKCieCodigoBlur(this, event);
     }
 
     public void onKDescSelect(SelectEvent<String> event) {
-        diagnosticoViewDelegate.onKDescSelect(this, event);
+        diagnosticoSectionFacade.onKDescSelect(this, event);
     }
 
     public void onKDescBlur(AjaxBehaviorEvent event) {
-        diagnosticoViewDelegate.onKDescBlur(this, event);
+        diagnosticoSectionFacade.onKDescBlur(this, event);
     }
 
     public void onKTipoChange(AjaxBehaviorEvent event) {
-        diagnosticoViewDelegate.onKTipoChange(this, event);
+        diagnosticoSectionFacade.onKTipoChange(this, event);
     }
 
     public void abrirDialogoDiagnostico(AjaxBehaviorEvent event) {
-        diagnosticoViewDelegate.abrirDialogoDiagnostico(this, event);
+        diagnosticoSectionFacade.abrirDialogoDiagnostico(this, event);
     }
 
     public void aceptarDialogoDiagnostico() {
-        diagnosticoViewDelegate.aceptarDialogoDiagnostico(this);
+        diagnosticoSectionFacade.aceptarDialogoDiagnostico(this);
     }
 
     public void cerrarDialogoDiagnostico() {
-        diagnosticoViewDelegate.cerrarDialogoDiagnostico();
+        diagnosticoSectionFacade.cerrarDialogoDiagnostico();
     }
 
     // =========================
     // GESTIÓN DE PACIENTE / CÉDULA
     // =========================
     public void onBuscarPorCedulaRh() {
-        pacienteViewFlowDelegate.onBuscarPorCedulaRh(this, LOG);
+        pacienteSectionFacade.onBuscarPorCedulaRh(this, LOG);
     }
 
     public void buscarCedula() {
-        pacienteViewFlowDelegate.buscarCedula(this, LOG);
+        pacienteSectionFacade.buscarCedula(this, LOG);
     }
 
     public void prepararIngresoManual() {
-        pacienteViewFlowDelegate.prepararIngresoManual(this);
+        pacienteSectionFacade.prepararIngresoManual(this);
     }
 
     public void abrirPersonaAuxManual() {
-        pacienteViewFlowDelegate.abrirPersonaAuxManual(this);
+        pacienteSectionFacade.abrirPersonaAuxManual(this);
     }
 
     public void guardarPersonaAuxYUsar() {
-        pacienteViewFlowDelegate.guardarPersonaAuxYUsar(this, LOG);
+        pacienteSectionFacade.guardarPersonaAuxYUsar(this, LOG);
     }
 
     // =========================
@@ -1173,11 +1147,11 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     // UTILIDADES DE SINCRONIZACIÓN PDF
     // =========================
     private String obtenerTipoEvaluacionPdf() {
-        return centroMedicoPdfControllerSupport.obtenerTipoEvaluacionPdf(tipoEval, tipoEvaluacion);
+        return pdfSectionFacade.obtenerTipoEvaluacionPdf(tipoEval, tipoEvaluacion);
     }
 
     private void syncCamposDesdeObjetosInternal() {
-        centroMedicoPdfControllerSupport.syncCamposDesdeObjetosInternal(
+        pdfSectionFacade.syncCamposDesdeObjetosInternal(
                 pdfFichaInputAssembler.buildSyncCamposDesdeObjetosInput(this, fichaPdfContextAssembler, fichaPdfDataMapper));
     }
 
@@ -1185,7 +1159,7 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     // UTILIDADES DE CARGA DE DATOS PDF
     // =========================
     void cargarAtencionPrioritaria(Map<String, String> rep) {
-        centroMedicoPdfControllerSupport.cargarAtencionPrioritaria(
+        pdfSectionFacade.cargarAtencionPrioritaria(
                 ficha,
                 atencionPrioritariaModel.isDiscapacidad(),
                 atencionPrioritariaModel.isCatastrofica(),
@@ -1197,7 +1171,7 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     }
 
     private void cargarActividadLaboralArrays(Map<String, String> rep) {
-        centroMedicoPdfControllerSupport.cargarActividadLaboralArrays(
+        pdfSectionFacade.cargarActividadLaboralArrays(
                 H_ROWS,
                 actLabCentroTrabajo,
                 actLabActividad,
