@@ -864,7 +864,7 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
                         "getObs",
                         "getObservacion"),
                 CentroMedicoViewUtils::getSafe,
-                this::toDate);
+                ec.gob.igm.rrhh.consultorio.web.util.DateFormatUtil::toDate);
     }
 
     private PdfCertificadoViewData capturePdfCertificadoViewData() {
