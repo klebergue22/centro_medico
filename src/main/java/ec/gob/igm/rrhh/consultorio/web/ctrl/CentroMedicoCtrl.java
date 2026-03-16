@@ -1,6 +1,5 @@
 package ec.gob.igm.rrhh.consultorio.web.ctrl;
 
-import static ec.gob.igm.rrhh.consultorio.web.util.CentroMedicoViewUtils.esVacio;
 import static ec.gob.igm.rrhh.consultorio.web.util.CentroMedicoViewUtils.getSafe;
 import static ec.gob.igm.rrhh.consultorio.web.util.CentroMedicoViewUtils.isBlank;
 import static ec.gob.igm.rrhh.consultorio.web.util.CentroMedicoViewUtils.isTrue;
