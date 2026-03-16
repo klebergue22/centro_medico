@@ -24,6 +24,18 @@ import ec.gob.igm.rrhh.consultorio.service.FichaExamenCompService;
 import ec.gob.igm.rrhh.consultorio.service.FichaOcupacionalService;
 
 @Stateless
+/**
+ * Orquestador del Step 3 de la ficha ocupacional.
+ *
+ * <p>Funcionalidad principal: coordina guardado de datos generales de
+ * {@link FichaOcupacional}, actividad laboral ({@link FichaActLaboral}),
+ * exámenes complementarios ({@link FichaExamenComp}) y diagnósticos
+ * ({@link ConsultaDiagnostico}).</p>
+ *
+ * <p>Relaciones directas: {@link Cie10Service}, {@link ExamenFisicoRegionalService},
+ * {@link FichaOcupacionalService}, {@link FichaActLaboralService},
+ * {@link FichaExamenCompService} y {@link FichaDiagnosticoService}.</p>
+ */
 public class Step3OrchestratorService implements Serializable {
 
     private static final Logger LOG = LoggerFactory.getLogger(Step3OrchestratorService.class);
@@ -53,30 +65,45 @@ public class Step3OrchestratorService implements Serializable {
 
     private FichaOcupacional guardarStep3FichaGeneral(Step3SaveCommand cmd) {
         LOG.info("STEP3-A: Guardando datos generales en FICHA_OCUPACIONAL");
+        applyPrincipalCie10(cmd);
+        applyClinicalSummaryData(cmd);
+        applyRetiroAndDoctorData(cmd);
+        cmd.onEnsurePersonaAuxPersistida().run();
+        FichaOcupacional saved = fichaService.guardar(cmd.ficha());
+        LOG.info("STEP3-A-OK: FICHA_OCUPACIONAL actualizada. ID_FICHA={}", saved.getIdFicha());
+        return saved;
+    }
 
-        if (!isBlank(cmd.codCie10Ppal())) {
-            Cie10 cie = cie10Service.buscarPorCodigo(cmd.codCie10Ppal().trim());
-            if (cie == null) {
-                throw new IllegalArgumentException("El código CIE10 principal no existe: " + cmd.codCie10Ppal());
-            }
-            cmd.ficha().setCie10Principal(cie);
-        } else {
+    private void applyPrincipalCie10(Step3SaveCommand cmd) {
+        if (isBlank(cmd.codCie10Ppal())) {
             cmd.ficha().setCie10Principal(null);
+            return;
         }
+        Cie10 cie = cie10Service.buscarPorCodigo(cmd.codCie10Ppal().trim());
+        if (cie == null) {
+            throw new IllegalArgumentException("El código CIE10 principal no existe: " + cmd.codCie10Ppal());
+        }
+        cmd.ficha().setCie10Principal(cie);
+    }
 
+    private void applyClinicalSummaryData(Step3SaveCommand cmd) {
         cmd.ficha().setEnfermedadProbActual(trimToNull(cmd.ficha().getEnfermedadProbActual()));
         examenFisicoRegionalService.aplicarExamenFisicoRegional(cmd.ficha());
-
-        String obsExf = trimToNull(cmd.obsExamenFisico());
-        if (obsExf == null) {
-            obsExf = trimToNull(cmd.ficha().getObsExamenFisicoReg());
-        }
-        cmd.ficha().setObsExamenFisicoReg(obsExf);
-
+        cmd.ficha().setObsExamenFisicoReg(resolveObsExamenFisico(cmd));
         cmd.ficha().setAptitudSel(cmd.aptitudSel());
         cmd.ficha().setDetalleObs(cmd.detalleObservaciones());
         cmd.ficha().setRecomendaciones(cmd.recomendaciones());
+    }
 
+    private String resolveObsExamenFisico(Step3SaveCommand cmd) {
+        String obsExf = trimToNull(cmd.obsExamenFisico());
+        if (obsExf != null) {
+            return obsExf;
+        }
+        return trimToNull(cmd.ficha().getObsExamenFisicoReg());
+    }
+
+    private void applyRetiroAndDoctorData(Step3SaveCommand cmd) {
         examenFisicoRegionalService.aplicarRetiro(cmd.ficha());
         cmd.ficha().setnRetObs(cmd.nObsRetiro());
         cmd.ficha().setMedicoNombre(cmd.medicoNombre());
@@ -84,153 +111,157 @@ public class Step3OrchestratorService implements Serializable {
         cmd.ficha().setFechaEmision(cmd.fechaEmision() != null ? cmd.fechaEmision() : cmd.now());
         cmd.ficha().setFechaActualizacion(cmd.now());
         cmd.ficha().setUsrActualizacion(cmd.user());
-
-        cmd.onEnsurePersonaAuxPersistida().run();
-
-        FichaOcupacional saved = fichaService.guardar(cmd.ficha());
-        LOG.info("STEP3-A-OK: FICHA_OCUPACIONAL actualizada. ID_FICHA={}", saved.getIdFicha());
-        return saved;
     }
 
     private void guardarStep3HActividadLaboral(Step3SaveCommand cmd, FichaOcupacional ficha) {
         LOG.info("STEP3-H: Procesando Actividad Laboral (FICHA_ACT_LABORAL)");
-
         cmd.onEnsureActLabSize().run();
-
         for (int i = 0; i < H_ROWS; i++) {
-            int nroFila = i + 1;
-
-            boolean filaTieneDatos = !isBlank(getSafe(cmd.actLabCentroTrabajo(), i))
-                    || !isBlank(getSafe(cmd.actLabActividad(), i))
-                    || !isBlank(getSafe(cmd.actLabTiempo(), i))
-                    || isTrue(getSafe(cmd.actLabTrabajoAnterior(), i))
-                    || isTrue(getSafe(cmd.actLabTrabajoActual(), i))
-                    || isTrue(getSafe(cmd.actLabIncidenteChk(), i))
-                    || isTrue(getSafe(cmd.actLabAccidenteChk(), i))
-                    || isTrue(getSafe(cmd.actLabEnfermedadChk(), i))
-                    || getSafe(cmd.iessFecha(), i) != null
-                    || !isBlank(getSafe(cmd.iessEspecificar(), i))
-                    || !isBlank(getSafe(cmd.actLabObservaciones(), i));
-
-            if (!filaTieneDatos) {
-                fichaActLaboralService.eliminarPorFichaYFila(ficha.getIdFicha(), nroFila);
-                continue;
-            }
-
-            FichaActLaboral fal = fichaActLaboralService.buscarPorFichaYFila(ficha.getIdFicha(), nroFila);
-            if (fal == null) {
-                fal = new FichaActLaboral();
-                fal.setFicha(ficha);
-                fal.setNroFila(nroFila);
-                fal.setFCreacion(cmd.now());
-                fal.setUsrCreacion(cmd.user());
-            } else {
-                fal.setFActualizacion(cmd.now());
-                fal.setUsrActualizacion(cmd.user());
-            }
-
-            fal.setCentroTrabajo(getSafe(cmd.actLabCentroTrabajo(), i));
-            fal.setActividad(getSafe(cmd.actLabActividad(), i));
-            fal.setTiempo(getSafe(cmd.actLabTiempo(), i));
-            fal.setEsAnterior(sn(getSafe(cmd.actLabTrabajoAnterior(), i)));
-            fal.setEsActual(sn(getSafe(cmd.actLabTrabajoActual(), i)));
-            fal.setIncidente(sn(getSafe(cmd.actLabIncidenteChk(), i)));
-            fal.setAccidente(sn(getSafe(cmd.actLabAccidenteChk(), i)));
-            fal.setEnfOcupacional(sn(getSafe(cmd.actLabEnfermedadChk(), i)));
-            fal.setFechaEvento(toDate(getSafe(cmd.iessFecha(), i)));
-            fal.setEspecificar(getSafe(cmd.iessEspecificar(), i));
-            fal.setObservaciones(getSafe(cmd.actLabObservaciones(), i));
-
-            fichaActLaboralService.guardar(fal);
+            saveActividadLaboralRow(cmd, ficha, i);
         }
-
         LOG.info("STEP3-H-OK");
+    }
+
+    private void saveActividadLaboralRow(Step3SaveCommand cmd, FichaOcupacional ficha, int index) {
+        int nroFila = index + 1;
+        if (!actividadLaboralHasData(cmd, index)) {
+            fichaActLaboralService.eliminarPorFichaYFila(ficha.getIdFicha(), nroFila);
+            return;
+        }
+        FichaActLaboral fal = findOrCreateActLaboral(cmd, ficha, index, nroFila);
+        mapActividadLaboralFields(cmd, index, fal);
+        fichaActLaboralService.guardar(fal);
+    }
+
+    private boolean actividadLaboralHasData(Step3SaveCommand cmd, int i) {
+        return !isBlank(getSafe(cmd.actLabCentroTrabajo(), i))
+                || !isBlank(getSafe(cmd.actLabActividad(), i))
+                || !isBlank(getSafe(cmd.actLabTiempo(), i))
+                || isTrue(getSafe(cmd.actLabTrabajoAnterior(), i))
+                || isTrue(getSafe(cmd.actLabTrabajoActual(), i))
+                || isTrue(getSafe(cmd.actLabIncidenteChk(), i))
+                || isTrue(getSafe(cmd.actLabAccidenteChk(), i))
+                || isTrue(getSafe(cmd.actLabEnfermedadChk(), i))
+                || getSafe(cmd.iessFecha(), i) != null
+                || !isBlank(getSafe(cmd.iessEspecificar(), i))
+                || !isBlank(getSafe(cmd.actLabObservaciones(), i));
+    }
+
+    private FichaActLaboral findOrCreateActLaboral(Step3SaveCommand cmd, FichaOcupacional ficha, int index, int nroFila) {
+        FichaActLaboral fal = fichaActLaboralService.buscarPorFichaYFila(ficha.getIdFicha(), nroFila);
+        if (fal != null) {
+            fal.setFActualizacion(cmd.now());
+            fal.setUsrActualizacion(cmd.user());
+            return fal;
+        }
+        fal = new FichaActLaboral();
+        fal.setFicha(ficha);
+        fal.setNroFila(nroFila);
+        fal.setFCreacion(cmd.now());
+        fal.setUsrCreacion(cmd.user());
+        return fal;
+    }
+
+    private void mapActividadLaboralFields(Step3SaveCommand cmd, int i, FichaActLaboral fal) {
+        fal.setCentroTrabajo(getSafe(cmd.actLabCentroTrabajo(), i));
+        fal.setActividad(getSafe(cmd.actLabActividad(), i));
+        fal.setTiempo(getSafe(cmd.actLabTiempo(), i));
+        fal.setEsAnterior(sn(getSafe(cmd.actLabTrabajoAnterior(), i)));
+        fal.setEsActual(sn(getSafe(cmd.actLabTrabajoActual(), i)));
+        fal.setIncidente(sn(getSafe(cmd.actLabIncidenteChk(), i)));
+        fal.setAccidente(sn(getSafe(cmd.actLabAccidenteChk(), i)));
+        fal.setEnfOcupacional(sn(getSafe(cmd.actLabEnfermedadChk(), i)));
+        fal.setFechaEvento(toDate(getSafe(cmd.iessFecha(), i)));
+        fal.setEspecificar(getSafe(cmd.iessEspecificar(), i));
+        fal.setObservaciones(getSafe(cmd.actLabObservaciones(), i));
     }
 
     private FichaOcupacional guardarStep3IExtralaborales(Step3SaveCommand cmd, FichaOcupacional ficha) {
         LOG.info("STEP3-I: Procesando Actividades Extralaborales (SERIALIZADO EN FICHA)");
-
         if (cmd.tipoAct() == null || cmd.fechaAct() == null || cmd.descAct() == null) {
             LOG.info("STEP3-I: Listas I null -> no se guarda (no rompe)");
             return ficha;
         }
-
-        StringBuilder sb = new StringBuilder();
-        Date ultimaFecha = null;
-
-        for (int i = 0; i < cmd.tipoAct().size(); i++) {
-            String t = getSafe(cmd.tipoAct(), i);
-            Date f = toDate(getSafe(cmd.fechaAct(), i));
-            String d = getSafe(cmd.descAct(), i);
-
-            boolean filaTieneDatos = !isBlank(t) || f != null || !isBlank(d);
-            if (!filaTieneDatos) {
-                continue;
-            }
-
-            sb.append(i + 1).append(") ")
-                    .append(nullToDash(t)).append(" | ")
-                    .append(f != null ? new SimpleDateFormat("yyyy/MM/dd").format(f) : "----/--/--")
-                    .append(" | ")
-                    .append(nullToDash(d))
-                    .append("\n");
-
-            if (f != null) {
-                ultimaFecha = f;
-            }
-        }
-
-        ficha.setExtraLabDesc(sb.length() == 0 ? null : sb.toString().trim());
-        ficha.setExtraLabFecha(ultimaFecha);
+        ExtralaboralSummary summary = buildExtralaboralSummary(cmd);
+        ficha.setExtraLabDesc(summary.descripcion());
+        ficha.setExtraLabFecha(summary.ultimaFecha());
         ficha.setFechaActualizacion(cmd.now());
         ficha.setUsrActualizacion(cmd.user());
-
         FichaOcupacional saved = fichaService.guardar(ficha);
         LOG.info("STEP3-I-OK");
         return saved;
     }
 
+    private ExtralaboralSummary buildExtralaboralSummary(Step3SaveCommand cmd) {
+        StringBuilder sb = new StringBuilder();
+        Date ultimaFecha = null;
+        for (int i = 0; i < cmd.tipoAct().size(); i++) {
+            Date fecha = appendExtralaboralLine(cmd, sb, i);
+            if (fecha != null) {
+                ultimaFecha = fecha;
+            }
+        }
+        String descripcion = sb.length() == 0 ? null : sb.toString().trim();
+        return new ExtralaboralSummary(descripcion, ultimaFecha);
+    }
+
+    private Date appendExtralaboralLine(Step3SaveCommand cmd, StringBuilder sb, int i) {
+        String tipo = getSafe(cmd.tipoAct(), i);
+        Date fecha = toDate(getSafe(cmd.fechaAct(), i));
+        String descripcion = getSafe(cmd.descAct(), i);
+        if (isBlank(tipo) && fecha == null && isBlank(descripcion)) {
+            return null;
+        }
+        sb.append(i + 1).append(") ")
+                .append(nullToDash(tipo)).append(" | ")
+                .append(fecha != null ? new SimpleDateFormat("yyyy/MM/dd").format(fecha) : "----/--/--")
+                .append(" | ")
+                .append(nullToDash(descripcion))
+                .append("\n");
+        return fecha;
+    }
+
     private void guardarStep3JExamenes(Step3SaveCommand cmd, FichaOcupacional ficha) {
         LOG.info("STEP3-J: Procesando Exámenes (FICHA_EXAMEN_COMP)");
-
         if (cmd.examNombre() == null || cmd.examFecha() == null || cmd.examResultado() == null) {
             LOG.info("STEP3-J: Listas J null -> no se guarda J");
             return;
         }
-
         int filas = Math.min(cmd.examNombre().size(), Math.min(cmd.examFecha().size(), cmd.examResultado().size()));
-
         for (int i = 0; i < filas; i++) {
-            int nroFila = i + 1;
-
-            String nombre = getSafe(cmd.examNombre(), i);
-            Date fecha = toDate(getSafe(cmd.examFecha(), i));
-            String resultado = getSafe(cmd.examResultado(), i);
-
-            boolean filaTieneDatos = !isBlank(nombre) || fecha != null || !isBlank(resultado);
-            if (!filaTieneDatos) {
-                int del = fichaExamenCompService.eliminarPorFichaYFila(ficha.getIdFicha(), nroFila);
-                LOG.info("STEP3-J-FILA {}: vacía -> delete={}", nroFila, del);
-                continue;
-            }
-
-            FichaExamenComp ex = fichaExamenCompService.buscarPorFichaYFila(ficha.getIdFicha(), nroFila);
-            if (ex == null) {
-                ex = new FichaExamenComp();
-                ex.setFicha(ficha);
-                ex.setNroFila(nroFila);
-                LOG.info("STEP3-J-FILA {}: INSERT", nroFila);
-            } else {
-                LOG.info("STEP3-J-FILA {}: UPDATE id={}", nroFila, ex.getIdFichaExamen());
-            }
-
-            ex.setNombreExamen(nombre);
-            ex.setFechaExamen(fecha);
-            ex.setResultado(resultado);
-            fichaExamenCompService.guardar(ex, cmd.user());
+            saveExamRow(cmd, ficha, i);
         }
-
         LOG.info("STEP3-J-OK");
+    }
+
+    private void saveExamRow(Step3SaveCommand cmd, FichaOcupacional ficha, int i) {
+        int nroFila = i + 1;
+        String nombre = getSafe(cmd.examNombre(), i);
+        Date fecha = toDate(getSafe(cmd.examFecha(), i));
+        String resultado = getSafe(cmd.examResultado(), i);
+        if (isBlank(nombre) && fecha == null && isBlank(resultado)) {
+            int del = fichaExamenCompService.eliminarPorFichaYFila(ficha.getIdFicha(), nroFila);
+            LOG.info("STEP3-J-FILA {}: vacía -> delete={}", nroFila, del);
+            return;
+        }
+        FichaExamenComp ex = findOrCreateExamRow(ficha, nroFila);
+        ex.setNombreExamen(nombre);
+        ex.setFechaExamen(fecha);
+        ex.setResultado(resultado);
+        fichaExamenCompService.guardar(ex, cmd.user());
+    }
+
+    private FichaExamenComp findOrCreateExamRow(FichaOcupacional ficha, int nroFila) {
+        FichaExamenComp ex = fichaExamenCompService.buscarPorFichaYFila(ficha.getIdFicha(), nroFila);
+        if (ex != null) {
+            LOG.info("STEP3-J-FILA {}: UPDATE id={}", nroFila, ex.getIdFichaExamen());
+            return ex;
+        }
+        ex = new FichaExamenComp();
+        ex.setFicha(ficha);
+        ex.setNroFila(nroFila);
+        LOG.info("STEP3-J-FILA {}: INSERT", nroFila);
+        return ex;
     }
 
     private void guardarStep3KDiagnosticos(Step3SaveCommand cmd, FichaOcupacional ficha) {
@@ -290,6 +321,12 @@ public class Step3OrchestratorService implements Serializable {
         return null;
     }
 
+    /**
+     * Comando de entrada del Step 3.
+     *
+     * <p>Concentra datos de la vista y callbacks de soporte para que el controlador
+     * web delegue en este orquestador sin acoplarse a la lógica de persistencia.</p>
+     */
     public record Step3SaveCommand(
             FichaOcupacional ficha,
             String codCie10Ppal,
@@ -323,5 +360,12 @@ public class Step3OrchestratorService implements Serializable {
             List<Date> examFecha,
             List<String> examResultado,
             List<ConsultaDiagnostico> listaDiag) {
+    }
+
+    /**
+     * DTO interno para representar el resultado serializado del bloque
+     * de actividades extralaborales que se persiste en {@link FichaOcupacional}.
+     */
+    private record ExtralaboralSummary(String descripcion, Date ultimaFecha) {
     }
 }
