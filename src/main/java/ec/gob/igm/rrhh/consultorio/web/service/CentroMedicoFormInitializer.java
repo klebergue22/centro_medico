@@ -186,28 +186,58 @@ public class CentroMedicoFormInitializer implements Serializable {
         ctrl.sethEspecificacion(new String[hRows]);
         ctrl.sethObservacion(new String[hRows]);
 
-        ctrl.setConsTiempoConsumoMeses(new Integer[]{0, 0, 0});
-        ctrl.setConsTiempoAbstinenciaMeses(new Integer[]{0, 0, 0});
-        ctrl.setConsExConsumidor(new Boolean[]{false, false, false});
-        ctrl.setConsNoConsume(new Boolean[]{false, false, false});
-
-        ctrl.setAfCual(new String[3]);
-        ctrl.setAfTiempo(new String[3]);
-        ctrl.setMedCual(new String[3]);
-        ctrl.setMedCant(new Integer[3]);
         ctrl.setConsOtrasCual(null);
         ctrl.setConsumoVidaCondObs(null);
+        initConsumoVidaCond(ctrl, 3);
 
         initActividadesExtra(ctrl, 3);
         initActLab(ctrl, hRows);
         ensureDiagSize(ctrl, diagRows);
 
-        ctrl.initConsumoVidaCondDefaults();
-
         if (ctrl.getPersonaAux() == null) {
             ctrl.setPersonaAux(new PersonaAux());
         }
         ctrl.setPermitirIngresoManual(false);
+    }
+
+    private void initConsumoVidaCond(CentroMedicoCtrl ctrl, int size) {
+        initializeConsumoArrays(ctrl, size);
+        initializeHabitosArrays(ctrl, size);
+        initializeMedicacionArrays(ctrl, size);
+        initializeConsumoDefaults(ctrl, size);
+        ctrl.setConsumoVidaCondObs(ctrl.getConsumoVidaCondObs() == null ? "" : ctrl.getConsumoVidaCondObs());
+    }
+
+    private void initializeConsumoArrays(CentroMedicoCtrl ctrl, int size) {
+        ctrl.setConsTiempoConsumoMeses(
+                ctrl.getConsTiempoConsumoMeses() == null ? new Integer[size] : ctrl.getConsTiempoConsumoMeses());
+        ctrl.setConsExConsumidor(
+                ctrl.getConsExConsumidor() == null ? new Boolean[size] : ctrl.getConsExConsumidor());
+        ctrl.setConsTiempoAbstinenciaMeses(ctrl.getConsTiempoAbstinenciaMeses() == null
+                ? new Integer[size]
+                : ctrl.getConsTiempoAbstinenciaMeses());
+        ctrl.setConsNoConsume(ctrl.getConsNoConsume() == null ? new Boolean[size] : ctrl.getConsNoConsume());
+    }
+
+    private void initializeHabitosArrays(CentroMedicoCtrl ctrl, int size) {
+        ctrl.setAfCual(ctrl.getAfCual() == null ? new String[size] : ctrl.getAfCual());
+        ctrl.setAfTiempo(ctrl.getAfTiempo() == null ? new String[size] : ctrl.getAfTiempo());
+    }
+
+    private void initializeMedicacionArrays(CentroMedicoCtrl ctrl, int size) {
+        ctrl.setMedCual(ctrl.getMedCual() == null ? new String[size] : ctrl.getMedCual());
+        ctrl.setMedCant(ctrl.getMedCant() == null ? new Integer[size] : ctrl.getMedCant());
+    }
+
+    private void initializeConsumoDefaults(CentroMedicoCtrl ctrl, int size) {
+        for (int i = 0; i < size; i++) {
+            ctrl.getConsExConsumidor()[i] = ctrl.getConsExConsumidor()[i] == null
+                    ? Boolean.FALSE
+                    : ctrl.getConsExConsumidor()[i];
+            ctrl.getConsNoConsume()[i] = ctrl.getConsNoConsume()[i] == null
+                    ? Boolean.FALSE
+                    : ctrl.getConsNoConsume()[i];
+        }
     }
 
     public void initExamenes(CentroMedicoCtrl ctrl, int n) {
