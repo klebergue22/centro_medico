@@ -4,10 +4,12 @@ import static ec.gob.igm.rrhh.consultorio.web.util.CentroMedicoViewUtils.esVacio
 import static ec.gob.igm.rrhh.consultorio.web.util.CentroMedicoViewUtils.getSafe;
 import static ec.gob.igm.rrhh.consultorio.web.util.CentroMedicoViewUtils.isBlank;
 import static ec.gob.igm.rrhh.consultorio.web.util.CentroMedicoViewUtils.isTrue;
+import static ec.gob.igm.rrhh.consultorio.web.util.CentroMedicoPdfValueUtil.safe;
+import static ec.gob.igm.rrhh.consultorio.web.util.DateFormatUtil.fmtDate;
+import static ec.gob.igm.rrhh.consultorio.web.util.DateFormatUtil.toDate;
+import static ec.gob.igm.rrhh.consultorio.web.util.ReflectionPropertyUtil.getFichaStringByReflection;
 
 import java.io.Serializable;
-import java.time.LocalDate;
-import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedHashMap;
@@ -1552,62 +1554,6 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
         }
     }
 
-    private String esNulo(String s) {
-        return s == null ? "" : s;
-    }
-
-    private String[] splitEnDos(String valor) {
-        String res1 = null;
-        String res2 = null;
-
-        if (!isBlank(valor)) {
-            String trimmed = valor.trim();
-            String[] partes = trimmed.split("\\s+");
-            if (partes.length == 1) {
-                res1 = partes[0];
-            } else if (partes.length > 1) {
-                res1 = partes[0];
-
-                StringBuilder sb = new StringBuilder();
-                for (int i = 1; i < partes.length; i++) {
-                    if (i > 1) {
-                        sb.append(' ');
-                    }
-                    sb.append(partes[i]);
-                }
-                res2 = sb.toString();
-            }
-        }
-
-        return new String[]{res1, res2};
-    }
-
-    private String primerToken(String texto) {
-        if (esVacio(texto)) {
-            return null;
-        }
-        String[] partes = texto.trim().split("\\s+");
-        return partes[0];
-    }
-
-    private String restoTokens(String texto) {
-        if (esVacio(texto)) {
-            return null;
-        }
-        String[] partes = texto.trim().split("\\s+");
-        if (partes.length <= 1) {
-            return null;
-        }
-        StringBuilder sb = new StringBuilder();
-        for (int i = 1; i < partes.length; i++) {
-            if (i > 1) {
-                sb.append(' ');
-            }
-            sb.append(partes[i]);
-        }
-        return sb.toString();
-    }
-
     private boolean filaActLabTieneAlgo(int i) {
         if (!isBlank(actLabCentroTrabajo.get(i))) {
             return true;
@@ -1780,153 +1726,6 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
             rep.put("h_iess_especificar_" + idx, safe(getSafe(iessEspecificar, i)));
             rep.put("h_obs_" + idx, safe(getSafe(actLabObservaciones, i)));
         }
-    }
-
-    // =========================
-    // UTILIDADES DE FORMATO Y CONVERSIÓN
-    // =========================
-    private Date toDate(Object value) {
-        if (value == null) {
-            return null;
-        }
-        if (value instanceof Date d) {
-            return d;
-        }
-        if (value instanceof LocalDate ld) {
-            return Date.from(ld.atStartOfDay(ZoneId.systemDefault()).toInstant());
-        }
-        return null;
-    }
-
-    private String fmtDate(java.util.Date d) {
-        if (d == null) {
-            return "";
-        }
-        return new java.text.SimpleDateFormat("dd/MM/yyyy").format(d);
-    }
-
-    private static String safe(String s) {
-        if (s == null) {
-            return "";
-        }
-        String out = s;
-        out = out.replace("&", "&amp;");
-        out = out.replace("<", "&lt;");
-        out = out.replace(">", "&gt;");
-        out = out.replace("\"", "&quot;");
-        out = out.replace("'", "&#39;");
-        return out;
-    }
-
-    private static String markX(Object v) {
-        if (v == null) {
-            return "";
-        }
-        String s = String.valueOf(v).trim();
-        if (s.isEmpty()) {
-            return "";
-        }
-        s = s.toUpperCase();
-        if ("S".equals(s) || "SI".equals(s) || "TRUE".equals(s) || "1".equals(s) || "X".equals(s) || "✔".equals(s)) {
-            return "X";
-        }
-        return "";
-    }
-
-    private static boolean isYes(Object v) {
-        if (v == null) {
-            return false;
-        }
-        String s = String.valueOf(v).trim().toUpperCase();
-        return "S".equals(s) || "SI".equals(s) || "TRUE".equals(s) || "1".equals(s) || "X".equals(s) || "✔".equals(s);
-    }
-
-    private static boolean isNo(Object v) {
-        if (v == null) {
-            return false;
-        }
-        String s = String.valueOf(v).trim().toUpperCase();
-        return "N".equals(s) || "NO".equals(s) || "FALSE".equals(s) || "0".equals(s);
-    }
-
-    private static String normalizarXhtml(String html) {
-        if (html == null) {
-            return "";
-        }
-        String out = html;
-        out = out.replace("&nbsp;", " ");
-        out = out.replaceAll("(?i)<br(\\s*)>", "<br/>");
-        out = out.replaceAll("(?i)<hr(\\s*)>", "<hr/>");
-        return out;
-    }
-
-    private String val(Object root, String path) {
-        if (root == null || path == null || path.isBlank()) {
-            return "";
-        }
-        Object cur = root;
-        for (String part : path.split("\\.")) {
-            if (cur == null) {
-                return "";
-            }
-            cur = readProperty(cur, part);
-        }
-        return cur == null ? "" : String.valueOf(cur);
-    }
-
-    private Object readProperty(Object obj, String prop) {
-        try {
-            String m = "get" + Character.toUpperCase(prop.charAt(0)) + prop.substring(1);
-            return obj.getClass().getMethod(m).invoke(obj);
-        } catch (Exception ignore) {
-            try {
-                String m = "is" + Character.toUpperCase(prop.charAt(0)) + prop.substring(1);
-                return obj.getClass().getMethod(m).invoke(obj);
-            } catch (Exception ignore2) {
-                try {
-                    java.lang.reflect.Field f = obj.getClass().getDeclaredField(prop);
-                    f.setAccessible(true);
-                    return f.get(obj);
-                } catch (Exception ignore3) {
-                    return null;
-                }
-            }
-        }
-    }
-
-    private static String firstNonEmpty(String... vals) {
-        if (vals == null) {
-            return null;
-        }
-        for (String v : vals) {
-            if (v != null && !v.trim().isEmpty()) {
-                return v;
-            }
-        }
-        return null;
-    }
-
-    private static String getFichaStringByReflection(Object fo, String... getterNames) {
-        if (fo == null || getterNames == null) {
-            return null;
-        }
-        for (String g : getterNames) {
-            if (g == null || g.trim().isEmpty()) {
-                continue;
-            }
-            try {
-                java.lang.reflect.Method m = fo.getClass().getMethod(g);
-                Object r = m.invoke(fo);
-                if (r != null) {
-                    String s = String.valueOf(r);
-                    if (!s.trim().isEmpty()) {
-                        return s;
-                    }
-                }
-            } catch (Exception ignore) {
-            }
-        }
-        return null;
     }
 
     // =========================
