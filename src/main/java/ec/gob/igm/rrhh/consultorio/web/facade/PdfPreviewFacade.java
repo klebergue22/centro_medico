@@ -2,6 +2,7 @@ package ec.gob.igm.rrhh.consultorio.web.facade;
 
 import java.io.Serializable;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import org.slf4j.Logger;
 
@@ -10,6 +11,7 @@ import jakarta.faces.context.FacesContext;
 import jakarta.inject.Inject;
 
 import ec.gob.igm.rrhh.consultorio.domain.model.FichaOcupacional;
+import ec.gob.igm.rrhh.consultorio.web.ctrl.CentroMedicoCtrl;
 import ec.gob.igm.rrhh.consultorio.web.ctrl.ControllerActionTemplate;
 import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoPdfTemplateCoordinator;
 import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoPdfWorkflowService;
@@ -156,7 +158,7 @@ public class PdfPreviewFacade implements Serializable {
     }
 
     public static class BasePrepareCommand {
-        public final Object controllerRef;
+        public final CentroMedicoCtrl controllerRef;
         public final Logger log;
         public final String activeStep;
         public final Integer noPersonaSel;
@@ -164,7 +166,7 @@ public class PdfPreviewFacade implements Serializable {
         public final Runnable asegurarPersonaAuxPersistida;
         public final Runnable syncCamposDesdeObjetosInternal;
         public final Runnable recalcularIMC;
-        public final Runnable verificarFichaCompleta;
+        public final Supplier<Boolean> verificarFichaCompleta;
         public final Consumer<java.util.Date> setFechaEmision;
         public final int hRows;
         public final PdfFichaInputAssembler pdfFichaInputAssembler;
@@ -179,7 +181,7 @@ public class PdfPreviewFacade implements Serializable {
         public final Consumer<Boolean> mostrarDlgCedulaSetter;
 
         public BasePrepareCommand(
-                Object controllerRef,
+                CentroMedicoCtrl controllerRef,
                 Logger log,
                 String activeStep,
                 Integer noPersonaSel,
@@ -187,7 +189,7 @@ public class PdfPreviewFacade implements Serializable {
                 Runnable asegurarPersonaAuxPersistida,
                 Runnable syncCamposDesdeObjetosInternal,
                 Runnable recalcularIMC,
-                Runnable verificarFichaCompleta,
+                Supplier<Boolean> verificarFichaCompleta,
                 Consumer<java.util.Date> setFechaEmision,
                 int hRows,
                 PdfFichaInputAssembler pdfFichaInputAssembler,
@@ -263,13 +265,13 @@ public class PdfPreviewFacade implements Serializable {
         public final ControllerActionTemplate controllerActionTemplate;
         public final PdfPreviewState pdfPreviewState;
         public final PdfSessionStore pdfSessionStore;
-        public final Runnable verificarFichaCompleta;
+        public final Supplier<Boolean> verificarFichaCompleta;
         public final BasePrepareCommand base;
 
         public PrepareVistaPreviaCommand(ControllerActionTemplate controllerActionTemplate,
                                          PdfPreviewState pdfPreviewState,
                                          PdfSessionStore pdfSessionStore,
-                                         Runnable verificarFichaCompleta,
+                                         Supplier<Boolean> verificarFichaCompleta,
                                          BasePrepareCommand base) {
             this.controllerActionTemplate = controllerActionTemplate;
             this.pdfPreviewState = pdfPreviewState;
