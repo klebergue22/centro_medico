@@ -44,12 +44,10 @@ import ec.gob.igm.rrhh.consultorio.service.FichaDiagnosticoService;
 import ec.gob.igm.rrhh.consultorio.service.FichaExamenCompService;
 import ec.gob.igm.rrhh.consultorio.service.FichaOcupacionalService;
 import ec.gob.igm.rrhh.consultorio.service.PersonaAuxService;
-import ec.gob.igm.rrhh.consultorio.service.Step1FichaService;
 import ec.gob.igm.rrhh.consultorio.web.facade.CentroMedicoPdfFacade;
 import ec.gob.igm.rrhh.consultorio.web.jsf.CentroMedicoMessageService;
 import ec.gob.igm.rrhh.consultorio.web.facade.PacienteRegistrationFacade;
-import ec.gob.igm.rrhh.consultorio.web.mapper.Step1CommandAssembler;
-import ec.gob.igm.rrhh.consultorio.web.mapper.Step1ViewDataAssembler;
+import ec.gob.igm.rrhh.consultorio.web.facade.Step1Facade;
 import ec.gob.igm.rrhh.consultorio.web.mapper.Step3CommandAssembler;
 import ec.gob.igm.rrhh.consultorio.web.mapper.Step3ViewDataAssembler;
 import ec.gob.igm.rrhh.consultorio.web.mapper.PacienteSearchInputAssembler;
@@ -146,8 +144,6 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     @EJB
     private transient FichaOcupacionalService fichaService;
     @EJB
-    private transient Step1FichaService step1FichaService;
-    @EJB
     private transient FichaDiagnosticoService fichaDiagnosticoService;
     @EJB
     private transient EmpleadoService empleadoService;
@@ -217,10 +213,6 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     @Inject
     private transient DiagnosticoDialogControllerSupport diagnosticoDialogControllerSupport;
     @Inject
-    private transient Step1CommandAssembler step1CommandAssembler;
-    @Inject
-    private transient Step1ViewDataAssembler step1ViewDataAssembler;
-    @Inject
     private transient Step3CommandAssembler step3CommandAssembler;
     @Inject
     private transient Step3ViewDataAssembler step3ViewDataAssembler;
@@ -240,6 +232,8 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     private transient FichaPdfDataMapper fichaPdfDataMapper;
     @Inject
     private transient PacienteRegistrationFacade pacienteRegistrationFacade;
+    @Inject
+    private transient Step1Facade step1Facade;
     @Inject
     private transient PacienteControllerSupport pacienteControllerSupport;
     @Inject
@@ -685,32 +679,21 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     }
 
     private void saveStep1() {
-        applyPacienteUiResult(pacienteRegistrationFacade.asegurarEmpleadoEnViewScope(
+        Step1Facade.SaveStep1Result result = step1Facade.guardar(new Step1Facade.SaveStep1Command(
                 permitirIngresoManual,
                 empleadoSel,
                 noPersonaSel,
                 ficha,
-                personaAux));
+                personaAux,
+                this,
+                usuarioReal()));
 
-        final String user = usuarioReal();
-        Step1FichaService.Step1Command command = step1CommandAssembler.toCommand(
-                step1ViewDataAssembler.capture(this, user));
-
-        try {
-            Step1FichaService.Step1Result result = step1FichaService.guardar(command);
-            ficha = result.ficha();
-            empleadoSel = result.empleadoSel();
-            personaAux = result.personaAux();
-            signos = result.signos();
-            applyPacienteUiResult(pacienteRegistrationFacade.syncPatientStateAfterStep1(
-                    permitirIngresoManual,
-                    empleadoSel,
-                    noPersonaSel,
-                    personaAux,
-                    ficha));
-        } catch (Step1FichaService.Step1ValidationException ex) {
-            throw new BusinessValidationException(ex.getMessage());
-        }
+        applyPacienteUiResult(result.preUiResult);
+        ficha = result.ficha;
+        empleadoSel = result.empleadoSel;
+        personaAux = result.personaAux;
+        signos = result.signos;
+        applyPacienteUiResult(result.postUiResult);
     }
 
     public void guardarStep2() {
