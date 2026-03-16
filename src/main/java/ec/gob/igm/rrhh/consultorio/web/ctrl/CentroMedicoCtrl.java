@@ -72,7 +72,7 @@ import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoPdfFacadeService;
 import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoPdfTemplateCoordinator;
 import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoPdfUiCoordinator;
 import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoWizardNavigationCoordinator;
-import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoStepFlowFacade;
+import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoWizardFacade;
 import ec.gob.igm.rrhh.consultorio.web.service.DiagnosticoFilaUiCoordinator;
 import ec.gob.igm.rrhh.consultorio.web.service.FichaPdfDataMapper;
 import ec.gob.igm.rrhh.consultorio.web.service.FichaPdfMappedData;
@@ -186,7 +186,7 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     @Inject
     private transient CentroMedicoWizardNavigationCoordinator wizardNavigationCoordinator;
     @Inject
-    private transient CentroMedicoStepFlowFacade centroMedicoStepFlowFacade;
+    private transient CentroMedicoWizardFacade centroMedicoWizardFacade;
     @Inject
     private transient CentroMedicoMessageService messageService;
     @Inject
@@ -586,14 +586,14 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
         controllerActionTemplate.executeWithResult(
                 "guardarStepActual",
                 () -> {
-                    centroMedicoStepFlowFacade.guardarStepActual(
-                            new CentroMedicoStepFlowFacade.GuardarStepActualFacadeCommand(
+                    centroMedicoWizardFacade.guardarStepActual(
+                            new CentroMedicoWizardFacade.GuardarStepActualCommand(
                                     activeStep,
                                     this::guardarStep1,
                                     this::guardarStep2,
                                     this::guardarStep3,
                                     next -> this.activeStep = next,
-                                    () -> PrimeFaces.current().ajax().update("@([id$=wdzFicha])"),
+                                    "@([id$=wdzFicha])",
                                     this::resetStep4PdfState,
                                     this::applyStep4State,
                                     ficha,
