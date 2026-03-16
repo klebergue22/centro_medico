@@ -502,7 +502,7 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
         try {
             setFicha(wizardSectionFacade.guardarStep3(step3CommandAssembler.toCommand(
                     step3ViewDataAssembler.capture(this, now, () -> pacienteSectionFacade.asegurarPersonaAuxPersistida(this),
-                            () -> centroMedicoFormStateService.ensureActLabSize(this, H_ROWS)))));
+                            () -> centroMedicoFormStateService.ensureActLabSize(this, H_ROWS))));
         } catch (IllegalArgumentException ex) {
             fail(ex.getMessage());
         }
