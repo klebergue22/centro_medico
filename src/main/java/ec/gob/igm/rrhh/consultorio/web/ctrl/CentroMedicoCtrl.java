@@ -19,7 +19,6 @@ import java.util.Map;
 import jakarta.annotation.PostConstruct;
 import jakarta.ejb.EJB;
 import jakarta.faces.application.FacesMessage;
-import jakarta.faces.component.UIComponent;
 import jakarta.faces.context.ExternalContext;
 import jakarta.faces.context.FacesContext;
 import jakarta.faces.event.AjaxBehaviorEvent;
@@ -73,7 +72,9 @@ import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoPdfTemplateCoordinato
 import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoPdfUiCoordinator;
 import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoWizardNavigationCoordinator;
 import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoWizardFacade;
+import ec.gob.igm.rrhh.consultorio.web.service.DiagnosticoDialogControllerSupport;
 import ec.gob.igm.rrhh.consultorio.web.service.DiagnosticoFilaUiCoordinator;
+import ec.gob.igm.rrhh.consultorio.web.service.DiagnosticoPrincipalService;
 import ec.gob.igm.rrhh.consultorio.web.service.FichaPdfDataMapper;
 import ec.gob.igm.rrhh.consultorio.web.service.FichaPdfMappedData;
 import ec.gob.igm.rrhh.consultorio.web.service.PacienteUiFlowCoordinator;
@@ -219,6 +220,10 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     private transient PersonaAuxDialogUiCoordinator personaAuxDialogUiCoordinator;
     @Inject
     private transient DiagnosticoFilaUiCoordinator diagnosticoFilaUiCoordinator;
+    @Inject
+    private transient DiagnosticoPrincipalService diagnosticoPrincipalService;
+    @Inject
+    private transient DiagnosticoDialogControllerSupport diagnosticoDialogControllerSupport;
     @Inject
     private transient Step1CommandAssembler step1CommandAssembler;
     @Inject
@@ -1072,38 +1077,16 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     }
 
     private void syncCie10PrincipalFromK() {
-        if (codCie10Ppal != null && !codCie10Ppal.trim().isEmpty()) {
+        DiagnosticoPrincipalService.DiagnosticoPrincipalData principal = diagnosticoPrincipalService.inferirPrincipal(
+                listaDiag,
+                codCie10Ppal,
+                descCie10Ppal);
+        if (!principal.hasCodigo()) {
             return;
         }
 
-        if (listaDiag == null || listaDiag.isEmpty()) {
-            return;
-        }
-
-        ConsultaDiagnostico best = null;
-
-        for (ConsultaDiagnostico r : listaDiag) {
-            if (r == null) {
-                continue;
-            }
-            String cod = r.getCodigo() != null ? r.getCodigo().trim() : "";
-            if (cod.isEmpty()) {
-                continue;
-            }
-
-            if ("D".equals(r.getTipoDiag())) {
-                best = r;
-                break;
-            }
-            if (best == null) {
-                best = r;
-            }
-        }
-
-        if (best != null) {
-            codCie10Ppal = best.getCodigo();
-            descCie10Ppal = best.getDescripcion();
-        }
+        codCie10Ppal = principal.getCodigo();
+        descCie10Ppal = principal.getDescripcion();
     }
 
     public void onCie10BlurCodigo(int index) {
@@ -1136,26 +1119,36 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
 
     public void onCie10CodigoSelect(SelectEvent event) {
         String codigo = (String) event.getObject();
-        this.codCie10Ppal = codigo;
-        this.descCie10Ppal = cie10LookupService.buscarDescripcionPorCodigo(codigo);
+        DiagnosticoPrincipalService.DiagnosticoPrincipalData principal = diagnosticoPrincipalService
+                .sincronizarCodigoYDescripcion(codigo, null);
+        this.codCie10Ppal = principal.getCodigo();
+        this.descCie10Ppal = principal.getDescripcion();
     }
 
     public void onCie10CodigoBlur() {
-        this.descCie10Ppal = cie10LookupService.buscarDescripcionPorCodigo(this.codCie10Ppal);
+        DiagnosticoPrincipalService.DiagnosticoPrincipalData principal = diagnosticoPrincipalService
+                .sincronizarCodigoYDescripcion(this.codCie10Ppal, null);
+        this.codCie10Ppal = principal.getCodigo();
+        this.descCie10Ppal = principal.getDescripcion();
     }
 
     public void onCie10DescripcionSelect(SelectEvent event) {
         String descripcion = (String) event.getObject();
-        this.descCie10Ppal = descripcion;
-        this.codCie10Ppal = cie10LookupService.buscarCodigoPorDescripcion(descripcion);
+        DiagnosticoPrincipalService.DiagnosticoPrincipalData principal = diagnosticoPrincipalService
+                .sincronizarCodigoYDescripcion(null, descripcion);
+        this.codCie10Ppal = principal.getCodigo();
+        this.descCie10Ppal = principal.getDescripcion();
     }
 
     public void onCie10DescripcionBlur() {
-        this.codCie10Ppal = cie10LookupService.buscarCodigoPorDescripcion(this.descCie10Ppal);
+        DiagnosticoPrincipalService.DiagnosticoPrincipalData principal = diagnosticoPrincipalService
+                .sincronizarCodigoYDescripcion(null, this.descCie10Ppal);
+        this.codCie10Ppal = principal.getCodigo();
+        this.descCie10Ppal = principal.getDescripcion();
     }
 
     private Cie10 inferCie10PrincipalFromListaK() {
-        return cie10LookupService.inferirPrincipalDesdeLista(listaDiag);
+        return diagnosticoPrincipalService.inferirPrincipalCie10DesdeLista(listaDiag);
     }
 
     public List<String> completarCie10FilaPorCodigo(String query) {
@@ -1215,44 +1208,12 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     }
 
     public void onKTipoChange(AjaxBehaviorEvent event) {
-        UIComponent comp = (event != null ? event.getComponent() : null);
-        Integer idx = null;
-        if (comp != null) {
-            Object idxObj = comp.getAttributes().get("idx");
-            if (idxObj != null) {
-                try {
-                    idx = Integer.parseInt(idxObj.toString());
-                } catch (NumberFormatException e) {
-                    LOG.info("... [K-TIPO] idx parse ERROR idxAttr={} ex={}", idxObj, e.toString());
-                }
-            }
-        }
-
-        String clientId;
-        try {
-            FacesContext fc = FacesContext.getCurrentInstance();
-            clientId = (fc != null && comp != null) ? comp.getClientId(fc) : "null";
-        } catch (RuntimeException e) {
-            clientId = "err:" + e.getMessage();
-        }
-
-        LOG.info(">>> [K-TIPO] change ENTER idx=" + idx + " clientId=" + clientId);
-
-        ConsultaDiagnostico row = (idx == null || listaDiag == null || idx < 0 || idx >= listaDiag.size())
-                ? null
-                : listaDiag.get(idx);
-        if (row == null) {
-            return;
-        }
-
-        LOG.info("<<< [K-TIPO] AFTER idx=" + idx
-                + " codigo=[" + row.getCodigo() + "]"
-                + " desc=[" + row.getDescripcion() + "]"
-                + " tipo=[" + row.getTipoDiag() + "]");
+        diagnosticoDialogControllerSupport.onKTipoChange(event, listaDiag);
     }
 
     public void abrirDialogoDiagnostico(AjaxBehaviorEvent event) {
-        DiagnosticoFilaUiCoordinator.DiagnosticoDialogState state = diagnosticoFilaUiCoordinator.abrirDialogo(event, listaDiag);
+        DiagnosticoFilaUiCoordinator.DiagnosticoDialogState state = diagnosticoDialogControllerSupport
+                .abrirDialogo(event, listaDiag, diagnosticoFilaUiCoordinator);
         if (!state.isValid()) {
             return;
         }
@@ -1260,21 +1221,26 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
         dialogDiagnosticoIdx = state.getIdx();
         codCie10Ppal = state.getCodigo();
         descCie10Ppal = state.getDescripcion();
-        PrimeFaces.current().executeScript("PF('kDiagDialogWv').show();");
+        diagnosticoDialogControllerSupport.mostrarDialogo();
     }
 
     public void aceptarDialogoDiagnostico() {
-        boolean accepted = diagnosticoFilaUiCoordinator.aceptarDialogo(dialogDiagnosticoIdx, codCie10Ppal, descCie10Ppal, listaDiag);
+        boolean accepted = diagnosticoDialogControllerSupport.aceptarDialogo(
+                dialogDiagnosticoIdx,
+                codCie10Ppal,
+                descCie10Ppal,
+                listaDiag,
+                diagnosticoFilaUiCoordinator);
         if (!accepted) {
             return;
         }
 
         syncCie10PrincipalFromK();
-        PrimeFaces.current().executeScript("PF('kDiagDialogWv').hide();");
+        diagnosticoDialogControllerSupport.cerrarDialogo();
     }
 
     public void cerrarDialogoDiagnostico() {
-        PrimeFaces.current().executeScript("PF('kDiagDialogWv').hide();");
+        diagnosticoDialogControllerSupport.cerrarDialogo();
     }
 
     // =========================
