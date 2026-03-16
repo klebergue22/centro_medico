@@ -6,6 +6,9 @@ import jakarta.faces.context.FacesContext;
 import org.primefaces.PrimeFaces;
 
 @ApplicationScoped
+/**
+ * Class PersonaAuxDialogUiCoordinator: orquesta la lógica de presentación y flujo web.
+ */
 public class PersonaAuxDialogUiCoordinator {
 
     public void onGuardarSuccess(PacienteUiFlowCoordinator.UiFlowResult result) {

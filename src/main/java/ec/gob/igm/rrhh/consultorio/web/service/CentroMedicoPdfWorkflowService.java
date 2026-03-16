@@ -18,6 +18,9 @@ import ec.gob.igm.rrhh.consultorio.web.pdf.CentroMedicoPdfCommandFactory;
 import ec.gob.igm.rrhh.consultorio.web.session.PdfSessionStore;
 
 @Stateless
+/**
+ * Class CentroMedicoPdfWorkflowService: orquesta la lógica de presentación y flujo web.
+ */
 public class CentroMedicoPdfWorkflowService implements Serializable {
 
     private static final long serialVersionUID = 1L;

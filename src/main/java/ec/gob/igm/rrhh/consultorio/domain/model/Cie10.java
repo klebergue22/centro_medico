@@ -15,6 +15,9 @@ import java.util.Set;
             @UniqueConstraint(name = "UK_CIE10_ID", columnNames = "ID")
         }
 )
+/**
+ * Class Cie10: representa una entidad del dominio de consultorio médico.
+ */
 public class Cie10 implements Serializable {
 
     private static final long serialVersionUID = 1L;

@@ -21,6 +21,9 @@ import ec.gob.igm.rrhh.consultorio.web.service.FichaPdfViewModelBuilder;
 import ec.gob.igm.rrhh.consultorio.web.service.FichaPdfViewModelBuilder.FichaPdfViewModelContext;
 
 @Stateless
+/**
+ * Class FichaPdfContextAssembler: gestiona la construcción y renderización de documentos PDF.
+ */
 public class FichaPdfContextAssembler implements Serializable {
 
     public FichaPdfMappedData syncCamposDesdeObjetos(

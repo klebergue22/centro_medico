@@ -7,6 +7,9 @@ import ec.gob.igm.rrhh.consultorio.domain.model.FichaOcupacional;
 import ec.gob.igm.rrhh.consultorio.domain.model.PersonaAux;
 import ec.gob.igm.rrhh.consultorio.domain.model.SignosVitales;
 
+/**
+ * Class Step1ViewData: contiene la lógica de la aplicación.
+ */
 public class Step1ViewData {
 
     public final FichaOcupacional ficha;

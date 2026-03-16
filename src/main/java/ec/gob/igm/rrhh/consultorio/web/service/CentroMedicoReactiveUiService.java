@@ -8,6 +8,9 @@ import jakarta.enterprise.context.ApplicationScoped;
 import ec.gob.igm.rrhh.consultorio.web.util.CentroMedicoCalcUtil;
 
 @ApplicationScoped
+/**
+ * Class CentroMedicoReactiveUiService: orquesta la lógica de presentación y flujo web.
+ */
 public class CentroMedicoReactiveUiService implements Serializable {
 
     private static final long serialVersionUID = 1L;

@@ -2,6 +2,9 @@ package ec.gob.igm.rrhh.consultorio.domain.enums;
 
 
 
+/**
+ * Enum EstadoContrato: contiene la lógica de la aplicación.
+ */
 public enum EstadoContrato {
 
     VIGENTE("V", "Vigente"),

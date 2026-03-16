@@ -12,6 +12,9 @@ import java.util.Objects;
 
 @Entity
 @Table(name = "SIGNOS_VITALES", schema = "CONSULTORIO")
+/**
+ * Class SignosVitales: representa una entidad del dominio de consultorio médico.
+ */
 public class SignosVitales implements Serializable {
 
     private static final long serialVersionUID = 1L;

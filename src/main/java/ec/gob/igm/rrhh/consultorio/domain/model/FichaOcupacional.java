@@ -8,6 +8,9 @@ import java.util.Objects;
 @Entity
 @Table(name = "FICHA_OCUPACIONAL", schema = "CONSULTORIO")
 @Access(AccessType.FIELD)
+/**
+ * Class FichaOcupacional: representa una entidad del dominio de consultorio médico.
+ */
 public class FichaOcupacional implements Serializable {
 
     private static final long serialVersionUID = 1L;

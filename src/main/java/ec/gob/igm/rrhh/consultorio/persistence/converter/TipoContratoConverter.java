@@ -9,6 +9,9 @@ import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;
 
 @Converter(autoApply = false)
+/**
+ * Class TipoContratoConverter: convierte valores entre la base de datos y el modelo Java.
+ */
 public class TipoContratoConverter implements AttributeConverter<TipoContrato, Integer> {
 
     @Override

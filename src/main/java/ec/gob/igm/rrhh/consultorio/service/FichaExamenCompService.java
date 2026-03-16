@@ -10,6 +10,9 @@ import java.util.Date;
 import java.util.List;
 
 @Stateless
+/**
+ * Class FichaExamenCompService: encapsula reglas de negocio y acceso a datos del dominio.
+ */
 public class FichaExamenCompService {
 
     @PersistenceContext(unitName = "consultorioPU")

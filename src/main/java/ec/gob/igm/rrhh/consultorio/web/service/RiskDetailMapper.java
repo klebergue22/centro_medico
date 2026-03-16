@@ -13,6 +13,9 @@ import ec.gob.igm.rrhh.consultorio.domain.model.FichaRiesgo;
 import ec.gob.igm.rrhh.consultorio.domain.model.FichaRiesgoDet;
 
 @Stateless
+/**
+ * Class RiskDetailMapper: orquesta la lógica de presentación y flujo web.
+ */
 public class RiskDetailMapper implements Serializable {
 
     @EJB

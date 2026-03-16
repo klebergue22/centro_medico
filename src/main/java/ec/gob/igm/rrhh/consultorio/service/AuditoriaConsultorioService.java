@@ -12,6 +12,9 @@ import jakarta.persistence.PersistenceException;
 import java.util.Date;
 
 @Stateless
+/**
+ * Class AuditoriaConsultorioService: encapsula reglas de negocio y acceso a datos del dominio.
+ */
 public class AuditoriaConsultorioService {
 
     // Asegúrate que este unitName exista en tu persistence.xml

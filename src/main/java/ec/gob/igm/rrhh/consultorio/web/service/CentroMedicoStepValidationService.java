@@ -16,6 +16,9 @@ import ec.gob.igm.rrhh.consultorio.web.validation.Step3Validator;
 import ec.gob.igm.rrhh.consultorio.web.validation.ValidationResult;
 
 @ApplicationScoped
+/**
+ * Class CentroMedicoStepValidationService: orquesta la lógica de presentación y flujo web.
+ */
 public class CentroMedicoStepValidationService implements Serializable {
 
     private static final long serialVersionUID = 1L;

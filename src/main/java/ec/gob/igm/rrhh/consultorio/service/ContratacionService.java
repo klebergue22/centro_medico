@@ -19,6 +19,9 @@ import java.util.Date;
 import java.util.List;
 
 @Stateless
+/**
+ * Class ContratacionService: encapsula reglas de negocio y acceso a datos del dominio.
+ */
 public class ContratacionService {
 
    @PersistenceContext(unitName = "consultorioPU")

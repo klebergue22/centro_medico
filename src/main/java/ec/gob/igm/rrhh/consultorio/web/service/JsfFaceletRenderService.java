@@ -15,6 +15,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @RequestScoped
+/**
+ * Class JsfFaceletRenderService: orquesta la lógica de presentación y flujo web.
+ */
 public class JsfFaceletRenderService implements Serializable {
 
     private static final Logger LOG = LoggerFactory.getLogger(JsfFaceletRenderService.class);

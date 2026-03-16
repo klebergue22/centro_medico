@@ -34,6 +34,9 @@ import ec.gob.igm.rrhh.consultorio.web.pdf.PdfTemplateEngine;
 import ec.gob.igm.rrhh.consultorio.web.session.PdfSessionStore;
 
 @Stateless
+/**
+ * Class CentroMedicoPdfFacadeService: orquesta la lógica de presentación y flujo web.
+ */
 public class CentroMedicoPdfFacadeService implements Serializable {
 
     private static final long serialVersionUID = 1L;

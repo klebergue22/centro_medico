@@ -12,6 +12,9 @@ import java.util.Objects;
 @Entity
 @Table(name = "FICHA_ACT_LABORAL", schema = "CONSULTORIO")
 @Access(AccessType.FIELD)
+/**
+ * Class FichaActLaboral: representa una entidad del dominio de consultorio médico.
+ */
 public class FichaActLaboral implements Serializable {
 
     private static final long serialVersionUID = 1L;

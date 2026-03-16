@@ -6,6 +6,9 @@ import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;
 
 @Converter(autoApply = false)
+/**
+ * Class EstadoCivilConverterJPA: convierte valores entre la base de datos y el modelo Java.
+ */
 public class EstadoCivilConverterJPA implements AttributeConverter<EstadoCivil, String> {
 
     @Override

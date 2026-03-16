@@ -1,5 +1,8 @@
 package ec.gob.igm.rrhh.consultorio.web.util;
 
+/**
+ * Class CentroMedicoTextUtil: provee utilidades de apoyo para la capa web.
+ */
 public final class CentroMedicoTextUtil {
 
     private CentroMedicoTextUtil() {

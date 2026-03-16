@@ -15,6 +15,9 @@ import java.util.Objects;
 // Nota: el UNIQUE (ID_CONSULTA, ES_PPAL) ya existe como índice único en BD (UX_CD_PPAL).
 // JPA no “crea” eso si tienes schema-generation=none, así que está OK dejarlo solo en BD.
 )
+/**
+ * Class ConsultaDiagnostico: representa una entidad del dominio de consultorio médico.
+ */
 public class ConsultaDiagnostico implements Serializable {
 
     private static final long serialVersionUID = 1L;

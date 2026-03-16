@@ -1,5 +1,8 @@
 package ec.gob.igm.rrhh.consultorio.web.util;
 
+/**
+ * Class ReflectionPropertyUtil: provee utilidades de apoyo para la capa web.
+ */
 public final class ReflectionPropertyUtil {
 
     private ReflectionPropertyUtil() {

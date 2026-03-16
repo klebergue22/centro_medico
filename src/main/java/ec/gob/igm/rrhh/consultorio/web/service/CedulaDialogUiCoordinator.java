@@ -6,6 +6,9 @@ import jakarta.faces.context.FacesContext;
 import org.primefaces.PrimeFaces;
 
 @ApplicationScoped
+/**
+ * Class CedulaDialogUiCoordinator: orquesta la lógica de presentación y flujo web.
+ */
 public class CedulaDialogUiCoordinator {
 
     private static final String CEDULA_MSG_CLIENT_ID = "dlgCedulaForm:cedulaBusqueda";

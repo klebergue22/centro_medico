@@ -7,6 +7,9 @@ import java.util.Date;
 import jakarta.enterprise.context.ApplicationScoped;
 
 @ApplicationScoped
+/**
+ * Class CentroMedicoCalcUtil: provee utilidades de apoyo para la capa web.
+ */
 public class CentroMedicoCalcUtil implements Serializable {
 
     private static final long serialVersionUID = 1L;

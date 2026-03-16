@@ -9,6 +9,9 @@ import org.slf4j.LoggerFactory;
 import org.xhtmlrenderer.pdf.ITextRenderer;
 
 @ApplicationScoped
+/**
+ * Class FlyingSaucerPdfRenderer: gestiona la construcción y renderización de documentos PDF.
+ */
 public class FlyingSaucerPdfRenderer implements PdfRenderer {
 
     private static final Logger LOG = LoggerFactory.getLogger(FlyingSaucerPdfRenderer.class);

@@ -9,6 +9,9 @@ import ec.gob.igm.rrhh.consultorio.domain.model.Cie10;
 import ec.gob.igm.rrhh.consultorio.domain.model.ConsultaDiagnostico;
 
 @Stateless
+/**
+ * Class DiagnosticoPrincipalService: orquesta la lógica de presentación y flujo web.
+ */
 public class DiagnosticoPrincipalService {
 
     @EJB

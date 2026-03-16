@@ -2,6 +2,9 @@ package ec.gob.igm.rrhh.consultorio.web.viewstate;
 
 import java.io.Serializable;
 
+/**
+ * Class PdfPreviewState: contiene la lógica de la aplicación.
+ */
 public class PdfPreviewState implements Serializable {
 
     private static final long serialVersionUID = 1L;

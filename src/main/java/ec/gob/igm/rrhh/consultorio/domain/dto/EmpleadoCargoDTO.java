@@ -5,6 +5,9 @@ package ec.gob.igm.rrhh.consultorio.domain.dto;
 import java.io.Serializable;
 import java.util.Date;
 
+/**
+ * Class EmpleadoCargoDTO: transporta datos entre capas de la aplicación.
+ */
 public class EmpleadoCargoDTO implements Serializable {
 
     private static final long serialVersionUID = 1L;

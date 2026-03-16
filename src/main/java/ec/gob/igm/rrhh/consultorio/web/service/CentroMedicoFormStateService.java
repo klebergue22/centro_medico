@@ -12,6 +12,9 @@ import ec.gob.igm.rrhh.consultorio.domain.model.ConsultaDiagnostico;
 import ec.gob.igm.rrhh.consultorio.web.ctrl.CentroMedicoCtrl;
 
 @ApplicationScoped
+/**
+ * Class CentroMedicoFormStateService: orquesta la lógica de presentación y flujo web.
+ */
 public class CentroMedicoFormStateService implements Serializable {
 
     private static final long serialVersionUID = 1L;

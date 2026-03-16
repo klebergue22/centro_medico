@@ -3,6 +3,9 @@ package ec.gob.igm.rrhh.consultorio.web.service;
 import java.io.Serializable;
 import java.util.Date;
 
+/**
+ * Class FichaPdfMappedData: orquesta la lógica de presentación y flujo web.
+ */
 public class FichaPdfMappedData implements Serializable {
     public String institucion;
     public String ruc;

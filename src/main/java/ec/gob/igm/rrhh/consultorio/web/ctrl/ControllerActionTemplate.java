@@ -14,6 +14,9 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 @ApplicationScoped
+/**
+ * Class ControllerActionTemplate: controla las acciones de la interfaz web.
+ */
 public class ControllerActionTemplate implements Serializable {
 
     private static final long serialVersionUID = 1L;

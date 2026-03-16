@@ -11,6 +11,9 @@ import jakarta.enterprise.context.ApplicationScoped;
 import org.slf4j.Logger;
 
 @ApplicationScoped
+/**
+ * Class PdfSanitizer: gestiona la construcción y renderización de documentos PDF.
+ */
 public class PdfSanitizer {
 
     private static final Pattern AMP_BAD = Pattern.compile("&(?!amp;|lt;|gt;|quot;|apos;|#\\d+;|#x[0-9A-Fa-f]+;)");

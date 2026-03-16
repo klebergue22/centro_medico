@@ -6,6 +6,9 @@ package ec.gob.igm.rrhh.consultorio.domain.enums;
 
 import java.util.Arrays;
 
+/**
+ * Enum GrupoSangre: contiene la lógica de la aplicación.
+ */
 public enum GrupoSangre {
 
     O_POS("O+", "O positivo"),

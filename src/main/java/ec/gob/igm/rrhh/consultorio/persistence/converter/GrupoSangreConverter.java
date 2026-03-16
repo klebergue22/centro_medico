@@ -7,6 +7,9 @@ import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;
 
 @Converter(autoApply = false)
+/**
+ * Class GrupoSangreConverter: convierte valores entre la base de datos y el modelo Java.
+ */
 public class GrupoSangreConverter implements AttributeConverter<GrupoSangre, String> {
 
     @Override

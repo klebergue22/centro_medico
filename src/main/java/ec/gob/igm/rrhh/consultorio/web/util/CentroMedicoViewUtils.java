@@ -6,6 +6,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.UnaryOperator;
 
+/**
+ * Class CentroMedicoViewUtils: provee utilidades de apoyo para la capa web.
+ */
 public final class CentroMedicoViewUtils {
 
     private CentroMedicoViewUtils() {

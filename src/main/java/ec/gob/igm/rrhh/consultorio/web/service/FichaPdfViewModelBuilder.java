@@ -14,6 +14,9 @@ import ec.gob.igm.rrhh.consultorio.domain.model.FichaRiesgo;
 import ec.gob.igm.rrhh.consultorio.domain.model.PersonaAux;
 
 @Stateless
+/**
+ * Class FichaPdfViewModelBuilder: orquesta la lógica de presentación y flujo web.
+ */
 public class FichaPdfViewModelBuilder implements Serializable {
 
     public Map<String, String> buildReemplazosFicha(FichaPdfViewModelContext ctx) {

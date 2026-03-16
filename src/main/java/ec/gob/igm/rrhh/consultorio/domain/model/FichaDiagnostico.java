@@ -17,6 +17,9 @@ import java.util.Objects;
         columnNames = {"ID_FICHA", "COD_CIE10"}
     )
 )
+/**
+ * Class FichaDiagnostico: representa una entidad del dominio de consultorio médico.
+ */
 public class FichaDiagnostico implements Serializable {
 
     private static final long serialVersionUID = 1L;

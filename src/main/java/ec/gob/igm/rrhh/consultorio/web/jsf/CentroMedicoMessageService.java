@@ -11,6 +11,9 @@ import org.slf4j.Logger;
 import ec.gob.igm.rrhh.consultorio.web.validation.ValidationResult;
 
 @ApplicationScoped
+/**
+ * Class CentroMedicoMessageService: contiene la lógica de la aplicación.
+ */
 public class CentroMedicoMessageService implements Serializable {
 
     private static final long serialVersionUID = 1L;

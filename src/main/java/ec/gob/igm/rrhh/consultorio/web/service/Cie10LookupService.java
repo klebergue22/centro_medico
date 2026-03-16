@@ -11,6 +11,9 @@ import ec.gob.igm.rrhh.consultorio.domain.model.ConsultaDiagnostico;
 import ec.gob.igm.rrhh.consultorio.service.Cie10Service;
 
 @Stateless
+/**
+ * Class Cie10LookupService: orquesta la lógica de presentación y flujo web.
+ */
 public class Cie10LookupService {
 
     @EJB

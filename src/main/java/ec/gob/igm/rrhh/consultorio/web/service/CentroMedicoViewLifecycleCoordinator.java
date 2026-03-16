@@ -13,6 +13,9 @@ import jakarta.inject.Named;
 
 @Named("centroMedicoViewLifecycleCoordinator")
 @RequestScoped
+/**
+ * Class CentroMedicoViewLifecycleCoordinator: orquesta la lógica de presentación y flujo web.
+ */
 public class CentroMedicoViewLifecycleCoordinator implements Serializable {
 
     private static final long serialVersionUID = 1L;

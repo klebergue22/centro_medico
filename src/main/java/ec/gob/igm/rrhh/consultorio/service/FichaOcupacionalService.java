@@ -8,6 +8,9 @@ import jakarta.persistence.TypedQuery;
 
 @Stateless
 
+/**
+ * Class FichaOcupacionalService: encapsula reglas de negocio y acceso a datos del dominio.
+ */
 public class FichaOcupacionalService {
 
     @PersistenceContext(unitName = "consultorioPU")

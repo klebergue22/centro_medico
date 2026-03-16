@@ -11,6 +11,9 @@ import ec.gob.igm.rrhh.consultorio.web.pdf.FichaPdfPlaceholderAssembler.FichaSta
 import ec.gob.igm.rrhh.consultorio.web.service.FichaPdfPlaceholderBuilder;
 
 @Stateless
+/**
+ * Class FichaPdfTemplateService: gestiona la construcción y renderización de documentos PDF.
+ */
 public class FichaPdfTemplateService {
 
     public String construirHtmlFichaDesdePlantilla(

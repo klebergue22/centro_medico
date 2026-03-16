@@ -22,6 +22,9 @@ import java.util.Objects;
     schema = "RH",
     uniqueConstraints = @UniqueConstraint(name = "T_DAT_EMPLEADO_U01", columnNames = "NO_CEDULA")
 )
+/**
+ * Class DatEmpleado: representa una entidad del dominio de consultorio médico.
+ */
 public class DatEmpleado implements Serializable {
 
     private static final long serialVersionUID = 1L;

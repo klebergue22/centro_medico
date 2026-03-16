@@ -10,6 +10,9 @@ import jakarta.ejb.Stateless;
 import ec.gob.igm.rrhh.consultorio.web.facade.CentroMedicoPdfFacade;
 
 @Stateless
+/**
+ * Class FichaPdfPlaceholderBuilder: orquesta la lógica de presentación y flujo web.
+ */
 public class FichaPdfPlaceholderBuilder implements Serializable {
 
     public String construirHtmlFichaDesdePlantilla(

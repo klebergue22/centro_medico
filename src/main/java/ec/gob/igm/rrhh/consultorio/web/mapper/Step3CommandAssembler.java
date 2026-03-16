@@ -5,6 +5,9 @@ import ec.gob.igm.rrhh.consultorio.web.viewstate.Step3ViewData;
 import jakarta.ejb.Stateless;
 
 @Stateless
+/**
+ * Class Step3CommandAssembler: mapea datos entre modelos de vista y comandos.
+ */
 public class Step3CommandAssembler {
 
     public Step3OrchestratorService.Step3SaveCommand toCommand(Step3ViewData viewData) {

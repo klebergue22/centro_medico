@@ -11,6 +11,9 @@ import java.util.Objects;
 
 @Entity
 @Table(name = "FICHA_RIESGO", schema = "CONSULTORIO")
+/**
+ * Class FichaRiesgo: representa una entidad del dominio de consultorio médico.
+ */
 public class FichaRiesgo implements Serializable {
 
     private static final long serialVersionUID = 1L;

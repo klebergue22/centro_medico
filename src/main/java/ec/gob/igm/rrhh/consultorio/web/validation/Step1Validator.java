@@ -3,6 +3,9 @@ package ec.gob.igm.rrhh.consultorio.web.validation;
 import ec.gob.igm.rrhh.consultorio.domain.model.FichaRiesgo;
 import ec.gob.igm.rrhh.consultorio.domain.model.SignosVitales;
 
+/**
+ * Class Step1Validator: valida datos y reglas del flujo de formularios.
+ */
 public class Step1Validator {
 
     public ValidationResult validate(String apellido1, String apellido2,

@@ -9,6 +9,9 @@ import java.io.Serializable;
 import java.util.Objects;
 
 @Embeddable
+/**
+ * Class ContratacionId: representa una entidad del dominio de consultorio médico.
+ */
 public class ContratacionId implements Serializable {
 
     private static final long serialVersionUID = 1L;

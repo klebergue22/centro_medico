@@ -12,6 +12,9 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
 @ApplicationScoped
+/**
+ * Class PacienteUiFlowCoordinator: orquesta la lógica de presentación y flujo web.
+ */
 public class PacienteUiFlowCoordinator implements Serializable {
 
     private static final long serialVersionUID = 1L;

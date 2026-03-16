@@ -4,6 +4,9 @@ import java.util.List;
 
 import ec.gob.igm.rrhh.consultorio.domain.model.ConsultaDiagnostico;
 
+/**
+ * Class Step3Validator: valida datos y reglas del flujo de formularios.
+ */
 public class Step3Validator {
 
     public ValidationResult validate(List<ConsultaDiagnostico> listaDiag,

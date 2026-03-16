@@ -10,6 +10,9 @@ import java.util.Objects;
 
 @Entity
 @Table(name = "FICHA_EXAMEN_COMP", schema = "CONSULTORIO")
+/**
+ * Class FichaExamenComp: representa una entidad del dominio de consultorio médico.
+ */
 public class FichaExamenComp implements Serializable {
 
     private static final long serialVersionUID = 1L;

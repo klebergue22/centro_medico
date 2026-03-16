@@ -5,6 +5,9 @@ import ec.gob.igm.rrhh.consultorio.web.viewstate.Step1ViewData;
 import jakarta.ejb.Stateless;
 
 @Stateless
+/**
+ * Class Step1CommandAssembler: mapea datos entre modelos de vista y comandos.
+ */
 public class Step1CommandAssembler {
 
     public Step1FichaService.Step1Command toCommand(Step1ViewData viewData) {

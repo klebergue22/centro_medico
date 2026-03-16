@@ -12,6 +12,9 @@ import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoPdfWorkflowService;
 import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoWizardNavigationCoordinator;
 
 @ApplicationScoped
+/**
+ * Class CentroMedicoStepFlowFacade: expone una fachada para simplificar operaciones del módulo web.
+ */
 public class CentroMedicoStepFlowFacade implements Serializable {
 
     private static final long serialVersionUID = 1L;

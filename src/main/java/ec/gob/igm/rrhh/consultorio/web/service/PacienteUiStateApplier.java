@@ -9,6 +9,9 @@ import ec.gob.igm.rrhh.consultorio.web.viewstate.PacienteViewState;
 import jakarta.enterprise.context.ApplicationScoped;
 
 @ApplicationScoped
+/**
+ * Class PacienteUiStateApplier: orquesta la lógica de presentación y flujo web.
+ */
 public class PacienteUiStateApplier implements Serializable {
 
     private static final long serialVersionUID = 1L;

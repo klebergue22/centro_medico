@@ -4,6 +4,9 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
+/**
+ * Class PdfTextUtil: gestiona la construcción y renderización de documentos PDF.
+ */
 public final class PdfTextUtil {
 
     private PdfTextUtil() {

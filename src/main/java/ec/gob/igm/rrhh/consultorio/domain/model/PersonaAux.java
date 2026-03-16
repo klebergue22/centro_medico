@@ -28,6 +28,9 @@ import java.util.Objects;
                 query = "SELECT p FROM PersonaAux p WHERE p.estado = 'ACTIVO'"
         )
 })
+/**
+ * Class PersonaAux: representa una entidad del dominio de consultorio médico.
+ */
 public class PersonaAux implements Serializable {
 
     private static final long serialVersionUID = 1L;

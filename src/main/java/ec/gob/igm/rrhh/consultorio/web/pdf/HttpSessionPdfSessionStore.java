@@ -7,6 +7,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 @ApplicationScoped
+/**
+ * Class HttpSessionPdfSessionStore: gestiona la construcción y renderización de documentos PDF.
+ */
 public class HttpSessionPdfSessionStore implements PdfSessionStore {
 
     @Override

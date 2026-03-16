@@ -7,6 +7,9 @@ import jakarta.inject.Named;
 
 @Named("fichaPrintCtrl")
 @RequestScoped
+/**
+ * Class FichaPrintCtrl: controla las acciones de la interfaz web.
+ */
 public class FichaPrintCtrl {
 
     public CentroMedicoCtrl getCentroMedico() {
