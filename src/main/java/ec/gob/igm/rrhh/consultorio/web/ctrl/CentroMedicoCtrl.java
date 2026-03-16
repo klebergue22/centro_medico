@@ -1,13 +1,9 @@
 package ec.gob.igm.rrhh.consultorio.web.ctrl;
 
-import static ec.gob.igm.rrhh.consultorio.web.util.CentroMedicoViewUtils.getSafe;
-import static ec.gob.igm.rrhh.consultorio.web.util.CentroMedicoViewUtils.isBlank;
-import static ec.gob.igm.rrhh.consultorio.web.util.CentroMedicoViewUtils.isTrue;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -83,7 +79,6 @@ import ec.gob.igm.rrhh.consultorio.web.service.Step2OrchestratorService.Step2Ris
 import ec.gob.igm.rrhh.consultorio.web.service.Step3OrchestratorService;
 import ec.gob.igm.rrhh.consultorio.web.session.PdfSessionStore;
 import ec.gob.igm.rrhh.consultorio.web.util.CentroMedicoCalcUtil;
-import ec.gob.igm.rrhh.consultorio.web.util.CentroMedicoViewUtils;
 import ec.gob.igm.rrhh.consultorio.web.viewstate.PacienteViewState;
 import ec.gob.igm.rrhh.consultorio.web.viewstate.PacienteFormData;
 import ec.gob.igm.rrhh.consultorio.web.viewstate.PdfCertificadoViewData;
