@@ -7,6 +7,7 @@ import java.util.function.Supplier;
 import jakarta.enterprise.context.ApplicationScoped;
 
 import ec.gob.igm.rrhh.consultorio.domain.model.ConsultaDiagnostico;
+import ec.gob.igm.rrhh.consultorio.domain.model.Cie10;
 import ec.gob.igm.rrhh.consultorio.domain.model.DatEmpleado;
 import ec.gob.igm.rrhh.consultorio.domain.model.FichaOcupacional;
 import ec.gob.igm.rrhh.consultorio.domain.model.FichaRiesgo;
@@ -102,6 +103,6 @@ public class CentroMedicoValidationCoordinator implements Serializable {
         public DatEmpleado empleadoSel;
         public String aptitudSel;
         public java.util.Date fechaEmision;
-        public Supplier<String> cie10PrincipalSupplier;
+        public Supplier<Cie10> cie10PrincipalSupplier;
     }
 }
