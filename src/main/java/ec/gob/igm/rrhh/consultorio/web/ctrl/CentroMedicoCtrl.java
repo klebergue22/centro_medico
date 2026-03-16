@@ -104,7 +104,6 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     private static final long serialVersionUID = 2L;
     private static final List<String> STATIC_RISK_COLS = new ArrayList<>();
     private static final int H_ROWS = 4;
-    private static final int CONSUMO_ROWS = 3;
     private static final int DIAG_ROWS = 6;
 
     static {
@@ -227,7 +226,7 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     // VARIABLES DE DIÁLOGO
     // =========================
     private boolean mostrarDlgCedula = true;
-    private boolean mostrarDiaLOGoAux;
+    private boolean mostrarDialogoAux;
     private boolean permitirIngresoManual;
 
     // =========================
@@ -335,19 +334,6 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
         throw new BusinessValidationException(message);
     }
 
-    private void s3(String msg) {
-        LOG.info("[STEP3] {}", msg);
-        LOG.info(String.valueOf("[STEP3] " + msg));
-    }
-
-    private void s3e(String msg, Throwable t) {
-        LOG.error("[STEP3] " + msg, t);
-        LOG.info(String.valueOf("[STEP3-ERROR] " + msg));
-        if (t != null) {
-            LOG.error("Unexpected error.", t);
-        }
-    }
-
     // =========================
     // CICLO DE VIDA
     // =========================
@@ -449,7 +435,7 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     }
 
     private boolean validarStep3() {
-        s3("validarStep3() INICIO");
+        LOG.info("[STEP3] validarStep3() INICIO");
         ValidationUiResult uiResult = wizardSectionFacade.validarStep3(
                 step3FormModel.getListaDiag(),
                 diagnosticoFormModel.getAptitudSel(),
@@ -458,11 +444,11 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
                 diagnosticoFormModel.getMedicoCodigo());
         if (!uiResult.isValid()) {
             for (String error : uiResult.getValidationResult().getErrors()) {
-                s3("validarStep3() FAIL: " + error);
+                LOG.info("[STEP3] validarStep3() FAIL: {}", error);
             }
         }
         uiResult.applyUi(messageService);
-        s3("validarStep3() FIN -> " + uiResult.isValid());
+        LOG.info("[STEP3] validarStep3() FIN -> {}", uiResult.isValid());
         return uiResult.isValid();
     }
 
@@ -690,10 +676,6 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
                 value -> this.ficha = value,
                 wizardViewState::setActiveStep,
                 value -> this.mostrarDlgCedula = value);
-    }
-
-    private void showValidationMessage(FacesContext ctx, String summary, List<String> errors) {
-        pdfSectionFacade.showValidationMessage(ctx, summary, errors);
     }
 
     // =========================
@@ -1977,12 +1959,12 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
         wizardViewState.setPreRenderDone(preRenderDone);
     }
 
-    public boolean isMostrarDiaLOGoAux() {
-        return mostrarDiaLOGoAux;
+    public boolean isMostrarDialogoAux() {
+        return mostrarDialogoAux;
     }
 
-    public void setMostrarDiaLOGoAux(boolean mostrarDiaLOGoAux) {
-        this.mostrarDiaLOGoAux = mostrarDiaLOGoAux;
+    public void setMostrarDialogoAux(boolean mostrarDialogoAux) {
+        this.mostrarDialogoAux = mostrarDialogoAux;
     }
 
     public Integer getNoPersonaSel() {

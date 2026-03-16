@@ -73,7 +73,7 @@ public class PacienteUiStateApplier implements Serializable {
             target.setMostrarDlgCedula(Boolean.TRUE.equals(patch.getMostrarDlgCedula()));
         }
         if (patch.appliesMostrarDialogoAux()) {
-            target.setMostrarDiaLOGoAux(Boolean.TRUE.equals(patch.getMostrarDialogoAux()));
+            target.setMostrarDialogoAux(Boolean.TRUE.equals(patch.getMostrarDialogoAux()));
         }
     }
 
@@ -110,6 +110,6 @@ public class PacienteUiStateApplier implements Serializable {
 
         void setMostrarDlgCedula(boolean mostrarDlgCedula);
 
-        void setMostrarDiaLOGoAux(boolean mostrarDiaLOGoAux);
+        void setMostrarDialogoAux(boolean mostrarDialogoAux);
     }
 }

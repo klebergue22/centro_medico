@@ -182,7 +182,7 @@ public class CentroMedicoPdfFacadeService implements Serializable {
     }
 
     public void cleanupPdfPreview(FacesContext ctx, PdfSessionStore pdfSessionStore, String token) {
-        centroMedicoPdfWorkflowService.cleanupPdfPreview(
+        centroMedicoPdfWorkflowService.limpiarVistaPrevia(
                 new CentroMedicoPdfWorkflowService.CleanupPdfPreviewCommand(ctx, pdfSessionStore, token));
     }
 
