@@ -55,7 +55,7 @@ import ec.gob.igm.rrhh.consultorio.web.pdf.CertificadoPdfTemplateService;
 import ec.gob.igm.rrhh.consultorio.web.pdf.FichaPdfContextAssembler;
 import ec.gob.igm.rrhh.consultorio.web.pdf.PdfResourceResolver;
 import ec.gob.igm.rrhh.consultorio.web.pdf.PdfTemplateEngine;
-import ec.gob.igm.rrhh.consultorio.web.service.CedulaDialogUiCoordinator;
+import ec.gob.igm.rrhh.consultorio.web.service.CedulaDialogControllerSupport;
 import ec.gob.igm.rrhh.consultorio.web.service.CedulaDialogStateService;
 import ec.gob.igm.rrhh.consultorio.web.service.Cie10LookupService;
 import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoFormInitializer;
@@ -79,7 +79,6 @@ import ec.gob.igm.rrhh.consultorio.web.service.FichaPdfDataMapper;
 import ec.gob.igm.rrhh.consultorio.web.service.PacienteControllerSupport;
 import ec.gob.igm.rrhh.consultorio.web.service.PacienteViewBinder;
 import ec.gob.igm.rrhh.consultorio.web.service.PacienteUiStateApplier;
-import ec.gob.igm.rrhh.consultorio.web.service.PersonaAuxDialogUiCoordinator;
 import ec.gob.igm.rrhh.consultorio.web.service.Step2OrchestratorService;
 import ec.gob.igm.rrhh.consultorio.web.service.Step2OrchestratorService.Step2RiskCommand;
 import ec.gob.igm.rrhh.consultorio.web.service.Step3OrchestratorService;
@@ -195,6 +194,8 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     private transient CentroMedicoCalcUtil calcUtil;
     @Inject
     private transient CedulaDialogStateService cedulaDialogStateService;
+    @Inject
+    private transient CedulaDialogControllerSupport cedulaDialogControllerSupport;
     @Inject
     private transient CentroMedicoFormInitializer centroMedicoFormInitializer;
     @Inject
@@ -1300,33 +1301,33 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     // DIÁLOGO DE CÉDULA
     // =========================
     public void onDlgCedulaShown() {
-        mostrarDlgCedula = false;
+        mostrarDlgCedula = cedulaDialogControllerSupport.resetDialogVisibility();
     }
 
     public void onDlgCedulaHide() {
-        mostrarDlgCedula = false;
+        mostrarDlgCedula = cedulaDialogControllerSupport.resetDialogVisibility();
     }
 
     public void onDlgCedulaClose() {
-        mostrarDlgCedula = false;
+        mostrarDlgCedula = cedulaDialogControllerSupport.resetDialogVisibility();
     }
 
     public void autoOpenCedulaIfNeeded() {
-        CedulaDialogStateService.AutoOpenState state = cedulaDialogStateService.autoOpenIfNeeded(
+        CedulaDialogStateService.AutoOpenState state = cedulaDialogControllerSupport.autoOpenIfNeeded(
+                cedulaDialogStateService,
                 activeStep,
                 mostrarDlgCedula,
                 cedulaDlgAutoOpened);
         cedulaDlgAutoOpened = state.isAutoOpened();
-        org.primefaces.PrimeFaces.current().ajax().addCallbackParam("openCedulaDlg", state.isOpen());
     }
 
     public void consumirAutoOpenCedulaDlg() {
-        CedulaDialogStateService.AutoOpenState state = cedulaDialogStateService.consumeAutoOpen(
+        CedulaDialogStateService.AutoOpenState state = cedulaDialogControllerSupport.consumeAutoOpen(
+                cedulaDialogStateService,
                 activeStep,
                 empleadoSel == null,
                 cedulaDlgAutoOpened);
         cedulaDlgAutoOpened = state.isAutoOpened();
-        PrimeFaces.current().ajax().addCallbackParam("openCedulaDlg", state.isOpen());
     }
 
     // =========================
