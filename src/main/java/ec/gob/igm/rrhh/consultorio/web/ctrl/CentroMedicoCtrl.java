@@ -3,10 +3,6 @@ package ec.gob.igm.rrhh.consultorio.web.ctrl;
 import static ec.gob.igm.rrhh.consultorio.web.util.CentroMedicoViewUtils.getSafe;
 import static ec.gob.igm.rrhh.consultorio.web.util.CentroMedicoViewUtils.isBlank;
 import static ec.gob.igm.rrhh.consultorio.web.util.CentroMedicoViewUtils.isTrue;
-import static ec.gob.igm.rrhh.consultorio.web.util.CentroMedicoPdfValueUtil.safe;
-import static ec.gob.igm.rrhh.consultorio.web.util.DateFormatUtil.fmtDate;
-import static ec.gob.igm.rrhh.consultorio.web.util.DateFormatUtil.toDate;
-import static ec.gob.igm.rrhh.consultorio.web.util.ReflectionPropertyUtil.getFichaStringByReflection;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -58,7 +54,6 @@ import ec.gob.igm.rrhh.consultorio.web.audit.CentroMedicoAuditService;
 import ec.gob.igm.rrhh.consultorio.web.pdf.CertificadoPdfTemplateService;
 import ec.gob.igm.rrhh.consultorio.web.pdf.FichaPdfContextAssembler;
 import ec.gob.igm.rrhh.consultorio.web.pdf.PdfResourceResolver;
-import ec.gob.igm.rrhh.consultorio.web.pdf.PdfTextUtil;
 import ec.gob.igm.rrhh.consultorio.web.pdf.PdfTemplateEngine;
 import ec.gob.igm.rrhh.consultorio.web.service.CedulaDialogUiCoordinator;
 import ec.gob.igm.rrhh.consultorio.web.service.CedulaDialogStateService;
@@ -67,6 +62,7 @@ import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoFormInitializer;
 import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoFormStateService;
 import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoPdfWorkflowService;
 import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoPdfFacadeService;
+import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoPdfControllerSupport;
 import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoPdfTemplateCoordinator;
 import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoPdfUiCoordinator;
 import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoReactiveUiService;
@@ -80,7 +76,6 @@ import ec.gob.igm.rrhh.consultorio.web.service.DiagnosticoDialogControllerSuppor
 import ec.gob.igm.rrhh.consultorio.web.service.DiagnosticoFilaUiCoordinator;
 import ec.gob.igm.rrhh.consultorio.web.service.DiagnosticoPrincipalService;
 import ec.gob.igm.rrhh.consultorio.web.service.FichaPdfDataMapper;
-import ec.gob.igm.rrhh.consultorio.web.service.FichaPdfMappedData;
 import ec.gob.igm.rrhh.consultorio.web.service.PacienteControllerSupport;
 import ec.gob.igm.rrhh.consultorio.web.service.PacienteViewBinder;
 import ec.gob.igm.rrhh.consultorio.web.service.PacienteUiStateApplier;
@@ -231,6 +226,8 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     private transient PacienteRegistrationFacade pacienteRegistrationFacade;
     @Inject
     private transient PacienteControllerSupport pacienteControllerSupport;
+    @Inject
+    private transient CentroMedicoPdfControllerSupport centroMedicoPdfControllerSupport;
 
     // =========================
     // MODELOS DE FORMULARIO
@@ -829,59 +826,71 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     }
 
     private PdfFichaViewData capturePdfFichaViewData() {
-        return new PdfFichaViewData(
-                this,
-                LOG,
-                ficha,
-                empleadoSel,
-                personaAux,
-                permitirIngresoManual,
-                this::asegurarPersonaAuxPersistida,
-                centroMedicoPdfFacade,
-                pdfResourceResolver,
-                this::syncCamposDesdeObjetosInternal,
-                this::obtenerTipoEvaluacionPdf,
-                this::recalcularIMC,
-                this::cargarAtencionPrioritaria,
-                this::cargarActividadLaboralArrays,
-                () -> getFichaStringByReflection(ficha,
-                        "getDetalleObs",
-                        "getDetalleObservaciones",
-                        "getObservaciones",
-                        "getObs",
-                        "getObservacion"),
-                CentroMedicoViewUtils::getSafe,
-                ec.gob.igm.rrhh.consultorio.web.util.DateFormatUtil::toDate);
+        CentroMedicoPdfControllerSupport.CapturePdfFichaInput input = new CentroMedicoPdfControllerSupport.CapturePdfFichaInput();
+        input.source = this;
+        input.log = LOG;
+        input.ficha = ficha;
+        input.empleadoSel = empleadoSel;
+        input.personaAux = personaAux;
+        input.permitirIngresoManual = permitirIngresoManual;
+        input.asegurarPersonaAuxPersistida = this::asegurarPersonaAuxPersistida;
+        input.centroMedicoPdfFacade = centroMedicoPdfFacade;
+        input.pdfResourceResolver = pdfResourceResolver;
+        input.syncCamposDesdeObjetos = this::syncCamposDesdeObjetosInternal;
+        input.tipoEval = tipoEval;
+        input.tipoEvaluacion = tipoEvaluacion;
+        input.recalcularIMC = this::recalcularIMC;
+        input.apDiscapacidad = apDiscapacidad;
+        input.apCatastrofica = apCatastrofica;
+        input.apEmbarazada = apEmbarazada;
+        input.apLactancia = apLactancia;
+        input.apAdultoMayor = apAdultoMayor;
+        input.hRows = H_ROWS;
+        input.actLabCentroTrabajo = actLabCentroTrabajo;
+        input.actLabActividad = actLabActividad;
+        input.actLabTiempo = actLabTiempo;
+        input.actLabTrabajoAnterior = actLabTrabajoAnterior;
+        input.actLabTrabajoActual = actLabTrabajoActual;
+        input.actLabIncidenteChk = actLabIncidenteChk;
+        input.actLabAccidenteChk = actLabAccidenteChk;
+        input.actLabEnfermedadChk = actLabEnfermedadChk;
+        input.iessSi = iessSi;
+        input.iessNo = iessNo;
+        input.iessFecha = iessFecha;
+        input.iessEspecificar = iessEspecificar;
+        input.actLabObservaciones = actLabObservaciones;
+        return centroMedicoPdfControllerSupport.capturePdfFichaViewData(input);
     }
 
     private PdfCertificadoViewData capturePdfCertificadoViewData() {
-        return new PdfCertificadoViewData(
-                ficha,
-                this::verificarFichaCompleta,
-                fecha -> this.fechaEmision = fecha,
-                centroMedicoPdfFacade,
-                fechaEmision,
-                aptitudSel,
-                tipoEval,
-                tipoEvaluacion,
-                institucion,
-                ruc,
-                noHistoria,
-                noArchivo,
-                centroTrabajo,
-                ciiu,
-                apellido1,
-                apellido2,
-                nombre1,
-                nombre2,
-                sexo,
-                detalleObservaciones,
-                recomendaciones,
-                medicoNombre,
-                medicoCodigo,
-                pdfResourceResolver,
-                pdfTemplateEngine,
-                certificadoPdfTemplateService);
+        CentroMedicoPdfControllerSupport.CapturePdfCertificadoInput input = new CentroMedicoPdfControllerSupport.CapturePdfCertificadoInput();
+        input.ficha = ficha;
+        input.verificarFichaCompleta = this::verificarFichaCompleta;
+        input.fechaEmisionSetter = fecha -> this.fechaEmision = fecha;
+        input.centroMedicoPdfFacade = centroMedicoPdfFacade;
+        input.fechaEmision = fechaEmision;
+        input.aptitudSel = aptitudSel;
+        input.tipoEval = tipoEval;
+        input.tipoEvaluacion = tipoEvaluacion;
+        input.institucion = institucion;
+        input.ruc = ruc;
+        input.noHistoria = noHistoria;
+        input.noArchivo = noArchivo;
+        input.centroTrabajo = centroTrabajo;
+        input.ciiu = ciiu;
+        input.apellido1 = apellido1;
+        input.apellido2 = apellido2;
+        input.nombre1 = nombre1;
+        input.nombre2 = nombre2;
+        input.sexo = sexo;
+        input.detalleObservaciones = detalleObservaciones;
+        input.recomendaciones = recomendaciones;
+        input.medicoNombre = medicoNombre;
+        input.medicoCodigo = medicoCodigo;
+        input.pdfResourceResolver = pdfResourceResolver;
+        input.pdfTemplateEngine = pdfTemplateEngine;
+        input.certificadoPdfTemplateService = certificadoPdfTemplateService;
+        return centroMedicoPdfControllerSupport.capturePdfCertificadoViewData(input);
     }
 
     // =========================
@@ -904,31 +913,13 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     }
 
     private void onPrepararFichaPdfSuccess(CentroMedicoPdfWorkflowService.FichaFlowResult result) {
-        FacesContext ctx = FacesContext.getCurrentInstance();
-        if (ctx == null || result == null) {
-            return;
-        }
-        if (!result.listo) {
-            showValidationMessage(ctx, "Validación antes de generar la ficha", result.errores);
-            pdfPreviewState.setFichaPdfListo(false);
-            pdfPreviewState.setPdfTokenFicha(null);
-            return;
-        }
-
-        ficha = result.ficha;
-        pdfPreviewState.setPdfTokenFicha(result.token);
-        pdfPreviewState.setFichaPdfListo(true);
-        activeStep = "step4";
-        mostrarDlgCedula = false;
-
-        ctx.addMessage(null, new FacesMessage(
-                FacesMessage.SEVERITY_INFO,
-                "PDF Ficha listo",
-                "Se generó la ficha para vista previa y descarga."
-        ));
-
-        PrimeFaces.current().ajax().addCallbackParam("fichaListo", pdfPreviewState.isFichaPdfListo());
-        PrimeFaces.current().ajax().update(":msgs", "@([id$=wdzFicha])");
+        centroMedicoPdfControllerSupport.onPrepararFichaPdfSuccess(
+                result,
+                FacesContext.getCurrentInstance(),
+                pdfPreviewState,
+                value -> this.ficha = value,
+                value -> this.activeStep = value,
+                value -> this.mostrarDlgCedula = value);
     }
 
     // =========================
@@ -1006,41 +997,57 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     // PDF - MÉTODOS DE CONSTRUCCIÓN
     // =========================
     private CentroMedicoPdfWorkflowService.PrepareFichaCommandData buildPrepareFichaCommand() {
-        return centroMedicoPdfTemplateCoordinator.buildPrepareFichaCommand(capturePdfFichaViewData());
+        return centroMedicoPdfControllerSupport.buildPrepareFichaCommand(
+                centroMedicoPdfTemplateCoordinator,
+                capturePdfFichaViewData());
     }
 
     private CentroMedicoPdfWorkflowService.PrepareCertificadoCommandData buildPrepareCertificadoCommand() {
-        return centroMedicoPdfTemplateCoordinator.buildPrepareCertificadoCommand(capturePdfCertificadoViewData());
+        return centroMedicoPdfControllerSupport.buildPrepareCertificadoCommand(
+                centroMedicoPdfTemplateCoordinator,
+                capturePdfCertificadoViewData());
     }
 
     private void applyPdfUiState(CentroMedicoPdfUiCoordinator.PdfUiState state) {
-        centroMedicoPdfUiCoordinator.applyPdfUiState(
+        centroMedicoPdfControllerSupport.applyPdfUiState(
+                centroMedicoPdfUiCoordinator,
                 state,
                 pdfPreviewState,
                 value -> this.ficha = value,
-                pdfPreviewState::setFichaPdfListo,
-                pdfPreviewState::setPdfTokenFicha,
-                pdfPreviewState::setCertificadoListo,
-                pdfPreviewState::setPdfTokenCertificado,
-                pdfPreviewState::setPdfObjectUrl,
                 value -> this.activeStep = value,
                 value -> this.mostrarDlgCedula = value);
     }
 
     private void resetStep4PdfState() {
-        applyPdfUiState(centroMedicoPdfUiCoordinator.resetStep4PdfState());
+        centroMedicoPdfControllerSupport.resetStep4PdfState(
+                centroMedicoPdfUiCoordinator,
+                pdfPreviewState,
+                value -> this.ficha = value,
+                value -> this.activeStep = value,
+                value -> this.mostrarDlgCedula = value);
     }
 
     private void applyStep4State(CentroMedicoWizardNavigationCoordinator.Step4UiState state) {
-        applyPdfUiState(centroMedicoPdfUiCoordinator.applyStep4State(state, null));
+        centroMedicoPdfControllerSupport.applyStep4State(
+                centroMedicoPdfUiCoordinator,
+                state,
+                pdfPreviewState,
+                value -> this.ficha = value,
+                value -> this.activeStep = value,
+                value -> this.mostrarDlgCedula = value);
     }
 
     private void applyCleanupPdfPreviewState() {
-        applyPdfUiState(centroMedicoPdfUiCoordinator.applyCleanupPdfPreviewState(null));
+        centroMedicoPdfControllerSupport.applyCleanupPdfPreviewState(
+                centroMedicoPdfUiCoordinator,
+                pdfPreviewState,
+                value -> this.ficha = value,
+                value -> this.activeStep = value,
+                value -> this.mostrarDlgCedula = value);
     }
 
     private void showValidationMessage(FacesContext ctx, String summary, List<String> errors) {
-        centroMedicoPdfFacadeService.showValidationMessage(ctx, summary, errors);
+        centroMedicoPdfControllerSupport.showValidationMessage(ctx, summary, errors);
     }
 
     // =========================
@@ -1548,116 +1555,70 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     // UTILIDADES DE SINCRONIZACIÓN PDF
     // =========================
     private String obtenerTipoEvaluacionPdf() {
-        String tipo = PdfTextUtil.trimToNull(tipoEval);
-        if (tipo == null) {
-            tipo = PdfTextUtil.trimToNull(tipoEvaluacion);
-        }
-        return tipo;
+        return centroMedicoPdfControllerSupport.obtenerTipoEvaluacionPdf(tipoEval, tipoEvaluacion);
     }
 
     private void syncCamposDesdeObjetosInternal() {
-        FichaPdfMappedData data = fichaPdfContextAssembler.syncCamposDesdeObjetos(
-                fichaPdfDataMapper,
-                ficha,
-                empleadoSel,
-                fechaNacimiento);
-        this.institucion = data.institucion;
-        this.ruc = data.ruc;
-        this.centroTrabajo = data.centroTrabajo;
-        this.ciiu = data.ciiu;
-        this.noHistoria = data.noHistoria;
-        this.noArchivo = data.noArchivo;
-        this.ginecoExamen1 = data.ginecoExamen1;
-        this.ginecoTiempo1 = data.ginecoTiempo1;
-        this.ginecoResultado1 = data.ginecoResultado1;
-        this.ginecoExamen2 = data.ginecoExamen2;
-        this.ginecoTiempo2 = data.ginecoTiempo2;
-        this.ginecoResultado2 = data.ginecoResultado2;
-        this.ginecoObservacion = data.ginecoObservacion;
-        this.enfermedadActual = data.enfermedadActual;
-        if (data.apellido1 != null) {
-            this.apellido1 = data.apellido1;
-        }
-        if (data.apellido2 != null) {
-            this.apellido2 = data.apellido2;
-        }
-        if (data.nombre1 != null) {
-            this.nombre1 = data.nombre1;
-        }
-        if (data.nombre2 != null) {
-            this.nombre2 = data.nombre2;
-        }
-        if (data.edad != null) {
-            this.edad = data.edad;
-        }
+        CentroMedicoPdfControllerSupport.SyncCamposDesdeObjetosInput input = new CentroMedicoPdfControllerSupport.SyncCamposDesdeObjetosInput();
+        input.fichaPdfContextAssembler = fichaPdfContextAssembler;
+        input.fichaPdfDataMapper = fichaPdfDataMapper;
+        input.ficha = ficha;
+        input.empleadoSel = empleadoSel;
+        input.fechaNacimiento = fechaNacimiento;
+        input.institucionSetter = value -> this.institucion = value;
+        input.rucSetter = value -> this.ruc = value;
+        input.centroTrabajoSetter = value -> this.centroTrabajo = value;
+        input.ciiuSetter = value -> this.ciiu = value;
+        input.noHistoriaSetter = value -> this.noHistoria = value;
+        input.noArchivoSetter = value -> this.noArchivo = value;
+        input.ginecoExamen1Setter = value -> this.ginecoExamen1 = value;
+        input.ginecoTiempo1Setter = value -> this.ginecoTiempo1 = value;
+        input.ginecoResultado1Setter = value -> this.ginecoResultado1 = value;
+        input.ginecoExamen2Setter = value -> this.ginecoExamen2 = value;
+        input.ginecoTiempo2Setter = value -> this.ginecoTiempo2 = value;
+        input.ginecoResultado2Setter = value -> this.ginecoResultado2 = value;
+        input.ginecoObservacionSetter = value -> this.ginecoObservacion = value;
+        input.enfermedadActualSetter = value -> this.enfermedadActual = value;
+        input.apellido1Setter = value -> this.apellido1 = value;
+        input.apellido2Setter = value -> this.apellido2 = value;
+        input.nombre1Setter = value -> this.nombre1 = value;
+        input.nombre2Setter = value -> this.nombre2 = value;
+        input.edadSetter = value -> this.edad = value;
+        centroMedicoPdfControllerSupport.syncCamposDesdeObjetosInternal(input);
     }
 
     // =========================
     // UTILIDADES DE CARGA DE DATOS PDF
     // =========================
     void cargarAtencionPrioritaria(Map<String, String> rep) {
-        rep.put("apCatastrofica_sn", apCatastrofica ? "SI" : "NO");
-        rep.put("apDiscapacidad_sn", apDiscapacidad ? "SI" : "NO");
-        rep.put("apEmbarazada_sn", apEmbarazada ? "SI" : "NO");
-        rep.put("apLactancia_sn", apLactancia ? "SI" : "NO");
-        rep.put("apAdultoMayor_sn", apAdultoMayor ? "SI" : "NO");
-
-        boolean aplicaDis = false;
-        boolean aplicaCat = false;
-
-        if (ficha != null) {
-            aplicaDis = "S".equalsIgnoreCase(safe(ficha.getApDiscapacidad()));
-            aplicaCat = "S".equalsIgnoreCase(safe(ficha.getApCatastrofica()));
-        } else {
-            aplicaDis = apDiscapacidad;
-            aplicaCat = apCatastrofica;
-        }
-
-        rep.put("apDiscapacidad_style", aplicaDis ? "" : "display:none;");
-        rep.put("apCatastrofica_style", aplicaCat ? "" : "display:none;");
-
-        rep.put("disTipo", safe(ficha != null ? ficha.getDisTipo() : null));
-        rep.put("disDescripcion", safe(ficha != null ? ficha.getDisDescripcion() : null));
-
-        Integer porc = (ficha != null ? ficha.getDisPorcentaje() : null);
-        rep.put("disPorcentaje", porc == null ? "" : String.valueOf(porc));
-
-        rep.put("catDiagnostico", safe(ficha != null ? ficha.getCatDiagnostico() : null));
-
-        String catCal = safe(ficha != null ? ficha.getCatCalificada() : null);
-        if ("S".equalsIgnoreCase(catCal) || "TRUE".equalsIgnoreCase(catCal)) {
-            rep.put("catCalificada", "SI");
-        } else if ("N".equalsIgnoreCase(catCal) || "FALSE".equalsIgnoreCase(catCal)) {
-            rep.put("catCalificada", "NO");
-        } else {
-            rep.put("catCalificada", catCal);
-        }
-        LOG.info("[PDF] disTipo=" + rep.get("disTipo")
-                + " disDescripcion=" + rep.get("disDescripcion")
-                + " disPorcentaje=" + rep.get("disPorcentaje")
-                + " catDiagnostico=" + rep.get("catDiagnostico")
-                + " catCalificada=" + rep.get("catCalificada")
-                + " styleDis=" + rep.get("apDiscapacidad_style")
-                + " styleCat=" + rep.get("apCatastrofica_style"));
+        centroMedicoPdfControllerSupport.cargarAtencionPrioritaria(
+                ficha,
+                apDiscapacidad,
+                apCatastrofica,
+                apEmbarazada,
+                apLactancia,
+                apAdultoMayor,
+                rep,
+                LOG);
     }
 
     private void cargarActividadLaboralArrays(Map<String, String> rep) {
-        for (int i = 0; i < H_ROWS; i++) {
-            int idx = i + 1;
-            rep.put("h_centro_" + idx, safe(getSafe(actLabCentroTrabajo, i)));
-            rep.put("h_actividad_" + idx, safe(getSafe(actLabActividad, i)));
-            rep.put("h_tiempo_" + idx, safe(getSafe(actLabTiempo, i)));
-            rep.put("h_anterior_" + idx, isTrue(getSafe(actLabTrabajoAnterior, i)) ? "X" : "");
-            rep.put("h_actual_" + idx, isTrue(getSafe(actLabTrabajoActual, i)) ? "X" : "");
-            rep.put("h_incidente_" + idx, isTrue(getSafe(actLabIncidenteChk, i)) ? "X" : "");
-            rep.put("h_accidente_" + idx, isTrue(getSafe(actLabAccidenteChk, i)) ? "X" : "");
-            rep.put("h_enfermedad_" + idx, isTrue(getSafe(actLabEnfermedadChk, i)) ? "X" : "");
-            rep.put("h_iess_si_" + idx, isTrue(getSafe(iessSi, i)) ? "X" : "");
-            rep.put("h_iess_no_" + idx, isTrue(getSafe(iessNo, i)) ? "X" : "");
-            rep.put("h_iess_fecha_" + idx, fmtDate(toDate(getSafe(iessFecha, i))));
-            rep.put("h_iess_especificar_" + idx, safe(getSafe(iessEspecificar, i)));
-            rep.put("h_obs_" + idx, safe(getSafe(actLabObservaciones, i)));
-        }
+        centroMedicoPdfControllerSupport.cargarActividadLaboralArrays(
+                H_ROWS,
+                actLabCentroTrabajo,
+                actLabActividad,
+                actLabTiempo,
+                actLabTrabajoAnterior,
+                actLabTrabajoActual,
+                actLabIncidenteChk,
+                actLabAccidenteChk,
+                actLabEnfermedadChk,
+                iessSi,
+                iessNo,
+                iessFecha,
+                iessEspecificar,
+                actLabObservaciones,
+                rep);
     }
 
     // =========================
