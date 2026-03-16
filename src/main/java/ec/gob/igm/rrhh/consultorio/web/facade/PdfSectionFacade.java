@@ -34,12 +34,14 @@ public class PdfSectionFacade implements Serializable {
     @Inject
     private CentroMedicoPdfFacadeService centroMedicoPdfFacadeService;
 
-    public PdfFichaViewData capturePdfFichaViewData(PdfFichaViewData data) {
-        return centroMedicoPdfControllerSupport.capturePdfFichaViewData(data);
+    public PdfFichaViewData capturePdfFichaViewData(
+            CentroMedicoPdfControllerSupport.CapturePdfFichaInput input) {
+        return centroMedicoPdfControllerSupport.capturePdfFichaViewData(input);
     }
 
-    public PdfCertificadoViewData capturePdfCertificadoViewData(PdfCertificadoViewData data) {
-        return centroMedicoPdfControllerSupport.capturePdfCertificadoViewData(data);
+    public PdfCertificadoViewData capturePdfCertificadoViewData(
+            CentroMedicoPdfControllerSupport.CapturePdfCertificadoInput input) {
+        return centroMedicoPdfControllerSupport.capturePdfCertificadoViewData(input);
     }
 
     public CentroMedicoPdfWorkflowService.FichaFlowResult onPrepararFichaPdf(CentroMedicoPdfWorkflowService.PrepareFichaFlowCommand cmd) {
@@ -179,19 +181,19 @@ public class PdfSectionFacade implements Serializable {
     }
 
     public void cargarActividadLaboralArrays(int hRows,
-                                             String[] actLabCentroTrabajo,
-                                             String[] actLabActividad,
-                                             String[] actLabTiempo,
-                                             String[] actLabTrabajoAnterior,
-                                             String[] actLabTrabajoActual,
-                                             String[] actLabIncidenteChk,
-                                             String[] actLabAccidenteChk,
-                                             String[] actLabEnfermedadChk,
-                                             String iessSi,
-                                             String iessNo,
-                                             java.util.Date iessFecha,
-                                             String iessEspecificar,
-                                             String actLabObservaciones,
+                                             List<String> actLabCentroTrabajo,
+                                             List<String> actLabActividad,
+                                             List<String> actLabTiempo,
+                                             List<Boolean> actLabTrabajoAnterior,
+                                             List<Boolean> actLabTrabajoActual,
+                                             List<Boolean> actLabIncidenteChk,
+                                             List<Boolean> actLabAccidenteChk,
+                                             List<Boolean> actLabEnfermedadChk,
+                                             List<Boolean> iessSi,
+                                             List<Boolean> iessNo,
+                                             List<?> iessFecha,
+                                             List<String> iessEspecificar,
+                                             List<String> actLabObservaciones,
                                              java.util.Map<String, String> rep) {
         centroMedicoPdfControllerSupport.cargarActividadLaboralArrays(
                 hRows,
