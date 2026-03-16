@@ -2,6 +2,7 @@ package ec.gob.igm.rrhh.consultorio.web.service;
 
 import java.io.Serializable;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,8 +55,8 @@ public class CentroMedicoWizardNavigationCoordinator implements Serializable {
             CentroMedicoPdfWorkflowService.Step4FlowResult result = centroMedicoPdfWorkflowService.onEnterStep4AutoRegenerar(
                     new CentroMedicoPdfWorkflowService.Step4FlowCommand(
                             cmd.ficha,
-                            cmd.prepareFichaCommand,
-                            cmd.prepareCertificadoCommand));
+                            cmd.prepareFichaCommandSupplier.get(),
+                            cmd.prepareCertificadoCommandSupplier.get()));
 
             if (result == null || result.skipped || result.ficha == null) {
                 return;
@@ -87,8 +88,8 @@ public class CentroMedicoWizardNavigationCoordinator implements Serializable {
         public final Runnable onResetPdfState;
         public final Consumer<Step4UiState> onApplyStep4Result;
         public final FichaOcupacional ficha;
-        public final CentroMedicoPdfWorkflowService.PrepareFichaCommandData prepareFichaCommand;
-        public final CentroMedicoPdfWorkflowService.PrepareCertificadoCommandData prepareCertificadoCommand;
+        public final Supplier<CentroMedicoPdfWorkflowService.PrepareFichaCommandData> prepareFichaCommandSupplier;
+        public final Supplier<CentroMedicoPdfWorkflowService.PrepareCertificadoCommandData> prepareCertificadoCommandSupplier;
 
         public GuardarStepActualCommand(
                 String activeStep,
@@ -100,8 +101,8 @@ public class CentroMedicoWizardNavigationCoordinator implements Serializable {
                 Runnable onResetPdfState,
                 Consumer<Step4UiState> onApplyStep4Result,
                 FichaOcupacional ficha,
-                CentroMedicoPdfWorkflowService.PrepareFichaCommandData prepareFichaCommand,
-                CentroMedicoPdfWorkflowService.PrepareCertificadoCommandData prepareCertificadoCommand) {
+                Supplier<CentroMedicoPdfWorkflowService.PrepareFichaCommandData> prepareFichaCommandSupplier,
+                Supplier<CentroMedicoPdfWorkflowService.PrepareCertificadoCommandData> prepareCertificadoCommandSupplier) {
             this.activeStep = activeStep;
             this.guardarStep1 = guardarStep1;
             this.guardarStep2 = guardarStep2;
@@ -111,8 +112,8 @@ public class CentroMedicoWizardNavigationCoordinator implements Serializable {
             this.onResetPdfState = onResetPdfState;
             this.onApplyStep4Result = onApplyStep4Result;
             this.ficha = ficha;
-            this.prepareFichaCommand = prepareFichaCommand;
-            this.prepareCertificadoCommand = prepareCertificadoCommand;
+            this.prepareFichaCommandSupplier = prepareFichaCommandSupplier;
+            this.prepareCertificadoCommandSupplier = prepareCertificadoCommandSupplier;
         }
     }
 

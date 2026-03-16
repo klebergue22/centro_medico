@@ -1,4 +1,4 @@
-package ec.gob.igm.rrhh.consultorio.web.service;
+package ec.gob.igm.rrhh.consultorio.web.facade;
 
 import java.io.Serializable;
 import java.util.function.Consumer;
@@ -8,6 +8,8 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
 import ec.gob.igm.rrhh.consultorio.domain.model.FichaOcupacional;
+import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoPdfWorkflowService;
+import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoWizardNavigationCoordinator;
 
 @ApplicationScoped
 public class CentroMedicoStepFlowFacade implements Serializable {
@@ -29,8 +31,8 @@ public class CentroMedicoStepFlowFacade implements Serializable {
                         cmd.onResetPdfState,
                         cmd.onApplyStep4Result,
                         cmd.ficha,
-                        cmd.prepareFichaCommandSupplier.get(),
-                        cmd.prepareCertificadoCommandSupplier.get()));
+                        cmd.prepareFichaCommandSupplier,
+                        cmd.prepareCertificadoCommandSupplier));
     }
 
     public static class GuardarStepActualFacadeCommand {
