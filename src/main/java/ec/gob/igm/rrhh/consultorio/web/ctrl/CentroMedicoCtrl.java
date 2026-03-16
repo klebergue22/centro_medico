@@ -43,6 +43,7 @@ import ec.gob.igm.rrhh.consultorio.web.facade.CentroMedicoPdfFacade;
 import ec.gob.igm.rrhh.consultorio.web.facade.CentroMedicoWizardFacade;
 import ec.gob.igm.rrhh.consultorio.web.jsf.CentroMedicoMessageService;
 import ec.gob.igm.rrhh.consultorio.web.mapper.Step3CommandAssembler;
+import ec.gob.igm.rrhh.consultorio.web.mapper.StepValidationInputAssembler;
 import ec.gob.igm.rrhh.consultorio.web.mapper.Step3ViewDataAssembler;
 import ec.gob.igm.rrhh.consultorio.web.mapper.PdfCertificadoInputAssembler;
 import ec.gob.igm.rrhh.consultorio.web.mapper.PdfFichaInputAssembler;
@@ -177,6 +178,8 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     
     @Inject
     private transient Step3CommandAssembler step3CommandAssembler;
+    @Inject
+    private transient StepValidationInputAssembler stepValidationInputAssembler;
     @Inject
     private transient Step3ViewDataAssembler step3ViewDataAssembler;
     @Inject
@@ -525,21 +528,20 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     // VALIDACIÓN DE STEPS
     // =========================
     private boolean validarStep1() {
-        Step1ValidationInput input = new Step1ValidationInput();
-        input.apellido1 = pacienteFormData.getApellido1();
-        input.apellido2 = pacienteFormData.getApellido2();
-        input.nombre1 = pacienteFormData.getNombre1();
-        input.nombre2 = pacienteFormData.getNombre2();
-        input.sexo = pacienteFormData.getSexo();
-        input.tipoEval = tipoEval;
-        input.paStr = signosVitalesFormModel.getPaStr();
-        input.fc = signosVitalesFormModel.getFc();
-        input.peso = signosVitalesFormModel.getPeso();
-        input.tallaCm = signosVitalesFormModel.getTallaCm();
-        input.signos = signos;
         FichaRiesgo fichaRiesgo = step2FormModel.getFichaRiesgo();
-        input.puestoTrabajoCiuo = fichaRiesgo != null ? fichaRiesgo.getPuestoTrabajo() : null;
-        input.fichaRiesgo = fichaRiesgo;
+        Step1ValidationInput input = stepValidationInputAssembler.buildStep1Input(
+                pacienteFormData.getApellido1(),
+                pacienteFormData.getApellido2(),
+                pacienteFormData.getNombre1(),
+                pacienteFormData.getNombre2(),
+                pacienteFormData.getSexo(),
+                tipoEval,
+                signosVitalesFormModel.getPaStr(),
+                signosVitalesFormModel.getFc(),
+                signosVitalesFormModel.getPeso(),
+                signosVitalesFormModel.getTallaCm(),
+                signos,
+                fichaRiesgo);
 
         ValidationUiResult uiResult = wizardSectionFacade.validarStep1(input);
         uiResult.applyUi(messageService);
@@ -575,14 +577,14 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     }
 
     private boolean verificarFichaCompleta() {
-        FichaCompletaValidationInput input = new FichaCompletaValidationInput();
-        input.ficha = ficha;
-        input.permitirIngresoManual = permitirIngresoManual;
-        input.personaAux = personaAux;
-        input.empleadoSel = empleadoSel;
-        input.aptitudSel = diagnosticoFormModel.getAptitudSel();
-        input.fechaEmision = diagnosticoFormModel.getFechaEmision();
-        input.cie10PrincipalSupplier = this::inferCie10PrincipalFromListaK;
+        FichaCompletaValidationInput input = stepValidationInputAssembler.buildFichaCompletaInput(
+                ficha,
+                permitirIngresoManual,
+                personaAux,
+                empleadoSel,
+                diagnosticoFormModel.getAptitudSel(),
+                diagnosticoFormModel.getFechaEmision(),
+                this::inferCie10PrincipalFromListaK);
 
         ValidationUiResult uiResult = wizardSectionFacade.verificarFichaCompleta(input);
         uiResult.applyUi(messageService);
