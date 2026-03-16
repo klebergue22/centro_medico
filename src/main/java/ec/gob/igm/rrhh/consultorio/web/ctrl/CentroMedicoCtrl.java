@@ -9,7 +9,6 @@ import java.util.Locale;
 import java.util.Map;
 
 import jakarta.annotation.PostConstruct;
-import jakarta.ejb.EJB;
 import jakarta.faces.application.FacesMessage;
 import jakarta.faces.context.FacesContext;
 import jakarta.faces.event.AjaxBehaviorEvent;
@@ -30,15 +29,6 @@ import ec.gob.igm.rrhh.consultorio.domain.model.FichaOcupacional;
 import ec.gob.igm.rrhh.consultorio.domain.model.FichaRiesgo;
 import ec.gob.igm.rrhh.consultorio.domain.model.PersonaAux;
 import ec.gob.igm.rrhh.consultorio.domain.model.SignosVitales;
-import ec.gob.igm.rrhh.consultorio.service.Cie10Service;
-import ec.gob.igm.rrhh.consultorio.service.EmpleadoRhService;
-import ec.gob.igm.rrhh.consultorio.service.EmpleadoService;
-import ec.gob.igm.rrhh.consultorio.service.ExamenFisicoRegionalService;
-import ec.gob.igm.rrhh.consultorio.service.FichaActLaboralService;
-import ec.gob.igm.rrhh.consultorio.service.FichaDiagnosticoService;
-import ec.gob.igm.rrhh.consultorio.service.FichaExamenCompService;
-import ec.gob.igm.rrhh.consultorio.service.FichaOcupacionalService;
-import ec.gob.igm.rrhh.consultorio.service.PersonaAuxService;
 import ec.gob.igm.rrhh.consultorio.web.facade.CentroMedicoPdfFacade;
 import ec.gob.igm.rrhh.consultorio.web.facade.CentroMedicoWizardFacade;
 import ec.gob.igm.rrhh.consultorio.web.jsf.CentroMedicoMessageService;
@@ -122,28 +112,6 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
             super(message);
         }
     }
-
-    // =========================
-    // INYECCIONES DE DEPENDENCIAS - EJB
-    // =========================
-    @EJB
-    private EmpleadoRhService empleadoRhService;
-    @EJB
-    private transient Cie10Service cie10Service;
-    @EJB
-    private transient FichaOcupacionalService fichaService;
-    @EJB
-    private transient FichaDiagnosticoService fichaDiagnosticoService;
-    @EJB
-    private transient EmpleadoService empleadoService;
-    @EJB
-    private transient PersonaAuxService personaAuxService;
-    @EJB
-    private transient FichaActLaboralService fichaActLaboralService;
-    @EJB
-    private transient FichaExamenCompService fichaExamenCompService;
-    @EJB
-    private transient ExamenFisicoRegionalService examenFisicoRegionalService;
 
     // =========================
     // INYECCIONES DE DEPENDENCIAS - INJECT
@@ -909,7 +877,7 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
         if (this.ficha == null || this.ficha.getIdFicha() == null) {
             return;
         }
-        this.ficha = fichaService.findById(this.ficha.getIdFicha());
+        this.ficha = wizardSectionFacade.recargarFicha(this.ficha.getIdFicha());
     }
 
     public String getStepProcessId() {
@@ -2293,55 +2261,6 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
 
     public void setActLabFecha(List<Date> actLabFecha) {
         actividadLaboralFormModel.setActLabFecha(actLabFecha);
-    }
-
-    public Cie10Service getCie10Service() {
-        return cie10Service;
-    }
-
-    public void setCie10Service(Cie10Service cie10Service) {
-        this.cie10Service = cie10Service;
-    }
-
-    public FichaOcupacionalService getFichaService() {
-        return fichaService;
-    }
-
-    public void setFichaService(FichaOcupacionalService fichaService) {
-        this.fichaService = fichaService;
-    }
-
-    public FichaDiagnosticoService getFichaDiagnosticoService() {
-        return fichaDiagnosticoService;
-    }
-
-    public void setFichaDiagnosticoService(FichaDiagnosticoService fichaDiagnosticoService) {
-        this.fichaDiagnosticoService = fichaDiagnosticoService;
-    }
-
-    public EmpleadoService getEmpleadoService() {
-        return empleadoService;
-    }
-
-    public void setEmpleadoService(EmpleadoService empleadoService) {
-        this.empleadoService = empleadoService;
-    }
-
-    public PersonaAuxService getPersonaAuxService() {
-        return personaAuxService;
-    }
-
-    public void setPersonaAuxService(PersonaAuxService personaAuxService) {
-        this.personaAuxService = personaAuxService;
-    }
-
-
-    public FichaExamenCompService getFichaExamenCompService() {
-        return fichaExamenCompService;
-    }
-
-    public void setFichaExamenCompService(FichaExamenCompService fichaExamenCompService) {
-        this.fichaExamenCompService = fichaExamenCompService;
     }
 
     public String getPdfTokenCertificado() {
