@@ -389,11 +389,7 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     // =========================
     // VARIABLES DE RIESGOS LABORALES
     // =========================
-    private FichaRiesgo fichaRiesgo;
-    private java.util.List<String> actividadesLab = new ArrayList<>();
-    private java.util.Map<String, Boolean> riesgos = new LinkedHashMap<>();
-    private java.util.Map<String, String> otrosRiesgos = new LinkedHashMap<>();
-    private java.util.List<String> medidasPreventivas = new ArrayList<>();
+
     private java.util.List<String> riskCols;
 
     // =========================
@@ -408,12 +404,7 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     private String nRealizaEvaluacion;
     private String nRelacionTrabajo;
     private String nObsRetiro;
-    private String codCie10Ppal;
-    private String descCie10Ppal;
-    private String dialogDiagnosticoCodigo;
-    private String dialogDiagnosticoDescripcion;
-    private Integer dialogDiagnosticoIdx;
-    private java.util.List<ConsultaDiagnostico> listaDiag = new ArrayList<>();
+
 
     // =========================
     // VARIABLES DE HISTORIA LABORAL (H)
@@ -522,11 +513,7 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     // =========================
     // VARIABLES DE PDF
     // =========================
-    private boolean certificadoListo;
-    private boolean fichaPdfListo;
-    private String pdfObjectUrl;
-    private String pdfTokenFicha;
-    private String pdfTokenCertificado;
+
 
     // =========================
     // MÉTODOS DE EXCEPCIÓN Y VALIDACIÓN PRIVADOS
@@ -626,6 +613,7 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
         input.peso = peso;
         input.tallaCm = tallaCm;
         input.signos = signos;
+        FichaRiesgo fichaRiesgo = step2FormModel.getFichaRiesgo();
         input.puestoTrabajoCiuo = fichaRiesgo != null ? fichaRiesgo.getPuestoTrabajo() : null;
         input.fichaRiesgo = fichaRiesgo;
 
@@ -636,9 +624,9 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
 
     private boolean validarStep2() {
         ValidationUiResult uiResult = validationCoordinator.validarStep2(
-                fichaRiesgo,
-                actividadesLab,
-                medidasPreventivas,
+                step2FormModel.getFichaRiesgo(),
+                step2FormModel.getActividadesLab(),
+                step2FormModel.getMedidasPreventivas(),
                 true);
         uiResult.applyUi(messageService);
         return uiResult.isValid();
@@ -647,7 +635,7 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     private boolean validarStep3() {
         s3("validarStep3() INICIO");
         ValidationUiResult uiResult = validationCoordinator.validarStep3(
-                listaDiag,
+                step3FormModel.getListaDiag(),
                 aptitudSel,
                 recomendaciones,
                 medicoNombre,
@@ -750,16 +738,16 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
         final String user = usuarioReal();
 
         try {
-            fichaRiesgo = step2OrchestratorService.save(new Step2RiskCommand(
+            step2FormModel.setFichaRiesgo(step2OrchestratorService.save(new Step2RiskCommand(
                     ficha,
-                    fichaRiesgo,
-                    actividadesLab,
-                    medidasPreventivas,
-                    riesgos,
-                    otrosRiesgos,
+                    step2FormModel.getFichaRiesgo(),
+                    step2FormModel.getActividadesLab(),
+                    step2FormModel.getMedidasPreventivas(),
+                    step2FormModel.getRiesgos(),
+                    step2FormModel.getOtrosRiesgos(),
                     now,
                     user
-            ));
+            )));
         } catch (IllegalArgumentException ex) {
             throw new BusinessValidationException(ex.getMessage());
         }
@@ -836,12 +824,13 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
 
     private Step3ViewData captureStep3ViewData(Date now, String user) {
         return new Step3ViewData(
-                ficha, codCie10Ppal, obsExamenFisico, aptitudSel, detalleObservaciones, recomendaciones, nObsRetiro,
+                ficha, step3FormModel.getCodCie10Ppal(), obsExamenFisico, aptitudSel, detalleObservaciones, recomendaciones, nObsRetiro,
                 medicoNombre, medicoCodigo, fechaEmision, now, user, this::asegurarPersonaAuxPersistida,
                 () -> centroMedicoFormStateService.ensureActLabSize(this, H_ROWS),
                 actLabCentroTrabajo, actLabActividad, actLabTiempo, actLabTrabajoAnterior, actLabTrabajoActual,
                 actLabIncidenteChk, actLabAccidenteChk, actLabEnfermedadChk, iessFecha, iessEspecificar,
-                actLabObservaciones, tipoAct, fechaAct, descAct, examNombre, examFecha, examResultado, listaDiag);
+                actLabObservaciones, tipoAct, fechaAct, descAct, examNombre, examFecha, examResultado,
+                step3FormModel.getListaDiag());
     }
 
     private PdfFichaViewData capturePdfFichaViewData() {
@@ -926,14 +915,14 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
         }
         if (!result.listo) {
             showValidationMessage(ctx, "Validación antes de generar la ficha", result.errores);
-            fichaPdfListo = false;
-            pdfTokenFicha = null;
+            pdfPreviewState.setFichaPdfListo(false);
+            pdfPreviewState.setPdfTokenFicha(null);
             return;
         }
 
         ficha = result.ficha;
-        pdfTokenFicha = result.token;
-        fichaPdfListo = true;
+        pdfPreviewState.setPdfTokenFicha(result.token);
+        pdfPreviewState.setFichaPdfListo(true);
         activeStep = "step4";
         mostrarDlgCedula = false;
 
@@ -943,7 +932,7 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
                 "Se generó la ficha para vista previa y descarga."
         ));
 
-        PrimeFaces.current().ajax().addCallbackParam("fichaListo", fichaPdfListo);
+        PrimeFaces.current().ajax().addCallbackParam("fichaListo", pdfPreviewState.isFichaPdfListo());
         PrimeFaces.current().ajax().update(":msgs", "@([id$=wdzFicha])");
     }
 
@@ -959,8 +948,8 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
                 "onPrepararCertificadoPdf",
                 () -> centroMedicoPdfWorkflowService.onPrepararCertificadoPdf(
                         new CentroMedicoPdfWorkflowService.PrepareCertificadoFlowCommand(
-                                fichaPdfListo,
-                                pdfTokenFicha,
+                                pdfPreviewState.isFichaPdfListo(),
+                                pdfPreviewState.getPdfTokenFicha(),
                                 buildPrepareFichaCommand(),
                                 buildPrepareCertificadoCommand())),
                 this::onPrepararCertificadoPdfSuccess,
@@ -975,7 +964,7 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
                 result,
                 FacesContext.getCurrentInstance(),
                 pdfSessionStore,
-                pdfTokenCertificado));
+                pdfPreviewState.getPdfTokenCertificado()));
     }
 
     // =========================
@@ -986,8 +975,8 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
                 "prepararVistaPrevia",
                 () -> centroMedicoPdfWorkflowService.prepararVistaPrevia(
                         new CentroMedicoPdfWorkflowService.PreparePreviewFlowCommand(
-                                fichaPdfListo,
-                                pdfTokenFicha,
+                                pdfPreviewState.isFichaPdfListo(),
+                                pdfPreviewState.getPdfTokenFicha(),
                                 this::verificarFichaCompleta,
                                 buildPrepareFichaCommand(),
                                 buildPrepareCertificadoCommand())),
@@ -1003,19 +992,19 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
                 result,
                 FacesContext.getCurrentInstance(),
                 pdfSessionStore,
-                pdfTokenCertificado));
+                pdfPreviewState.getPdfTokenCertificado()));
     }
 
     public void limpiarVistaPrevia() {
         centroMedicoPdfFacadeService.cleanupPdfPreview(
                 FacesContext.getCurrentInstance(),
                 pdfSessionStore,
-                pdfTokenCertificado);
+                pdfPreviewState.getPdfTokenCertificado());
         applyCleanupPdfPreviewState();
     }
 
     private void cleanupPdfPreview(FacesContext ctx) {
-        applyPdfUiState(centroMedicoPdfUiCoordinator.cleanupPdfPreview(ctx, pdfSessionStore, pdfTokenCertificado));
+        applyPdfUiState(centroMedicoPdfUiCoordinator.cleanupPdfPreview(ctx, pdfSessionStore, pdfPreviewState.getPdfTokenCertificado()));
     }
 
     // =========================
@@ -1034,11 +1023,11 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
                 state,
                 pdfPreviewState,
                 value -> this.ficha = value,
-                value -> this.fichaPdfListo = value,
-                value -> this.pdfTokenFicha = value,
-                value -> this.certificadoListo = value,
-                value -> this.pdfTokenCertificado = value,
-                value -> this.pdfObjectUrl = value,
+                pdfPreviewState::setFichaPdfListo,
+                pdfPreviewState::setPdfTokenFicha,
+                pdfPreviewState::setCertificadoListo,
+                pdfPreviewState::setPdfTokenCertificado,
+                pdfPreviewState::setPdfObjectUrl,
                 value -> this.activeStep = value,
                 value -> this.mostrarDlgCedula = value);
     }
@@ -1068,15 +1057,15 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
 
     private void syncCie10PrincipalFromK() {
         DiagnosticoPrincipalService.DiagnosticoPrincipalData principal = diagnosticoPrincipalService.inferirPrincipal(
-                listaDiag,
-                codCie10Ppal,
-                descCie10Ppal);
+                step3FormModel.getListaDiag(),
+                step3FormModel.getCodCie10Ppal(),
+                step3FormModel.getDescCie10Ppal());
         if (!principal.hasCodigo()) {
             return;
         }
 
-        codCie10Ppal = principal.getCodigo();
-        descCie10Ppal = principal.getDescripcion();
+        step3FormModel.setCodCie10Ppal(principal.getCodigo());
+        step3FormModel.setDescCie10Ppal(principal.getDescripcion());
     }
 
     public void onCie10BlurCodigo(int index) {
@@ -1088,11 +1077,11 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     }
 
     public void onCie10FilaSelect(int idx) {
-        if (listaDiag == null || idx < 0 || idx >= listaDiag.size()) {
+        if (step3FormModel.getListaDiag() == null || idx < 0 || idx >= step3FormModel.getListaDiag().size()) {
             return;
         }
 
-        cie10LookupService.sincronizarFilaSeleccionada(listaDiag.get(idx));
+        cie10LookupService.sincronizarFilaSeleccionada(step3FormModel.getListaDiag().get(idx));
     }
 
     public List<Cie10> completarCie10(String query) {
@@ -1111,34 +1100,34 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
         String codigo = (String) event.getObject();
         DiagnosticoPrincipalService.DiagnosticoPrincipalData principal = diagnosticoPrincipalService
                 .sincronizarCodigoYDescripcion(codigo, null);
-        this.codCie10Ppal = principal.getCodigo();
-        this.descCie10Ppal = principal.getDescripcion();
+        step3FormModel.setCodCie10Ppal(principal.getCodigo());
+        step3FormModel.setDescCie10Ppal(principal.getDescripcion());
     }
 
     public void onCie10CodigoBlur() {
         DiagnosticoPrincipalService.DiagnosticoPrincipalData principal = diagnosticoPrincipalService
-                .sincronizarCodigoYDescripcion(this.codCie10Ppal, null);
-        this.codCie10Ppal = principal.getCodigo();
-        this.descCie10Ppal = principal.getDescripcion();
+                .sincronizarCodigoYDescripcion(step3FormModel.getCodCie10Ppal(), null);
+        step3FormModel.setCodCie10Ppal(principal.getCodigo());
+        step3FormModel.setDescCie10Ppal(principal.getDescripcion());
     }
 
     public void onCie10DescripcionSelect(SelectEvent event) {
         String descripcion = (String) event.getObject();
         DiagnosticoPrincipalService.DiagnosticoPrincipalData principal = diagnosticoPrincipalService
                 .sincronizarCodigoYDescripcion(null, descripcion);
-        this.codCie10Ppal = principal.getCodigo();
-        this.descCie10Ppal = principal.getDescripcion();
+        step3FormModel.setCodCie10Ppal(principal.getCodigo());
+        step3FormModel.setDescCie10Ppal(principal.getDescripcion());
     }
 
     public void onCie10DescripcionBlur() {
         DiagnosticoPrincipalService.DiagnosticoPrincipalData principal = diagnosticoPrincipalService
-                .sincronizarCodigoYDescripcion(null, this.descCie10Ppal);
-        this.codCie10Ppal = principal.getCodigo();
-        this.descCie10Ppal = principal.getDescripcion();
+                .sincronizarCodigoYDescripcion(null, step3FormModel.getDescCie10Ppal());
+        step3FormModel.setCodCie10Ppal(principal.getCodigo());
+        step3FormModel.setDescCie10Ppal(principal.getDescripcion());
     }
 
     private Cie10 inferCie10PrincipalFromListaK() {
-        return diagnosticoPrincipalService.inferirPrincipalCie10DesdeLista(listaDiag);
+        return diagnosticoPrincipalService.inferirPrincipalCie10DesdeLista(step3FormModel.getListaDiag());
     }
 
     public List<String> completarCie10FilaPorCodigo(String query) {
@@ -1180,46 +1169,46 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     }
 
     public void onKCieCodigoSelect(SelectEvent<String> event) {
-        diagnosticoFilaUiCoordinator.onCodigoSelect(event, listaDiag);
+        diagnosticoFilaUiCoordinator.onCodigoSelect(event, step3FormModel.getListaDiag());
     }
 
     public void onKCieCodigoBlur(AjaxBehaviorEvent event) {
-        diagnosticoFilaUiCoordinator.onCodigoBlur(event, listaDiag);
+        diagnosticoFilaUiCoordinator.onCodigoBlur(event, step3FormModel.getListaDiag());
     }
 
     public void onKDescSelect(SelectEvent<String> event) {
-        diagnosticoFilaUiCoordinator.onDescripcionSelect(event, listaDiag);
+        diagnosticoFilaUiCoordinator.onDescripcionSelect(event, step3FormModel.getListaDiag());
 
         syncCie10PrincipalFromK();
     }
 
     public void onKDescBlur(AjaxBehaviorEvent event) {
-        diagnosticoFilaUiCoordinator.onDescripcionBlur(event, listaDiag);
+        diagnosticoFilaUiCoordinator.onDescripcionBlur(event, step3FormModel.getListaDiag());
     }
 
     public void onKTipoChange(AjaxBehaviorEvent event) {
-        diagnosticoDialogControllerSupport.onKTipoChange(event, listaDiag);
+        diagnosticoDialogControllerSupport.onKTipoChange(event, step3FormModel.getListaDiag());
     }
 
     public void abrirDialogoDiagnostico(AjaxBehaviorEvent event) {
         DiagnosticoFilaUiCoordinator.DiagnosticoDialogState state = diagnosticoDialogControllerSupport
-                .abrirDialogo(event, listaDiag, diagnosticoFilaUiCoordinator);
+                .abrirDialogo(event, step3FormModel.getListaDiag(), diagnosticoFilaUiCoordinator);
         if (!state.isValid()) {
             return;
         }
 
-        dialogDiagnosticoIdx = state.getIdx();
-        codCie10Ppal = state.getCodigo();
-        descCie10Ppal = state.getDescripcion();
+        step3FormModel.setDialogDiagnosticoIdx(state.getIdx());
+        step3FormModel.setCodCie10Ppal(state.getCodigo());
+        step3FormModel.setDescCie10Ppal(state.getDescripcion());
         diagnosticoDialogControllerSupport.mostrarDialogo();
     }
 
     public void aceptarDialogoDiagnostico() {
         boolean accepted = diagnosticoDialogControllerSupport.aceptarDialogo(
-                dialogDiagnosticoIdx,
-                codCie10Ppal,
-                descCie10Ppal,
-                listaDiag,
+                step3FormModel.getDialogDiagnosticoIdx(),
+                step3FormModel.getCodCie10Ppal(),
+                step3FormModel.getDescCie10Ppal(),
+                step3FormModel.getListaDiag(),
                 diagnosticoFilaUiCoordinator);
         if (!accepted) {
             return;
@@ -1895,17 +1884,17 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     }
 
     public Map<String, Boolean> getRiesgos() {
-        if (riesgos == null) {
-            riesgos = new java.util.LinkedHashMap<>();
+        if (step2FormModel.getRiesgos() == null) {
+            step2FormModel.setRiesgos(new java.util.LinkedHashMap<>());
         }
-        return riesgos;
+        return step2FormModel.getRiesgos();
     }
 
     public Map<String, String> getOtrosRiesgos() {
-        if (otrosRiesgos == null) {
-            otrosRiesgos = new java.util.LinkedHashMap<>();
+        if (step2FormModel.getOtrosRiesgos() == null) {
+            step2FormModel.setOtrosRiesgos(new java.util.LinkedHashMap<>());
         }
-        return otrosRiesgos;
+        return step2FormModel.getOtrosRiesgos();
     }
 
     public List<String> getRiskCols() {
@@ -2161,11 +2150,11 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     }
 
     public List<String> getActividadesLab() {
-        return actividadesLab;
+        return step2FormModel.getActividadesLab();
     }
 
     public void setActividadesLab(List<String> actividadesLab) {
-        this.actividadesLab = actividadesLab;
+        step2FormModel.setActividadesLab(actividadesLab);
     }
 
     public String[] getAfCual() {
@@ -2281,11 +2270,11 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     }
 
     public boolean isCertificadoListo() {
-        return certificadoListo;
+        return pdfPreviewState.isCertificadoListo();
     }
 
     public void setCertificadoListo(boolean certificadoListo) {
-        this.certificadoListo = certificadoListo;
+        pdfPreviewState.setCertificadoListo(certificadoListo);
     }
 
     public Integer getCesareas() {
@@ -2409,11 +2398,11 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     }
 
     public FichaRiesgo getFichaRiesgo() {
-        return fichaRiesgo;
+        return step2FormModel.getFichaRiesgo();
     }
 
     public void setFichaRiesgo(FichaRiesgo fichaRiesgo) {
-        this.fichaRiesgo = fichaRiesgo;
+        step2FormModel.setFichaRiesgo(fichaRiesgo);
     }
 
     public Integer getFr() {
@@ -2489,11 +2478,11 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     }
 
     public List<ConsultaDiagnostico> getListaDiag() {
-        return listaDiag;
+        return step3FormModel.getListaDiag();
     }
 
     public void setListaDiag(List<ConsultaDiagnostico> listaDiag) {
-        this.listaDiag = listaDiag;
+        step3FormModel.setListaDiag(listaDiag);
     }
 
     public Integer[] getMedCant() {
@@ -2529,11 +2518,11 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     }
 
     public List<String> getMedidasPreventivas() {
-        return medidasPreventivas;
+        return step2FormModel.getMedidasPreventivas();
     }
 
     public void setMedidasPreventivas(List<String> medidasPreventivas) {
-        this.medidasPreventivas = medidasPreventivas;
+        step2FormModel.setMedidasPreventivas(medidasPreventivas);
     }
 
     public String getNombre1() {
@@ -2561,7 +2550,7 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     }
 
     public void setOtrosRiesgos(Map<String, String> otrosRiesgos) {
-        this.otrosRiesgos = otrosRiesgos;
+        step2FormModel.setOtrosRiesgos(otrosRiesgos);
     }
 
     public String getPaStr() {
@@ -2581,11 +2570,11 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     }
 
     public String getPdfToken() {
-        return pdfTokenCertificado;
+        return pdfPreviewState.getPdfTokenCertificado();
     }
 
     public void setPdfToken(String pdfTokenCertificado) {
-        this.pdfTokenCertificado = pdfTokenCertificado;
+        pdfPreviewState.setPdfTokenCertificado(pdfTokenCertificado);
     }
 
     public Double getPerimetroAbd() {
@@ -2621,7 +2610,7 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     }
 
     public void setRiesgos(Map<String, Boolean> riesgos) {
-        this.riesgos = riesgos;
+        step2FormModel.setRiesgos(riesgos);
     }
 
     public Integer getSatO2() {
@@ -2689,19 +2678,19 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     }
 
     public String getDialogDiagnosticoCodigo() {
-        return dialogDiagnosticoCodigo;
+        return step3FormModel.getDialogDiagnosticoCodigo();
     }
 
     public void setDialogDiagnosticoCodigo(String dialogDiagnosticoCodigo) {
-        this.dialogDiagnosticoCodigo = dialogDiagnosticoCodigo;
+        step3FormModel.setDialogDiagnosticoCodigo(dialogDiagnosticoCodigo);
     }
 
     public String getDialogDiagnosticoDescripcion() {
-        return dialogDiagnosticoDescripcion;
+        return step3FormModel.getDialogDiagnosticoDescripcion();
     }
 
     public void setDialogDiagnosticoDescripcion(String dialogDiagnosticoDescripcion) {
-        this.dialogDiagnosticoDescripcion = dialogDiagnosticoDescripcion;
+        step3FormModel.setDialogDiagnosticoDescripcion(dialogDiagnosticoDescripcion);
     }
 
     public boolean isCedulaDlgAutoOpened() {
@@ -2897,19 +2886,19 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     }
 
     public String getCodCie10Ppal() {
-        return codCie10Ppal;
+        return step3FormModel.getCodCie10Ppal();
     }
 
     public void setCodCie10Ppal(String codCie10Ppal) {
-        this.codCie10Ppal = codCie10Ppal;
+        step3FormModel.setCodCie10Ppal(codCie10Ppal);
     }
 
     public String getDescCie10Ppal() {
-        return descCie10Ppal;
+        return step3FormModel.getDescCie10Ppal();
     }
 
     public void setDescCie10Ppal(String descCie10Ppal) {
-        this.descCie10Ppal = descCie10Ppal;
+        step3FormModel.setDescCie10Ppal(descCie10Ppal);
     }
 
     public String[] gethCentroTrabajo() {
@@ -3033,11 +3022,11 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     }
 
     public String getPdfObjectUrl() {
-        return pdfObjectUrl;
+        return pdfPreviewState.getPdfObjectUrl();
     }
 
     public void setPdfObjectUrl(String pdfObjectUrl) {
-        this.pdfObjectUrl = pdfObjectUrl;
+        pdfPreviewState.setPdfObjectUrl(pdfObjectUrl);
     }
 
     public List<String> getActLabIncidente() {
@@ -3106,7 +3095,7 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     }
 
     public String getPdfTokenCertificado() {
-        return pdfTokenCertificado;
+        return pdfPreviewState.getPdfTokenCertificado();
     }
 
     public String getAntTerapeutica() {
@@ -3246,23 +3235,23 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     }
 
     public boolean isCertPdfListo() {
-        return certificadoListo;
+        return pdfPreviewState.isCertificadoListo();
     }
 
     public String getFichaToken() {
-        return pdfTokenFicha;
+        return pdfPreviewState.getPdfTokenFicha();
     }
 
     public String getCertToken() {
-        return pdfTokenCertificado;
+        return pdfPreviewState.getPdfTokenCertificado();
     }
 
     public boolean isFichaPdfListo() {
-        return fichaPdfListo;
+        return pdfPreviewState.isFichaPdfListo();
     }
 
     public String getPdfTokenFicha() {
-        return pdfTokenFicha;
+        return pdfPreviewState.getPdfTokenFicha();
     }
 
     public Step1FormModel getStep1FormModel() {
