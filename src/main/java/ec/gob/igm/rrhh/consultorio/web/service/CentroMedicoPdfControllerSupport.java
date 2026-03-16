@@ -37,6 +37,9 @@ import jakarta.faces.context.FacesContext;
 import jakarta.inject.Inject;
 
 @ApplicationScoped
+/**
+ * Class CentroMedicoPdfControllerSupport: orquesta la lógica de presentación y flujo web.
+ */
 public class CentroMedicoPdfControllerSupport implements Serializable {
 
     private static final long serialVersionUID = 1L;

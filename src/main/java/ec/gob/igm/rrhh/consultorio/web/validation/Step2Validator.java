@@ -4,6 +4,9 @@ import java.util.List;
 
 import ec.gob.igm.rrhh.consultorio.domain.model.FichaRiesgo;
 
+/**
+ * Class Step2Validator: valida datos y reglas del flujo de formularios.
+ */
 public class Step2Validator {
 
     public ValidationResult validate(FichaRiesgo fichaRiesgo, List<String> actividadesLab, List<String> medidasPreventivas) {

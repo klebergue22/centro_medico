@@ -8,6 +8,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Stateless
+/**
+ * Class HttpSessionPdfSessionStore: administra el almacenamiento de datos en sesión web.
+ */
 public class HttpSessionPdfSessionStore implements PdfSessionStore {
 
     private static final String PDF_STORE_KEY = "PDF_STORE";

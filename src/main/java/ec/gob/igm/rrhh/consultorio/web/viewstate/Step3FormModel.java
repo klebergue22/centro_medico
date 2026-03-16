@@ -6,6 +6,9 @@ import java.util.List;
 
 import ec.gob.igm.rrhh.consultorio.domain.model.ConsultaDiagnostico;
 
+/**
+ * Class Step3FormModel: contiene la lógica de la aplicación.
+ */
 public class Step3FormModel implements Serializable {
 
     private static final long serialVersionUID = 1L;

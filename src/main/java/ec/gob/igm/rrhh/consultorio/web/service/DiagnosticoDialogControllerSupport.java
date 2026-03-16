@@ -14,6 +14,9 @@ import org.slf4j.LoggerFactory;
 import ec.gob.igm.rrhh.consultorio.domain.model.ConsultaDiagnostico;
 
 @Dependent
+/**
+ * Class DiagnosticoDialogControllerSupport: orquesta la lógica de presentación y flujo web.
+ */
 public class DiagnosticoDialogControllerSupport {
 
     private static final Logger LOG = LoggerFactory.getLogger(DiagnosticoDialogControllerSupport.class);

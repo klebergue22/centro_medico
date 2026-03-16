@@ -10,6 +10,9 @@ import ec.gob.igm.rrhh.consultorio.web.pdf.CertificadoPdfTemplateService;
 import ec.gob.igm.rrhh.consultorio.web.pdf.PdfResourceResolver;
 import ec.gob.igm.rrhh.consultorio.web.pdf.PdfTemplateEngine;
 
+/**
+ * Class PdfCertificadoViewData: contiene la lógica de la aplicación.
+ */
 public class PdfCertificadoViewData {
 
     public final FichaOcupacional ficha;

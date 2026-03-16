@@ -11,6 +11,9 @@ import java.util.Date;
 
 @Entity
 @Table(name = "T_CONTRATACIONES", schema = "RH")
+/**
+ * Class Contratacion: representa una entidad del dominio de consultorio médico.
+ */
 public class Contratacion implements Serializable {
 
     @EmbeddedId

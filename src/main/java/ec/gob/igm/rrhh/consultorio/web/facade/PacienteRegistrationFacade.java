@@ -15,6 +15,9 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
 @ApplicationScoped
+/**
+ * Class PacienteRegistrationFacade: expone una fachada para simplificar operaciones del módulo web.
+ */
 public class PacienteRegistrationFacade implements Serializable {
 
     private static final long serialVersionUID = 1L;

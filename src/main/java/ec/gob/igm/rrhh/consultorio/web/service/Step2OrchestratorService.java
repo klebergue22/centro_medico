@@ -13,6 +13,9 @@ import ec.gob.igm.rrhh.consultorio.service.FichaRiesgoDetService;
 import ec.gob.igm.rrhh.consultorio.service.FichaRiesgoService;
 
 @Stateless
+/**
+ * Class Step2OrchestratorService: orquesta la lógica de presentación y flujo web.
+ */
 public class Step2OrchestratorService implements Serializable {
 
     @EJB

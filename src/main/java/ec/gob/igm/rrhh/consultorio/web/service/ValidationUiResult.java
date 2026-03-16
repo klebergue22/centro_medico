@@ -8,6 +8,9 @@ import jakarta.faces.context.FacesContext;
 import ec.gob.igm.rrhh.consultorio.web.jsf.CentroMedicoMessageService;
 import ec.gob.igm.rrhh.consultorio.web.validation.ValidationResult;
 
+/**
+ * Class ValidationUiResult: orquesta la lógica de presentación y flujo web.
+ */
 public class ValidationUiResult implements Serializable {
 
     private static final long serialVersionUID = 1L;

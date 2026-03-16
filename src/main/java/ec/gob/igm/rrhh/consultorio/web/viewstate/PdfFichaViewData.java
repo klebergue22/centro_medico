@@ -15,6 +15,9 @@ import ec.gob.igm.rrhh.consultorio.domain.model.PersonaAux;
 import ec.gob.igm.rrhh.consultorio.web.facade.CentroMedicoPdfFacade;
 import ec.gob.igm.rrhh.consultorio.web.pdf.PdfResourceResolver;
 
+/**
+ * Class PdfFichaViewData: contiene la lógica de la aplicación.
+ */
 public class PdfFichaViewData {
 
     public final Object source;

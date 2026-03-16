@@ -5,6 +5,9 @@ import java.io.Serializable;
 import jakarta.ejb.Stateless;
 
 @Stateless
+/**
+ * Class RiskKeyParser: orquesta la lógica de presentación y flujo web.
+ */
 public class RiskKeyParser implements Serializable {
 
     public RiskKey parseRiskKey(String key) {

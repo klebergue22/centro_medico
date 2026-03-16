@@ -6,6 +6,9 @@ package ec.gob.igm.rrhh.consultorio.domain.enums;
 
 import java.util.Arrays;
 
+/**
+ * Enum EstadoCivil: contiene la lógica de la aplicación.
+ */
 public enum EstadoCivil {
 
     SOLTERO("S", "Soltero"),

@@ -1,5 +1,8 @@
 package ec.gob.igm.rrhh.consultorio.web.util;
 
+/**
+ * Class CentroMedicoPdfValueUtil: provee utilidades de apoyo para la capa web.
+ */
 public final class CentroMedicoPdfValueUtil {
 
     private CentroMedicoPdfValueUtil() {

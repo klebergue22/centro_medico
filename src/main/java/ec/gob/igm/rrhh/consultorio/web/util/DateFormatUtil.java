@@ -5,6 +5,9 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.Date;
 
+/**
+ * Class DateFormatUtil: provee utilidades de apoyo para la capa web.
+ */
 public final class DateFormatUtil {
 
     private DateFormatUtil() {

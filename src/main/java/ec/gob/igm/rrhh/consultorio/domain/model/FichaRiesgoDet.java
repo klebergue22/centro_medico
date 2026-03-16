@@ -20,6 +20,9 @@ import java.util.Objects;
     }
 )
 @Access(AccessType.FIELD)
+/**
+ * Class FichaRiesgoDet: representa una entidad del dominio de consultorio médico.
+ */
 public class FichaRiesgoDet implements Serializable {
 
     private static final long serialVersionUID = 1L;

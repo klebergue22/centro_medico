@@ -6,6 +6,9 @@ import java.util.List;
 import ec.gob.igm.rrhh.consultorio.domain.model.ConsultaDiagnostico;
 import ec.gob.igm.rrhh.consultorio.domain.model.FichaOcupacional;
 
+/**
+ * Class Step3ViewData: contiene la lógica de la aplicación.
+ */
 public class Step3ViewData {
 
     public final FichaOcupacional ficha;

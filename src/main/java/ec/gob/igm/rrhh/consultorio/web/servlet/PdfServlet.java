@@ -18,6 +18,9 @@ import java.io.IOException;
 import java.io.OutputStream;
 
 @WebServlet("/pdf")
+/**
+ * Class PdfServlet: contiene la lógica de la aplicación.
+ */
 public class PdfServlet extends HttpServlet {
 
     private static final long serialVersionUID = 1L;

@@ -18,6 +18,9 @@ import ec.gob.igm.rrhh.consultorio.domain.model.ConsultaDiagnostico;
 import ec.gob.igm.rrhh.consultorio.service.Cie10Service;
 
 @Dependent
+/**
+ * Class DiagnosticoFilaUiCoordinator: orquesta la lógica de presentación y flujo web.
+ */
 public class DiagnosticoFilaUiCoordinator {
 
     private static final Logger LOG = LoggerFactory.getLogger(DiagnosticoFilaUiCoordinator.class);

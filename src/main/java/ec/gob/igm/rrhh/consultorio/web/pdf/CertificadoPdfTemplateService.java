@@ -7,6 +7,9 @@ import java.util.Map;
 import jakarta.enterprise.context.ApplicationScoped;
 
 @ApplicationScoped
+/**
+ * Class CertificadoPdfTemplateService: gestiona la construcción y renderización de documentos PDF.
+ */
 public class CertificadoPdfTemplateService {
 
     public String construirHtmlDesdePlantilla(CertificadoTemplateData data) {

@@ -12,6 +12,9 @@ import java.util.Date;
 import java.util.List;
 
 @Stateless
+/**
+ * Class FichaRiesgoDetService: encapsula reglas de negocio y acceso a datos del dominio.
+ */
 public class FichaRiesgoDetService {
 
     @PersistenceContext(unitName = "consultorioPU")

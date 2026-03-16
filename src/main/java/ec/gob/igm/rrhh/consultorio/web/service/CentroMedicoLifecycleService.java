@@ -5,6 +5,9 @@ import java.io.Serializable;
 import jakarta.enterprise.context.ApplicationScoped;
 
 @ApplicationScoped
+/**
+ * Class CentroMedicoLifecycleService: orquesta la lógica de presentación y flujo web.
+ */
 public class CentroMedicoLifecycleService implements Serializable {
 
     private static final long serialVersionUID = 1L;

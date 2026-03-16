@@ -36,6 +36,9 @@ import org.slf4j.LoggerFactory;
 
 @Named("centroMedicoPdfFacade")
 @ViewScoped
+/**
+ * Class CentroMedicoPdfFacade: expone una fachada para simplificar operaciones del módulo web.
+ */
 public class CentroMedicoPdfFacade implements Serializable {
 
     private static final long serialVersionUID = 1L;

@@ -17,6 +17,9 @@ import java.util.List;
 import java.util.Set;
 
 @Stateless
+/**
+ * Class FichaDiagnosticoService: encapsula reglas de negocio y acceso a datos del dominio.
+ */
 public class FichaDiagnosticoService {
 
     @PersistenceContext(unitName = "consultorioPU")

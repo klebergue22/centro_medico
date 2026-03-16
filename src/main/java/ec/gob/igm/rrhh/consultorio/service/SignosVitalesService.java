@@ -8,6 +8,9 @@ import jakarta.persistence.PersistenceContext;
 import java.io.Serializable;
 
 @Stateless
+/**
+ * Class SignosVitalesService: encapsula reglas de negocio y acceso a datos del dominio.
+ */
 public class SignosVitalesService implements Serializable {
 
     private static final long serialVersionUID = 1L;

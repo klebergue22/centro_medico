@@ -13,6 +13,9 @@ import java.util.Collections;
 import java.util.List;
 
 @Stateless
+/**
+ * Class EmpleadoService: encapsula reglas de negocio y acceso a datos del dominio.
+ */
 public class EmpleadoService {
 @PersistenceContext(unitName = "consultorioPU")
     private EntityManager em;

@@ -12,6 +12,9 @@ import java.util.Collections;
 import java.util.List;
 
 @Stateless
+/**
+ * Class Cie10Service: encapsula reglas de negocio y acceso a datos del dominio.
+ */
 public class Cie10Service {
 
     @PersistenceContext(unitName = "consultorioPU")

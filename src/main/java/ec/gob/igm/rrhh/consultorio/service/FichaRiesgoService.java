@@ -10,6 +10,9 @@ import java.util.Collections;
 import java.util.List;
 
 @Stateless
+/**
+ * Class FichaRiesgoService: encapsula reglas de negocio y acceso a datos del dominio.
+ */
 public class FichaRiesgoService {
 
     @PersistenceContext(unitName = "consultorioPU")

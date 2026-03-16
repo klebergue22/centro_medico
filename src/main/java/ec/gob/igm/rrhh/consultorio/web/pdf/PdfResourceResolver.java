@@ -13,6 +13,9 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.faces.context.FacesContext;
 
 @ApplicationScoped
+/**
+ * Class PdfResourceResolver: gestiona la construcción y renderización de documentos PDF.
+ */
 public class PdfResourceResolver {
 
     public String readPdfTemplate(String templateName) {

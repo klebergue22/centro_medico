@@ -15,6 +15,9 @@ import ec.gob.igm.rrhh.consultorio.web.facade.CentroMedicoPdfFacade;
 import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoPdfUiService;
 
 @Stateless
+/**
+ * Class CentroMedicoPdfCommandFactory: gestiona la construcción y renderización de documentos PDF.
+ */
 public class CentroMedicoPdfCommandFactory implements Serializable {
 
     public CentroMedicoPdfUiService.PrepareFichaUiCommand buildPrepareFichaUiCommand(

@@ -12,6 +12,9 @@ import ec.gob.igm.rrhh.consultorio.domain.model.FichaOcupacional;
 import ec.gob.igm.rrhh.consultorio.domain.model.PersonaAux;
 
 @Stateless
+/**
+ * Class FichaPdfValidationService: orquesta la lógica de presentación y flujo web.
+ */
 public class FichaPdfValidationService implements Serializable {
 
     public List<String> validar(FichaOcupacional ficha, DatEmpleado empleadoSel, PersonaAux personaAux, boolean permitirIngresoManual) {

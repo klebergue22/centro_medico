@@ -9,6 +9,9 @@ import java.math.RoundingMode;
 import java.util.Date;
 
 @Stateless
+/**
+ * Class Step1VitalSignsManager: encapsula reglas de negocio y acceso a datos del dominio.
+ */
 public class Step1VitalSignsManager {
 
     @EJB

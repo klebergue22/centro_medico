@@ -14,6 +14,9 @@ import ec.gob.igm.rrhh.consultorio.service.FichaOcupacionalService;
 import ec.gob.igm.rrhh.consultorio.web.facade.CentroMedicoPdfFacade;
 
 @Stateless
+/**
+ * Class FichaPdfPreparationService: orquesta la lógica de presentación y flujo web.
+ */
 public class FichaPdfPreparationService implements Serializable {
 
     @EJB

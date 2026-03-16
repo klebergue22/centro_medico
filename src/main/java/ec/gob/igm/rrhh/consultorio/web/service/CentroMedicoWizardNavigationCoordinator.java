@@ -13,6 +13,9 @@ import jakarta.faces.context.FacesContext;
 import ec.gob.igm.rrhh.consultorio.domain.model.FichaOcupacional;
 
 @ApplicationScoped
+/**
+ * Class CentroMedicoWizardNavigationCoordinator: orquesta la lógica de presentación y flujo web.
+ */
 public class CentroMedicoWizardNavigationCoordinator implements Serializable {
 
     private static final long serialVersionUID = 1L;

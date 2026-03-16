@@ -18,6 +18,9 @@ import ec.gob.igm.rrhh.consultorio.web.facade.CentroMedicoPdfFacade;
 import ec.gob.igm.rrhh.consultorio.web.session.PdfSessionStore;
 
 @Stateless
+/**
+ * Class CentroMedicoPdfUiService: orquesta la lógica de presentación y flujo web.
+ */
 public class CentroMedicoPdfUiService implements Serializable {
 
     private static final long serialVersionUID = 1L;

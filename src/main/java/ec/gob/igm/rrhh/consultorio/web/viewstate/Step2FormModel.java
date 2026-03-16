@@ -8,6 +8,9 @@ import java.util.Map;
 
 import ec.gob.igm.rrhh.consultorio.domain.model.FichaRiesgo;
 
+/**
+ * Class Step2FormModel: contiene la lógica de la aplicación.
+ */
 public class Step2FormModel implements Serializable {
 
     private static final long serialVersionUID = 1L;

@@ -10,6 +10,9 @@ import java.util.Date;
 
 @Entity
 @Table(name = "AUDITORIA_CONSULTORIO", schema = "CONSULTORIO")
+/**
+ * Class AuditoriaConsultorio: representa una entidad del dominio de consultorio médico.
+ */
 public class AuditoriaConsultorio implements Serializable {
 
     private static final long serialVersionUID = 1L;

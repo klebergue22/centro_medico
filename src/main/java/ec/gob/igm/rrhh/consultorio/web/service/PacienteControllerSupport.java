@@ -16,6 +16,9 @@ import jakarta.inject.Inject;
 import org.slf4j.Logger;
 
 @ApplicationScoped
+/**
+ * Class PacienteControllerSupport: orquesta la lógica de presentación y flujo web.
+ */
 public class PacienteControllerSupport implements Serializable {
 
     private static final long serialVersionUID = 1L;

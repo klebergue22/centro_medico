@@ -5,6 +5,9 @@ import java.io.Serializable;
 import ec.gob.igm.rrhh.consultorio.domain.model.DatEmpleado;
 import ec.gob.igm.rrhh.consultorio.domain.model.PersonaAux;
 
+/**
+ * Class PacienteViewState: contiene la lógica de la aplicación.
+ */
 public class PacienteViewState implements Serializable {
 
     private static final long serialVersionUID = 1L;

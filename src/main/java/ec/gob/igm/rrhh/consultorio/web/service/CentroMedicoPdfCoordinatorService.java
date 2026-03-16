@@ -16,6 +16,9 @@ import ec.gob.igm.rrhh.consultorio.domain.model.PersonaAux;
 import ec.gob.igm.rrhh.consultorio.web.facade.CentroMedicoPdfFacade;
 
 @Stateless
+/**
+ * Class CentroMedicoPdfCoordinatorService: orquesta la lógica de presentación y flujo web.
+ */
 public class CentroMedicoPdfCoordinatorService implements Serializable {
 
     private static final long serialVersionUID = 1L;

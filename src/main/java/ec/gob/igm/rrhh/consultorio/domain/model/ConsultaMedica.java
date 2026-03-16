@@ -12,6 +12,9 @@ import java.util.List;
 
 @Entity
 @Table(name = "CONSULTA_MEDICA", schema = "CONSULTORIO")
+/**
+ * Class ConsultaMedica: representa una entidad del dominio de consultorio médico.
+ */
 public class ConsultaMedica implements Serializable {
 
     private static final long serialVersionUID = 1L;

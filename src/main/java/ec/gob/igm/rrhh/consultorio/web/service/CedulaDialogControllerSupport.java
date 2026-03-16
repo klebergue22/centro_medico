@@ -4,6 +4,9 @@ import jakarta.enterprise.context.ApplicationScoped;
 import org.primefaces.PrimeFaces;
 
 @ApplicationScoped
+/**
+ * Class CedulaDialogControllerSupport: orquesta la lógica de presentación y flujo web.
+ */
 public class CedulaDialogControllerSupport {
 
     private static final String OPEN_CEDULA_DIALOG_PARAM = "openCedulaDlg";

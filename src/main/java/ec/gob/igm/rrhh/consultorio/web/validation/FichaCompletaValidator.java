@@ -9,6 +9,9 @@ import ec.gob.igm.rrhh.consultorio.domain.model.FichaOcupacional;
 import ec.gob.igm.rrhh.consultorio.domain.model.PersonaAux;
 import jakarta.persistence.Persistence;
 
+/**
+ * Class FichaCompletaValidator: valida datos y reglas del flujo de formularios.
+ */
 public class FichaCompletaValidator {
 
     public ValidationResult validate(FichaOcupacional ficha,

@@ -3,6 +3,9 @@ package ec.gob.igm.rrhh.consultorio.web.viewstate;
 import java.io.Serializable;
 import java.util.Date;
 
+/**
+ * Class Step1FormModel: contiene la lógica de la aplicación.
+ */
 public class Step1FormModel implements Serializable {
 
     private static final long serialVersionUID = 1L;

@@ -23,6 +23,9 @@ import ec.gob.igm.rrhh.consultorio.web.session.PdfSessionStore;
 import ec.gob.igm.rrhh.consultorio.web.viewstate.PdfPreviewState;
 
 @ApplicationScoped
+/**
+ * Class CentroMedicoPdfUiCoordinator: orquesta la lógica de presentación y flujo web.
+ */
 public class CentroMedicoPdfUiCoordinator implements Serializable {
 
     private static final long serialVersionUID = 1L;

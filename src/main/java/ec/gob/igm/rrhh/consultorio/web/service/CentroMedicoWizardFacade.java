@@ -19,6 +19,9 @@ import ec.gob.igm.rrhh.consultorio.web.facade.CentroMedicoStepFlowFacade;
 
  
 @ApplicationScoped
+/**
+ * Class CentroMedicoWizardFacade: orquesta la lógica de presentación y flujo web.
+ */
 public class CentroMedicoWizardFacade implements Serializable {
 
     private static final long serialVersionUID = 1L;

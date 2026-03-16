@@ -18,6 +18,9 @@ import ec.gob.igm.rrhh.consultorio.web.service.FichaPdfViewModelBuilder;
 import ec.gob.igm.rrhh.consultorio.web.service.FichaPdfViewModelBuilder.FichaPdfViewModelContext;
 
 @Stateless
+/**
+ * Class FichaPdfPlaceholderAssembler: gestiona la construcción y renderización de documentos PDF.
+ */
 public class FichaPdfPlaceholderAssembler implements Serializable {
 
     public Map<String, String> buildReemplazosFicha(FichaState state) {

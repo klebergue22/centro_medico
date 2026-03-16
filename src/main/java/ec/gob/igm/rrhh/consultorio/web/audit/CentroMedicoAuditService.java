@@ -7,6 +7,9 @@ import jakarta.ejb.Stateless;
 import java.util.Date;
 
 @Stateless
+/**
+ * Class CentroMedicoAuditService: registra eventos y auditoría del módulo de consultorio.
+ */
 public class CentroMedicoAuditService {
 
     @EJB

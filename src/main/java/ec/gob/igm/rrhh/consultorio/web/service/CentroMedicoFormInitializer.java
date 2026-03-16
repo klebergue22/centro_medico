@@ -18,6 +18,9 @@ import ec.gob.igm.rrhh.consultorio.domain.model.SignosVitales;
 import ec.gob.igm.rrhh.consultorio.web.ctrl.CentroMedicoCtrl;
 
 @ApplicationScoped
+/**
+ * Class CentroMedicoFormInitializer: orquesta la lógica de presentación y flujo web.
+ */
 public class CentroMedicoFormInitializer implements Serializable {
 
     private static final long serialVersionUID = 1L;

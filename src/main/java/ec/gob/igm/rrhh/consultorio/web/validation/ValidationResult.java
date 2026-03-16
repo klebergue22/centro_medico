@@ -4,6 +4,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * Class ValidationResult: valida datos y reglas del flujo de formularios.
+ */
 public class ValidationResult {
 
     private final List<String> errors = new ArrayList<>();

@@ -12,6 +12,9 @@ import ec.gob.igm.rrhh.consultorio.domain.model.DatEmpleado;
 import ec.gob.igm.rrhh.consultorio.domain.model.FichaOcupacional;
 
 @Stateless
+/**
+ * Class FichaPdfDataMapper: orquesta la lógica de presentación y flujo web.
+ */
 public class FichaPdfDataMapper implements Serializable {
 
     public FichaPdfMappedData map(FichaOcupacional ficha, DatEmpleado empleadoSel, Date fechaNacimientoActual) {

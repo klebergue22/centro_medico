@@ -10,6 +10,9 @@ import jakarta.faces.application.FacesMessage;
 import jakarta.faces.context.FacesContext;
 
 @ApplicationScoped
+/**
+ * Class CentroMedicoUiSupportService: orquesta la lógica de presentación y flujo web.
+ */
 public class CentroMedicoUiSupportService implements Serializable {
 
     private static final long serialVersionUID = 1L;
