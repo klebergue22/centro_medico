@@ -21,7 +21,6 @@ import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 
-import org.primefaces.PrimeFaces;
 import org.primefaces.event.FlowEvent;
 import org.primefaces.event.SelectEvent;
 import org.slf4j.Logger;
@@ -46,11 +45,9 @@ import ec.gob.igm.rrhh.consultorio.service.FichaOcupacionalService;
 import ec.gob.igm.rrhh.consultorio.service.PersonaAuxService;
 import ec.gob.igm.rrhh.consultorio.web.facade.CentroMedicoPdfFacade;
 import ec.gob.igm.rrhh.consultorio.web.jsf.CentroMedicoMessageService;
-import ec.gob.igm.rrhh.consultorio.web.facade.PacienteRegistrationFacade;
 import ec.gob.igm.rrhh.consultorio.web.facade.Step1Facade;
 import ec.gob.igm.rrhh.consultorio.web.mapper.Step3CommandAssembler;
 import ec.gob.igm.rrhh.consultorio.web.mapper.Step3ViewDataAssembler;
-import ec.gob.igm.rrhh.consultorio.web.mapper.PacienteSearchInputAssembler;
 import ec.gob.igm.rrhh.consultorio.web.mapper.PdfCertificadoInputAssembler;
 import ec.gob.igm.rrhh.consultorio.web.mapper.PdfFichaInputAssembler;
 import ec.gob.igm.rrhh.consultorio.web.audit.CentroMedicoAuditService;
@@ -79,9 +76,8 @@ import ec.gob.igm.rrhh.consultorio.web.service.DiagnosticoDialogControllerSuppor
 import ec.gob.igm.rrhh.consultorio.web.service.DiagnosticoFilaUiCoordinator;
 import ec.gob.igm.rrhh.consultorio.web.service.DiagnosticoPrincipalService;
 import ec.gob.igm.rrhh.consultorio.web.service.FichaPdfDataMapper;
-import ec.gob.igm.rrhh.consultorio.web.service.PacienteControllerSupport;
-import ec.gob.igm.rrhh.consultorio.web.service.PacienteViewBinder;
 import ec.gob.igm.rrhh.consultorio.web.service.PacienteUiStateApplier;
+import ec.gob.igm.rrhh.consultorio.web.service.PacienteViewFlowDelegate;
 import ec.gob.igm.rrhh.consultorio.web.service.Step2OrchestratorService;
 import ec.gob.igm.rrhh.consultorio.web.service.Step2OrchestratorService.Step2RiskCommand;
 import ec.gob.igm.rrhh.consultorio.web.service.Step3OrchestratorService;
@@ -206,8 +202,6 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     private transient CentroMedicoFormStateService centroMedicoFormStateService;
     @Inject
     private transient CentroMedicoReactiveUiService reactiveUiService;
-    @Inject
-    private transient PacienteUiStateApplier pacienteUiStateApplier;
     
     @Inject
     private transient DiagnosticoFilaUiCoordinator diagnosticoFilaUiCoordinator;
@@ -224,8 +218,6 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     @Inject
     private transient PdfCertificadoInputAssembler pdfCertificadoInputAssembler;
     @Inject
-    private transient PacienteSearchInputAssembler pacienteSearchInputAssembler;
-    @Inject
     private transient CentroMedicoPdfUiCoordinator centroMedicoPdfUiCoordinator;
     @Inject
     private transient CentroMedicoPdfTemplateCoordinator centroMedicoPdfTemplateCoordinator;
@@ -234,11 +226,9 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     @Inject
     private transient FichaPdfDataMapper fichaPdfDataMapper;
     @Inject
-    private transient PacienteRegistrationFacade pacienteRegistrationFacade;
-    @Inject
     private transient Step1Facade step1Facade;
     @Inject
-    private transient PacienteControllerSupport pacienteControllerSupport;
+    private transient PacienteViewFlowDelegate pacienteViewFlowDelegate;
     @Inject
     private transient CentroMedicoPdfControllerSupport centroMedicoPdfControllerSupport;
 
@@ -667,12 +657,12 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
                 this,
                 usuarioReal()));
 
-        applyPacienteUiResult(result.preUiResult);
+        pacienteViewFlowDelegate.applyPacienteUiResult(this, result.preUiResult);
         ficha = result.ficha;
         empleadoSel = result.empleadoSel;
         personaAux = result.personaAux;
         signos = result.signos;
-        applyPacienteUiResult(result.postUiResult);
+        pacienteViewFlowDelegate.applyPacienteUiResult(this, result.postUiResult);
     }
 
     public void guardarStep2() {
@@ -745,12 +735,12 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     private void saveStep3() {
         ensureFichaSavedOrThrow();
         try {
-            applyPacienteUiResult(pacienteRegistrationFacade.asegurarPacienteAsignado(
+            pacienteViewFlowDelegate.asegurarPacienteAsignado(this,
                     permitirIngresoManual,
                     empleadoSel,
                     noPersonaSel,
                     personaAux,
-                    ficha));
+                    ficha);
         } catch (IllegalStateException ex) {
             fail(ex.getMessage());
         }
@@ -760,7 +750,7 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
 
         try {
             ficha = step3OrchestratorService.saveStep3(step3CommandAssembler.toCommand(
-                    step3ViewDataAssembler.capture(this, now, user, this::asegurarPersonaAuxPersistida,
+                    step3ViewDataAssembler.capture(this, now, user, () -> pacienteViewFlowDelegate.asegurarPersonaAuxPersistida(this),
                             () -> centroMedicoFormStateService.ensureActLabSize(this, H_ROWS))));
         } catch (IllegalArgumentException ex) {
             fail(ex.getMessage());
@@ -780,7 +770,7 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
         return centroMedicoPdfControllerSupport.capturePdfFichaViewData(
                 pdfFichaInputAssembler.capture(this,
                         LOG,
-                        this::asegurarPersonaAuxPersistida,
+                        () -> pacienteViewFlowDelegate.asegurarPersonaAuxPersistida(this),
                         this::syncCamposDesdeObjetosInternal,
                         this::recalcularIMC,
                         centroMedicoPdfFacade,
@@ -1134,63 +1124,23 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     // GESTIÓN DE PACIENTE / CÉDULA
     // =========================
     public void onBuscarPorCedulaRh() {
-        pacienteControllerSupport.onBuscarPorCedulaRh(buildBuscarCedulaInput());
+        pacienteViewFlowDelegate.onBuscarPorCedulaRh(this, LOG);
     }
 
     public void buscarCedula() {
-        pacienteControllerSupport.buscarCedula(buildBuscarCedulaInput());
+        pacienteViewFlowDelegate.buscarCedula(this, LOG);
     }
 
     public void prepararIngresoManual() {
-        pacienteControllerSupport.prepararIngresoManual(cedulaBusqueda, personaAux, this::applyPacienteUiResult);
+        pacienteViewFlowDelegate.prepararIngresoManual(this);
     }
 
     public void abrirPersonaAuxManual() {
-        pacienteControllerSupport.abrirPersonaAuxManual(
-                cedulaBusqueda,
-                personaAux,
-                ficha,
-                empleadoSel,
-                noPersonaSel,
-                permitirIngresoManual,
-                mostrarDlgCedula,
-                this::applyPacienteUiResult);
+        pacienteViewFlowDelegate.abrirPersonaAuxManual(this);
     }
 
     public void guardarPersonaAuxYUsar() {
-        pacienteControllerSupport.guardarPersonaAuxYUsar(
-                personaAux,
-                ficha,
-                empleadoSel,
-                noPersonaSel,
-                this::applyPacienteUiResult,
-                LOG);
-    }
-
-    private PacienteControllerSupport.BuscarCedulaInput buildBuscarCedulaInput() {
-        return pacienteSearchInputAssembler.buildBuscarCedulaInput(this, LOG, this::applyPacienteUiResult);
-    }
-
-    private void asegurarPersonaAuxPersistida() {
-        applyPacienteUiResult(pacienteRegistrationFacade.asegurarPersonaAuxPersistida(
-                permitirIngresoManual,
-                ficha,
-                personaAux));
-    }
-
-    private void applyPacienteUiResult(PacienteRegistrationFacade.UiResult uiResult) {
-        if (uiResult == null) {
-            return;
-        }
-
-        PacienteViewBinder.PacienteUiPatch patch = uiResult.getPatch();
-        if (patch != null) {
-            pacienteUiStateApplier.apply(patch, this);
-        }
-
-        for (String script : uiResult.getScripts()) {
-            PrimeFaces.current().executeScript(script);
-        }
+        pacienteViewFlowDelegate.guardarPersonaAuxYUsar(this, LOG);
     }
 
     // =========================
