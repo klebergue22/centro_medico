@@ -12,6 +12,18 @@ import jakarta.ejb.Stateless;
 import java.util.Date;
 
 @Stateless
+/**
+ * Servicio de aplicación para el guardado del Step 1 de la ficha ocupacional.
+ *
+ * <p>Funcionalidad principal: valida datos mínimos del formulario, resuelve el paciente
+ * (empleado RRHH o {@link PersonaAux}), actualiza información clínica inicial de
+ * {@link FichaOcupacional}, persiste {@link SignosVitales} y registra auditoría.</p>
+ *
+ * <p>Relaciones directas:
+ * {@link EmpleadoService}, {@link PersonaAuxService}, {@link FichaOcupacionalService},
+ * {@link Step1VitalSignsManager}, {@link ExamenFisicoRegionalService} y
+ * {@link CentroMedicoAuditService}.</p>
+ */
 public class Step1FichaService {
 
     @EJB
@@ -379,6 +391,10 @@ public class Step1FichaService {
         throw new Step1ValidationException(message);
     }
 
+    /**
+     * Resultado interno de asignación de paciente para transportar la instancia
+     * de {@link PersonaAux} luego de una posible persistencia.
+     */
     private record PatientAssignment(PersonaAux personaAux) {
     }
 
@@ -399,9 +415,18 @@ public class Step1FichaService {
         }
     }
 
+    /**
+     * Resultado de salida del guardado Step 1 con las entidades consolidadas.
+     */
     public record Step1Result(FichaOcupacional ficha, DatEmpleado empleadoSel, PersonaAux personaAux, SignosVitales signos) {
     }
 
+    /**
+     * Comando de entrada del Step 1.
+     *
+     * <p>Agrupa estado de UI y dominio consumido por {@link #guardar(Step1Command)}
+     * para desacoplar el controlador web del flujo de negocio.</p>
+     */
     public record Step1Command(
             FichaOcupacional ficha,
             DatEmpleado empleadoSel,

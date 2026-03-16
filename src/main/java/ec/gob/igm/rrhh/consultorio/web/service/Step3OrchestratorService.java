@@ -24,6 +24,18 @@ import ec.gob.igm.rrhh.consultorio.service.FichaExamenCompService;
 import ec.gob.igm.rrhh.consultorio.service.FichaOcupacionalService;
 
 @Stateless
+/**
+ * Orquestador del Step 3 de la ficha ocupacional.
+ *
+ * <p>Funcionalidad principal: coordina guardado de datos generales de
+ * {@link FichaOcupacional}, actividad laboral ({@link FichaActLaboral}),
+ * exámenes complementarios ({@link FichaExamenComp}) y diagnósticos
+ * ({@link ConsultaDiagnostico}).</p>
+ *
+ * <p>Relaciones directas: {@link Cie10Service}, {@link ExamenFisicoRegionalService},
+ * {@link FichaOcupacionalService}, {@link FichaActLaboralService},
+ * {@link FichaExamenCompService} y {@link FichaDiagnosticoService}.</p>
+ */
 public class Step3OrchestratorService implements Serializable {
 
     private static final Logger LOG = LoggerFactory.getLogger(Step3OrchestratorService.class);
@@ -309,6 +321,12 @@ public class Step3OrchestratorService implements Serializable {
         return null;
     }
 
+    /**
+     * Comando de entrada del Step 3.
+     *
+     * <p>Concentra datos de la vista y callbacks de soporte para que el controlador
+     * web delegue en este orquestador sin acoplarse a la lógica de persistencia.</p>
+     */
     public record Step3SaveCommand(
             FichaOcupacional ficha,
             String codCie10Ppal,
