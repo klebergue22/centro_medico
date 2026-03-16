@@ -23,7 +23,6 @@ public class Step3CommandAssembler {
                 viewData.medicoCodigo,
                 viewData.fechaEmision,
                 viewData.now,
-                viewData.user,
                 viewData.onEnsurePersonaAuxPersistida,
                 viewData.onEnsureActLabSize,
                 viewData.actLabCentroTrabajo,

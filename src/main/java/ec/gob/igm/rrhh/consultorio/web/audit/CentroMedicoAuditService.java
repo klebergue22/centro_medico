@@ -15,10 +15,15 @@ public class CentroMedicoAuditService {
     @EJB
     private AuditoriaConsultorioService auditoriaService;
 
+
     public void registrar(String accion, String tabla, String campo, String observaciones) {
+        registrar(accion, tabla, campo, observaciones, "USR_APP");
+    }
+
+    public void registrar(String accion, String tabla, String campo, String observaciones, String usuario) {
         AuditoriaConsultorio aud = new AuditoriaConsultorio();
         aud.setModulo("CENTRO_MEDICO");
-        aud.setUsuario("USR_APP");
+        aud.setUsuario(usuario);
         aud.setFecha(new Date());
         aud.setAccion(accion);
         aud.setTablaAfecta(tabla);

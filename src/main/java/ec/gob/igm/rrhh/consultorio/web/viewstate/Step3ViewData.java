@@ -22,7 +22,6 @@ public class Step3ViewData {
     public final String medicoCodigo;
     public final Date fechaEmision;
     public final Date now;
-    public final String user;
     public final Runnable onEnsurePersonaAuxPersistida;
     public final Runnable onEnsureActLabSize;
     public final List<String> actLabCentroTrabajo;
@@ -46,7 +45,7 @@ public class Step3ViewData {
 
     public Step3ViewData(FichaOcupacional ficha, String codCie10Ppal, String obsExamenFisico, String aptitudSel,
                          String detalleObservaciones, String recomendaciones, String nObsRetiro,
-                         String medicoNombre, String medicoCodigo, Date fechaEmision, Date now, String user,
+                         String medicoNombre, String medicoCodigo, Date fechaEmision, Date now,
                          Runnable onEnsurePersonaAuxPersistida, Runnable onEnsureActLabSize,
                          List<String> actLabCentroTrabajo, List<String> actLabActividad, List<String> actLabTiempo,
                          List<Boolean> actLabTrabajoAnterior, List<Boolean> actLabTrabajoActual,
@@ -66,7 +65,6 @@ public class Step3ViewData {
         this.medicoCodigo = medicoCodigo;
         this.fechaEmision = fechaEmision;
         this.now = now;
-        this.user = user;
         this.onEnsurePersonaAuxPersistida = onEnsurePersonaAuxPersistida;
         this.onEnsureActLabSize = onEnsureActLabSize;
         this.actLabCentroTrabajo = actLabCentroTrabajo;
