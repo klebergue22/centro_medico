@@ -16,7 +16,7 @@ public class PacienteViewState implements Serializable {
     private boolean cedulaDlgAutoOpened;
     private boolean mostrarDlgCedula = true;
     private boolean preRenderDone;
-    private boolean mostrarDiaLOGoAux;
+    private boolean mostrarDialogoAux;
     private boolean permitirIngresoManual;
     private String cedulaBusqueda;
     private Integer noPersonaSel;
@@ -31,8 +31,8 @@ public class PacienteViewState implements Serializable {
     public void setMostrarDlgCedula(boolean mostrarDlgCedula) { this.mostrarDlgCedula = mostrarDlgCedula; }
     public boolean isPreRenderDone() { return preRenderDone; }
     public void setPreRenderDone(boolean preRenderDone) { this.preRenderDone = preRenderDone; }
-    public boolean isMostrarDiaLOGoAux() { return mostrarDiaLOGoAux; }
-    public void setMostrarDiaLOGoAux(boolean mostrarDiaLOGoAux) { this.mostrarDiaLOGoAux = mostrarDiaLOGoAux; }
+    public boolean isMostrarDialogoAux() { return mostrarDialogoAux; }
+    public void setMostrarDialogoAux(boolean mostrarDialogoAux) { this.mostrarDialogoAux = mostrarDialogoAux; }
     public boolean isPermitirIngresoManual() { return permitirIngresoManual; }
     public void setPermitirIngresoManual(boolean permitirIngresoManual) { this.permitirIngresoManual = permitirIngresoManual; }
     public String getCedulaBusqueda() { return cedulaBusqueda; }

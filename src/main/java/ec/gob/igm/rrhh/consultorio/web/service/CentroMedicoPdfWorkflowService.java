@@ -123,12 +123,8 @@ public class CentroMedicoPdfWorkflowService implements Serializable {
                 certificadoResult.token);
     }
 
-    public void cleanupPdfPreview(CleanupPdfPreviewCommand cmd) {
-        centroMedicoPdfUiService.cleanupPdfPreview(cmd.ctx, cmd.pdfSessionStore, cmd.pdfTokenCertificado);
-    }
-
     public void limpiarVistaPrevia(CleanupPdfPreviewCommand cmd) {
-        cleanupPdfPreview(cmd);
+        centroMedicoPdfUiService.cleanupPdfPreview(cmd.ctx, cmd.pdfSessionStore, cmd.pdfTokenCertificado);
     }
 
     public CentroMedicoPdfUiService.PrepareFichaUiCommand buildPrepareFichaCommand(PrepareFichaCommandData cmd) {
