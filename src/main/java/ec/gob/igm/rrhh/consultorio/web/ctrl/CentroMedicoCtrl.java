@@ -53,7 +53,6 @@ import ec.gob.igm.rrhh.consultorio.web.pdf.PdfResourceResolver;
 import ec.gob.igm.rrhh.consultorio.web.pdf.PdfTemplateEngine;
 import ec.gob.igm.rrhh.consultorio.web.service.CedulaDialogControllerSupport;
 import ec.gob.igm.rrhh.consultorio.web.service.CedulaDialogStateService;
-import ec.gob.igm.rrhh.consultorio.web.service.Cie10LookupService;
 import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoFormInitializer;
 import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoFormStateService;
 import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoPdfWorkflowService;
@@ -68,9 +67,7 @@ import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoValidationCoordinator
 import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoValidationCoordinator.Step1ValidationInput;
 import ec.gob.igm.rrhh.consultorio.web.service.ValidationUiResult;
 import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoWizardFacade;
-import ec.gob.igm.rrhh.consultorio.web.service.DiagnosticoDialogControllerSupport;
-import ec.gob.igm.rrhh.consultorio.web.service.DiagnosticoFilaUiCoordinator;
-import ec.gob.igm.rrhh.consultorio.web.service.DiagnosticoPrincipalService;
+import ec.gob.igm.rrhh.consultorio.web.service.DiagnosticoViewDelegate;
 import ec.gob.igm.rrhh.consultorio.web.service.FichaPdfDataMapper;
 import ec.gob.igm.rrhh.consultorio.web.service.PacienteUiStateApplier;
 import ec.gob.igm.rrhh.consultorio.web.service.PacienteViewFlowDelegate;
@@ -154,8 +151,6 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     @EJB
     private transient CentroMedicoAuditService centroMedicoAuditService;
     @EJB
-    private transient Cie10LookupService cie10LookupService;
-    @EJB
     private transient Step3OrchestratorService step3OrchestratorService;
     @EJB
     private transient CentroMedicoPdfWorkflowService centroMedicoPdfWorkflowService;
@@ -199,11 +194,7 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     private transient CentroMedicoReactiveUiService reactiveUiService;
     
     @Inject
-    private transient DiagnosticoFilaUiCoordinator diagnosticoFilaUiCoordinator;
-    @Inject
-    private transient DiagnosticoPrincipalService diagnosticoPrincipalService;
-    @Inject
-    private transient DiagnosticoDialogControllerSupport diagnosticoDialogControllerSupport;
+    private transient DiagnosticoViewDelegate diagnosticoViewDelegate;
     @Inject
     private transient Step3CommandAssembler step3CommandAssembler;
     @Inject
@@ -949,170 +940,87 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     }
 
     private void syncCie10PrincipalFromK() {
-        DiagnosticoPrincipalService.DiagnosticoPrincipalData principal = diagnosticoPrincipalService.inferirPrincipal(
-                step3FormModel.getListaDiag(),
-                step3FormModel.getCodCie10Ppal(),
-                step3FormModel.getDescCie10Ppal());
-        if (!principal.hasCodigo()) {
-            return;
-        }
-
-        step3FormModel.setCodCie10Ppal(principal.getCodigo());
-        step3FormModel.setDescCie10Ppal(principal.getDescripcion());
+        diagnosticoViewDelegate.syncCie10PrincipalFromK(this);
     }
 
     public void onCie10BlurCodigo(int index) {
-        ConsultaDiagnostico diag = centroMedicoFormStateService.ensureDiag(this, index);
-        if (diag == null) {
-            return;
-        }
-        cie10LookupService.completarDiagnosticoPorCodigo(diag);
+        diagnosticoViewDelegate.onCie10BlurCodigo(this, index);
     }
 
     public void onCie10FilaSelect(int idx) {
-        if (step3FormModel.getListaDiag() == null || idx < 0 || idx >= step3FormModel.getListaDiag().size()) {
-            return;
-        }
-
-        cie10LookupService.sincronizarFilaSeleccionada(step3FormModel.getListaDiag().get(idx));
+        diagnosticoViewDelegate.onCie10FilaSelect(this, idx);
     }
 
     public List<Cie10> completarCie10(String query) {
-        return cie10LookupService.completarPorCodigoODescripcion(query, 20);
+        return diagnosticoViewDelegate.completarCie10(query);
     }
 
     public List<Cie10> completarCie10PorCodigo(String query) {
-        return cie10LookupService.completarPorCodigo(query);
+        return diagnosticoViewDelegate.completarCie10PorCodigo(query);
     }
 
     public List<Cie10> completarCie10PorDescripcion(String query) {
-        return cie10LookupService.completarPorDescripcion(query, 20);
+        return diagnosticoViewDelegate.completarCie10PorDescripcion(query);
     }
 
     public void onCie10CodigoSelect(SelectEvent event) {
-        String codigo = (String) event.getObject();
-        DiagnosticoPrincipalService.DiagnosticoPrincipalData principal = diagnosticoPrincipalService
-                .sincronizarCodigoYDescripcion(codigo, null);
-        step3FormModel.setCodCie10Ppal(principal.getCodigo());
-        step3FormModel.setDescCie10Ppal(principal.getDescripcion());
+        diagnosticoViewDelegate.onCie10CodigoSelect(this, event);
     }
 
     public void onCie10CodigoBlur() {
-        DiagnosticoPrincipalService.DiagnosticoPrincipalData principal = diagnosticoPrincipalService
-                .sincronizarCodigoYDescripcion(step3FormModel.getCodCie10Ppal(), null);
-        step3FormModel.setCodCie10Ppal(principal.getCodigo());
-        step3FormModel.setDescCie10Ppal(principal.getDescripcion());
+        diagnosticoViewDelegate.onCie10CodigoBlur(this);
     }
 
     public void onCie10DescripcionSelect(SelectEvent event) {
-        String descripcion = (String) event.getObject();
-        DiagnosticoPrincipalService.DiagnosticoPrincipalData principal = diagnosticoPrincipalService
-                .sincronizarCodigoYDescripcion(null, descripcion);
-        step3FormModel.setCodCie10Ppal(principal.getCodigo());
-        step3FormModel.setDescCie10Ppal(principal.getDescripcion());
+        diagnosticoViewDelegate.onCie10DescripcionSelect(this, event);
     }
 
     public void onCie10DescripcionBlur() {
-        DiagnosticoPrincipalService.DiagnosticoPrincipalData principal = diagnosticoPrincipalService
-                .sincronizarCodigoYDescripcion(null, step3FormModel.getDescCie10Ppal());
-        step3FormModel.setCodCie10Ppal(principal.getCodigo());
-        step3FormModel.setDescCie10Ppal(principal.getDescripcion());
+        diagnosticoViewDelegate.onCie10DescripcionBlur(this);
     }
 
     private Cie10 inferCie10PrincipalFromListaK() {
-        return diagnosticoPrincipalService.inferirPrincipalCie10DesdeLista(step3FormModel.getListaDiag());
+        return diagnosticoViewDelegate.inferCie10PrincipalFromListaK(this);
     }
 
     public List<String> completarCie10FilaPorCodigo(String query) {
-        try {
-            FacesContext fc = FacesContext.getCurrentInstance();
-            String viewId = (fc != null && fc.getViewRoot() != null) ? fc.getViewRoot().getViewId() : "null";
-            LOG.info(">>> [AC-K-COD] complete ENTER query=[{}] viewId={}", query, viewId);
-
-            List<String> out = cie10LookupService.completarFilaPorCodigo(query);
-
-            LOG.info("<<< [AC-K-COD] RETURN out.size={}{}",
-                    out.size(),
-                    out.isEmpty() ? "" : " first=[" + out.get(0) + "]");
-            return out;
-
-        } catch (Exception e) {
-            LOG.error("!!! [AC-K-COD] ERROR {} : {}", e.getClass().getName(), e.getMessage(), e);
-            return new ArrayList<>();
-        }
+        return diagnosticoViewDelegate.completarCie10FilaPorCodigo(query);
     }
 
     public List<String> completarCie10FilaPorDescripcion(String query) {
-        try {
-            FacesContext fc = FacesContext.getCurrentInstance();
-            String viewId = (fc != null && fc.getViewRoot() != null) ? fc.getViewRoot().getViewId() : "null";
-            LOG.info(">>> [AC-K-DESC] complete ENTER query=[{}] viewId={}", query, viewId);
-
-            List<String> out = cie10LookupService.completarFilaPorDescripcion(query, 20);
-
-            LOG.info("<<< [AC-K-DESC] RETURN out.size={}{}",
-                    out.size(),
-                    out.isEmpty() ? "" : " first=[" + out.get(0) + "]");
-            return out;
-
-        } catch (Exception e) {
-            LOG.error("!!! [AC-K-DESC] ERROR {} : {}", e.getClass().getName(), e.getMessage(), e);
-            return new ArrayList<>();
-        }
+        return diagnosticoViewDelegate.completarCie10FilaPorDescripcion(query);
     }
 
     public void onKCieCodigoSelect(SelectEvent<String> event) {
-        diagnosticoFilaUiCoordinator.onCodigoSelect(event, step3FormModel.getListaDiag());
+        diagnosticoViewDelegate.onKCieCodigoSelect(this, event);
     }
 
     public void onKCieCodigoBlur(AjaxBehaviorEvent event) {
-        diagnosticoFilaUiCoordinator.onCodigoBlur(event, step3FormModel.getListaDiag());
+        diagnosticoViewDelegate.onKCieCodigoBlur(this, event);
     }
 
     public void onKDescSelect(SelectEvent<String> event) {
-        diagnosticoFilaUiCoordinator.onDescripcionSelect(event, step3FormModel.getListaDiag());
-
-        syncCie10PrincipalFromK();
+        diagnosticoViewDelegate.onKDescSelect(this, event);
     }
 
     public void onKDescBlur(AjaxBehaviorEvent event) {
-        diagnosticoFilaUiCoordinator.onDescripcionBlur(event, step3FormModel.getListaDiag());
+        diagnosticoViewDelegate.onKDescBlur(this, event);
     }
 
     public void onKTipoChange(AjaxBehaviorEvent event) {
-        diagnosticoDialogControllerSupport.onKTipoChange(event, step3FormModel.getListaDiag());
+        diagnosticoViewDelegate.onKTipoChange(this, event);
     }
 
     public void abrirDialogoDiagnostico(AjaxBehaviorEvent event) {
-        DiagnosticoFilaUiCoordinator.DiagnosticoDialogState state = diagnosticoDialogControllerSupport
-                .abrirDialogo(event, step3FormModel.getListaDiag(), diagnosticoFilaUiCoordinator);
-        if (!state.isValid()) {
-            return;
-        }
-
-        step3FormModel.setDialogDiagnosticoIdx(state.getIdx());
-        step3FormModel.setCodCie10Ppal(state.getCodigo());
-        step3FormModel.setDescCie10Ppal(state.getDescripcion());
-        diagnosticoDialogControllerSupport.mostrarDialogo();
+        diagnosticoViewDelegate.abrirDialogoDiagnostico(this, event);
     }
 
     public void aceptarDialogoDiagnostico() {
-        boolean accepted = diagnosticoDialogControllerSupport.aceptarDialogo(
-                step3FormModel.getDialogDiagnosticoIdx(),
-                step3FormModel.getCodCie10Ppal(),
-                step3FormModel.getDescCie10Ppal(),
-                step3FormModel.getListaDiag(),
-                diagnosticoFilaUiCoordinator);
-        if (!accepted) {
-            return;
-        }
-
-        syncCie10PrincipalFromK();
-        diagnosticoDialogControllerSupport.cerrarDialogo();
+        diagnosticoViewDelegate.aceptarDialogoDiagnostico(this);
     }
 
     public void cerrarDialogoDiagnostico() {
-        diagnosticoDialogControllerSupport.cerrarDialogo();
+        diagnosticoViewDelegate.cerrarDialogoDiagnostico();
     }
 
     // =========================
