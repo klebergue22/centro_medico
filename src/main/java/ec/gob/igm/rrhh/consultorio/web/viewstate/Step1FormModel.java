@@ -14,6 +14,7 @@ public class Step1FormModel implements Serializable {
     private String ruc;
     private Date fechaAtencion;
     private String tipoEvaluacion;
+    private PacienteFormData paciente = new PacienteFormData();
 
     public String getInstitucion() { return institucion; }
     public void setInstitucion(String institucion) { this.institucion = institucion; }
@@ -23,4 +24,6 @@ public class Step1FormModel implements Serializable {
     public void setFechaAtencion(Date fechaAtencion) { this.fechaAtencion = fechaAtencion; }
     public String getTipoEvaluacion() { return tipoEvaluacion; }
     public void setTipoEvaluacion(String tipoEvaluacion) { this.tipoEvaluacion = tipoEvaluacion; }
+    public PacienteFormData getPaciente() { return paciente; }
+    public void setPaciente(PacienteFormData paciente) { this.paciente = paciente; }
 }
