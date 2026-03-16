@@ -50,6 +50,7 @@ import ec.gob.igm.rrhh.consultorio.service.PersonaAuxService;
 import ec.gob.igm.rrhh.consultorio.service.Step1FichaService;
 import ec.gob.igm.rrhh.consultorio.web.facade.CentroMedicoPdfFacade;
 import ec.gob.igm.rrhh.consultorio.web.jsf.CentroMedicoMessageService;
+import ec.gob.igm.rrhh.consultorio.web.facade.PacienteRegistrationFacade;
 import ec.gob.igm.rrhh.consultorio.web.mapper.Step1CommandAssembler;
 import ec.gob.igm.rrhh.consultorio.web.mapper.Step3CommandAssembler;
 import ec.gob.igm.rrhh.consultorio.web.audit.CentroMedicoAuditService;
@@ -80,8 +81,8 @@ import ec.gob.igm.rrhh.consultorio.web.service.DiagnosticoPrincipalService;
 import ec.gob.igm.rrhh.consultorio.web.service.FichaPdfDataMapper;
 import ec.gob.igm.rrhh.consultorio.web.service.FichaPdfMappedData;
 import ec.gob.igm.rrhh.consultorio.web.service.PacienteUiFlowCoordinator;
-import ec.gob.igm.rrhh.consultorio.web.service.PacienteUiStateApplier;
 import ec.gob.igm.rrhh.consultorio.web.service.PacienteViewBinder;
+import ec.gob.igm.rrhh.consultorio.web.service.PacienteUiStateApplier;
 import ec.gob.igm.rrhh.consultorio.web.service.PersonaAuxDialogUiCoordinator;
 import ec.gob.igm.rrhh.consultorio.web.service.PersonaAuxFlowService;
 import ec.gob.igm.rrhh.consultorio.web.service.Step2OrchestratorService;
@@ -208,12 +209,6 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     @Inject
     private transient CentroMedicoFormStateService centroMedicoFormStateService;
     @Inject
-    private transient PersonaAuxFlowService personaAuxFlowService;
-    @Inject
-    private transient PacienteUiFlowCoordinator pacienteUiFlowCoordinator;
-    @Inject
-    private transient PacienteViewBinder pacienteViewBinder;
-    @Inject
     private transient PacienteUiStateApplier pacienteUiStateApplier;
     @Inject
     private transient PersonaAuxDialogUiCoordinator personaAuxDialogUiCoordinator;
@@ -235,6 +230,8 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     private transient FichaPdfContextAssembler fichaPdfContextAssembler;
     @Inject
     private transient FichaPdfDataMapper fichaPdfDataMapper;
+    @Inject
+    private transient PacienteRegistrationFacade pacienteRegistrationFacade;
 
     // =========================
     // MODELOS DE FORMULARIO
@@ -694,7 +691,7 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     }
 
     private void saveStep1() {
-        applyPacienteUiFlow(pacienteUiFlowCoordinator.ensureEmpleadoSelEnViewScope(
+        applyPacienteUiResult(pacienteRegistrationFacade.asegurarEmpleadoEnViewScope(
                 permitirIngresoManual,
                 empleadoSel,
                 noPersonaSel,
@@ -709,7 +706,7 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
             empleadoSel = result.empleadoSel();
             personaAux = result.personaAux();
             signos = result.signos();
-            applyPacienteUiFlow(pacienteUiFlowCoordinator.syncPatientStateAfterStep1(
+            applyPacienteUiResult(pacienteRegistrationFacade.syncPatientStateAfterStep1(
                     permitirIngresoManual,
                     empleadoSel,
                     noPersonaSel,
@@ -790,7 +787,7 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     private void saveStep3() {
         ensureFichaSavedOrThrow();
         try {
-            applyPacienteUiFlow(pacienteUiFlowCoordinator.ensurePatientAssignedForFicha(
+            applyPacienteUiResult(pacienteRegistrationFacade.asegurarPacienteAsignado(
                     permitirIngresoManual,
                     empleadoSel,
                     noPersonaSel,
@@ -1246,35 +1243,36 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
 
     public void buscarCedula() {
         try {
-            PacienteUiFlowCoordinator.UiFlowResult result = pacienteUiFlowCoordinator.buscarCedula(
+            PacienteRegistrationFacade.UiResult uiResult = pacienteRegistrationFacade.buscarPorCedula(
                     cedulaBusqueda,
                     ficha,
                     personaAux,
                     permitirIngresoManual);
-            applyCedulaSearchResult(result);
+            applyPacienteUiResult(uiResult);
 
-            if (result.isFound()) {
+            PacienteUiFlowCoordinator.UiFlowResult flowResult = uiResult.getFlowResult();
+            if (flowResult != null && flowResult.isFound()) {
                 cedulaDialogUiCoordinator.onFound(CedulaSearchService.CedulaSearchResult.found(
-                        result.getCedulaBusqueda(),
-                        result.getFicha(),
-                        result.getPersonaAux(),
-                        result.getEmpleadoSel(),
-                        result.getNoPersonaSel(),
-                        result.getApellido1(),
-                        result.getApellido2(),
-                        result.getNombre1(),
-                        result.getNombre2(),
-                        result.getSexo(),
-                        result.getFechaNacimiento(),
-                        result.getEdad()));
-                if (result.isCargoNoEncontrado()) {
+                        flowResult.getCedulaBusqueda(),
+                        flowResult.getFicha(),
+                        flowResult.getPersonaAux(),
+                        flowResult.getEmpleadoSel(),
+                        flowResult.getNoPersonaSel(),
+                        flowResult.getApellido1(),
+                        flowResult.getApellido2(),
+                        flowResult.getNombre1(),
+                        flowResult.getNombre2(),
+                        flowResult.getSexo(),
+                        flowResult.getFechaNacimiento(),
+                        flowResult.getEdad()));
+                if (flowResult.isCargoNoEncontrado()) {
                     cedulaDialogUiCoordinator.showCargoMissing();
                 }
-            } else if (result.isShowManual()) {
+            } else if (flowResult != null && flowResult.isShowManual()) {
                 cedulaDialogUiCoordinator.onManualEnabled(CedulaSearchService.CedulaSearchResult.manual(
-                        result.getCedulaBusqueda(),
-                        result.getFicha(),
-                        result.getPersonaAux()));
+                        flowResult.getCedulaBusqueda(),
+                        flowResult.getFicha(),
+                        flowResult.getPersonaAux()));
             }
 
             cedulaDialogUiCoordinator.refreshMainViews();
@@ -1286,17 +1284,12 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
         }
     }
 
-    private void applyCedulaSearchResult(PacienteUiFlowCoordinator.UiFlowResult result) {
-        applyPacienteUiPatch(pacienteViewBinder.forCedulaSearch(result));
-    }
-
     public void prepararIngresoManual() {
         FacesContext ctx = FacesContext.getCurrentInstance();
         try {
-            PersonaAuxFlowService.ManualPreparationResult result = personaAuxFlowService.prepararIngresoManual(
+            applyPacienteUiResult(pacienteRegistrationFacade.habilitarIngresoManual(
                     cedulaBusqueda,
-                    personaAux);
-            applyPacienteUiPatch(pacienteViewBinder.forManualPreparation(result));
+                    personaAux));
         } catch (PersonaAuxFlowService.PersonaAuxValidationException ex) {
             ctx.addMessage(null, new FacesMessage(
                     FacesMessage.SEVERITY_WARN,
@@ -1307,7 +1300,7 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     }
 
     public void abrirPersonaAuxManual() {
-        PacienteUiFlowCoordinator.UiFlowResult result = pacienteUiFlowCoordinator.abrirPersonaAuxManual(
+        PacienteRegistrationFacade.UiResult uiResult = pacienteRegistrationFacade.abrirPersonaAuxManual(
                 cedulaBusqueda,
                 personaAux,
                 ficha,
@@ -1315,10 +1308,7 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
                 noPersonaSel,
                 permitirIngresoManual,
                 mostrarDlgCedula);
-        applyPacienteUiPatch(pacienteViewBinder.forAbrirPersonaAuxManual(result));
-        for (String script : result.getScripts()) {
-            PrimeFaces.current().executeScript(script);
-        }
+        applyPacienteUiResult(uiResult);
     }
 
     public void guardarPersonaAuxYUsar() {
@@ -1326,15 +1316,15 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
         LOG.info(String.valueOf("PERSONA AUXILIAR ANTES VALIDAR: " + personaAux));
 
         try {
-            PacienteUiFlowCoordinator.UiFlowResult result = pacienteUiFlowCoordinator.guardarPersonaAuxYUsar(
+            PacienteRegistrationFacade.UiResult uiResult = pacienteRegistrationFacade.guardarPersonaAux(
                     personaAux,
                     ficha,
                     empleadoSel,
                     noPersonaSel);
 
-            applyPacienteUiPatch(pacienteViewBinder.forGuardarPersonaAux(result));
+            applyPacienteUiResult(uiResult);
 
-            personaAuxDialogUiCoordinator.onGuardarSuccess(result);
+            personaAuxDialogUiCoordinator.onGuardarSuccess(uiResult.getFlowResult());
 
             LOG.info("PersonaAux guardada manualmente: {} {} / {} {} (cedula={})",
                     personaAux.getApellido1(),
@@ -1353,22 +1343,25 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     }
 
     private void asegurarPersonaAuxPersistida() {
-        PacienteUiFlowCoordinator.UiFlowResult result = pacienteUiFlowCoordinator.asegurarPersonaAuxPersistida(
+        applyPacienteUiResult(pacienteRegistrationFacade.asegurarPersonaAuxPersistida(
                 permitirIngresoManual,
                 ficha,
-                personaAux);
-        applyPacienteUiPatch(pacienteViewBinder.forGeneralFlow(result));
+                personaAux));
     }
 
-    private void applyPacienteUiFlow(PacienteUiFlowCoordinator.UiFlowResult result) {
-        if (result == null) {
+    private void applyPacienteUiResult(PacienteRegistrationFacade.UiResult uiResult) {
+        if (uiResult == null) {
             return;
         }
-        applyPacienteUiPatch(pacienteViewBinder.forGeneralFlow(result));
-    }
 
-    private void applyPacienteUiPatch(PacienteViewBinder.PacienteUiPatch patch) {
-        pacienteUiStateApplier.apply(patch, this);
+        PacienteViewBinder.PacienteUiPatch patch = uiResult.getPatch();
+        if (patch != null) {
+            pacienteUiStateApplier.apply(patch, this);
+        }
+
+        for (String script : uiResult.getScripts()) {
+            PrimeFaces.current().executeScript(script);
+        }
     }
 
     // =========================
