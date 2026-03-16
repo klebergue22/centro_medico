@@ -10,7 +10,6 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
@@ -19,8 +18,6 @@ import java.util.Map;
 import jakarta.annotation.PostConstruct;
 import jakarta.ejb.EJB;
 import jakarta.faces.application.FacesMessage;
-import jakarta.faces.component.UIComponent;
-import jakarta.faces.context.ExternalContext;
 import jakarta.faces.context.FacesContext;
 import jakarta.faces.event.AjaxBehaviorEvent;
 import jakarta.faces.view.ViewScoped;
@@ -53,6 +50,7 @@ import ec.gob.igm.rrhh.consultorio.service.PersonaAuxService;
 import ec.gob.igm.rrhh.consultorio.service.Step1FichaService;
 import ec.gob.igm.rrhh.consultorio.web.facade.CentroMedicoPdfFacade;
 import ec.gob.igm.rrhh.consultorio.web.jsf.CentroMedicoMessageService;
+import ec.gob.igm.rrhh.consultorio.web.facade.PacienteRegistrationFacade;
 import ec.gob.igm.rrhh.consultorio.web.mapper.Step1CommandAssembler;
 import ec.gob.igm.rrhh.consultorio.web.mapper.Step3CommandAssembler;
 import ec.gob.igm.rrhh.consultorio.web.audit.CentroMedicoAuditService;
@@ -72,13 +70,19 @@ import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoPdfFacadeService;
 import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoPdfTemplateCoordinator;
 import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoPdfUiCoordinator;
 import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoWizardNavigationCoordinator;
-import ec.gob.igm.rrhh.consultorio.web.facade.CentroMedicoWizardFacade;
+import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoValidationCoordinator;
+import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoValidationCoordinator.FichaCompletaValidationInput;
+import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoValidationCoordinator.Step1ValidationInput;
+import ec.gob.igm.rrhh.consultorio.web.service.ValidationUiResult;
+import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoWizardFacade;
+import ec.gob.igm.rrhh.consultorio.web.service.DiagnosticoDialogControllerSupport;
 import ec.gob.igm.rrhh.consultorio.web.service.DiagnosticoFilaUiCoordinator;
+import ec.gob.igm.rrhh.consultorio.web.service.DiagnosticoPrincipalService;
 import ec.gob.igm.rrhh.consultorio.web.service.FichaPdfDataMapper;
 import ec.gob.igm.rrhh.consultorio.web.service.FichaPdfMappedData;
 import ec.gob.igm.rrhh.consultorio.web.service.PacienteUiFlowCoordinator;
-import ec.gob.igm.rrhh.consultorio.web.service.PacienteUiStateApplier;
 import ec.gob.igm.rrhh.consultorio.web.service.PacienteViewBinder;
+import ec.gob.igm.rrhh.consultorio.web.service.PacienteUiStateApplier;
 import ec.gob.igm.rrhh.consultorio.web.service.PersonaAuxDialogUiCoordinator;
 import ec.gob.igm.rrhh.consultorio.web.service.PersonaAuxFlowService;
 import ec.gob.igm.rrhh.consultorio.web.service.Step2OrchestratorService;
@@ -87,13 +91,12 @@ import ec.gob.igm.rrhh.consultorio.web.service.Step3OrchestratorService;
 import ec.gob.igm.rrhh.consultorio.web.session.PdfSessionStore;
 import ec.gob.igm.rrhh.consultorio.web.util.CentroMedicoCalcUtil;
 import ec.gob.igm.rrhh.consultorio.web.util.CentroMedicoViewUtils;
-import ec.gob.igm.rrhh.consultorio.web.validation.FichaCompletaValidator;
-import ec.gob.igm.rrhh.consultorio.web.validation.Step1Validator;
-import ec.gob.igm.rrhh.consultorio.web.validation.Step2Validator;
-import ec.gob.igm.rrhh.consultorio.web.validation.Step3Validator;
-import ec.gob.igm.rrhh.consultorio.web.validation.ValidationResult;
 import ec.gob.igm.rrhh.consultorio.web.viewstate.PacienteViewState;
+import ec.gob.igm.rrhh.consultorio.web.viewstate.PdfCertificadoViewData;
+import ec.gob.igm.rrhh.consultorio.web.viewstate.PdfFichaViewData;
 import ec.gob.igm.rrhh.consultorio.web.viewstate.PdfPreviewState;
+import ec.gob.igm.rrhh.consultorio.web.viewstate.Step1ViewData;
+import ec.gob.igm.rrhh.consultorio.web.viewstate.Step3ViewData;
 import ec.gob.igm.rrhh.consultorio.web.viewstate.Step1FormModel;
 import ec.gob.igm.rrhh.consultorio.web.viewstate.Step2FormModel;
 import ec.gob.igm.rrhh.consultorio.web.viewstate.Step3FormModel;
@@ -190,6 +193,8 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     @Inject
     private transient CentroMedicoMessageService messageService;
     @Inject
+    private transient CentroMedicoValidationCoordinator validationCoordinator;
+    @Inject
     private transient ControllerActionTemplate controllerActionTemplate;
     @Inject
     private transient CentroMedicoCalcUtil calcUtil;
@@ -204,17 +209,15 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     @Inject
     private transient CentroMedicoFormStateService centroMedicoFormStateService;
     @Inject
-    private transient PersonaAuxFlowService personaAuxFlowService;
-    @Inject
-    private transient PacienteUiFlowCoordinator pacienteUiFlowCoordinator;
-    @Inject
-    private transient PacienteViewBinder pacienteViewBinder;
-    @Inject
     private transient PacienteUiStateApplier pacienteUiStateApplier;
     @Inject
     private transient PersonaAuxDialogUiCoordinator personaAuxDialogUiCoordinator;
     @Inject
     private transient DiagnosticoFilaUiCoordinator diagnosticoFilaUiCoordinator;
+    @Inject
+    private transient DiagnosticoPrincipalService diagnosticoPrincipalService;
+    @Inject
+    private transient DiagnosticoDialogControllerSupport diagnosticoDialogControllerSupport;
     @Inject
     private transient Step1CommandAssembler step1CommandAssembler;
     @Inject
@@ -227,14 +230,8 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     private transient FichaPdfContextAssembler fichaPdfContextAssembler;
     @Inject
     private transient FichaPdfDataMapper fichaPdfDataMapper;
-
-    // =========================
-    // VALIDADORES
-    // =========================
-    private final Step1Validator step1Validator = new Step1Validator();
-    private final Step2Validator step2Validator = new Step2Validator();
-    private final Step3Validator step3Validator = new Step3Validator();
-    private final FichaCompletaValidator fichaCompletaValidator = new FichaCompletaValidator();
+    @Inject
+    private transient PacienteRegistrationFacade pacienteRegistrationFacade;
 
     // =========================
     // MODELOS DE FORMULARIO
@@ -613,65 +610,67 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     // VALIDACIÓN DE STEPS
     // =========================
     private boolean validarStep1() {
-        ValidationResult result = step1Validator.validate(
-                apellido1,
-                apellido2,
-                nombre1,
-                nombre2,
-                sexo,
-                tipoEval,
-                paStr,
-                fc,
-                peso,
-                tallaCm,
-                signos,
-                fichaRiesgo != null ? fichaRiesgo.getPuestoTrabajo() : null,
-                fichaRiesgo);
-        messageService.addValidationMessages("Step 1", result);
-        return result.isValid();
+        Step1ValidationInput input = new Step1ValidationInput();
+        input.apellido1 = apellido1;
+        input.apellido2 = apellido2;
+        input.nombre1 = nombre1;
+        input.nombre2 = nombre2;
+        input.sexo = sexo;
+        input.tipoEval = tipoEval;
+        input.paStr = paStr;
+        input.fc = fc;
+        input.peso = peso;
+        input.tallaCm = tallaCm;
+        input.signos = signos;
+        input.puestoTrabajoCiuo = fichaRiesgo != null ? fichaRiesgo.getPuestoTrabajo() : null;
+        input.fichaRiesgo = fichaRiesgo;
+
+        ValidationUiResult uiResult = validationCoordinator.validarStep1(input);
+        uiResult.applyUi(messageService);
+        return uiResult.isValid();
     }
 
     private boolean validarStep2() {
-        ValidationResult result = step2Validator.validate(fichaRiesgo, actividadesLab, medidasPreventivas);
-        messageService.addValidationMessages("Step 2", result);
-        return result.isValid();
+        ValidationUiResult uiResult = validationCoordinator.validarStep2(
+                fichaRiesgo,
+                actividadesLab,
+                medidasPreventivas,
+                true);
+        uiResult.applyUi(messageService);
+        return uiResult.isValid();
     }
 
     private boolean validarStep3() {
         s3("validarStep3() INICIO");
-        ValidationResult result = step3Validator.validate(listaDiag, aptitudSel, recomendaciones, medicoNombre, medicoCodigo);
-        if (!result.isValid()) {
-            for (String error : result.getErrors()) {
+        ValidationUiResult uiResult = validationCoordinator.validarStep3(
+                listaDiag,
+                aptitudSel,
+                recomendaciones,
+                medicoNombre,
+                medicoCodigo);
+        if (!uiResult.isValid()) {
+            for (String error : uiResult.getValidationResult().getErrors()) {
                 s3("validarStep3() FAIL: " + error);
             }
         }
-        messageService.addValidationMessages("Step 3", result);
-        s3("validarStep3() FIN -> " + result.isValid());
-        return result.isValid();
+        uiResult.applyUi(messageService);
+        s3("validarStep3() FIN -> " + uiResult.isValid());
+        return uiResult.isValid();
     }
 
     private boolean verificarFichaCompleta() {
-        ValidationResult result = fichaCompletaValidator.validate(
-                ficha,
-                permitirIngresoManual,
-                personaAux,
-                empleadoSel,
-                aptitudSel,
-                fechaEmision,
-                this::inferCie10PrincipalFromListaK);
+        FichaCompletaValidationInput input = new FichaCompletaValidationInput();
+        input.ficha = ficha;
+        input.permitirIngresoManual = permitirIngresoManual;
+        input.personaAux = personaAux;
+        input.empleadoSel = empleadoSel;
+        input.aptitudSel = aptitudSel;
+        input.fechaEmision = fechaEmision;
+        input.cie10PrincipalSupplier = this::inferCie10PrincipalFromListaK;
 
-        if (!result.isValid()) {
-            StringBuilder sb = new StringBuilder();
-            for (String error : result.getErrors()) {
-                sb.append("- ").append(error).append("\n");
-            }
-            FacesContext.getCurrentInstance().addMessage(null,
-                    new FacesMessage(FacesMessage.SEVERITY_ERROR,
-                            "Validación antes de generar el certificado",
-                            sb.toString()));
-        }
-
-        return result.isValid();
+        ValidationUiResult uiResult = validationCoordinator.verificarFichaCompleta(input);
+        uiResult.applyUi(messageService);
+        return uiResult.isValid();
     }
 
     // =========================
@@ -692,75 +691,14 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     }
 
     private void saveStep1() {
-        applyPacienteUiFlow(pacienteUiFlowCoordinator.ensureEmpleadoSelEnViewScope(
+        applyPacienteUiResult(pacienteRegistrationFacade.asegurarEmpleadoEnViewScope(
                 permitirIngresoManual,
                 empleadoSel,
                 noPersonaSel,
                 ficha,
                 personaAux));
 
-        Step1FichaService.Step1Command command = step1CommandAssembler.toCommand(
-                ficha,
-                empleadoSel,
-                personaAux,
-                signos,
-                noPersonaSel,
-                fechaAtencion,
-                tipoEval,
-                paStr,
-                temp,
-                fc,
-                fr,
-                satO2,
-                peso,
-                tallaCm,
-                perimetroAbd,
-                apEmbarazada,
-                apDiscapacidad,
-                apCatastrofica,
-                apLactancia,
-                apAdultoMayor,
-                antClinicoQuirurgico,
-                antFamiliares,
-                condicionEspecial,
-                autorizaTransfusion,
-                tratamientoHormonal,
-                tratamientoHormonalCual,
-                examenReproMasculino,
-                tiempoReproMasculino,
-                ginecoExamen1,
-                ginecoTiempo1,
-                ginecoResultado1,
-                ginecoExamen2,
-                ginecoTiempo2,
-                ginecoResultado2,
-                ginecoObservacion,
-                fum,
-                gestas,
-                partos,
-                cesareas,
-                abortos,
-                planificacion,
-                planificacionCual,
-                discapTipo,
-                discapDesc,
-                discapPorc,
-                catasDiagnostico,
-                catasCalificada,
-                nRealizaEvaluacion,
-                nRelacionTrabajo,
-                nObsRetiro,
-                consTiempoConsumoMeses,
-                consExConsumidor,
-                consTiempoAbstinenciaMeses,
-                consNoConsume,
-                consOtrasCual,
-                afCual,
-                afTiempo,
-                medCual,
-                medCant,
-                consumoVidaCondObs,
-                usuarioReal());
+        Step1FichaService.Step1Command command = step1CommandAssembler.toCommand(captureStep1ViewData());
 
         try {
             Step1FichaService.Step1Result result = step1FichaService.guardar(command);
@@ -768,7 +706,7 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
             empleadoSel = result.empleadoSel();
             personaAux = result.personaAux();
             signos = result.signos();
-            applyPacienteUiFlow(pacienteUiFlowCoordinator.syncPatientStateAfterStep1(
+            applyPacienteUiResult(pacienteRegistrationFacade.syncPatientStateAfterStep1(
                     permitirIngresoManual,
                     empleadoSel,
                     noPersonaSel,
@@ -783,11 +721,7 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
         controllerActionTemplate.execute(
                 "guardarStep2",
                 () -> {
-                    FacesContext ctx = FacesContext.getCurrentInstance();
                     if (!validarStep2()) {
-                        if (ctx != null) {
-                            ctx.validationFailed();
-                        }
                         return false;
                     }
                     saveStep2();
@@ -853,7 +787,7 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     private void saveStep3() {
         ensureFichaSavedOrThrow();
         try {
-            applyPacienteUiFlow(pacienteUiFlowCoordinator.ensurePatientAssignedForFicha(
+            applyPacienteUiResult(pacienteRegistrationFacade.asegurarPacienteAsignado(
                     permitirIngresoManual,
                     empleadoSel,
                     noPersonaSel,
@@ -868,38 +802,7 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
 
         try {
             ficha = step3OrchestratorService.saveStep3(step3CommandAssembler.toCommand(
-                    ficha,
-                    codCie10Ppal,
-                    obsExamenFisico,
-                    aptitudSel,
-                    detalleObservaciones,
-                    recomendaciones,
-                    nObsRetiro,
-                    medicoNombre,
-                    medicoCodigo,
-                    fechaEmision,
-                    now,
-                    user,
-                    this::asegurarPersonaAuxPersistida,
-                    () -> centroMedicoFormStateService.ensureActLabSize(this, H_ROWS),
-                    actLabCentroTrabajo,
-                    actLabActividad,
-                    actLabTiempo,
-                    actLabTrabajoAnterior,
-                    actLabTrabajoActual,
-                    actLabIncidenteChk,
-                    actLabAccidenteChk,
-                    actLabEnfermedadChk,
-                    iessFecha,
-                    iessEspecificar,
-                    actLabObservaciones,
-                    tipoAct,
-                    fechaAct,
-                    descAct,
-                    examNombre,
-                    examFecha,
-                    examResultado,
-                    listaDiag));
+                    captureStep3ViewData(now, user)));
         } catch (IllegalArgumentException ex) {
             fail(ex.getMessage());
         }
@@ -912,6 +815,85 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
         if (ficha == null || ficha.getIdFicha() == null) {
             throw new BusinessValidationException("Primero debe existir y estar guardada la ficha (ID_FICHA).");
         }
+    }
+
+    private Step1ViewData captureStep1ViewData() {
+        return new Step1ViewData(
+                ficha, empleadoSel, personaAux, signos, noPersonaSel, fechaAtencion, tipoEval, paStr, temp, fc, fr, satO2,
+                peso, tallaCm, perimetroAbd, apEmbarazada, apDiscapacidad, apCatastrofica, apLactancia, apAdultoMayor,
+                antClinicoQuirurgico, antFamiliares, condicionEspecial, autorizaTransfusion, tratamientoHormonal,
+                tratamientoHormonalCual, examenReproMasculino, tiempoReproMasculino, ginecoExamen1, ginecoTiempo1,
+                ginecoResultado1, ginecoExamen2, ginecoTiempo2, ginecoResultado2, ginecoObservacion, fum, gestas,
+                partos, cesareas, abortos, planificacion, planificacionCual, discapTipo, discapDesc, discapPorc,
+                catasDiagnostico, catasCalificada, nRealizaEvaluacion, nRelacionTrabajo, nObsRetiro,
+                consTiempoConsumoMeses, consExConsumidor, consTiempoAbstinenciaMeses, consNoConsume, consOtrasCual,
+                afCual, afTiempo, medCual, medCant, consumoVidaCondObs, usuarioReal());
+    }
+
+    private Step3ViewData captureStep3ViewData(Date now, String user) {
+        return new Step3ViewData(
+                ficha, codCie10Ppal, obsExamenFisico, aptitudSel, detalleObservaciones, recomendaciones, nObsRetiro,
+                medicoNombre, medicoCodigo, fechaEmision, now, user, this::asegurarPersonaAuxPersistida,
+                () -> centroMedicoFormStateService.ensureActLabSize(this, H_ROWS),
+                actLabCentroTrabajo, actLabActividad, actLabTiempo, actLabTrabajoAnterior, actLabTrabajoActual,
+                actLabIncidenteChk, actLabAccidenteChk, actLabEnfermedadChk, iessFecha, iessEspecificar,
+                actLabObservaciones, tipoAct, fechaAct, descAct, examNombre, examFecha, examResultado, listaDiag);
+    }
+
+    private PdfFichaViewData capturePdfFichaViewData() {
+        return new PdfFichaViewData(
+                this,
+                LOG,
+                ficha,
+                empleadoSel,
+                personaAux,
+                permitirIngresoManual,
+                this::asegurarPersonaAuxPersistida,
+                centroMedicoPdfFacade,
+                pdfResourceResolver,
+                this::syncCamposDesdeObjetosInternal,
+                this::obtenerTipoEvaluacionPdf,
+                this::recalcularIMC,
+                this::cargarAtencionPrioritaria,
+                this::cargarActividadLaboralArrays,
+                () -> getFichaStringByReflection(ficha,
+                        "getDetalleObs",
+                        "getDetalleObservaciones",
+                        "getObservaciones",
+                        "getObs",
+                        "getObservacion"),
+                CentroMedicoViewUtils::getSafe,
+                this::toDate);
+    }
+
+    private PdfCertificadoViewData capturePdfCertificadoViewData() {
+        return new PdfCertificadoViewData(
+                ficha,
+                this::verificarFichaCompleta,
+                fecha -> this.fechaEmision = fecha,
+                centroMedicoPdfFacade,
+                fechaEmision,
+                aptitudSel,
+                tipoEval,
+                tipoEvaluacion,
+                institucion,
+                ruc,
+                noHistoria,
+                noArchivo,
+                centroTrabajo,
+                ciiu,
+                apellido1,
+                apellido2,
+                nombre1,
+                nombre2,
+                sexo,
+                detalleObservaciones,
+                recomendaciones,
+                medicoNombre,
+                medicoCodigo,
+                pdfResourceResolver,
+                pdfTemplateEngine,
+                certificadoPdfTemplateService);
     }
 
     // =========================
@@ -1036,61 +1018,11 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     // PDF - MÉTODOS DE CONSTRUCCIÓN
     // =========================
     private CentroMedicoPdfWorkflowService.PrepareFichaCommandData buildPrepareFichaCommand() {
-        CentroMedicoPdfTemplateCoordinator.PrepareFichaRequest req = new CentroMedicoPdfTemplateCoordinator.PrepareFichaRequest();
-        req.source = this;
-        req.log = LOG;
-        req.ficha = ficha;
-        req.empleadoSel = empleadoSel;
-        req.personaAux = personaAux;
-        req.permitirIngresoManual = permitirIngresoManual;
-        req.asegurarPersonaAuxPersistida = this::asegurarPersonaAuxPersistida;
-        req.centroMedicoPdfFacade = centroMedicoPdfFacade;
-        req.pdfResourceResolver = pdfResourceResolver;
-        req.syncCamposDesdeObjetos = this::syncCamposDesdeObjetosInternal;
-        req.obtenerTipoEvaluacionPdf = this::obtenerTipoEvaluacionPdf;
-        req.recalcularIMC = this::recalcularIMC;
-        req.cargarAtencionPrioritaria = this::cargarAtencionPrioritaria;
-        req.cargarActividadLaboralArrays = this::cargarActividadLaboralArrays;
-        req.fallbackObservacionSupplier = () -> getFichaStringByReflection(ficha,
-                "getDetalleObs",
-                "getDetalleObservaciones",
-                "getObservaciones",
-                "getObs",
-                "getObservacion");
-        req.getSafe = CentroMedicoViewUtils::getSafe;
-        req.toDate = this::toDate;
-        return centroMedicoPdfTemplateCoordinator.buildPrepareFichaCommand(req);
+        return centroMedicoPdfTemplateCoordinator.buildPrepareFichaCommand(capturePdfFichaViewData());
     }
 
     private CentroMedicoPdfWorkflowService.PrepareCertificadoCommandData buildPrepareCertificadoCommand() {
-        CentroMedicoPdfTemplateCoordinator.PrepareCertificadoRequest req = new CentroMedicoPdfTemplateCoordinator.PrepareCertificadoRequest();
-        req.ficha = ficha;
-        req.verificarFichaCompleta = this::verificarFichaCompleta;
-        req.fechaEmisionSetter = fecha -> this.fechaEmision = fecha;
-        req.centroMedicoPdfFacade = centroMedicoPdfFacade;
-        req.fechaEmision = fechaEmision;
-        req.aptitudSel = aptitudSel;
-        req.tipoEval = tipoEval;
-        req.tipoEvaluacion = tipoEvaluacion;
-        req.institucion = institucion;
-        req.ruc = ruc;
-        req.noHistoria = noHistoria;
-        req.noArchivo = noArchivo;
-        req.centroTrabajo = centroTrabajo;
-        req.ciiu = ciiu;
-        req.apellido1 = apellido1;
-        req.apellido2 = apellido2;
-        req.nombre1 = nombre1;
-        req.nombre2 = nombre2;
-        req.sexo = sexo;
-        req.detalleObservaciones = detalleObservaciones;
-        req.recomendaciones = recomendaciones;
-        req.medicoNombre = medicoNombre;
-        req.medicoCodigo = medicoCodigo;
-        req.pdfResourceResolver = pdfResourceResolver;
-        req.pdfTemplateEngine = pdfTemplateEngine;
-        req.certificadoPdfTemplateService = certificadoPdfTemplateService;
-        return centroMedicoPdfTemplateCoordinator.buildPrepareCertificadoCommand(req);
+        return centroMedicoPdfTemplateCoordinator.buildPrepareCertificadoCommand(capturePdfCertificadoViewData());
     }
 
     private void applyPdfUiState(CentroMedicoPdfUiCoordinator.PdfUiState state) {
@@ -1131,38 +1063,16 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     }
 
     private void syncCie10PrincipalFromK() {
-        if (codCie10Ppal != null && !codCie10Ppal.trim().isEmpty()) {
+        DiagnosticoPrincipalService.DiagnosticoPrincipalData principal = diagnosticoPrincipalService.inferirPrincipal(
+                listaDiag,
+                codCie10Ppal,
+                descCie10Ppal);
+        if (!principal.hasCodigo()) {
             return;
         }
 
-        if (listaDiag == null || listaDiag.isEmpty()) {
-            return;
-        }
-
-        ConsultaDiagnostico best = null;
-
-        for (ConsultaDiagnostico r : listaDiag) {
-            if (r == null) {
-                continue;
-            }
-            String cod = r.getCodigo() != null ? r.getCodigo().trim() : "";
-            if (cod.isEmpty()) {
-                continue;
-            }
-
-            if ("D".equals(r.getTipoDiag())) {
-                best = r;
-                break;
-            }
-            if (best == null) {
-                best = r;
-            }
-        }
-
-        if (best != null) {
-            codCie10Ppal = best.getCodigo();
-            descCie10Ppal = best.getDescripcion();
-        }
+        codCie10Ppal = principal.getCodigo();
+        descCie10Ppal = principal.getDescripcion();
     }
 
     public void onCie10BlurCodigo(int index) {
@@ -1195,26 +1105,36 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
 
     public void onCie10CodigoSelect(SelectEvent event) {
         String codigo = (String) event.getObject();
-        this.codCie10Ppal = codigo;
-        this.descCie10Ppal = cie10LookupService.buscarDescripcionPorCodigo(codigo);
+        DiagnosticoPrincipalService.DiagnosticoPrincipalData principal = diagnosticoPrincipalService
+                .sincronizarCodigoYDescripcion(codigo, null);
+        this.codCie10Ppal = principal.getCodigo();
+        this.descCie10Ppal = principal.getDescripcion();
     }
 
     public void onCie10CodigoBlur() {
-        this.descCie10Ppal = cie10LookupService.buscarDescripcionPorCodigo(this.codCie10Ppal);
+        DiagnosticoPrincipalService.DiagnosticoPrincipalData principal = diagnosticoPrincipalService
+                .sincronizarCodigoYDescripcion(this.codCie10Ppal, null);
+        this.codCie10Ppal = principal.getCodigo();
+        this.descCie10Ppal = principal.getDescripcion();
     }
 
     public void onCie10DescripcionSelect(SelectEvent event) {
         String descripcion = (String) event.getObject();
-        this.descCie10Ppal = descripcion;
-        this.codCie10Ppal = cie10LookupService.buscarCodigoPorDescripcion(descripcion);
+        DiagnosticoPrincipalService.DiagnosticoPrincipalData principal = diagnosticoPrincipalService
+                .sincronizarCodigoYDescripcion(null, descripcion);
+        this.codCie10Ppal = principal.getCodigo();
+        this.descCie10Ppal = principal.getDescripcion();
     }
 
     public void onCie10DescripcionBlur() {
-        this.codCie10Ppal = cie10LookupService.buscarCodigoPorDescripcion(this.descCie10Ppal);
+        DiagnosticoPrincipalService.DiagnosticoPrincipalData principal = diagnosticoPrincipalService
+                .sincronizarCodigoYDescripcion(null, this.descCie10Ppal);
+        this.codCie10Ppal = principal.getCodigo();
+        this.descCie10Ppal = principal.getDescripcion();
     }
 
     private Cie10 inferCie10PrincipalFromListaK() {
-        return cie10LookupService.inferirPrincipalDesdeLista(listaDiag);
+        return diagnosticoPrincipalService.inferirPrincipalCie10DesdeLista(listaDiag);
     }
 
     public List<String> completarCie10FilaPorCodigo(String query) {
@@ -1274,44 +1194,12 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     }
 
     public void onKTipoChange(AjaxBehaviorEvent event) {
-        UIComponent comp = (event != null ? event.getComponent() : null);
-        Integer idx = null;
-        if (comp != null) {
-            Object idxObj = comp.getAttributes().get("idx");
-            if (idxObj != null) {
-                try {
-                    idx = Integer.parseInt(idxObj.toString());
-                } catch (NumberFormatException e) {
-                    LOG.info("... [K-TIPO] idx parse ERROR idxAttr={} ex={}", idxObj, e.toString());
-                }
-            }
-        }
-
-        String clientId;
-        try {
-            FacesContext fc = FacesContext.getCurrentInstance();
-            clientId = (fc != null && comp != null) ? comp.getClientId(fc) : "null";
-        } catch (RuntimeException e) {
-            clientId = "err:" + e.getMessage();
-        }
-
-        LOG.info(">>> [K-TIPO] change ENTER idx=" + idx + " clientId=" + clientId);
-
-        ConsultaDiagnostico row = (idx == null || listaDiag == null || idx < 0 || idx >= listaDiag.size())
-                ? null
-                : listaDiag.get(idx);
-        if (row == null) {
-            return;
-        }
-
-        LOG.info("<<< [K-TIPO] AFTER idx=" + idx
-                + " codigo=[" + row.getCodigo() + "]"
-                + " desc=[" + row.getDescripcion() + "]"
-                + " tipo=[" + row.getTipoDiag() + "]");
+        diagnosticoDialogControllerSupport.onKTipoChange(event, listaDiag);
     }
 
     public void abrirDialogoDiagnostico(AjaxBehaviorEvent event) {
-        DiagnosticoFilaUiCoordinator.DiagnosticoDialogState state = diagnosticoFilaUiCoordinator.abrirDialogo(event, listaDiag);
+        DiagnosticoFilaUiCoordinator.DiagnosticoDialogState state = diagnosticoDialogControllerSupport
+                .abrirDialogo(event, listaDiag, diagnosticoFilaUiCoordinator);
         if (!state.isValid()) {
             return;
         }
@@ -1319,21 +1207,26 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
         dialogDiagnosticoIdx = state.getIdx();
         codCie10Ppal = state.getCodigo();
         descCie10Ppal = state.getDescripcion();
-        PrimeFaces.current().executeScript("PF('kDiagDialogWv').show();");
+        diagnosticoDialogControllerSupport.mostrarDialogo();
     }
 
     public void aceptarDialogoDiagnostico() {
-        boolean accepted = diagnosticoFilaUiCoordinator.aceptarDialogo(dialogDiagnosticoIdx, codCie10Ppal, descCie10Ppal, listaDiag);
+        boolean accepted = diagnosticoDialogControllerSupport.aceptarDialogo(
+                dialogDiagnosticoIdx,
+                codCie10Ppal,
+                descCie10Ppal,
+                listaDiag,
+                diagnosticoFilaUiCoordinator);
         if (!accepted) {
             return;
         }
 
         syncCie10PrincipalFromK();
-        PrimeFaces.current().executeScript("PF('kDiagDialogWv').hide();");
+        diagnosticoDialogControllerSupport.cerrarDialogo();
     }
 
     public void cerrarDialogoDiagnostico() {
-        PrimeFaces.current().executeScript("PF('kDiagDialogWv').hide();");
+        diagnosticoDialogControllerSupport.cerrarDialogo();
     }
 
     // =========================
@@ -1350,35 +1243,36 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
 
     public void buscarCedula() {
         try {
-            PacienteUiFlowCoordinator.UiFlowResult result = pacienteUiFlowCoordinator.buscarCedula(
+            PacienteRegistrationFacade.UiResult uiResult = pacienteRegistrationFacade.buscarPorCedula(
                     cedulaBusqueda,
                     ficha,
                     personaAux,
                     permitirIngresoManual);
-            applyCedulaSearchResult(result);
+            applyPacienteUiResult(uiResult);
 
-            if (result.isFound()) {
+            PacienteUiFlowCoordinator.UiFlowResult flowResult = uiResult.getFlowResult();
+            if (flowResult != null && flowResult.isFound()) {
                 cedulaDialogUiCoordinator.onFound(CedulaSearchService.CedulaSearchResult.found(
-                        result.getCedulaBusqueda(),
-                        result.getFicha(),
-                        result.getPersonaAux(),
-                        result.getEmpleadoSel(),
-                        result.getNoPersonaSel(),
-                        result.getApellido1(),
-                        result.getApellido2(),
-                        result.getNombre1(),
-                        result.getNombre2(),
-                        result.getSexo(),
-                        result.getFechaNacimiento(),
-                        result.getEdad()));
-                if (result.isCargoNoEncontrado()) {
+                        flowResult.getCedulaBusqueda(),
+                        flowResult.getFicha(),
+                        flowResult.getPersonaAux(),
+                        flowResult.getEmpleadoSel(),
+                        flowResult.getNoPersonaSel(),
+                        flowResult.getApellido1(),
+                        flowResult.getApellido2(),
+                        flowResult.getNombre1(),
+                        flowResult.getNombre2(),
+                        flowResult.getSexo(),
+                        flowResult.getFechaNacimiento(),
+                        flowResult.getEdad()));
+                if (flowResult.isCargoNoEncontrado()) {
                     cedulaDialogUiCoordinator.showCargoMissing();
                 }
-            } else if (result.isShowManual()) {
+            } else if (flowResult != null && flowResult.isShowManual()) {
                 cedulaDialogUiCoordinator.onManualEnabled(CedulaSearchService.CedulaSearchResult.manual(
-                        result.getCedulaBusqueda(),
-                        result.getFicha(),
-                        result.getPersonaAux()));
+                        flowResult.getCedulaBusqueda(),
+                        flowResult.getFicha(),
+                        flowResult.getPersonaAux()));
             }
 
             cedulaDialogUiCoordinator.refreshMainViews();
@@ -1390,17 +1284,12 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
         }
     }
 
-    private void applyCedulaSearchResult(PacienteUiFlowCoordinator.UiFlowResult result) {
-        applyPacienteUiPatch(pacienteViewBinder.forCedulaSearch(result));
-    }
-
     public void prepararIngresoManual() {
         FacesContext ctx = FacesContext.getCurrentInstance();
         try {
-            PersonaAuxFlowService.ManualPreparationResult result = personaAuxFlowService.prepararIngresoManual(
+            applyPacienteUiResult(pacienteRegistrationFacade.habilitarIngresoManual(
                     cedulaBusqueda,
-                    personaAux);
-            applyPacienteUiPatch(pacienteViewBinder.forManualPreparation(result));
+                    personaAux));
         } catch (PersonaAuxFlowService.PersonaAuxValidationException ex) {
             ctx.addMessage(null, new FacesMessage(
                     FacesMessage.SEVERITY_WARN,
@@ -1411,7 +1300,7 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     }
 
     public void abrirPersonaAuxManual() {
-        PacienteUiFlowCoordinator.UiFlowResult result = pacienteUiFlowCoordinator.abrirPersonaAuxManual(
+        PacienteRegistrationFacade.UiResult uiResult = pacienteRegistrationFacade.abrirPersonaAuxManual(
                 cedulaBusqueda,
                 personaAux,
                 ficha,
@@ -1419,10 +1308,7 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
                 noPersonaSel,
                 permitirIngresoManual,
                 mostrarDlgCedula);
-        applyPacienteUiPatch(pacienteViewBinder.forAbrirPersonaAuxManual(result));
-        for (String script : result.getScripts()) {
-            PrimeFaces.current().executeScript(script);
-        }
+        applyPacienteUiResult(uiResult);
     }
 
     public void guardarPersonaAuxYUsar() {
@@ -1430,15 +1316,15 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
         LOG.info(String.valueOf("PERSONA AUXILIAR ANTES VALIDAR: " + personaAux));
 
         try {
-            PacienteUiFlowCoordinator.UiFlowResult result = pacienteUiFlowCoordinator.guardarPersonaAuxYUsar(
+            PacienteRegistrationFacade.UiResult uiResult = pacienteRegistrationFacade.guardarPersonaAux(
                     personaAux,
                     ficha,
                     empleadoSel,
                     noPersonaSel);
 
-            applyPacienteUiPatch(pacienteViewBinder.forGuardarPersonaAux(result));
+            applyPacienteUiResult(uiResult);
 
-            personaAuxDialogUiCoordinator.onGuardarSuccess(result);
+            personaAuxDialogUiCoordinator.onGuardarSuccess(uiResult.getFlowResult());
 
             LOG.info("PersonaAux guardada manualmente: {} {} / {} {} (cedula={})",
                     personaAux.getApellido1(),
@@ -1457,22 +1343,25 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     }
 
     private void asegurarPersonaAuxPersistida() {
-        PacienteUiFlowCoordinator.UiFlowResult result = pacienteUiFlowCoordinator.asegurarPersonaAuxPersistida(
+        applyPacienteUiResult(pacienteRegistrationFacade.asegurarPersonaAuxPersistida(
                 permitirIngresoManual,
                 ficha,
-                personaAux);
-        applyPacienteUiPatch(pacienteViewBinder.forGeneralFlow(result));
+                personaAux));
     }
 
-    private void applyPacienteUiFlow(PacienteUiFlowCoordinator.UiFlowResult result) {
-        if (result == null) {
+    private void applyPacienteUiResult(PacienteRegistrationFacade.UiResult uiResult) {
+        if (uiResult == null) {
             return;
         }
-        applyPacienteUiPatch(pacienteViewBinder.forGeneralFlow(result));
-    }
 
-    private void applyPacienteUiPatch(PacienteViewBinder.PacienteUiPatch patch) {
-        pacienteUiStateApplier.apply(patch, this);
+        PacienteViewBinder.PacienteUiPatch patch = uiResult.getPatch();
+        if (patch != null) {
+            pacienteUiStateApplier.apply(patch, this);
+        }
+
+        for (String script : uiResult.getScripts()) {
+            PrimeFaces.current().executeScript(script);
+        }
     }
 
     // =========================
@@ -3397,13 +3286,6 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
         this.personaAuxService = personaAuxService;
     }
 
-    public FichaActLaboralService getFichaActLaboralService() {
-        return fichaActLaboralService;
-    }
-
-    public void setFichaActLaboralService(FichaActLaboralService fichaActLaboralService) {
-        this.fichaActLaboralService = fichaActLaboralService;
-    }
 
     public FichaExamenCompService getFichaExamenCompService() {
         return fichaExamenCompService;
