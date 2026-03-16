@@ -72,6 +72,7 @@ import ec.gob.igm.rrhh.consultorio.web.viewstate.ActividadLaboralFormModel;
 import ec.gob.igm.rrhh.consultorio.web.viewstate.AntecedentesFormModel;
 import ec.gob.igm.rrhh.consultorio.web.viewstate.DiagnosticoFormModel;
 import ec.gob.igm.rrhh.consultorio.web.viewstate.ExamenFisicoFormModel;
+import ec.gob.igm.rrhh.consultorio.web.viewstate.FichaContext;
 import ec.gob.igm.rrhh.consultorio.web.viewstate.GinecoObstetricoFormModel;
 import ec.gob.igm.rrhh.consultorio.web.viewstate.HabitosConsumoFormModel;
 import ec.gob.igm.rrhh.consultorio.web.viewstate.SignosVitalesFormModel;
@@ -187,55 +188,17 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     private final PdfPreviewState pdfPreviewState = new PdfPreviewState();
     private final PacienteViewState pacienteViewState = new PacienteViewState();
     private final WizardViewState wizardViewState = new WizardViewState();
+    private final FichaContext fichaContext = new FichaContext();
 
     // =========================
     // VARIABLES DE ESTADO DEL WIZARD
     // =========================
     // VARIABLES DE DIÁLOGO
     // =========================
-    private boolean mostrarDlgCedula = true;
-    private boolean mostrarDialogoAux;
-    private boolean permitirIngresoManual;
-
-    // =========================
-    // VARIABLES DE PACIENTE
-    // =========================
-    private String cedulaBusqueda;
-    private Integer noPersonaSel;
-    private DatEmpleado empleadoSel;
-    private PersonaAux personaAux;
-
-    // =========================
-    // VARIABLES DE INSTITUCIÓN
-    // =========================
-    private String institucion;
-    private String ruc;
-    private String ciiu;
-    private String centroTrabajo;
-
-    // =========================
-    // VARIABLES DE HISTORIA CLÍNICA
-    // =========================
-    private String noHistoria;
-    private String noArchivo;
-
     // =========================
     // VARIABLES DE DATOS PERSONALES
     // =========================
     private final PacienteFormData pacienteFormData = step1FormModel.getPaciente();
-
-    // =========================
-    // VARIABLES DE EVALUACIÓN
-    // =========================
-    private Date fechaAtencion;
-    private String tipoEval;
-    private String tipoEvaluacion;
-    private Date fecIngreso;
-    private Date fecReintegro;
-    private Date fecRetiro;
-    private String grupoSanguineo;
-    private String lateralidad;
-    private String motivoObs;
 
     // =========================
     // VARIABLES DE ATENCIÓN PRIORITARIA
@@ -250,12 +213,6 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     // =========================
 
     private java.util.List<String> riskCols;
-
-    // =========================
-    // VARIABLES DE DIAGNÓSTICO Y OBSERVACIONES
-    // =========================
-    private String detalleObservaciones;
-
 
     // =========================
     // VARIABLES DE HISTORIA LABORAL (H)
@@ -282,13 +239,6 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     private java.util.List<String> examNombre = new ArrayList<>();
     private java.util.List<String> examResultado = new ArrayList<>();
     private java.util.List<Date> examFecha = new ArrayList<>();
-
-    // =========================
-    // VARIABLES DE ENTIDADES DE DOMINIO
-    // =========================
-    private FichaOcupacional ficha;
-    private SignosVitales signos;
-    private ConsultaMedica consulta;
 
     // =========================
     // VARIABLES DE PDF
@@ -351,11 +301,11 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
                                     "@([id$=wdzFicha])",
                                     () -> pdfPreviewFacade.resetStep4PdfState(
                                             pdfPreviewState,
-                                            value -> this.ficha = value,
+                                            this::setFicha,
                                             wizardViewState::setActiveStep,
-                                            value -> this.mostrarDlgCedula = value),
+                                            this::setMostrarDlgCedula),
                                     this::applyStep4State,
-                                    ficha,
+                                    getFicha(),
                                     () -> pdfPreviewFacade.buildPrepareFichaCommandData(buildBasePrepareCommand()),
                                     () -> pdfPreviewFacade.buildPrepareCertificadoCommandData(buildBasePrepareCommand())));
                     return wizardViewState.getActiveStep();
@@ -364,8 +314,8 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
                 },
                 LOG,
                 wizardViewState.getActiveStep(),
-                noPersonaSel,
-                cedulaBusqueda);
+                getNoPersonaSel(),
+                getCedulaBusqueda());
     }
 
     // =========================
@@ -379,12 +329,12 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
                 pacienteFormData.getNombre1(),
                 pacienteFormData.getNombre2(),
                 pacienteFormData.getSexo(),
-                tipoEval,
+                getTipoEval(),
                 signosVitalesFormModel.getPaStr(),
                 signosVitalesFormModel.getFc(),
                 signosVitalesFormModel.getPeso(),
                 signosVitalesFormModel.getTallaCm(),
-                signos,
+                getSignos(),
                 fichaRiesgo);
 
         ValidationUiResult uiResult = wizardSectionFacade.validarStep1(input);
@@ -422,10 +372,10 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
 
     private boolean verificarFichaCompleta() {
         FichaCompletaValidationInput input = stepValidationInputAssembler.buildFichaCompletaInput(
-                ficha,
-                permitirIngresoManual,
-                personaAux,
-                empleadoSel,
+                getFicha(),
+                isPermitirIngresoManual(),
+                getPersonaAux(),
+                getEmpleadoSel(),
                 diagnosticoFormModel.getAptitudSel(),
                 diagnosticoFormModel.getFechaEmision(),
                 this::inferCie10PrincipalFromListaK);
@@ -448,24 +398,24 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
                 () -> messageService.info("Step 1 guardado correctamente (BORRADOR)."),
                 LOG,
                 wizardViewState.getActiveStep(),
-                noPersonaSel,
-                cedulaBusqueda);
+                getNoPersonaSel(),
+                getCedulaBusqueda());
     }
 
     private void saveStep1() {
         Step1Facade.SaveStep1Result result = wizardSectionFacade.guardarStep1(new Step1Facade.SaveStep1Command(
-                permitirIngresoManual,
-                empleadoSel,
-                noPersonaSel,
-                ficha,
-                personaAux,
+                isPermitirIngresoManual(),
+                getEmpleadoSel(),
+                getNoPersonaSel(),
+                getFicha(),
+                getPersonaAux(),
                 this));
 
         pacienteSectionFacade.applyPacienteUiResult(this, result.preUiResult);
-        ficha = result.ficha;
-        empleadoSel = result.empleadoSel;
-        personaAux = result.personaAux;
-        signos = result.signos;
+        setFicha(result.ficha);
+        setEmpleadoSel(result.empleadoSel);
+        setPersonaAux(result.personaAux);
+        setSignos(result.signos);
         pacienteSectionFacade.applyPacienteUiResult(this, result.postUiResult);
     }
 
@@ -489,8 +439,8 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
                 },
                 LOG,
                 wizardViewState.getActiveStep(),
-                noPersonaSel,
-                cedulaBusqueda);
+                getNoPersonaSel(),
+                getCedulaBusqueda());
     }
 
     private void saveStep2() {
@@ -498,7 +448,7 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
 
         try {
             step2FormModel.setFichaRiesgo(wizardSectionFacade.guardarStep2(new Step2RiskCommand(
-                    ficha,
+                    getFicha(),
                     step2FormModel.getFichaRiesgo(),
                     step2FormModel.getActividadesLab(),
                     step2FormModel.getMedidasPreventivas(),
@@ -511,7 +461,7 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
         }
 
         wizardSectionFacade.registrarAuditoria("GUARDAR_STEP2", "FICHA_RIESGO / FICHA_RIESGO_DET", "*",
-                "Step 2 guardado. ID_FICHA=" + ficha.getIdFicha());
+                "Step 2 guardado. ID_FICHA=" + getFicha().getIdFicha());
     }
 
     public void guardarStep3() {
@@ -530,19 +480,19 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
                 },
                 LOG,
                 wizardViewState.getActiveStep(),
-                noPersonaSel,
-                cedulaBusqueda);
+                getNoPersonaSel(),
+                getCedulaBusqueda());
     }
 
     private void saveStep3() {
         ensureFichaSavedOrThrow();
         try {
             pacienteSectionFacade.asegurarPacienteAsignado(this,
-                    permitirIngresoManual,
-                    empleadoSel,
-                    noPersonaSel,
-                    personaAux,
-                    ficha);
+                    isPermitirIngresoManual(),
+                    getEmpleadoSel(),
+                    getNoPersonaSel(),
+                    getPersonaAux(),
+                    getFicha());
         } catch (IllegalStateException ex) {
             fail(ex.getMessage());
         }
@@ -550,7 +500,7 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
         final Date now = new Date();
 
         try {
-            ficha = wizardSectionFacade.guardarStep3(step3CommandAssembler.toCommand(
+            setFicha(wizardSectionFacade.guardarStep3(step3CommandAssembler.toCommand(
                     step3ViewDataAssembler.capture(this, now, () -> pacienteSectionFacade.asegurarPersonaAuxPersistida(this),
                             () -> centroMedicoFormStateService.ensureActLabSize(this, H_ROWS))));
         } catch (IllegalArgumentException ex) {
@@ -558,11 +508,11 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
         }
 
         wizardSectionFacade.registrarAuditoria("GUARDAR_STEP3", "FICHA_OCUPACIONAL / H / I / J / K", "*",
-                "Step 3 guardado. ID_FICHA=" + ficha.getIdFicha());
+                "Step 3 guardado. ID_FICHA=" + getFicha().getIdFicha());
     }
 
     private void ensureFichaSavedOrThrow() {
-        if (ficha == null || ficha.getIdFicha() == null) {
+        if (getFicha() == null || getFicha().getIdFicha() == null) {
             throw new BusinessValidationException("Primero debe existir y estar guardada la ficha (ID_FICHA).");
         }
     }
@@ -607,9 +557,9 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
         pdfPreviewFacade.limpiarVistaPrevia(new PdfPreviewFacade.LimpiarVistaPreviaCommand(
                 pdfSessionStore,
                 pdfPreviewState,
-                value -> this.ficha = value,
+                this::setFicha,
                 wizardViewState::setActiveStep,
-                value -> this.mostrarDlgCedula = value));
+                this::setMostrarDlgCedula));
     }
 
     private PdfPreviewFacade.BasePrepareCommand buildBasePrepareCommand() {
@@ -617,8 +567,8 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
                 this,
                 LOG,
                 wizardViewState.getActiveStep(),
-                noPersonaSel,
-                cedulaBusqueda,
+                getNoPersonaSel(),
+                getCedulaBusqueda(),
                 () -> pacienteSectionFacade.asegurarPersonaAuxPersistida(this),
                 this::syncCamposDesdeObjetosInternal,
                 this::recalcularIMC,
@@ -632,25 +582,25 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
                 pdfResourceResolver,
                 pdfTemplateEngine,
                 certificadoPdfTemplateService,
-                value -> this.ficha = value,
+                this::setFicha,
                 wizardViewState::setActiveStep,
-                value -> this.mostrarDlgCedula = value);
+                this::setMostrarDlgCedula);
     }
 
     private void applyStep4State(CentroMedicoWizardNavigationCoordinator.Step4UiState state) {
         pdfSectionFacade.applyStep4State(
                 state,
                 pdfPreviewState,
-                value -> this.ficha = value,
+                this::setFicha,
                 wizardViewState::setActiveStep,
-                value -> this.mostrarDlgCedula = value);
+                this::setMostrarDlgCedula);
     }
 
     // =========================
     // CIE10 Y DIAGNÓSTICO
     // =========================
     public void syncTipoEvaluacion() {
-        this.tipoEvaluacion = this.tipoEval;
+        setTipoEvaluacion(getTipoEval());
     }
 
     private void syncCie10PrincipalFromK() {
@@ -764,22 +714,22 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     // DIÁLOGO DE CÉDULA
     // =========================
     public void onDlgCedulaShown() {
-        mostrarDlgCedula = cedulaDialogControllerSupport.resetDialogVisibility();
+        setMostrarDlgCedula(cedulaDialogControllerSupport.resetDialogVisibility());
     }
 
     public void onDlgCedulaHide() {
-        mostrarDlgCedula = cedulaDialogControllerSupport.resetDialogVisibility();
+        setMostrarDlgCedula(cedulaDialogControllerSupport.resetDialogVisibility());
     }
 
     public void onDlgCedulaClose() {
-        mostrarDlgCedula = cedulaDialogControllerSupport.resetDialogVisibility();
+        setMostrarDlgCedula(cedulaDialogControllerSupport.resetDialogVisibility());
     }
 
     public void autoOpenCedulaIfNeeded() {
         CedulaDialogStateService.AutoOpenState state = cedulaDialogControllerSupport.autoOpenIfNeeded(
                 cedulaDialogStateService,
                 wizardViewState.getActiveStep(),
-                mostrarDlgCedula,
+                isMostrarDlgCedula(),
                 wizardViewState.isCedulaDlgAutoOpened());
         wizardViewState.setCedulaDlgAutoOpened(state.isAutoOpened());
     }
@@ -788,7 +738,7 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
         CedulaDialogStateService.AutoOpenState state = cedulaDialogControllerSupport.consumeAutoOpen(
                 cedulaDialogStateService,
                 wizardViewState.getActiveStep(),
-                empleadoSel == null,
+                getEmpleadoSel() == null,
                 wizardViewState.isCedulaDlgAutoOpened());
         wizardViewState.setCedulaDlgAutoOpened(state.isAutoOpened());
     }
@@ -874,10 +824,10 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     // RECARGA DE FICHA
     // =========================
     public void reloadFichaDesdeBd() {
-        if (this.ficha == null || this.ficha.getIdFicha() == null) {
+        if (getFicha() == null || getFicha().getIdFicha() == null) {
             return;
         }
-        this.ficha = wizardSectionFacade.recargarFicha(this.ficha.getIdFicha());
+        setFicha(wizardSectionFacade.recargarFicha(getFicha().getIdFicha()));
     }
 
     public String getStepProcessId() {
@@ -896,7 +846,7 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     // UTILIDADES DE SINCRONIZACIÓN PDF
     // =========================
     private String obtenerTipoEvaluacionPdf() {
-        return pdfSectionFacade.obtenerTipoEvaluacionPdf(tipoEval, tipoEvaluacion);
+        return pdfSectionFacade.obtenerTipoEvaluacionPdf(getTipoEval(), getTipoEvaluacion());
     }
 
     private void syncCamposDesdeObjetosInternal() {
@@ -909,7 +859,7 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     // =========================
     void cargarAtencionPrioritaria(Map<String, String> rep) {
         pdfSectionFacade.cargarAtencionPrioritaria(
-                ficha,
+                getFicha(),
                 atencionPrioritariaModel.isDiscapacidad(),
                 atencionPrioritariaModel.isCatastrofica(),
                 atencionPrioritariaModel.isEmbarazada(),
@@ -951,22 +901,22 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     }
 
     public boolean isMostrarDlgCedula() {
-        return mostrarDlgCedula;
+        return pacienteViewState.isMostrarDlgCedula();
     }
 
     public void setMostrarDlgCedula(boolean mostrarDlgCedula) {
-        this.mostrarDlgCedula = mostrarDlgCedula;
+        pacienteViewState.setMostrarDlgCedula(mostrarDlgCedula);
     }
 
     public PersonaAux getPersonaAux() {
-        if (personaAux == null) {
-            personaAux = new PersonaAux();
+        if (fichaContext.getPersonaAux() == null) {
+            fichaContext.setPersonaAux(new PersonaAux());
         }
-        return personaAux;
+        return fichaContext.getPersonaAux();
     }
 
     public void setPersonaAux(PersonaAux personaAux) {
-        this.personaAux = personaAux;
+        fichaContext.setPersonaAux(personaAux);
     }
 
     public String getStepActual() {
@@ -986,14 +936,14 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     }
 
     public Date getFechaAtencion() {
-        if (fechaAtencion == null) {
-            fechaAtencion = new Date();
+        if (step1FormModel.getFechaAtencion() == null) {
+            step1FormModel.setFechaAtencion(new Date());
         }
-        return fechaAtencion;
+        return step1FormModel.getFechaAtencion();
     }
 
     public void setFechaAtencion(Date fechaAtencion) {
-        this.fechaAtencion = fechaAtencion;
+        step1FormModel.setFechaAtencion(fechaAtencion);
     }
 
     public List<String> getTipoAct() {
@@ -1472,11 +1422,11 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     }
 
     public String getCedulaBusqueda() {
-        return cedulaBusqueda;
+        return pacienteViewState.getCedulaBusqueda();
     }
 
     public void setCedulaBusqueda(String cedulaBusqueda) {
-        this.cedulaBusqueda = cedulaBusqueda;
+        pacienteViewState.setCedulaBusqueda(cedulaBusqueda);
     }
 
     public boolean isCertificadoListo() {
@@ -1520,11 +1470,11 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     }
 
     public String getDetalleObservaciones() {
-        return detalleObservaciones;
+        return diagnosticoFormModel.getDetalleObservaciones();
     }
 
     public void setDetalleObservaciones(String detalleObservaciones) {
-        this.detalleObservaciones = detalleObservaciones;
+        diagnosticoFormModel.setDetalleObservaciones(detalleObservaciones);
     }
 
     public Integer getEdad() {
@@ -1576,35 +1526,35 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     }
 
     public Date getFecIngreso() {
-        return fecIngreso;
+        return step1FormModel.getFecIngreso();
     }
 
     public void setFecIngreso(Date fecIngreso) {
-        this.fecIngreso = fecIngreso;
+        step1FormModel.setFecIngreso(fecIngreso);
     }
 
     public Date getFecReintegro() {
-        return fecReintegro;
+        return step1FormModel.getFecReintegro();
     }
 
     public void setFecReintegro(Date fecReintegro) {
-        this.fecReintegro = fecReintegro;
+        step1FormModel.setFecReintegro(fecReintegro);
     }
 
     public Date getFecRetiro() {
-        return fecRetiro;
+        return step1FormModel.getFecRetiro();
     }
 
     public void setFecRetiro(Date fecRetiro) {
-        this.fecRetiro = fecRetiro;
+        step1FormModel.setFecRetiro(fecRetiro);
     }
 
     public FichaOcupacional getFicha() {
-        return ficha;
+        return fichaContext.getFicha();
     }
 
     public void setFicha(FichaOcupacional ficha) {
-        this.ficha = ficha;
+        fichaContext.setFicha(ficha);
     }
 
     public FichaRiesgo getFichaRiesgo() {
@@ -1632,11 +1582,11 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     }
 
     public String getGrupoSanguineo() {
-        return grupoSanguineo;
+        return step1FormModel.getGrupoSanguineo();
     }
 
     public void setGrupoSanguineo(String grupoSanguineo) {
-        this.grupoSanguineo = grupoSanguineo;
+        step1FormModel.setGrupoSanguineo(grupoSanguineo);
     }
 
     public List<String> getIessEspecificar() {
@@ -1680,11 +1630,11 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     }
 
     public String getLateralidad() {
-        return lateralidad;
+        return step1FormModel.getLateralidad();
     }
 
     public void setLateralidad(String lateralidad) {
-        this.lateralidad = lateralidad;
+        step1FormModel.setLateralidad(lateralidad);
     }
 
     public List<ConsultaDiagnostico> getListaDiag() {
@@ -1796,11 +1746,11 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     }
 
     public boolean isPermitirIngresoManual() {
-        return permitirIngresoManual;
+        return pacienteViewState.isPermitirIngresoManual();
     }
 
     public void setPermitirIngresoManual(boolean permitirIngresoManual) {
-        this.permitirIngresoManual = permitirIngresoManual;
+        pacienteViewState.setPermitirIngresoManual(permitirIngresoManual);
     }
 
     public Double getPeso() {
@@ -1864,11 +1814,11 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     }
 
     public String getTipoEval() {
-        return tipoEval;
+        return step1FormModel.getTipoEval();
     }
 
     public void setTipoEval(String tipoEval) {
-        this.tipoEval = tipoEval;
+        step1FormModel.setTipoEval(tipoEval);
     }
 
     public String getTratamientoHormonal() {
@@ -1928,91 +1878,91 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     }
 
     public boolean isMostrarDialogoAux() {
-        return mostrarDialogoAux;
+        return pacienteViewState.isMostrarDialogoAux();
     }
 
     public void setMostrarDialogoAux(boolean mostrarDialogoAux) {
-        this.mostrarDialogoAux = mostrarDialogoAux;
+        pacienteViewState.setMostrarDialogoAux(mostrarDialogoAux);
     }
 
     public Integer getNoPersonaSel() {
-        return noPersonaSel;
+        return fichaContext.getNoPersonaSel();
     }
 
     public void setNoPersonaSel(Integer noPersonaSel) {
-        this.noPersonaSel = noPersonaSel;
+        fichaContext.setNoPersonaSel(noPersonaSel);
     }
 
     public DatEmpleado getEmpleadoSel() {
-        return empleadoSel;
+        return fichaContext.getEmpleadoSel();
     }
 
     public void setEmpleadoSel(DatEmpleado empleadoSel) {
-        this.empleadoSel = empleadoSel;
+        fichaContext.setEmpleadoSel(empleadoSel);
     }
 
     public String getInstitucion() {
-        return institucion;
+        return step1FormModel.getInstitucion();
     }
 
     public void setInstitucion(String institucion) {
-        this.institucion = institucion;
+        step1FormModel.setInstitucion(institucion);
     }
 
     public String getRuc() {
-        return ruc;
+        return step1FormModel.getRuc();
     }
 
     public void setRuc(String ruc) {
-        this.ruc = ruc;
+        step1FormModel.setRuc(ruc);
     }
 
     public String getCiiu() {
-        return ciiu;
+        return step1FormModel.getCiiu();
     }
 
     public void setCiiu(String ciiu) {
-        this.ciiu = ciiu;
+        step1FormModel.setCiiu(ciiu);
     }
 
     public String getCentroTrabajo() {
-        return centroTrabajo;
+        return step1FormModel.getCentroTrabajo();
     }
 
     public void setCentroTrabajo(String centroTrabajo) {
-        this.centroTrabajo = centroTrabajo;
+        step1FormModel.setCentroTrabajo(centroTrabajo);
     }
 
     public String getNoHistoria() {
-        return noHistoria;
+        return step1FormModel.getNoHistoria();
     }
 
     public void setNoHistoria(String noHistoria) {
-        this.noHistoria = noHistoria;
+        step1FormModel.setNoHistoria(noHistoria);
     }
 
     public String getNoArchivo() {
-        return noArchivo;
+        return step1FormModel.getNoArchivo();
     }
 
     public void setNoArchivo(String noArchivo) {
-        this.noArchivo = noArchivo;
+        step1FormModel.setNoArchivo(noArchivo);
     }
 
     public String getTipoEvaluacion() {
-        return tipoEvaluacion;
+        return step1FormModel.getTipoEvaluacion();
     }
 
     public void setTipoEvaluacion(String tipoEvaluacion) {
-        this.tipoEvaluacion = tipoEvaluacion;
+        step1FormModel.setTipoEvaluacion(tipoEvaluacion);
     }
 
     public String getMotivoObs() {
-        return motivoObs;
+        return step1FormModel.getMotivoObs();
     }
 
     public void setMotivoObs(String motivoObs) {
-        this.motivoObs = motivoObs;
+        step1FormModel.setMotivoObs(motivoObs);
     }
 
     public Date getFum() {
@@ -2224,19 +2174,19 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     }
 
     public SignosVitales getSignos() {
-        return signos;
+        return fichaContext.getSignos();
     }
 
     public void setSignos(SignosVitales signos) {
-        this.signos = signos;
+        fichaContext.setSignos(signos);
     }
 
     public ConsultaMedica getConsulta() {
-        return consulta;
+        return fichaContext.getConsulta();
     }
 
     public void setConsulta(ConsultaMedica consulta) {
-        this.consulta = consulta;
+        fichaContext.setConsulta(consulta);
     }
 
     public String getPdfObjectUrl() {
