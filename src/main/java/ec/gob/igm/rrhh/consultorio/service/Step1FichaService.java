@@ -398,10 +398,6 @@ public class Step1FichaService {
     private record PatientAssignment(PersonaAux personaAux) {
     }
 
-    /**
-     * Estructura interna de apoyo para agrupar arreglos del bloque consumo/actividad/medicación
-     * del Step 1 y desacoplar el mapeo en métodos de responsabilidad única.
-     */
     private record ConsumptionArrays(
             Integer[] consTiempoConsumoMeses,
             Boolean[] consExConsumidor,
@@ -413,9 +409,6 @@ public class Step1FichaService {
             Integer[] medCant) {
     }
 
-    /**
-     * Excepción de validación de negocio para errores funcionales del Step 1.
-     */
     public static class Step1ValidationException extends RuntimeException {
         public Step1ValidationException(String message) {
             super(message);

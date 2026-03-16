@@ -362,10 +362,6 @@ public class Step3OrchestratorService implements Serializable {
             List<ConsultaDiagnostico> listaDiag) {
     }
 
-    /**
-     * DTO interno para representar el resultado serializado del bloque
-     * de actividades extralaborales que se persiste en {@link FichaOcupacional}.
-     */
     private record ExtralaboralSummary(String descripcion, Date ultimaFecha) {
     }
 }
