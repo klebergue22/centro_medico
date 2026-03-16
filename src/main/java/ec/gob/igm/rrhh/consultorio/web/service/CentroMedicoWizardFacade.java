@@ -9,15 +9,15 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 import org.primefaces.PrimeFaces;
 
-<<<<<<< HEAD
-=======
+ 
+ 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
 import ec.gob.igm.rrhh.consultorio.domain.model.FichaOcupacional;
 import ec.gob.igm.rrhh.consultorio.web.facade.CentroMedicoStepFlowFacade;
 
->>>>>>> 1c5b454dc96a988ee45a5f0e591fd563230d152f
+ 
 @ApplicationScoped
 public class CentroMedicoWizardFacade implements Serializable {
 
