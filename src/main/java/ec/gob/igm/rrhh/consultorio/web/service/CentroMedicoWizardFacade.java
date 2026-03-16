@@ -1,15 +1,13 @@
 package ec.gob.igm.rrhh.consultorio.web.service;
 
+import ec.gob.igm.rrhh.consultorio.domain.model.FichaOcupacional;
+import ec.gob.igm.rrhh.consultorio.web.facade.CentroMedicoStepFlowFacade;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 import java.io.Serializable;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
-
 import org.primefaces.PrimeFaces;
-
-import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.inject.Inject;
-
-import ec.gob.igm.rrhh.consultorio.domain.model.FichaOcupacional;
 
 @ApplicationScoped
 public class CentroMedicoWizardFacade implements Serializable {
