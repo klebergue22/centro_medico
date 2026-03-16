@@ -2184,6 +2184,14 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
         step3FormModel.setDialogDiagnosticoDescripcion(dialogDiagnosticoDescripcion);
     }
 
+    public Integer getDialogDiagnosticoIdx() {
+        return step3FormModel.getDialogDiagnosticoIdx();
+    }
+
+    public void setDialogDiagnosticoIdx(Integer dialogDiagnosticoIdx) {
+        step3FormModel.setDialogDiagnosticoIdx(dialogDiagnosticoIdx);
+    }
+
     public boolean isCedulaDlgAutoOpened() {
         return cedulaDlgAutoOpened;
     }
