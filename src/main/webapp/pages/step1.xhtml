@@ -24,7 +24,9 @@
             <h:outputLabel value=" Puesto de Trabajo CIUO"/>
             <h:panelGroup styleClass="field-wrap">
                 
-                <p:inputTextarea id="puestoTrabajoCiuoA" value="#{centroMedicoCtrl.ficha.ciiu}" maxlength="20"/>
+                <p:inputTextarea id="puestoTrabajoCiuoA"
+                                 value="#{centroMedicoCtrl.ficha.ciiu}"
+                                 maxlength="20"/>
             </h:panelGroup>
 
             <h:outputLabel value="Centro de trabajo"/>
@@ -268,7 +270,7 @@
         <h:outputLabel value="Puesto de trabajo (CIUO)"/>
         <p:inputText id="puestoTrabajoCiuoB" value="#{centroMedicoCtrl.ficha.ciiu}"
                      placeholder="CIUO"
-                     maxlength="20" disabled="true"/>
+                     maxlength="20"/>
 
         <h:outputLabel value="Fecha de atención"/>
         <p:calendar value="#{centroMedicoCtrl.fechaAtencion}"

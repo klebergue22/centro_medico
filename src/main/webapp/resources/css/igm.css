@@ -1733,6 +1733,34 @@ input.ui-inputfield:focus, textarea.ui-inputfield:focus{
   background: #fff;
 }
 
+/* Fallback visual del check para evitar cuadros "sin marca" en algunos themes */
+.f-grid4 .ui-chkbox .ui-chkbox-box {
+  border: 2px solid #406343 !important;
+  background: #fff !important;
+  border-radius: 3px;
+}
+
+.f-grid4 .ui-chkbox .ui-chkbox-box.ui-state-active {
+  background: #0f3d0f !important;
+  border-color: #0f3d0f !important;
+}
+
+.f-grid4 .ui-chkbox .ui-chkbox-box .ui-chkbox-icon {
+  color: transparent !important; /* evita dependencia de fuente de iconos */
+  position: relative;
+}
+
+.f-grid4 .ui-chkbox .ui-chkbox-box.ui-state-active .ui-chkbox-icon::before {
+  content: "✓";
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1;
+  position: absolute;
+  inset: 50% auto auto 50%;
+  transform: translate(-50%, -56%);
+}
+
 /* ================================
    FIX: Fieldset H no se salga del template
    (sobrescribe anchos fijos/min-width)

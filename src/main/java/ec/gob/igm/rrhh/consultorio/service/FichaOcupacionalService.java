@@ -40,6 +40,8 @@ public class FichaOcupacionalService {
             return;
         }
 
+        normalizarPacienteExclusivo(f);
+
         f.setExfPielCicatrices(snNoNull(f.getExfPielCicatrices()));
         f.setExfOjosParpados(snNoNull(f.getExfOjosParpados()));
         f.setExfOjosConjuntivas(snNoNull(f.getExfOjosConjuntivas()));
@@ -83,6 +85,65 @@ public class FichaOcupacionalService {
         if (!"SI".equalsIgnoreCase(safeTrim(f.getPlanificacion()))) {
             f.setPlanificacionCual(null);
         }
+    }
+
+    /**
+     * La restricción CK_FICHA_PERSONA_OR_AUX exige exclusividad entre
+     * NO_PERSONA (empleado) e ID_PERSONA_AUX (persona auxiliar).
+     *
+     * Como la ficha puede llegar con estado mixto desde distintos pasos/UI,
+     * se normaliza antes de persistir/merge para evitar violaciones al hacer flush
+     * desde otros servicios de la misma transacción.
+     */
+    private void normalizarPacienteExclusivo(FichaOcupacional f) {
+        boolean tieneEmpleado = f.getEmpleado() != null;
+        boolean tieneAuxiliar = f.getPersonaAux() != null;
+
+        // Estado ya válido frente al CHECK: exactamente uno informado.
+        if (tieneEmpleado ^ tieneAuxiliar) {
+            return;
+        }
+
+        // Si llegan ambos nulos en UPDATE, intentamos conservar el paciente ya persistido.
+        if (!tieneEmpleado && !tieneAuxiliar && f.getIdFicha() != null) {
+            FichaOcupacional actual = em.find(FichaOcupacional.class, f.getIdFicha());
+            if (actual != null) {
+                if (actual.getEmpleado() != null) {
+                    f.setEmpleado(actual.getEmpleado());
+                    return;
+                }
+                if (actual.getPersonaAux() != null) {
+                    f.setPersonaAux(actual.getPersonaAux());
+                    return;
+                }
+            }
+        }
+
+        // Si después de normalizar sigue sin paciente, fallamos en capa de servicio
+        // con mensaje claro en lugar de ORA-02290 en flush.
+        if (f.getEmpleado() == null && f.getPersonaAux() == null) {
+            throw new IllegalArgumentException(
+                    "La ficha ocupacional debe tener NO_PERSONA o ID_PERSONA_AUX (exclusivo)."
+            );
+        }
+
+        String historia = safeTrim(f.getNoHistoriaClinica());
+        String cedulaEmpleado = (f.getEmpleado() != null) ? safeTrim(f.getEmpleado().getNoCedula()) : null;
+        String cedulaAux = (f.getPersonaAux() != null) ? safeTrim(f.getPersonaAux().getCedula()) : null;
+
+        if (historia != null) {
+            if (historia.equals(cedulaAux) && !historia.equals(cedulaEmpleado)) {
+                f.setEmpleado(null);
+                return;
+            }
+            if (historia.equals(cedulaEmpleado) && !historia.equals(cedulaAux)) {
+                f.setPersonaAux(null);
+                return;
+            }
+        }
+
+        // Fallback seguro para evitar que llegue ambos no-nulos a BD.
+        f.setEmpleado(null);
     }
 
     private String snNoNull(String v) {
