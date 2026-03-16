@@ -106,7 +106,6 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     private static final int H_ROWS = 4;
     private static final int CONSUMO_ROWS = 3;
     private static final int DIAG_ROWS = 6;
-    private static final int CONS_ROWS = 3;
 
     static {
         for (int i = 1; i <= 7; i++) {
@@ -1139,44 +1138,6 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     // =========================
     // CONSUMO, HÁBITOS Y ESTRUCTURAS AUXILIARES
     // =========================
-    private void initConsumoVidaCond() {
-        final int N = CONS_ROWS;
-
-        initializeConsumoArrays(N);
-        initializeHabitosArrays(N);
-        initializeMedicacionArrays(N);
-        initializeConsumoDefaults(N);
-        consumoVidaCondObs = consumoVidaCondObs == null ? "" : consumoVidaCondObs;
-    }
-
-    private void initializeConsumoArrays(int size) {
-        consTiempoConsumoMeses = consTiempoConsumoMeses == null ? new Integer[size] : consTiempoConsumoMeses;
-        consExConsumidor = consExConsumidor == null ? new Boolean[size] : consExConsumidor;
-        consTiempoAbstinenciaMeses = consTiempoAbstinenciaMeses == null ? new Integer[size] : consTiempoAbstinenciaMeses;
-        consNoConsume = consNoConsume == null ? new Boolean[size] : consNoConsume;
-    }
-
-    private void initializeHabitosArrays(int size) {
-        afCual = afCual == null ? new String[size] : afCual;
-        afTiempo = afTiempo == null ? new String[size] : afTiempo;
-    }
-
-    private void initializeMedicacionArrays(int size) {
-        medCual = medCual == null ? new String[size] : medCual;
-        medCant = medCant == null ? new Integer[size] : medCant;
-    }
-
-    private void initializeConsumoDefaults(int size) {
-        for (int i = 0; i < size; i++) {
-            consExConsumidor[i] = consExConsumidor[i] == null ? Boolean.FALSE : consExConsumidor[i];
-            consNoConsume[i] = consNoConsume[i] == null ? Boolean.FALSE : consNoConsume[i];
-        }
-    }
-
-    public void initConsumoVidaCondDefaults() {
-        initConsumoVidaCond();
-    }
-
     public void onNoConsumeChange(int idx) {
         reactiveUiService.onNoConsumeChange(
                 consNoConsume,
