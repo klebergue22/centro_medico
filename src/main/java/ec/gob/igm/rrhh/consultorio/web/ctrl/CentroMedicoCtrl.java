@@ -96,8 +96,9 @@ import ec.gob.igm.rrhh.consultorio.web.viewstate.Step2FormModel;
 import ec.gob.igm.rrhh.consultorio.web.viewstate.Step3FormModel;
 
 /**
- *
- * @author GUERRA_KLEBER
+ * Controlador principal de la vista del Centro Médico: orquesta el flujo del
+ * wizard, mantiene el estado de pantalla y delega validaciones/persistencia a
+ * servicios de aplicación.
  */
 @Named("centroMedicoCtrl")
 @ViewScoped
@@ -1485,40 +1486,6 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
             return;
         }
         this.ficha = fichaService.findById(this.ficha.getIdFicha());
-    }
-
-    // =========================
-    // UTILIDADES DE UI
-    // =========================
-    private void safeUpdate(String clientId) {
-        try {
-            PrimeFaces.current().ajax().update(clientId);
-        } catch (RuntimeException ex) {
-        }
-    }
-
-    private boolean filaActLabTieneAlgo(int i) {
-        return hasTextualActLabData(i)
-                || hasBooleanActLabFlags(i)
-                || iessFecha.get(i) != null;
-    }
-
-    private boolean hasTextualActLabData(int i) {
-        return !isBlank(actLabCentroTrabajo.get(i))
-                || !isBlank(actLabActividad.get(i))
-                || !isBlank(actLabTiempo.get(i))
-                || !isBlank(actLabObservaciones.get(i))
-                || !isBlank(iessEspecificar.get(i));
-    }
-
-    private boolean hasBooleanActLabFlags(int i) {
-        return isTrue(actLabTrabajoAnterior.get(i))
-                || isTrue(actLabTrabajoActual.get(i))
-                || isTrue(actLabIncidenteChk.get(i))
-                || isTrue(actLabAccidenteChk.get(i))
-                || isTrue(actLabEnfermedadChk.get(i))
-                || isTrue(iessSi.get(i))
-                || isTrue(iessNo.get(i));
     }
 
     public String getStepProcessId() {
