@@ -86,6 +86,7 @@ import ec.gob.igm.rrhh.consultorio.web.session.PdfSessionStore;
 import ec.gob.igm.rrhh.consultorio.web.util.CentroMedicoCalcUtil;
 import ec.gob.igm.rrhh.consultorio.web.util.CentroMedicoViewUtils;
 import ec.gob.igm.rrhh.consultorio.web.viewstate.PacienteViewState;
+import ec.gob.igm.rrhh.consultorio.web.viewstate.PacienteFormData;
 import ec.gob.igm.rrhh.consultorio.web.viewstate.PdfCertificadoViewData;
 import ec.gob.igm.rrhh.consultorio.web.viewstate.PdfFichaViewData;
 import ec.gob.igm.rrhh.consultorio.web.viewstate.PdfPreviewState;
@@ -280,13 +281,7 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     // =========================
     // VARIABLES DE DATOS PERSONALES
     // =========================
-    private String apellido1;
-    private String apellido2;
-    private String nombre1;
-    private String nombre2;
-    private String sexo;
-    private Date fechaNacimiento;
-    private Integer edad;
+    private final PacienteFormData pacienteFormData = step1FormModel.getPaciente();
 
     // =========================
     // VARIABLES DE EVALUACIÓN
@@ -596,11 +591,11 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     // =========================
     private boolean validarStep1() {
         Step1ValidationInput input = new Step1ValidationInput();
-        input.apellido1 = apellido1;
-        input.apellido2 = apellido2;
-        input.nombre1 = nombre1;
-        input.nombre2 = nombre2;
-        input.sexo = sexo;
+        input.apellido1 = pacienteFormData.getApellido1();
+        input.apellido2 = pacienteFormData.getApellido2();
+        input.nombre1 = pacienteFormData.getNombre1();
+        input.nombre2 = pacienteFormData.getNombre2();
+        input.sexo = pacienteFormData.getSexo();
         input.tipoEval = tipoEval;
         input.paStr = paStr;
         input.fc = fc;
@@ -893,11 +888,11 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
         input.noArchivo = noArchivo;
         input.centroTrabajo = centroTrabajo;
         input.ciiu = ciiu;
-        input.apellido1 = apellido1;
-        input.apellido2 = apellido2;
-        input.nombre1 = nombre1;
-        input.nombre2 = nombre2;
-        input.sexo = sexo;
+        input.apellido1 = pacienteFormData.getApellido1();
+        input.apellido2 = pacienteFormData.getApellido2();
+        input.nombre1 = pacienteFormData.getNombre1();
+        input.nombre2 = pacienteFormData.getNombre2();
+        input.sexo = pacienteFormData.getSexo();
         input.detalleObservaciones = detalleObservaciones;
         input.recomendaciones = recomendaciones;
         input.medicoNombre = medicoNombre;
@@ -1348,7 +1343,7 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     // CÁLCULOS Y UTILIDADES
     // =========================
     public void onFechaNacimientoSelect(SelectEvent e) {
-        this.fechaNacimiento = (java.util.Date) e.getObject();
+        pacienteFormData.setFechaNacimiento((java.util.Date) e.getObject());
         recalculateEdadAndNotify();
     }
 
@@ -1357,13 +1352,13 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     }
 
     private void recalculateEdadAndNotify() {
-        this.edad = reactiveUiService.recalculateEdad(this.fechaNacimiento, calcUtil);
+        pacienteFormData.setEdad(reactiveUiService.recalculateEdad(pacienteFormData.getFechaNacimiento(), calcUtil));
         messageService.addMsg(FacesMessage.SEVERITY_INFO, "Cálculo de edad",
-                reactiveUiService.buildEdadCalculationMessage(edad));
+                reactiveUiService.buildEdadCalculationMessage(pacienteFormData.getEdad()));
     }
 
     public void calcularEdad() {
-        this.edad = calcUtil.calcularEdad(this.fechaNacimiento);
+        pacienteFormData.setEdad(calcUtil.calcularEdad(pacienteFormData.getFechaNacimiento()));
     }
 
     public Date getFechaMaximaNacimiento() {
@@ -1371,10 +1366,10 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     }
 
     public void validarEdadMinima() {
-        if (!reactiveUiService.validarEdadMinima(edad, calcUtil)) {
+        if (!reactiveUiService.validarEdadMinima(pacienteFormData.getEdad(), calcUtil)) {
             messageService.error("La edad debe ser ≥ 18 años");
-            fechaNacimiento = null;
-            edad = null;
+            pacienteFormData.setFechaNacimiento(null);
+            pacienteFormData.setEdad(null);
         }
     }
 
@@ -1513,7 +1508,7 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
         input.fichaPdfDataMapper = fichaPdfDataMapper;
         input.ficha = ficha;
         input.empleadoSel = empleadoSel;
-        input.fechaNacimiento = fechaNacimiento;
+        input.fechaNacimiento = pacienteFormData.getFechaNacimiento();
         input.institucionSetter = value -> this.institucion = value;
         input.rucSetter = value -> this.ruc = value;
         input.centroTrabajoSetter = value -> this.centroTrabajo = value;
@@ -1528,11 +1523,11 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
         input.ginecoResultado2Setter = value -> this.ginecoResultado2 = value;
         input.ginecoObservacionSetter = value -> this.ginecoObservacion = value;
         input.enfermedadActualSetter = value -> this.enfermedadActual = value;
-        input.apellido1Setter = value -> this.apellido1 = value;
-        input.apellido2Setter = value -> this.apellido2 = value;
-        input.nombre1Setter = value -> this.nombre1 = value;
-        input.nombre2Setter = value -> this.nombre2 = value;
-        input.edadSetter = value -> this.edad = value;
+        input.apellido1Setter = value -> pacienteFormData.setApellido1(value);
+        input.apellido2Setter = value -> pacienteFormData.setApellido2(value);
+        input.nombre1Setter = value -> pacienteFormData.setNombre1(value);
+        input.nombre2Setter = value -> pacienteFormData.setNombre2(value);
+        input.edadSetter = value -> pacienteFormData.setEdad(value);
         centroMedicoPdfControllerSupport.syncCamposDesdeObjetosInternal(input);
     }
 
@@ -1574,12 +1569,12 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     // GETTERS Y SETTERS
     // =========================
     public Date getFechaNacimiento() {
-        return fechaNacimiento;
+        return pacienteFormData.getFechaNacimiento();
     }
 
     public void setFechaNacimiento(Date f) {
-        this.fechaNacimiento = f;
-        this.edad = calcUtil.calcularEdad(f);
+        pacienteFormData.setFechaNacimiento(f);
+        pacienteFormData.setEdad(calcUtil.calcularEdad(f));
     }
 
     public boolean isMostrarDlgCedula() {
@@ -2072,19 +2067,19 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     }
 
     public String getApellido1() {
-        return apellido1;
+        return pacienteFormData.getApellido1();
     }
 
     public void setApellido1(String apellido1) {
-        this.apellido1 = apellido1;
+        pacienteFormData.setApellido1(apellido1);
     }
 
     public String getApellido2() {
-        return apellido2;
+        return pacienteFormData.getApellido2();
     }
 
     public void setApellido2(String apellido2) {
-        this.apellido2 = apellido2;
+        pacienteFormData.setApellido2(apellido2);
     }
 
     public String getAptitudSel() {
@@ -2160,11 +2155,11 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     }
 
     public Integer getEdad() {
-        return edad;
+        return pacienteFormData.getEdad();
     }
 
     public void setEdad(Integer edad) {
-        this.edad = edad;
+        pacienteFormData.setEdad(edad);
     }
 
     public List<Date> getExamFecha() {
@@ -2368,19 +2363,19 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     }
 
     public String getNombre1() {
-        return nombre1;
+        return pacienteFormData.getNombre1();
     }
 
     public void setNombre1(String nombre1) {
-        this.nombre1 = nombre1;
+        pacienteFormData.setNombre1(nombre1);
     }
 
     public String getNombre2() {
-        return nombre2;
+        return pacienteFormData.getNombre2();
     }
 
     public void setNombre2(String nombre2) {
-        this.nombre2 = nombre2;
+        pacienteFormData.setNombre2(nombre2);
     }
 
     public String getObsJ() {
@@ -2464,11 +2459,11 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     }
 
     public String getSexo() {
-        return sexo;
+        return pacienteFormData.getSexo();
     }
 
     public void setSexo(String sexo) {
-        this.sexo = sexo;
+        pacienteFormData.setSexo(sexo);
     }
 
     public Double getTallaCm() {
