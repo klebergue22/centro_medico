@@ -78,7 +78,12 @@ import ec.gob.igm.rrhh.consultorio.web.viewstate.PdfPreviewState;
 import ec.gob.igm.rrhh.consultorio.web.viewstate.Step1FormModel;
 import ec.gob.igm.rrhh.consultorio.web.viewstate.Step2FormModel;
 import ec.gob.igm.rrhh.consultorio.web.viewstate.AtencionPrioritariaModel;
+import ec.gob.igm.rrhh.consultorio.web.viewstate.ActividadLaboralFormModel;
+import ec.gob.igm.rrhh.consultorio.web.viewstate.AntecedentesFormModel;
 import ec.gob.igm.rrhh.consultorio.web.viewstate.DiagnosticoFormModel;
+import ec.gob.igm.rrhh.consultorio.web.viewstate.ExamenFisicoFormModel;
+import ec.gob.igm.rrhh.consultorio.web.viewstate.GinecoObstetricoFormModel;
+import ec.gob.igm.rrhh.consultorio.web.viewstate.HabitosConsumoFormModel;
 import ec.gob.igm.rrhh.consultorio.web.viewstate.SignosVitalesFormModel;
 import ec.gob.igm.rrhh.consultorio.web.viewstate.Step3FormModel;
 import ec.gob.igm.rrhh.consultorio.web.viewstate.WizardViewState;
@@ -207,6 +212,11 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     private final AtencionPrioritariaModel atencionPrioritariaModel = new AtencionPrioritariaModel();
     private final SignosVitalesFormModel signosVitalesFormModel = new SignosVitalesFormModel();
     private final DiagnosticoFormModel diagnosticoFormModel = new DiagnosticoFormModel();
+    private final AntecedentesFormModel antecedentesFormModel = new AntecedentesFormModel();
+    private final GinecoObstetricoFormModel ginecoObstetricoFormModel = new GinecoObstetricoFormModel();
+    private final ExamenFisicoFormModel examenFisicoFormModel = new ExamenFisicoFormModel();
+    private final HabitosConsumoFormModel habitosConsumoFormModel = new HabitosConsumoFormModel();
+    private final ActividadLaboralFormModel actividadLaboralFormModel = new ActividadLaboralFormModel();
     private final PdfPreviewState pdfPreviewState = new PdfPreviewState();
     private final PacienteViewState pacienteViewState = new PacienteViewState();
     private final WizardViewState wizardViewState = new WizardViewState();
@@ -265,60 +275,8 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     // =========================
 
     // =========================
-    // VARIABLES DE ANTECEDENTES
-    // =========================
-    private String antClinicoQuirurgico;
-    private String antFamiliares;
-    private String antTerapeutica;
-    private String antObs;
-    private String condicionEspecial;
-    private String autorizaTransfusion;
-    private String tratamientoHormonal;
-    private String tratamientoHormonalCual;
-
-    // =========================
-    // VARIABLES DE EXAMEN REPRODUCTIVO MASCULINO
-    // =========================
-    private String examenReproMasculino;
-    private Integer tiempoReproMasculino;
-
-    // =========================
-    // VARIABLES GINECO-OBSTÉTRICAS
-    // =========================
-    private String ginecoExamen1;
-    private String ginecoTiempo1;
-    private String ginecoResultado1;
-    private String ginecoExamen2;
-    private String ginecoTiempo2;
-    private String ginecoResultado2;
-    private String ginecoObservacion;
-    private Date fum;
-    private Integer gestas;
-    private Integer partos;
-    private Integer cesareas;
-    private Integer abortos;
-    private String planificacion;
-    private String planificacionCual;
-
-    // =========================
     // VARIABLES DE SIGNOS VITALES
     // =========================
-
-    // =========================
-    // VARIABLES DE CONSUMO/HÁBITOS
-    // =========================
-    private Integer[] consTiempoConsumoMeses;
-    private Boolean[] consExConsumidor;
-    private Integer[] consTiempoAbstinenciaMeses;
-    private Boolean[] consNoConsume;
-    private String consOtrasCual;
-    private String[] afCual;
-    private String[] afTiempo;
-    private String[] medCual;
-    private Integer[] medCant;
-    private String consumoObservacion;
-    private String consumoVidaCondObs;
-    private String obsJ;
 
     // =========================
     // VARIABLES DE RIESGOS LABORALES
@@ -352,82 +310,11 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     private String[] hObservacion;
 
     // =========================
-    // VARIABLES DE ACTIVIDADES LABORALES (LISTAS)
-    // =========================
-    private java.util.List<Date> iessFecha;
-    private java.util.List<Date> fechaAct;
-    private java.util.List<String> tipoAct;
-    private java.util.List<String> descAct;
-    private java.util.List<String> actLabRows;
-    private java.util.List<String> actLabCentroTrabajo;
-    private java.util.List<String> actLabActividad;
-    private java.util.List<String> actLabIncidente;
-    private java.util.List<Date> actLabFecha;
-    private java.util.List<String> actLabTiempo;
-    private java.util.List<Boolean> actLabTrabajoAnterior;
-    private java.util.List<Boolean> actLabTrabajoActual;
-    private java.util.List<Boolean> actLabIncidenteChk;
-    private java.util.List<Boolean> actLabAccidenteChk;
-    private java.util.List<Boolean> actLabEnfermedadChk;
-    private java.util.List<Boolean> iessSi;
-    private java.util.List<Boolean> iessNo;
-    private java.util.List<String> iessEspecificar;
-    private java.util.List<String> actLabObservaciones;
-
-    // =========================
     // VARIABLES DE EXÁMENES COMPLEMENTARIOS
     // =========================
     private java.util.List<String> examNombre = new ArrayList<>();
     private java.util.List<String> examResultado = new ArrayList<>();
     private java.util.List<Date> examFecha = new ArrayList<>();
-
-    // =========================
-    // VARIABLES DE ENFERMEDAD ACTUAL
-    // =========================
-    private String enfermedadActual;
-
-    // =========================
-    // VARIABLES DE EXAMEN FÍSICO REGIONAL
-    // =========================
-    private String exfPielCicatrices;
-    private String exfOjosParpados;
-    private String exfOjosConjuntivas;
-    private String exfOjosPupilas;
-    private String exfOjosCornea;
-    private String exfOjosMotilidad;
-    private String exfOidoConducto;
-    private String exfOidoPabellon;
-    private String exfOidoTimpanos;
-    private String exfOroLabios;
-    private String exfOroLengua;
-    private String exfOroFaringe;
-    private String exfOroAmigdalas;
-    private String exfOroDentadura;
-    private String exfNarizTabique;
-    private String exfNarizCornetes;
-    private String exfNarizMucosas;
-    private String exfNarizSenos;
-    private String exfCuelloTiroides;
-    private String exfCuelloMovilidad;
-    private String exfToraxMamas;
-    private String exfToraxPulmones;
-    private String exfToraxCorazon;
-    private String exfToraxParrilla;
-    private String exfAbdomenVisceras;
-    private String exfAbdomenPared;
-    private String exfColumnaFlexibilidad;
-    private String exfColumnaDesviacion;
-    private String exfColumnaDolor;
-    private String exfPelvisPelvis;
-    private String exfPelvisGenitales;
-    private String exfExtVascular;
-    private String exfExtSup;
-    private String exfExtInf;
-    private String exfNeuroFuerza;
-    private String exfNeuroSensibilidad;
-    private String exfNeuroMarcha;
-    private String exfNeuroReflejos;
-    private String obsExamenFisico;
 
     // =========================
     // VARIABLES DE ENTIDADES DE DOMINIO
@@ -999,10 +886,10 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     // =========================
     public void onNoConsumeChange(int idx) {
         reactiveUiService.onNoConsumeChange(
-                consNoConsume,
-                consExConsumidor,
-                consTiempoConsumoMeses,
-                consTiempoAbstinenciaMeses,
+                habitosConsumoFormModel.getConsNoConsume(),
+                habitosConsumoFormModel.getConsExConsumidor(),
+                habitosConsumoFormModel.getConsTiempoConsumoMeses(),
+                habitosConsumoFormModel.getConsTiempoAbstinenciaMeses(),
                 idx);
     }
 
@@ -1085,19 +972,19 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     private void cargarActividadLaboralArrays(Map<String, String> rep) {
         pdfSectionFacade.cargarActividadLaboralArrays(
                 H_ROWS,
-                actLabCentroTrabajo,
-                actLabActividad,
-                actLabTiempo,
-                actLabTrabajoAnterior,
-                actLabTrabajoActual,
-                actLabIncidenteChk,
-                actLabAccidenteChk,
-                actLabEnfermedadChk,
-                iessSi,
-                iessNo,
-                iessFecha,
-                iessEspecificar,
-                actLabObservaciones,
+                actividadLaboralFormModel.getActLabCentroTrabajo(),
+                actividadLaboralFormModel.getActLabActividad(),
+                actividadLaboralFormModel.getActLabTiempo(),
+                actividadLaboralFormModel.getActLabTrabajoAnterior(),
+                actividadLaboralFormModel.getActLabTrabajoActual(),
+                actividadLaboralFormModel.getActLabIncidenteChk(),
+                actividadLaboralFormModel.getActLabAccidenteChk(),
+                actividadLaboralFormModel.getActLabEnfermedadChk(),
+                actividadLaboralFormModel.getIessSi(),
+                actividadLaboralFormModel.getIessNo(),
+                actividadLaboralFormModel.getIessFecha(),
+                actividadLaboralFormModel.getIessEspecificar(),
+                actividadLaboralFormModel.getActLabObservaciones(),
                 rep);
     }
 
@@ -1160,36 +1047,36 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     }
 
     public List<String> getTipoAct() {
-        if (tipoAct == null) {
-            tipoAct = new ArrayList<>();
+        if (actividadLaboralFormModel.getTipoAct() == null) {
+            actividadLaboralFormModel.setTipoAct(new ArrayList<>());
         }
-        return tipoAct;
+        return actividadLaboralFormModel.getTipoAct();
     }
 
     public void setTipoAct(List<String> tipoAct) {
-        this.tipoAct = tipoAct;
+        actividadLaboralFormModel.setTipoAct(tipoAct);
     }
 
     public List<Date> getFechaAct() {
-        if (fechaAct == null) {
-            fechaAct = new ArrayList<>();
+        if (actividadLaboralFormModel.getFechaAct() == null) {
+            actividadLaboralFormModel.setFechaAct(new ArrayList<>());
         }
-        return fechaAct;
+        return actividadLaboralFormModel.getFechaAct();
     }
 
     public void setFechaAct(List<Date> fechaAct) {
-        this.fechaAct = fechaAct;
+        actividadLaboralFormModel.setFechaAct(fechaAct);
     }
 
     public List<String> getDescAct() {
-        if (descAct == null) {
-            descAct = new ArrayList<>();
+        if (actividadLaboralFormModel.getDescAct() == null) {
+            actividadLaboralFormModel.setDescAct(new ArrayList<>());
         }
-        return descAct;
+        return actividadLaboralFormModel.getDescAct();
     }
 
     public void setDescAct(List<String> descAct) {
-        this.descAct = descAct;
+        actividadLaboralFormModel.setDescAct(descAct);
     }
 
     public int getStepIndex() {
@@ -1201,35 +1088,35 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     }
 
     public Integer[] getConsTiempoConsumo() {
-        return consTiempoConsumoMeses;
+        return habitosConsumoFormModel.getConsTiempoConsumoMeses();
     }
 
     public void setConsTiempoConsumo(Integer[] v) {
-        this.consTiempoConsumoMeses = v;
+        habitosConsumoFormModel.setConsTiempoConsumoMeses(v);
     }
 
     public Integer[] getConsTiempoAbstinencia() {
-        return consTiempoAbstinenciaMeses;
+        return habitosConsumoFormModel.getConsTiempoAbstinenciaMeses();
     }
 
     public void setConsTiempoAbstinencia(Integer[] v) {
-        this.consTiempoAbstinenciaMeses = v;
+        habitosConsumoFormModel.setConsTiempoAbstinenciaMeses(v);
     }
 
     public String getObsExamenFisico() {
-        return obsExamenFisico;
+        return examenFisicoFormModel.getObsExamenFisico();
     }
 
     public void setObsExamenFisico(String obsExamenFisico) {
-        this.obsExamenFisico = obsExamenFisico;
+        examenFisicoFormModel.setObsExamenFisico(obsExamenFisico);
     }
 
     public String getConsObservacion() {
-        return consumoVidaCondObs;
+        return habitosConsumoFormModel.getConsumoVidaCondObs();
     }
 
     public void setConsObservacion(String v) {
-        this.consumoVidaCondObs = v;
+        habitosConsumoFormModel.setConsumoVidaCondObs(v);
     }
 
     public String getNRealizaEvaluacion() {
@@ -1279,247 +1166,247 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     }
 
     public void setEnfermedadActual(String enfermedadActual) {
-        this.enfermedadActual = enfermedadActual;
+        examenFisicoFormModel.setEnfermedadActual(enfermedadActual);
     }
 
     public void setExfPielCicatrices(String exfPielCicatrices) {
-        this.exfPielCicatrices = exfPielCicatrices;
+        examenFisicoFormModel.setExfPielCicatrices(exfPielCicatrices);
     }
 
     public void setExfOjosParpados(String exfOjosParpados) {
-        this.exfOjosParpados = exfOjosParpados;
+        examenFisicoFormModel.setExfOjosParpados(exfOjosParpados);
     }
 
     public void setExfOjosConjuntivas(String exfOjosConjuntivas) {
-        this.exfOjosConjuntivas = exfOjosConjuntivas;
+        examenFisicoFormModel.setExfOjosConjuntivas(exfOjosConjuntivas);
     }
 
     public void setExfOjosPupilas(String exfOjosPupilas) {
-        this.exfOjosPupilas = exfOjosPupilas;
+        examenFisicoFormModel.setExfOjosPupilas(exfOjosPupilas);
     }
 
     public void setExfOjosCornea(String exfOjosCornea) {
-        this.exfOjosCornea = exfOjosCornea;
+        examenFisicoFormModel.setExfOjosCornea(exfOjosCornea);
     }
 
     public void setExfOjosMotilidad(String exfOjosMotilidad) {
-        this.exfOjosMotilidad = exfOjosMotilidad;
+        examenFisicoFormModel.setExfOjosMotilidad(exfOjosMotilidad);
     }
 
     public void setExfOidoConducto(String exfOidoConducto) {
-        this.exfOidoConducto = exfOidoConducto;
+        examenFisicoFormModel.setExfOidoConducto(exfOidoConducto);
     }
 
     public void setExfOidoPabellon(String exfOidoPabellon) {
-        this.exfOidoPabellon = exfOidoPabellon;
+        examenFisicoFormModel.setExfOidoPabellon(exfOidoPabellon);
     }
 
     public void setExfOidoTimpanos(String exfOidoTimpanos) {
-        this.exfOidoTimpanos = exfOidoTimpanos;
+        examenFisicoFormModel.setExfOidoTimpanos(exfOidoTimpanos);
     }
 
     public void setExfOroLabios(String exfOroLabios) {
-        this.exfOroLabios = exfOroLabios;
+        examenFisicoFormModel.setExfOroLabios(exfOroLabios);
     }
 
     public void setExfOroLengua(String exfOroLengua) {
-        this.exfOroLengua = exfOroLengua;
+        examenFisicoFormModel.setExfOroLengua(exfOroLengua);
     }
 
     public void setExfOroFaringe(String exfOroFaringe) {
-        this.exfOroFaringe = exfOroFaringe;
+        examenFisicoFormModel.setExfOroFaringe(exfOroFaringe);
     }
 
     public void setExfOroAmigdalas(String exfOroAmigdalas) {
-        this.exfOroAmigdalas = exfOroAmigdalas;
+        examenFisicoFormModel.setExfOroAmigdalas(exfOroAmigdalas);
     }
 
     public void setExfOroDentadura(String exfOroDentadura) {
-        this.exfOroDentadura = exfOroDentadura;
+        examenFisicoFormModel.setExfOroDentadura(exfOroDentadura);
     }
 
     public void setExfNarizTabique(String exfNarizTabique) {
-        this.exfNarizTabique = exfNarizTabique;
+        examenFisicoFormModel.setExfNarizTabique(exfNarizTabique);
     }
 
     public void setExfNarizCornetes(String exfNarizCornetes) {
-        this.exfNarizCornetes = exfNarizCornetes;
+        examenFisicoFormModel.setExfNarizCornetes(exfNarizCornetes);
     }
 
     public void setExfNarizMucosas(String exfNarizMucosas) {
-        this.exfNarizMucosas = exfNarizMucosas;
+        examenFisicoFormModel.setExfNarizMucosas(exfNarizMucosas);
     }
 
     public void setExfNarizSenos(String exfNarizSenos) {
-        this.exfNarizSenos = exfNarizSenos;
+        examenFisicoFormModel.setExfNarizSenos(exfNarizSenos);
     }
 
     public void setExfCuelloTiroides(String exfCuelloTiroides) {
-        this.exfCuelloTiroides = exfCuelloTiroides;
+        examenFisicoFormModel.setExfCuelloTiroides(exfCuelloTiroides);
     }
 
     public void setExfCuelloMovilidad(String exfCuelloMovilidad) {
-        this.exfCuelloMovilidad = exfCuelloMovilidad;
+        examenFisicoFormModel.setExfCuelloMovilidad(exfCuelloMovilidad);
     }
 
     public void setExfToraxMamas(String exfToraxMamas) {
-        this.exfToraxMamas = exfToraxMamas;
+        examenFisicoFormModel.setExfToraxMamas(exfToraxMamas);
     }
 
     public void setExfToraxPulmones(String exfToraxPulmones) {
-        this.exfToraxPulmones = exfToraxPulmones;
+        examenFisicoFormModel.setExfToraxPulmones(exfToraxPulmones);
     }
 
     public void setExfToraxCorazon(String exfToraxCorazon) {
-        this.exfToraxCorazon = exfToraxCorazon;
+        examenFisicoFormModel.setExfToraxCorazon(exfToraxCorazon);
     }
 
     public void setExfToraxParrilla(String exfToraxParrilla) {
-        this.exfToraxParrilla = exfToraxParrilla;
+        examenFisicoFormModel.setExfToraxParrilla(exfToraxParrilla);
     }
 
     public void setExfAbdomenVisceras(String exfAbdomenVisceras) {
-        this.exfAbdomenVisceras = exfAbdomenVisceras;
+        examenFisicoFormModel.setExfAbdomenVisceras(exfAbdomenVisceras);
     }
 
     public void setExfAbdomenPared(String exfAbdomenPared) {
-        this.exfAbdomenPared = exfAbdomenPared;
+        examenFisicoFormModel.setExfAbdomenPared(exfAbdomenPared);
     }
 
     public void setExfColumnaFlexibilidad(String exfColumnaFlexibilidad) {
-        this.exfColumnaFlexibilidad = exfColumnaFlexibilidad;
+        examenFisicoFormModel.setExfColumnaFlexibilidad(exfColumnaFlexibilidad);
     }
 
     public void setExfColumnaDesviacion(String exfColumnaDesviacion) {
-        this.exfColumnaDesviacion = exfColumnaDesviacion;
+        examenFisicoFormModel.setExfColumnaDesviacion(exfColumnaDesviacion);
     }
 
     public void setExfColumnaDolor(String exfColumnaDolor) {
-        this.exfColumnaDolor = exfColumnaDolor;
+        examenFisicoFormModel.setExfColumnaDolor(exfColumnaDolor);
     }
 
     public void setExfPelvisPelvis(String exfPelvisPelvis) {
-        this.exfPelvisPelvis = exfPelvisPelvis;
+        examenFisicoFormModel.setExfPelvisPelvis(exfPelvisPelvis);
     }
 
     public void setExfPelvisGenitales(String exfPelvisGenitales) {
-        this.exfPelvisGenitales = exfPelvisGenitales;
+        examenFisicoFormModel.setExfPelvisGenitales(exfPelvisGenitales);
     }
 
     public void setExfExtVascular(String exfExtVascular) {
-        this.exfExtVascular = exfExtVascular;
+        examenFisicoFormModel.setExfExtVascular(exfExtVascular);
     }
 
     public void setExfExtSup(String exfExtSup) {
-        this.exfExtSup = exfExtSup;
+        examenFisicoFormModel.setExfExtSup(exfExtSup);
     }
 
     public void setExfExtInf(String exfExtInf) {
-        this.exfExtInf = exfExtInf;
+        examenFisicoFormModel.setExfExtInf(exfExtInf);
     }
 
     public void setExfNeuroFuerza(String exfNeuroFuerza) {
-        this.exfNeuroFuerza = exfNeuroFuerza;
+        examenFisicoFormModel.setExfNeuroFuerza(exfNeuroFuerza);
     }
 
     public void setExfNeuroSensibilidad(String exfNeuroSensibilidad) {
-        this.exfNeuroSensibilidad = exfNeuroSensibilidad;
+        examenFisicoFormModel.setExfNeuroSensibilidad(exfNeuroSensibilidad);
     }
 
     public void setExfNeuroMarcha(String exfNeuroMarcha) {
-        this.exfNeuroMarcha = exfNeuroMarcha;
+        examenFisicoFormModel.setExfNeuroMarcha(exfNeuroMarcha);
     }
 
     public void setExfNeuroReflejos(String exfNeuroReflejos) {
-        this.exfNeuroReflejos = exfNeuroReflejos;
+        examenFisicoFormModel.setExfNeuroReflejos(exfNeuroReflejos);
     }
 
     public Integer getAbortos() {
-        return abortos;
+        return ginecoObstetricoFormModel.getAbortos();
     }
 
     public void setAbortos(Integer abortos) {
-        this.abortos = abortos;
+        ginecoObstetricoFormModel.setAbortos(abortos);
     }
 
     public List<Boolean> getActLabAccidenteChk() {
-        return actLabAccidenteChk;
+        return actividadLaboralFormModel.getActLabAccidenteChk();
     }
 
     public void setActLabAccidenteChk(List<Boolean> actLabAccidenteChk) {
-        this.actLabAccidenteChk = actLabAccidenteChk;
+        actividadLaboralFormModel.setActLabAccidenteChk(actLabAccidenteChk);
     }
 
     public List<String> getActLabActividad() {
-        return actLabActividad;
+        return actividadLaboralFormModel.getActLabActividad();
     }
 
     public void setActLabActividad(List<String> actLabActividad) {
-        this.actLabActividad = actLabActividad;
+        actividadLaboralFormModel.setActLabActividad(actLabActividad);
     }
 
     public List<String> getActLabCentroTrabajo() {
-        return actLabCentroTrabajo;
+        return actividadLaboralFormModel.getActLabCentroTrabajo();
     }
 
     public void setActLabCentroTrabajo(List<String> actLabCentroTrabajo) {
-        this.actLabCentroTrabajo = actLabCentroTrabajo;
+        actividadLaboralFormModel.setActLabCentroTrabajo(actLabCentroTrabajo);
     }
 
     public List<Boolean> getActLabEnfermedadChk() {
-        return actLabEnfermedadChk;
+        return actividadLaboralFormModel.getActLabEnfermedadChk();
     }
 
     public void setActLabEnfermedadChk(List<Boolean> actLabEnfermedadChk) {
-        this.actLabEnfermedadChk = actLabEnfermedadChk;
+        actividadLaboralFormModel.setActLabEnfermedadChk(actLabEnfermedadChk);
     }
 
     public List<Boolean> getActLabIncidenteChk() {
-        return actLabIncidenteChk;
+        return actividadLaboralFormModel.getActLabIncidenteChk();
     }
 
     public void setActLabIncidenteChk(List<Boolean> actLabIncidenteChk) {
-        this.actLabIncidenteChk = actLabIncidenteChk;
+        actividadLaboralFormModel.setActLabIncidenteChk(actLabIncidenteChk);
     }
 
     public List<String> getActLabObservaciones() {
-        return actLabObservaciones;
+        return actividadLaboralFormModel.getActLabObservaciones();
     }
 
     public void setActLabObservaciones(List<String> actLabObservaciones) {
-        this.actLabObservaciones = actLabObservaciones;
+        actividadLaboralFormModel.setActLabObservaciones(actLabObservaciones);
     }
 
     public List<String> getActLabRows() {
-        return actLabRows;
+        return actividadLaboralFormModel.getActLabRows();
     }
 
     public void setActLabRows(List<String> actLabRows) {
-        this.actLabRows = actLabRows;
+        actividadLaboralFormModel.setActLabRows(actLabRows);
     }
 
     public List<String> getActLabTiempo() {
-        return actLabTiempo;
+        return actividadLaboralFormModel.getActLabTiempo();
     }
 
     public void setActLabTiempo(List<String> actLabTiempo) {
-        this.actLabTiempo = actLabTiempo;
+        actividadLaboralFormModel.setActLabTiempo(actLabTiempo);
     }
 
     public List<Boolean> getActLabTrabajoActual() {
-        return actLabTrabajoActual;
+        return actividadLaboralFormModel.getActLabTrabajoActual();
     }
 
     public void setActLabTrabajoActual(List<Boolean> actLabTrabajoActual) {
-        this.actLabTrabajoActual = actLabTrabajoActual;
+        actividadLaboralFormModel.setActLabTrabajoActual(actLabTrabajoActual);
     }
 
     public List<Boolean> getActLabTrabajoAnterior() {
-        return actLabTrabajoAnterior;
+        return actividadLaboralFormModel.getActLabTrabajoAnterior();
     }
 
     public void setActLabTrabajoAnterior(List<Boolean> actLabTrabajoAnterior) {
-        this.actLabTrabajoAnterior = actLabTrabajoAnterior;
+        actividadLaboralFormModel.setActLabTrabajoAnterior(actLabTrabajoAnterior);
     }
 
     public List<String> getActividadesLab() {
@@ -1531,35 +1418,35 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     }
 
     public String[] getAfCual() {
-        return afCual;
+        return habitosConsumoFormModel.getAfCual();
     }
 
     public void setAfCual(String[] afCual) {
-        this.afCual = afCual;
+        habitosConsumoFormModel.setAfCual(afCual);
     }
 
     public String[] getAfTiempo() {
-        return afTiempo;
+        return habitosConsumoFormModel.getAfTiempo();
     }
 
     public void setAfTiempo(String[] afTiempo) {
-        this.afTiempo = afTiempo;
+        habitosConsumoFormModel.setAfTiempo(afTiempo);
     }
 
     public String getAntClinicoQuirurgico() {
-        return antClinicoQuirurgico;
+        return antecedentesFormModel.getAntClinicoQuirurgico();
     }
 
     public void setAntClinicoQuirurgico(String antClinicoQuirurgico) {
-        this.antClinicoQuirurgico = antClinicoQuirurgico;
+        antecedentesFormModel.setAntClinicoQuirurgico(antClinicoQuirurgico);
     }
 
     public String getAntFamiliares() {
-        return antFamiliares;
+        return antecedentesFormModel.getAntFamiliares();
     }
 
     public void setAntFamiliares(String antFamiliares) {
-        this.antFamiliares = antFamiliares;
+        antecedentesFormModel.setAntFamiliares(antFamiliares);
     }
 
     public boolean isApAdultoMayor() {
@@ -1627,11 +1514,11 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     }
 
     public String getAutorizaTransfusion() {
-        return autorizaTransfusion;
+        return antecedentesFormModel.getAutorizaTransfusion();
     }
 
     public void setAutorizaTransfusion(String autorizaTransfusion) {
-        this.autorizaTransfusion = autorizaTransfusion;
+        antecedentesFormModel.setAutorizaTransfusion(autorizaTransfusion);
     }
 
     public String getCedulaBusqueda() {
@@ -1651,35 +1538,35 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     }
 
     public Integer getCesareas() {
-        return cesareas;
+        return ginecoObstetricoFormModel.getCesareas();
     }
 
     public void setCesareas(Integer cesareas) {
-        this.cesareas = cesareas;
+        ginecoObstetricoFormModel.setCesareas(cesareas);
     }
 
     public String getCondicionEspecial() {
-        return condicionEspecial;
+        return antecedentesFormModel.getCondicionEspecial();
     }
 
     public void setCondicionEspecial(String condicionEspecial) {
-        this.condicionEspecial = condicionEspecial;
+        antecedentesFormModel.setCondicionEspecial(condicionEspecial);
     }
 
     public Boolean[] getConsExConsumidor() {
-        return consExConsumidor;
+        return habitosConsumoFormModel.getConsExConsumidor();
     }
 
     public void setConsExConsumidor(Boolean[] consExConsumidor) {
-        this.consExConsumidor = consExConsumidor;
+        habitosConsumoFormModel.setConsExConsumidor(consExConsumidor);
     }
 
     public Boolean[] getConsNoConsume() {
-        return consNoConsume;
+        return habitosConsumoFormModel.getConsNoConsume();
     }
 
     public void setConsNoConsume(Boolean[] consNoConsume) {
-        this.consNoConsume = consNoConsume;
+        habitosConsumoFormModel.setConsNoConsume(consNoConsume);
     }
 
     public String getDetalleObservaciones() {
@@ -1723,11 +1610,11 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     }
 
     public String getExamenReproMasculino() {
-        return examenReproMasculino;
+        return ginecoObstetricoFormModel.getExamenReproMasculino();
     }
 
     public void setExamenReproMasculino(String examenReproMasculino) {
-        this.examenReproMasculino = examenReproMasculino;
+        ginecoObstetricoFormModel.setExamenReproMasculino(examenReproMasculino);
     }
 
     public Integer getFc() {
@@ -1787,11 +1674,11 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     }
 
     public Integer getGestas() {
-        return gestas;
+        return ginecoObstetricoFormModel.getGestas();
     }
 
     public void setGestas(Integer gestas) {
-        this.gestas = gestas;
+        ginecoObstetricoFormModel.setGestas(gestas);
     }
 
     public String getGrupoSanguineo() {
@@ -1803,35 +1690,35 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     }
 
     public List<String> getIessEspecificar() {
-        return iessEspecificar;
+        return actividadLaboralFormModel.getIessEspecificar();
     }
 
     public void setIessEspecificar(List<String> iessEspecificar) {
-        this.iessEspecificar = iessEspecificar;
+        actividadLaboralFormModel.setIessEspecificar(iessEspecificar);
     }
 
     public List<Date> getIessFecha() {
-        return iessFecha;
+        return actividadLaboralFormModel.getIessFecha();
     }
 
     public void setIessFecha(List<Date> iessFecha) {
-        this.iessFecha = iessFecha;
+        actividadLaboralFormModel.setIessFecha(iessFecha);
     }
 
     public List<Boolean> getIessNo() {
-        return iessNo;
+        return actividadLaboralFormModel.getIessNo();
     }
 
     public void setIessNo(List<Boolean> iessNo) {
-        this.iessNo = iessNo;
+        actividadLaboralFormModel.setIessNo(iessNo);
     }
 
     public List<Boolean> getIessSi() {
-        return iessSi;
+        return actividadLaboralFormModel.getIessSi();
     }
 
     public void setIessSi(List<Boolean> iessSi) {
-        this.iessSi = iessSi;
+        actividadLaboralFormModel.setIessSi(iessSi);
     }
 
     public Double getImc() {
@@ -1859,19 +1746,19 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     }
 
     public Integer[] getMedCant() {
-        return medCant;
+        return habitosConsumoFormModel.getMedCant();
     }
 
     public void setMedCant(Integer[] medCant) {
-        this.medCant = medCant;
+        habitosConsumoFormModel.setMedCant(medCant);
     }
 
     public String[] getMedCual() {
-        return medCual;
+        return habitosConsumoFormModel.getMedCual();
     }
 
     public void setMedCual(String[] medCual) {
-        this.medCual = medCual;
+        habitosConsumoFormModel.setMedCual(medCual);
     }
 
     public String getMedicoCodigo() {
@@ -1915,11 +1802,11 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     }
 
     public String getObsJ() {
-        return obsJ;
+        return habitosConsumoFormModel.getObsJ();
     }
 
     public void setObsJ(String obsJ) {
-        this.obsJ = obsJ;
+        habitosConsumoFormModel.setObsJ(obsJ);
     }
 
     public void setOtrosRiesgos(Map<String, String> otrosRiesgos) {
@@ -1935,11 +1822,11 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     }
 
     public Integer getPartos() {
-        return partos;
+        return ginecoObstetricoFormModel.getPartos();
     }
 
     public void setPartos(Integer partos) {
-        this.partos = partos;
+        ginecoObstetricoFormModel.setPartos(partos);
     }
 
     public String getPdfToken() {
@@ -2019,11 +1906,11 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     }
 
     public Integer getTiempoReproMasculino() {
-        return tiempoReproMasculino;
+        return ginecoObstetricoFormModel.getTiempoReproMasculino();
     }
 
     public void setTiempoReproMasculino(Integer tiempoReproMasculino) {
-        this.tiempoReproMasculino = tiempoReproMasculino;
+        ginecoObstetricoFormModel.setTiempoReproMasculino(tiempoReproMasculino);
     }
 
     public String getTipoEval() {
@@ -2035,19 +1922,19 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     }
 
     public String getTratamientoHormonal() {
-        return tratamientoHormonal;
+        return antecedentesFormModel.getTratamientoHormonal();
     }
 
     public void setTratamientoHormonal(String tratamientoHormonal) {
-        this.tratamientoHormonal = tratamientoHormonal;
+        antecedentesFormModel.setTratamientoHormonal(tratamientoHormonal);
     }
 
     public String getTratamientoHormonalCual() {
-        return tratamientoHormonalCual;
+        return antecedentesFormModel.getTratamientoHormonalCual();
     }
 
     public void setTratamientoHormonalCual(String tratamientoHormonalCual) {
-        this.tratamientoHormonalCual = tratamientoHormonalCual;
+        antecedentesFormModel.setTratamientoHormonalCual(tratamientoHormonalCual);
     }
 
     public String getDialogDiagnosticoCodigo() {
@@ -2179,59 +2066,59 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     }
 
     public Date getFum() {
-        return fum;
+        return ginecoObstetricoFormModel.getFum();
     }
 
     public void setFum(Date fum) {
-        this.fum = fum;
+        ginecoObstetricoFormModel.setFum(fum);
     }
 
     public String getPlanificacion() {
-        return planificacion;
+        return ginecoObstetricoFormModel.getPlanificacion();
     }
 
     public void setPlanificacion(String planificacion) {
-        this.planificacion = planificacion;
+        ginecoObstetricoFormModel.setPlanificacion(planificacion);
     }
 
     public String getPlanificacionCual() {
-        return planificacionCual;
+        return ginecoObstetricoFormModel.getPlanificacionCual();
     }
 
     public void setPlanificacionCual(String planificacionCual) {
-        this.planificacionCual = planificacionCual;
+        ginecoObstetricoFormModel.setPlanificacionCual(planificacionCual);
     }
 
     public Integer[] getConsTiempoConsumoMeses() {
-        return consTiempoConsumoMeses;
+        return habitosConsumoFormModel.getConsTiempoConsumoMeses();
     }
 
     public void setConsTiempoConsumoMeses(Integer[] consTiempoConsumoMeses) {
-        this.consTiempoConsumoMeses = consTiempoConsumoMeses;
+        habitosConsumoFormModel.setConsTiempoConsumoMeses(consTiempoConsumoMeses);
     }
 
     public Integer[] getConsTiempoAbstinenciaMeses() {
-        return consTiempoAbstinenciaMeses;
+        return habitosConsumoFormModel.getConsTiempoAbstinenciaMeses();
     }
 
     public void setConsTiempoAbstinenciaMeses(Integer[] consTiempoAbstinenciaMeses) {
-        this.consTiempoAbstinenciaMeses = consTiempoAbstinenciaMeses;
+        habitosConsumoFormModel.setConsTiempoAbstinenciaMeses(consTiempoAbstinenciaMeses);
     }
 
     public String getConsOtrasCual() {
-        return consOtrasCual;
+        return habitosConsumoFormModel.getConsOtrasCual();
     }
 
     public void setConsOtrasCual(String consOtrasCual) {
-        this.consOtrasCual = consOtrasCual;
+        habitosConsumoFormModel.setConsOtrasCual(consOtrasCual);
     }
 
     public String getConsumoVidaCondObs() {
-        return consumoVidaCondObs;
+        return habitosConsumoFormModel.getConsumoVidaCondObs();
     }
 
     public void setConsumoVidaCondObs(String consumoVidaCondObs) {
-        this.consumoVidaCondObs = consumoVidaCondObs;
+        habitosConsumoFormModel.setConsumoVidaCondObs(consumoVidaCondObs);
     }
 
     public Date getFechaEmision() {
@@ -2411,19 +2298,19 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     }
 
     public List<String> getActLabIncidente() {
-        return actLabIncidente;
+        return actividadLaboralFormModel.getActLabIncidente();
     }
 
     public void setActLabIncidente(List<String> actLabIncidente) {
-        this.actLabIncidente = actLabIncidente;
+        actividadLaboralFormModel.setActLabIncidente(actLabIncidente);
     }
 
     public List<Date> getActLabFecha() {
-        return actLabFecha;
+        return actividadLaboralFormModel.getActLabFecha();
     }
 
     public void setActLabFecha(List<Date> actLabFecha) {
-        this.actLabFecha = actLabFecha;
+        actividadLaboralFormModel.setActLabFecha(actLabFecha);
     }
 
     public Cie10Service getCie10Service() {
@@ -2480,83 +2367,83 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     }
 
     public String getAntTerapeutica() {
-        return antTerapeutica;
+        return antecedentesFormModel.getAntTerapeutica();
     }
 
     public void setAntTerapeutica(String antTerapeutica) {
-        this.antTerapeutica = antTerapeutica;
+        antecedentesFormModel.setAntTerapeutica(antTerapeutica);
     }
 
     public String getAntObs() {
-        return antObs;
+        return antecedentesFormModel.getAntObs();
     }
 
     public void setAntObs(String antObs) {
-        this.antObs = antObs;
+        antecedentesFormModel.setAntObs(antObs);
     }
 
     public String getGinecoExamen1() {
-        return ginecoExamen1;
+        return ginecoObstetricoFormModel.getGinecoExamen1();
     }
 
     public void setGinecoExamen1(String ginecoExamen1) {
-        this.ginecoExamen1 = ginecoExamen1;
+        ginecoObstetricoFormModel.setGinecoExamen1(ginecoExamen1);
     }
 
     public String getGinecoTiempo1() {
-        return ginecoTiempo1;
+        return ginecoObstetricoFormModel.getGinecoTiempo1();
     }
 
     public void setGinecoTiempo1(String ginecoTiempo1) {
-        this.ginecoTiempo1 = ginecoTiempo1;
+        ginecoObstetricoFormModel.setGinecoTiempo1(ginecoTiempo1);
     }
 
     public String getGinecoResultado1() {
-        return ginecoResultado1;
+        return ginecoObstetricoFormModel.getGinecoResultado1();
     }
 
     public void setGinecoResultado1(String ginecoResultado1) {
-        this.ginecoResultado1 = ginecoResultado1;
+        ginecoObstetricoFormModel.setGinecoResultado1(ginecoResultado1);
     }
 
     public String getGinecoExamen2() {
-        return ginecoExamen2;
+        return ginecoObstetricoFormModel.getGinecoExamen2();
     }
 
     public void setGinecoExamen2(String ginecoExamen2) {
-        this.ginecoExamen2 = ginecoExamen2;
+        ginecoObstetricoFormModel.setGinecoExamen2(ginecoExamen2);
     }
 
     public String getGinecoTiempo2() {
-        return ginecoTiempo2;
+        return ginecoObstetricoFormModel.getGinecoTiempo2();
     }
 
     public void setGinecoTiempo2(String ginecoTiempo2) {
-        this.ginecoTiempo2 = ginecoTiempo2;
+        ginecoObstetricoFormModel.setGinecoTiempo2(ginecoTiempo2);
     }
 
     public String getGinecoResultado2() {
-        return ginecoResultado2;
+        return ginecoObstetricoFormModel.getGinecoResultado2();
     }
 
     public void setGinecoResultado2(String ginecoResultado2) {
-        this.ginecoResultado2 = ginecoResultado2;
+        ginecoObstetricoFormModel.setGinecoResultado2(ginecoResultado2);
     }
 
     public String getGinecoObservacion() {
-        return ginecoObservacion;
+        return ginecoObstetricoFormModel.getGinecoObservacion();
     }
 
     public void setGinecoObservacion(String ginecoObservacion) {
-        this.ginecoObservacion = ginecoObservacion;
+        ginecoObstetricoFormModel.setGinecoObservacion(ginecoObservacion);
     }
 
     public String getConsumoObservacion() {
-        return consumoObservacion;
+        return habitosConsumoFormModel.getConsumoObservacion();
     }
 
     public void setConsumoObservacion(String consumoObservacion) {
-        this.consumoObservacion = consumoObservacion;
+        habitosConsumoFormModel.setConsumoObservacion(consumoObservacion);
     }
 
     public String[] gethCargo() {
