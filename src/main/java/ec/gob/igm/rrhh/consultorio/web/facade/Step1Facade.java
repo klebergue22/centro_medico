@@ -9,6 +9,7 @@ import ec.gob.igm.rrhh.consultorio.domain.model.SignosVitales;
 import ec.gob.igm.rrhh.consultorio.service.Step1FichaService;
 import ec.gob.igm.rrhh.consultorio.web.ctrl.CentroMedicoCtrl;
 import ec.gob.igm.rrhh.consultorio.web.mapper.Step1CommandAssembler;
+import ec.gob.igm.rrhh.consultorio.web.service.UserContextService;
 import ec.gob.igm.rrhh.consultorio.web.mapper.Step1ViewDataAssembler;
 import jakarta.ejb.EJB;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -30,6 +31,8 @@ public class Step1Facade implements Serializable {
     private PacienteRegistrationFacade pacienteRegistrationFacade;
     @EJB
     private Step1FichaService step1FichaService;
+    @EJB
+    private UserContextService userContextService;
 
     public SaveStep1Result guardar(SaveStep1Command cmd) {
         PacienteRegistrationFacade.UiResult preUiResult = pacienteRegistrationFacade.asegurarEmpleadoEnViewScope(
@@ -39,7 +42,7 @@ public class Step1Facade implements Serializable {
                 cmd.ficha,
                 cmd.personaAux);
 
-        final String user = cmd.usuario;
+        final String user = userContextService.resolveCurrentUser();
         Step1FichaService.Step1Command command = step1CommandAssembler.toCommand(
                 step1ViewDataAssembler.capture(cmd.source, user));
 
@@ -70,22 +73,19 @@ public class Step1Facade implements Serializable {
         public final FichaOcupacional ficha;
         public final PersonaAux personaAux;
         public final CentroMedicoCtrl source;
-        public final String usuario;
 
         public SaveStep1Command(boolean permitirIngresoManual,
                                 DatEmpleado empleadoSel,
                                 Integer noPersonaSel,
                                 FichaOcupacional ficha,
                                 PersonaAux personaAux,
-                                CentroMedicoCtrl source,
-                                String usuario) {
+                                CentroMedicoCtrl source) {
             this.permitirIngresoManual = permitirIngresoManual;
             this.empleadoSel = empleadoSel;
             this.noPersonaSel = noPersonaSel;
             this.ficha = ficha;
             this.personaAux = personaAux;
             this.source = source;
-            this.usuario = usuario;
         }
     }
 

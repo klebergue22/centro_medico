@@ -8,12 +8,12 @@ import java.util.Date;
 @Stateless
 public class Step3ViewDataAssembler {
 
-    public Step3ViewData capture(CentroMedicoCtrl source, Date now, String user, Runnable asegurarPersonaAuxPersistida,
+    public Step3ViewData capture(CentroMedicoCtrl source, Date now, Runnable asegurarPersonaAuxPersistida,
             Runnable ensureActLabSize) {
         return new Step3ViewData(
                 source.getFicha(), source.getCodCie10Ppal(), source.getObsExamenFisico(), source.getAptitudSel(),
                 source.getDetalleObservaciones(), source.getRecomendaciones(), source.getNObsRetiro(),
-                source.getMedicoNombre(), source.getMedicoCodigo(), source.getFechaEmision(), now, user,
+                source.getMedicoNombre(), source.getMedicoCodigo(), source.getFechaEmision(), now,
                 asegurarPersonaAuxPersistida,
                 ensureActLabSize,
                 source.getActLabCentroTrabajo(), source.getActLabActividad(), source.getActLabTiempo(), source.getActLabTrabajoAnterior(), source.getActLabTrabajoActual(),

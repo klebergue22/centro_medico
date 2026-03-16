@@ -46,7 +46,7 @@ import ec.gob.igm.rrhh.consultorio.web.mapper.Step3CommandAssembler;
 import ec.gob.igm.rrhh.consultorio.web.mapper.Step3ViewDataAssembler;
 import ec.gob.igm.rrhh.consultorio.web.mapper.PdfCertificadoInputAssembler;
 import ec.gob.igm.rrhh.consultorio.web.mapper.PdfFichaInputAssembler;
-import ec.gob.igm.rrhh.consultorio.web.audit.CentroMedicoAuditService;
+import ec.gob.igm.rrhh.consultorio.web.facade.AuditFacade;
 import ec.gob.igm.rrhh.consultorio.web.pdf.CertificadoPdfTemplateService;
 import ec.gob.igm.rrhh.consultorio.web.pdf.FichaPdfContextAssembler;
 import ec.gob.igm.rrhh.consultorio.web.pdf.PdfResourceResolver;
@@ -148,8 +148,6 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     @EJB
     private transient ExamenFisicoRegionalService examenFisicoRegionalService;
     @EJB
-    private transient CentroMedicoAuditService centroMedicoAuditService;
-    @EJB
     private transient Step3OrchestratorService step3OrchestratorService;
     @EJB
     private transient CentroMedicoPdfWorkflowService centroMedicoPdfWorkflowService;
@@ -212,6 +210,8 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     private transient FichaPdfDataMapper fichaPdfDataMapper;
     @Inject
     private transient Step1Facade step1Facade;
+    @Inject
+    private transient AuditFacade auditFacade;
     @Inject
     private transient PacienteViewFlowDelegate pacienteViewFlowDelegate;
     @Inject
@@ -639,8 +639,7 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
                 noPersonaSel,
                 ficha,
                 personaAux,
-                this,
-                usuarioReal()));
+                this));
 
         pacienteViewFlowDelegate.applyPacienteUiResult(this, result.preUiResult);
         ficha = result.ficha;
@@ -676,7 +675,6 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
 
     private void saveStep2() {
         final Date now = new Date();
-        final String user = usuarioReal();
 
         try {
             step2FormModel.setFichaRiesgo(step2OrchestratorService.save(new Step2RiskCommand(
@@ -686,14 +684,13 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
                     step2FormModel.getMedidasPreventivas(),
                     step2FormModel.getRiesgos(),
                     step2FormModel.getOtrosRiesgos(),
-                    now,
-                    user
+                    now
             )));
         } catch (IllegalArgumentException ex) {
             throw new BusinessValidationException(ex.getMessage());
         }
 
-        registrarAuditoria("GUARDAR_STEP2", "FICHA_RIESGO / FICHA_RIESGO_DET", "*",
+        auditFacade.registrar("GUARDAR_STEP2", "FICHA_RIESGO / FICHA_RIESGO_DET", "*",
                 "Step 2 guardado. ID_FICHA=" + ficha.getIdFicha());
     }
 
@@ -731,17 +728,16 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
         }
 
         final Date now = new Date();
-        final String user = usuarioReal();
 
         try {
             ficha = step3OrchestratorService.saveStep3(step3CommandAssembler.toCommand(
-                    step3ViewDataAssembler.capture(this, now, user, () -> pacienteViewFlowDelegate.asegurarPersonaAuxPersistida(this),
+                    step3ViewDataAssembler.capture(this, now, () -> pacienteViewFlowDelegate.asegurarPersonaAuxPersistida(this),
                             () -> centroMedicoFormStateService.ensureActLabSize(this, H_ROWS))));
         } catch (IllegalArgumentException ex) {
             fail(ex.getMessage());
         }
 
-        registrarAuditoria("GUARDAR_STEP3", "FICHA_OCUPACIONAL / H / I / J / K", "*",
+        auditFacade.registrar("GUARDAR_STEP3", "FICHA_OCUPACIONAL / H / I / J / K", "*",
                 "Step 3 guardado. ID_FICHA=" + ficha.getIdFicha());
     }
 
@@ -1114,25 +1110,6 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
 
     public void recalcularIMC() {
         signosVitalesFormModel.setImc(reactiveUiService.recalculateImc(signosVitalesFormModel.getPeso(), signosVitalesFormModel.getTallaCm(), calcUtil));
-    }
-
-    private void registrarAuditoria(String accion, String tabla, String campo, String observaciones) {
-        s3("registrarAuditoria() accion=" + accion + " tabla=" + tabla + " campo=" + campo);
-
-        try {
-            centroMedicoAuditService.registrar(accion, tabla, campo, observaciones);
-            s3("registrarAuditoria() OK");
-        } catch (RuntimeException e) {
-            s3e("registrarAuditoria() FALLÓ", e);
-        }
-    }
-
-    private String usuarioReal() {
-        try {
-            return "USR_APP";
-        } catch (RuntimeException e) {
-            return "USR_APP";
-        }
     }
 
     // =========================

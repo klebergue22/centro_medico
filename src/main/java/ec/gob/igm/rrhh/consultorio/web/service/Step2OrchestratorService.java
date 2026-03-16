@@ -24,12 +24,15 @@ public class Step2OrchestratorService implements Serializable {
     private FichaRiesgoDetService fichaRiesgoDetService;
     @EJB
     private RiskDetailMapper riskDetailMapper;
+    @EJB
+    private UserContextService userContextService;
 
     public FichaRiesgo save(Step2RiskCommand cmd) {
         ensureFichaSavedOrThrow(cmd.ficha());
 
-        FichaRiesgo riesgo = upsertRiskHeader(cmd);
-        replaceRiskDetails(cmd);
+        String user = userContextService.resolveCurrentUser();
+        FichaRiesgo riesgo = upsertRiskHeader(cmd, user);
+        replaceRiskDetails(cmd, user);
 
         return riesgo;
     }
@@ -40,13 +43,13 @@ public class Step2OrchestratorService implements Serializable {
         }
     }
 
-    private FichaRiesgo upsertRiskHeader(Step2RiskCommand cmd) {
+    private FichaRiesgo upsertRiskHeader(Step2RiskCommand cmd, String user) {
         FichaRiesgo riesgo = cmd.fichaRiesgo() != null ? cmd.fichaRiesgo() : new FichaRiesgo();
         riesgo.setFicha(cmd.ficha());
 
         riskDetailMapper.mapRiskActivitiesToHeader(riesgo, cmd.actividadesLab());
         riesgo.setMedidasPreventivas(riskDetailMapper.construirMedidas(cmd.medidasPreventivas()));
-        stampAuditFieldsForRiskHeader(riesgo, cmd.now(), cmd.user());
+        stampAuditFieldsForRiskHeader(riesgo, cmd.now(), user);
 
         return fichaRiesgoService.guardar(riesgo);
     }
@@ -62,14 +65,14 @@ public class Step2OrchestratorService implements Serializable {
         }
     }
 
-    private void replaceRiskDetails(Step2RiskCommand cmd) {
+    private void replaceRiskDetails(Step2RiskCommand cmd, String user) {
         fichaRiesgoDetService.eliminarPorFicha(cmd.ficha().getIdFicha());
 
         for (FichaRiesgoDet det : riskDetailMapper.mapCheckedRiskItems(cmd.ficha(), cmd.riesgos())) {
-            fichaRiesgoDetService.guardar(det, cmd.user());
+            fichaRiesgoDetService.guardar(det, user);
         }
         for (FichaRiesgoDet det : riskDetailMapper.mapOtherRiskItems(cmd.ficha(), cmd.otrosRiesgos())) {
-            fichaRiesgoDetService.guardar(det, cmd.user());
+            fichaRiesgoDetService.guardar(det, user);
         }
     }
 
@@ -80,8 +83,7 @@ public class Step2OrchestratorService implements Serializable {
             java.util.List<String> medidasPreventivas,
             java.util.Map<String, Boolean> riesgos,
             java.util.Map<String, String> otrosRiesgos,
-            Date now,
-            String user
+            Date now
     ) {
     }
 }

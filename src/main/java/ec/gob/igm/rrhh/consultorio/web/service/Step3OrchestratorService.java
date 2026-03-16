@@ -53,21 +53,24 @@ public class Step3OrchestratorService implements Serializable {
     private FichaExamenCompService fichaExamenCompService;
     @EJB
     private FichaDiagnosticoService fichaDiagnosticoService;
+    @EJB
+    private UserContextService userContextService;
 
     public FichaOcupacional saveStep3(Step3SaveCommand cmd) {
-        FichaOcupacional fichaActualizada = guardarStep3FichaGeneral(cmd);
-        guardarStep3HActividadLaboral(cmd, fichaActualizada);
-        fichaActualizada = guardarStep3IExtralaborales(cmd, fichaActualizada);
-        guardarStep3JExamenes(cmd, fichaActualizada);
-        guardarStep3KDiagnosticos(cmd, fichaActualizada);
+        String user = userContextService.resolveCurrentUser();
+        FichaOcupacional fichaActualizada = guardarStep3FichaGeneral(cmd, user);
+        guardarStep3HActividadLaboral(cmd, fichaActualizada, user);
+        fichaActualizada = guardarStep3IExtralaborales(cmd, fichaActualizada, user);
+        guardarStep3JExamenes(cmd, fichaActualizada, user);
+        guardarStep3KDiagnosticos(cmd, fichaActualizada, user);
         return fichaActualizada;
     }
 
-    private FichaOcupacional guardarStep3FichaGeneral(Step3SaveCommand cmd) {
+    private FichaOcupacional guardarStep3FichaGeneral(Step3SaveCommand cmd, String user) {
         LOG.info("STEP3-A: Guardando datos generales en FICHA_OCUPACIONAL");
         applyPrincipalCie10(cmd);
         applyClinicalSummaryData(cmd);
-        applyRetiroAndDoctorData(cmd);
+        applyRetiroAndDoctorData(cmd, user);
         cmd.onEnsurePersonaAuxPersistida().run();
         FichaOcupacional saved = fichaService.guardar(cmd.ficha());
         LOG.info("STEP3-A-OK: FICHA_OCUPACIONAL actualizada. ID_FICHA={}", saved.getIdFicha());
@@ -103,32 +106,32 @@ public class Step3OrchestratorService implements Serializable {
         return trimToNull(cmd.ficha().getObsExamenFisicoReg());
     }
 
-    private void applyRetiroAndDoctorData(Step3SaveCommand cmd) {
+    private void applyRetiroAndDoctorData(Step3SaveCommand cmd, String user) {
         examenFisicoRegionalService.aplicarRetiro(cmd.ficha());
         cmd.ficha().setnRetObs(cmd.nObsRetiro());
         cmd.ficha().setMedicoNombre(cmd.medicoNombre());
         cmd.ficha().setMedicoCodigo(cmd.medicoCodigo());
         cmd.ficha().setFechaEmision(cmd.fechaEmision() != null ? cmd.fechaEmision() : cmd.now());
         cmd.ficha().setFechaActualizacion(cmd.now());
-        cmd.ficha().setUsrActualizacion(cmd.user());
+        cmd.ficha().setUsrActualizacion(user);
     }
 
-    private void guardarStep3HActividadLaboral(Step3SaveCommand cmd, FichaOcupacional ficha) {
+    private void guardarStep3HActividadLaboral(Step3SaveCommand cmd, FichaOcupacional ficha, String user) {
         LOG.info("STEP3-H: Procesando Actividad Laboral (FICHA_ACT_LABORAL)");
         cmd.onEnsureActLabSize().run();
         for (int i = 0; i < H_ROWS; i++) {
-            saveActividadLaboralRow(cmd, ficha, i);
+            saveActividadLaboralRow(cmd, ficha, i, user);
         }
         LOG.info("STEP3-H-OK");
     }
 
-    private void saveActividadLaboralRow(Step3SaveCommand cmd, FichaOcupacional ficha, int index) {
+    private void saveActividadLaboralRow(Step3SaveCommand cmd, FichaOcupacional ficha, int index, String user) {
         int nroFila = index + 1;
         if (!actividadLaboralHasData(cmd, index)) {
             fichaActLaboralService.eliminarPorFichaYFila(ficha.getIdFicha(), nroFila);
             return;
         }
-        FichaActLaboral fal = findOrCreateActLaboral(cmd, ficha, index, nroFila);
+        FichaActLaboral fal = findOrCreateActLaboral(cmd, ficha, nroFila, user);
         mapActividadLaboralFields(cmd, index, fal);
         fichaActLaboralService.guardar(fal);
     }
@@ -147,18 +150,18 @@ public class Step3OrchestratorService implements Serializable {
                 || !isBlank(getSafe(cmd.actLabObservaciones(), i));
     }
 
-    private FichaActLaboral findOrCreateActLaboral(Step3SaveCommand cmd, FichaOcupacional ficha, int index, int nroFila) {
+    private FichaActLaboral findOrCreateActLaboral(Step3SaveCommand cmd, FichaOcupacional ficha, int nroFila, String user) {
         FichaActLaboral fal = fichaActLaboralService.buscarPorFichaYFila(ficha.getIdFicha(), nroFila);
         if (fal != null) {
             fal.setFActualizacion(cmd.now());
-            fal.setUsrActualizacion(cmd.user());
+            fal.setUsrActualizacion(user);
             return fal;
         }
         fal = new FichaActLaboral();
         fal.setFicha(ficha);
         fal.setNroFila(nroFila);
         fal.setFCreacion(cmd.now());
-        fal.setUsrCreacion(cmd.user());
+        fal.setUsrCreacion(user);
         return fal;
     }
 
@@ -176,7 +179,7 @@ public class Step3OrchestratorService implements Serializable {
         fal.setObservaciones(getSafe(cmd.actLabObservaciones(), i));
     }
 
-    private FichaOcupacional guardarStep3IExtralaborales(Step3SaveCommand cmd, FichaOcupacional ficha) {
+    private FichaOcupacional guardarStep3IExtralaborales(Step3SaveCommand cmd, FichaOcupacional ficha, String user) {
         LOG.info("STEP3-I: Procesando Actividades Extralaborales (SERIALIZADO EN FICHA)");
         if (cmd.tipoAct() == null || cmd.fechaAct() == null || cmd.descAct() == null) {
             LOG.info("STEP3-I: Listas I null -> no se guarda (no rompe)");
@@ -186,7 +189,7 @@ public class Step3OrchestratorService implements Serializable {
         ficha.setExtraLabDesc(summary.descripcion());
         ficha.setExtraLabFecha(summary.ultimaFecha());
         ficha.setFechaActualizacion(cmd.now());
-        ficha.setUsrActualizacion(cmd.user());
+        ficha.setUsrActualizacion(user);
         FichaOcupacional saved = fichaService.guardar(ficha);
         LOG.info("STEP3-I-OK");
         return saved;
@@ -221,7 +224,7 @@ public class Step3OrchestratorService implements Serializable {
         return fecha;
     }
 
-    private void guardarStep3JExamenes(Step3SaveCommand cmd, FichaOcupacional ficha) {
+    private void guardarStep3JExamenes(Step3SaveCommand cmd, FichaOcupacional ficha, String user) {
         LOG.info("STEP3-J: Procesando Exámenes (FICHA_EXAMEN_COMP)");
         if (cmd.examNombre() == null || cmd.examFecha() == null || cmd.examResultado() == null) {
             LOG.info("STEP3-J: Listas J null -> no se guarda J");
@@ -229,12 +232,12 @@ public class Step3OrchestratorService implements Serializable {
         }
         int filas = Math.min(cmd.examNombre().size(), Math.min(cmd.examFecha().size(), cmd.examResultado().size()));
         for (int i = 0; i < filas; i++) {
-            saveExamRow(cmd, ficha, i);
+            saveExamRow(cmd, ficha, i, user);
         }
         LOG.info("STEP3-J-OK");
     }
 
-    private void saveExamRow(Step3SaveCommand cmd, FichaOcupacional ficha, int i) {
+    private void saveExamRow(Step3SaveCommand cmd, FichaOcupacional ficha, int i, String user) {
         int nroFila = i + 1;
         String nombre = getSafe(cmd.examNombre(), i);
         Date fecha = toDate(getSafe(cmd.examFecha(), i));
@@ -248,7 +251,7 @@ public class Step3OrchestratorService implements Serializable {
         ex.setNombreExamen(nombre);
         ex.setFechaExamen(fecha);
         ex.setResultado(resultado);
-        fichaExamenCompService.guardar(ex, cmd.user());
+        fichaExamenCompService.guardar(ex, user);
     }
 
     private FichaExamenComp findOrCreateExamRow(FichaOcupacional ficha, int nroFila) {
@@ -264,7 +267,7 @@ public class Step3OrchestratorService implements Serializable {
         return ex;
     }
 
-    private void guardarStep3KDiagnosticos(Step3SaveCommand cmd, FichaOcupacional ficha) {
+    private void guardarStep3KDiagnosticos(Step3SaveCommand cmd, FichaOcupacional ficha, String user) {
         LOG.info("STEP3-K: Procesando Diagnósticos");
 
         if (cmd.listaDiag() == null || cmd.listaDiag().isEmpty()) {
@@ -273,7 +276,7 @@ public class Step3OrchestratorService implements Serializable {
         }
 
         try {
-            fichaDiagnosticoService.guardarDiagnosticosDeFicha(ficha.getIdFicha(), cmd.listaDiag(), cmd.now(), cmd.user());
+            fichaDiagnosticoService.guardarDiagnosticosDeFicha(ficha.getIdFicha(), cmd.listaDiag(), cmd.now(), user);
             LOG.info("STEP3-K-OK (service)");
         } catch (NoSuchMethodError | RuntimeException ex) {
             LOG.info("STEP3-K: Tu service no tiene guardarDiagnosticosDeFicha(...) -> no se guarda K");
@@ -339,7 +342,6 @@ public class Step3OrchestratorService implements Serializable {
             String medicoCodigo,
             Date fechaEmision,
             Date now,
-            String user,
             Runnable onEnsurePersonaAuxPersistida,
             Runnable onEnsureActLabSize,
             List<String> actLabCentroTrabajo,
