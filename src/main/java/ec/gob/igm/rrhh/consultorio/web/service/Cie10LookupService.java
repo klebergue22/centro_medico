@@ -1,7 +1,9 @@
 package ec.gob.igm.rrhh.consultorio.web.service;
 
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
@@ -181,56 +183,56 @@ public class Cie10LookupService {
     }
 
     public List<String> completarFilaPorCodigo(String query) {
-        if (query == null) {
+        String qRaw = limpiarTexto(query);
+        if (qRaw.isEmpty()) {
             return new ArrayList<>();
         }
 
-        String qRaw = query.trim().toUpperCase();
-        String q = qRaw.replaceAll("[^A-Z0-9]", "");
-        if (q.isEmpty() && qRaw.isEmpty()) {
-            return new ArrayList<>();
+        String qCodigo = normalizarCodigo(qRaw);
+
+        Set<String> codigos = new LinkedHashSet<>();
+        agregarCodigos(codigos, cie10Service.buscarJerarquiaPorTerm(qRaw));
+        agregarCodigos(codigos, cie10Service.buscarPorCodigoAproximado(qRaw, 20));
+
+        // Fallback flexible para evitar perder coincidencias por formato de código.
+        if (codigos.size() < 20) {
+            agregarCodigos(codigos, cie10Service.buscarPorTermino(qRaw, 20));
         }
 
-        List<String> out = new ArrayList<>();
-        agregarCoincidenciasCodigo(out, cie10Service.buscarJerarquiaPorTerm(q), q, qRaw);
-
-        if (out.isEmpty()) {
-            agregarCoincidenciasCodigo(out, cie10Service.buscarPorCodigoAproximado(q, 20), q, qRaw);
+        if (!qCodigo.isEmpty()) {
+            codigos.removeIf(codigo -> !normalizarCodigo(codigo).contains(qCodigo));
         }
 
-        if (out.isEmpty()) {
-            agregarCoincidenciasCodigo(out, cie10Service.buscarPorTermino(q, 20), q, qRaw);
-        }
-
-        return out;
+        return limitarResultados(codigos, 20);
     }
 
     public List<String> completarFilaPorDescripcion(String query, int max) {
-        List<String> out = new ArrayList<>();
-        if (query == null || query.trim().isEmpty()) {
-            return out;
+        int limite = max > 0 ? max : 20;
+        String q = limpiarTexto(query);
+        if (q.isEmpty()) {
+            return new ArrayList<>();
         }
 
-        List<Cie10> lista = cie10Service.buscarPorDescripcionLike(query, max);
-        if (lista == null) {
-            return out;
-        }
-
-        for (Cie10 c : lista) {
-            if (c != null && c.getDescripcion() != null) {
-                out.add(c.getDescripcion());
+        List<Cie10> lista = cie10Service.buscarPorDescripcionLike(q, limite);
+        Set<String> descripciones = new LinkedHashSet<>();
+        if (lista != null) {
+            for (Cie10 c : lista) {
+                if (c != null && c.getDescripcion() != null) {
+                    String descripcion = c.getDescripcion().trim();
+                    if (!descripcion.isEmpty()) {
+                        descripciones.add(descripcion);
+                    }
+                }
             }
         }
-        return out;
+
+        return limitarResultados(descripciones, limite);
     }
 
-    private void agregarCoincidenciasCodigo(List<String> out, List<Cie10> lista, String qCodigo, String qTexto) {
+    private void agregarCodigos(Set<String> out, List<Cie10> lista) {
         if (lista == null || out == null) {
             return;
         }
-
-        String qCodigoNorm = qCodigo == null ? "" : qCodigo.trim();
-        String qTextoNorm = qTexto == null ? "" : qTexto.trim().toUpperCase();
 
         for (Cie10 c : lista) {
             if (c == null || c.getCodigo() == null) {
@@ -242,23 +244,35 @@ public class Cie10LookupService {
                 continue;
             }
 
-            String codNorm = codigo.toUpperCase().replaceAll("[^A-Z0-9]", "");
-            boolean coincideCodigo = !qCodigoNorm.isEmpty() && codNorm.contains(qCodigoNorm);
-            String desc = c.getDescripcion();
-            boolean coincideDescripcion = !qTextoNorm.isEmpty() && desc != null && desc.toUpperCase().contains(qTextoNorm);
-
-            if (!coincideCodigo && !coincideDescripcion) {
-                continue;
-            }
-
-            if (!out.contains(codigo)) {
-                out.add(codigo);
-            }
-
-            if (out.size() >= 20) {
+            out.add(codigo);
+            if (out.size() >= 100) {
                 return;
             }
         }
+    }
+
+    private List<String> limitarResultados(Set<String> items, int limite) {
+        List<String> out = new ArrayList<>();
+        if (items == null || items.isEmpty() || limite <= 0) {
+            return out;
+        }
+
+        for (String item : items) {
+            out.add(item);
+            if (out.size() >= limite) {
+                break;
+            }
+        }
+
+        return out;
+    }
+
+    private String limpiarTexto(String value) {
+        return value == null ? "" : value.trim();
+    }
+
+    private String normalizarCodigo(String codigo) {
+        return limpiarTexto(codigo).toUpperCase().replaceAll("[^A-Z0-9]", "");
     }
 
     private String normalizar(String value) {
