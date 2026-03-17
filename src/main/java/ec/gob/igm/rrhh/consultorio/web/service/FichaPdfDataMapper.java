@@ -7,12 +7,14 @@ import java.time.ZoneId;
 import java.util.Date;
 
 import jakarta.ejb.Stateless;
+import jakarta.inject.Inject;
 
 import ec.gob.igm.rrhh.consultorio.domain.model.DatEmpleado;
 import ec.gob.igm.rrhh.consultorio.domain.model.FichaOcupacional;
 import ec.gob.igm.rrhh.consultorio.domain.model.PersonaAux;
 import ec.gob.igm.rrhh.consultorio.domain.enums.GrupoSangre;
 import ec.gob.igm.rrhh.consultorio.domain.enums.Sexo;
+import ec.gob.igm.rrhh.consultorio.service.PersonaAuxService;
 
 @Stateless
 /**
@@ -20,8 +22,12 @@ import ec.gob.igm.rrhh.consultorio.domain.enums.Sexo;
  */
 public class FichaPdfDataMapper implements Serializable {
 
+    @Inject
+    private PersonaAuxService personaAuxService;
+
     public FichaPdfMappedData map(FichaOcupacional ficha, DatEmpleado empleadoSel, PersonaAux personaAux, Date fechaNacimientoActual) {
         FichaPdfMappedData data = new FichaPdfMappedData();
+        PersonaAux personaAuxData = resolvePersonaAux(ficha, personaAux);
 
         if (ficha != null) {
             data.institucion = ficha.getInstSistema();
@@ -60,14 +66,14 @@ public class FichaPdfDataMapper implements Serializable {
             if (fechaNacimientoActual == null) {
                 data.fechaNacimiento = empleadoSel.getfNacimiento();
             }
-        } else if (personaAux != null) {
-            data.apellido1 = personaAux.getApellido1();
-            data.apellido2 = personaAux.getApellido2();
-            data.nombre1 = personaAux.getNombre1();
-            data.nombre2 = personaAux.getNombre2();
-            data.sexo = personaAux.getSexo();
+        } else if (personaAuxData != null) {
+            data.apellido1 = personaAuxData.getApellido1();
+            data.apellido2 = personaAuxData.getApellido2();
+            data.nombre1 = personaAuxData.getNombre1();
+            data.nombre2 = personaAuxData.getNombre2();
+            data.sexo = personaAuxData.getSexo();
             if (fechaNacimientoActual == null) {
-                data.fechaNacimiento = personaAux.getFechaNac();
+                data.fechaNacimiento = personaAuxData.getFechaNac();
             }
         }
 
@@ -80,5 +86,16 @@ public class FichaPdfDataMapper implements Serializable {
         }
 
         return data;
+    }
+
+    private PersonaAux resolvePersonaAux(FichaOcupacional ficha, PersonaAux personaAux) {
+        PersonaAux source = personaAux;
+        if (source == null && ficha != null) {
+            source = ficha.getPersonaAux();
+        }
+        if (source == null || source.getIdPersonaAux() == null) {
+            return source;
+        }
+        return personaAuxService.find(source.getIdPersonaAux());
     }
 }
