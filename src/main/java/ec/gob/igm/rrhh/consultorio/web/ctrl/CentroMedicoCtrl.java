@@ -1503,6 +1503,14 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
         pacienteFormData.setSexo(sexo);
     }
 
+    public String getGrupoSanguineo() {
+        return step1FormModel.getGrupoSanguineo();
+    }
+
+    public void setGrupoSanguineo(String grupoSanguineo) {
+        step1FormModel.setGrupoSanguineo(grupoSanguineo);
+    }
+
 
 
 
