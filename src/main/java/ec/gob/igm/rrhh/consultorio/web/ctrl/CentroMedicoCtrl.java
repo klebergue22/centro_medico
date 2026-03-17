@@ -53,6 +53,7 @@ import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoWizardNavigationCoord
 import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoValidationCoordinator.FichaCompletaValidationInput;
 import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoValidationCoordinator.Step1ValidationInput;
 import ec.gob.igm.rrhh.consultorio.web.service.ValidationUiResult;
+import ec.gob.igm.rrhh.consultorio.web.service.WizardStepActionService;
 import ec.gob.igm.rrhh.consultorio.web.service.FichaPdfDataMapper;
 import ec.gob.igm.rrhh.consultorio.web.service.PacienteUiStateApplier;
 import ec.gob.igm.rrhh.consultorio.web.service.Step2OrchestratorService.Step2RiskCommand;
@@ -123,6 +124,8 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     private transient CentroMedicoMessageService messageService;
     @Inject
     private transient ControllerActionTemplate controllerActionTemplate;
+    @Inject
+    private transient WizardStepActionService wizardStepActionService;
     @Inject
     private transient CentroMedicoCalcUtil calcUtil;
     @Inject
@@ -346,17 +349,16 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     // GUARDADO DE STEPS
     // =========================
     public void guardarStep1() {
-        controllerActionTemplate.execute(
+        wizardStepActionService.execute(new WizardStepActionService.ExecuteStepActionCommand(
                 "guardarStep1",
-                () -> {
-                    saveStep1();
-                    return true;
-                },
+                null,
+                this::saveStep1,
+                null,
                 () -> messageService.info("Step 1 guardado correctamente (BORRADOR)."),
                 LOG,
                 wizardViewState.getActiveStep(),
                 getNoPersonaSel(),
-                getCedulaBusqueda());
+                getCedulaBusqueda()));
     }
 
     private void saveStep1() {
@@ -377,15 +379,11 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     }
 
     public void guardarStep2() {
-        controllerActionTemplate.execute(
+        wizardStepActionService.execute(new WizardStepActionService.ExecuteStepActionCommand(
                 "guardarStep2",
-                () -> {
-                    if (!validarStep2()) {
-                        return false;
-                    }
-                    saveStep2();
-                    return true;
-                },
+                this::validarStep2,
+                this::saveStep2,
+                null,
                 () -> {
                     FacesContext ctx = FacesContext.getCurrentInstance();
                     if (ctx != null) {
@@ -397,7 +395,7 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
                 LOG,
                 wizardViewState.getActiveStep(),
                 getNoPersonaSel(),
-                getCedulaBusqueda());
+                getCedulaBusqueda()));
     }
 
     private void saveStep2() {
@@ -422,12 +420,11 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     }
 
     public void guardarStep3() {
-        controllerActionTemplate.execute(
+        wizardStepActionService.execute(new WizardStepActionService.ExecuteStepActionCommand(
                 "guardarStep3",
-                () -> {
-                    saveStep3();
-                    return true;
-                },
+                null,
+                this::saveStep3,
+                null,
                 () -> {
                     FacesContext ctx = FacesContext.getCurrentInstance();
                     if (ctx != null) {
@@ -438,7 +435,7 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
                 LOG,
                 wizardViewState.getActiveStep(),
                 getNoPersonaSel(),
-                getCedulaBusqueda());
+                getCedulaBusqueda()));
     }
 
     private void saveStep3() {
