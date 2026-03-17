@@ -324,6 +324,10 @@
                                                     panelStyleClass="k-ac-panel"
                                                     styleClass="cell-input">
 
+                                        <p:column>
+                                            <h:outputText value="#{codigo}"/>
+                                        </p:column>
+
                                         <f:attribute name="idx" value="#{st.index}"/>
 
                                         <p:ajax event="itemSelect"
@@ -358,6 +362,10 @@
                                                     appendTo="@(body)"
                                                     panelStyleClass="k-ac-panel"
                                                     styleClass="cell-input">
+
+                                        <p:column>
+                                            <h:outputText value="#{descripcion}"/>
+                                        </p:column>
 
                                         <f:attribute name="idx" value="#{st.index}"/>
 
