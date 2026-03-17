@@ -13,6 +13,7 @@ import org.slf4j.Logger;
 
 import ec.gob.igm.rrhh.consultorio.domain.model.DatEmpleado;
 import ec.gob.igm.rrhh.consultorio.domain.model.FichaOcupacional;
+import ec.gob.igm.rrhh.consultorio.domain.model.PersonaAux;
 import ec.gob.igm.rrhh.consultorio.web.facade.CentroMedicoPdfFacade;
 import ec.gob.igm.rrhh.consultorio.web.pdf.FichaPdfPlaceholderAssembler.FichaState;
 import ec.gob.igm.rrhh.consultorio.web.service.FichaPdfDataMapper;
@@ -30,8 +31,9 @@ public class FichaPdfContextAssembler implements Serializable {
             FichaPdfDataMapper fichaPdfDataMapper,
             FichaOcupacional ficha,
             DatEmpleado empleadoSel,
+            PersonaAux personaAux,
             java.util.Date fechaNacimiento) {
-        return fichaPdfDataMapper.map(ficha, empleadoSel, fechaNacimiento);
+        return fichaPdfDataMapper.map(ficha, empleadoSel, personaAux, fechaNacimiento);
     }
 
     public FichaState buildFichaState(
