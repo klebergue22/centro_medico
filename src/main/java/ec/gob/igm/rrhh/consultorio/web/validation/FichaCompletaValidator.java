@@ -53,7 +53,7 @@ public class FichaCompletaValidator {
 
         if (!tieneEmpleado && !tienePersonaAux) {
             result.addError("Debe seleccionar un empleado o registrar una persona auxiliar.");
-        } else if (modoAux && !tienePersonaAux) {
+        } else if (modoAux && !tieneEmpleado && !tienePersonaAux) {
             result.addError("En modo ingreso manual: falta registrar la persona auxiliar.");
         } else if (!modoAux && !tieneEmpleado) {
             result.addError("Falta seleccionar el empleado.");
