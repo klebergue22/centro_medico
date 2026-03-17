@@ -7,6 +7,7 @@ import ec.gob.igm.rrhh.consultorio.domain.model.FichaOcupacional;
 import ec.gob.igm.rrhh.consultorio.domain.model.PersonaAux;
 import ec.gob.igm.rrhh.consultorio.domain.model.SignosVitales;
 import ec.gob.igm.rrhh.consultorio.service.Step1FichaService;
+import ec.gob.igm.rrhh.consultorio.web.ctrl.BusinessValidationException;
 import ec.gob.igm.rrhh.consultorio.web.ctrl.CentroMedicoCtrl;
 import ec.gob.igm.rrhh.consultorio.web.mapper.Step1CommandAssembler;
 import ec.gob.igm.rrhh.consultorio.web.service.UserContextService;
@@ -62,7 +63,7 @@ public class Step1Facade implements Serializable {
                     preUiResult,
                     postUiResult);
         } catch (Step1FichaService.Step1ValidationException ex) {
-            throw new CentroMedicoCtrl.BusinessValidationException(ex.getMessage());
+            throw new BusinessValidationException(ex.getMessage());
         }
     }
 

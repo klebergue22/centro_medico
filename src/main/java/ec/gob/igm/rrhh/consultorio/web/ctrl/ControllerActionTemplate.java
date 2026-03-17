@@ -37,7 +37,7 @@ public class ControllerActionTemplate implements Serializable {
             if (completed && onSuccess != null) {
                 onSuccess.run();
             }
-        } catch (CentroMedicoCtrl.BusinessValidationException ex) {
+        } catch (BusinessValidationException ex) {
             messageService.warn(ex.getMessage());
             markValidationFailed(ctx);
         } catch (RuntimeException ex) {
@@ -60,7 +60,7 @@ public class ControllerActionTemplate implements Serializable {
                 onSuccess.accept(result);
             }
             return result;
-        } catch (CentroMedicoCtrl.BusinessValidationException ex) {
+        } catch (BusinessValidationException ex) {
             messageService.warn(ex.getMessage());
             markValidationFailed(ctx);
         } catch (RuntimeException ex) {
