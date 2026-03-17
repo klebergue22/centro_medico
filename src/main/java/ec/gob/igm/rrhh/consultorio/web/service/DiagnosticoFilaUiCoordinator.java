@@ -319,12 +319,27 @@ public class DiagnosticoFilaUiCoordinator {
                     base + "_query"
             };
 
+            String emptyCandidate = null;
             for (String k : keys) {
                 String v = params.get(k);
-                if (v != null) {
-                    LOG.info("... [REQ] AC typed key=" + k + " => [" + v + "]");
+                if (v == null) {
+                    continue;
+                }
+
+                LOG.info("... [REQ] AC typed key=" + k + " => [" + v + "]");
+
+                String trimmed = v.trim();
+                if (!trimmed.isEmpty()) {
                     return v;
                 }
+
+                if (emptyCandidate == null) {
+                    emptyCandidate = v;
+                }
+            }
+
+            if (emptyCandidate != null) {
+                return emptyCandidate;
             }
 
             LOG.warn("!!! [REQ] AC typed NOT FOUND for base=" + base
