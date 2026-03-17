@@ -500,9 +500,12 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
         final Date now = new Date();
 
         try {
-            setFicha(wizardSectionFacade.guardarStep3(step3CommandAssembler.toCommand(
-                    step3ViewDataAssembler.capture(this, now, () -> pacienteSectionFacade.asegurarPersonaAuxPersistida(this),
-                            () -> centroMedicoFormStateService.ensureActLabSize(this, H_ROWS))));
+            var step3Data = step3ViewDataAssembler.capture(
+                    this,
+                    now,
+                    () -> pacienteSectionFacade.asegurarPersonaAuxPersistida(this),
+                    () -> centroMedicoFormStateService.ensureActLabSize(this, H_ROWS));
+            setFicha(wizardSectionFacade.guardarStep3(step3CommandAssembler.toCommand(step3Data)));
         } catch (IllegalArgumentException ex) {
             fail(ex.getMessage());
         }
