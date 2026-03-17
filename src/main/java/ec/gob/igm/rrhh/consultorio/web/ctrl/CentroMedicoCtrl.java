@@ -35,23 +35,19 @@ import ec.gob.igm.rrhh.consultorio.web.jsf.CentroMedicoMessageService;
 import ec.gob.igm.rrhh.consultorio.web.mapper.Step3CommandAssembler;
 import ec.gob.igm.rrhh.consultorio.web.mapper.StepValidationInputAssembler;
 import ec.gob.igm.rrhh.consultorio.web.mapper.Step3ViewDataAssembler;
-import ec.gob.igm.rrhh.consultorio.web.mapper.PdfCertificadoInputAssembler;
 import ec.gob.igm.rrhh.consultorio.web.mapper.PdfFichaInputAssembler;
 import ec.gob.igm.rrhh.consultorio.web.facade.DiagnosticoSectionFacade;
 import ec.gob.igm.rrhh.consultorio.web.facade.PacienteSectionFacade;
+import ec.gob.igm.rrhh.consultorio.web.facade.PdfPreviewCommandFactory;
 import ec.gob.igm.rrhh.consultorio.web.facade.PdfPreviewFacade;
 import ec.gob.igm.rrhh.consultorio.web.facade.PdfSectionFacade;
 import ec.gob.igm.rrhh.consultorio.web.facade.Step1Facade;
 import ec.gob.igm.rrhh.consultorio.web.facade.WizardSectionFacade;
-import ec.gob.igm.rrhh.consultorio.web.pdf.CertificadoPdfTemplateService;
 import ec.gob.igm.rrhh.consultorio.web.pdf.FichaPdfContextAssembler;
-import ec.gob.igm.rrhh.consultorio.web.pdf.PdfResourceResolver;
-import ec.gob.igm.rrhh.consultorio.web.pdf.PdfTemplateEngine;
 import ec.gob.igm.rrhh.consultorio.web.service.CedulaDialogControllerSupport;
 import ec.gob.igm.rrhh.consultorio.web.service.CedulaDialogStateService;
 import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoFormInitializer;
 import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoFormStateService;
-import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoPdfTemplateCoordinator;
 import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoReactiveUiService;
 import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoWizardNavigationCoordinator;
 import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoValidationCoordinator.FichaCompletaValidationInput;
@@ -120,14 +116,6 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     @Inject
     private transient PdfSessionStore pdfSessionStore;
     @Inject
-    private transient PdfTemplateEngine pdfTemplateEngine;
-    @Inject
-    private transient PdfResourceResolver pdfResourceResolver;
-    @Inject
-    private transient CertificadoPdfTemplateService certificadoPdfTemplateService;
-    @Inject
-    private transient CentroMedicoPdfFacade centroMedicoPdfFacade;
-    @Inject
     private transient WizardSectionFacade wizardSectionFacade;
     @Inject
     private transient CentroMedicoMessageService messageService;
@@ -155,10 +143,6 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     @Inject
     private transient PdfFichaInputAssembler pdfFichaInputAssembler;
     @Inject
-    private transient PdfCertificadoInputAssembler pdfCertificadoInputAssembler;
-    @Inject
-    private transient CentroMedicoPdfTemplateCoordinator centroMedicoPdfTemplateCoordinator;
-    @Inject
     private transient FichaPdfContextAssembler fichaPdfContextAssembler;
     @Inject
     private transient FichaPdfDataMapper fichaPdfDataMapper;
@@ -170,6 +154,8 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     private transient PdfSectionFacade pdfSectionFacade;
     @Inject
     private transient PdfPreviewFacade pdfPreviewFacade;
+    @Inject
+    private transient PdfPreviewCommandFactory pdfPreviewCommandFactory;
     @Inject
     private transient CentroMedicoWizardCoordinator wizardCoordinator;
 
@@ -523,10 +509,7 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     // =========================
     public void prepararVistaPreviaFicha() {
         pdfPreviewFacade.prepararVistaPreviaFicha(
-                new PdfPreviewFacade.PrepareVistaPreviaFichaCommand(
-                        controllerActionTemplate,
-                        pdfPreviewState,
-                        buildBasePrepareCommand()));
+                pdfPreviewCommandFactory.buildPrepareVistaPreviaFichaCommand(buildPdfCommandContext()));
     }
 
     // =========================
@@ -534,11 +517,7 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     // =========================
     public void prepararVistaPreviaCertificado() {
         pdfPreviewFacade.prepararVistaPreviaCertificado(
-                new PdfPreviewFacade.PrepareVistaPreviaCertificadoCommand(
-                        controllerActionTemplate,
-                        pdfPreviewState,
-                        pdfSessionStore,
-                        buildBasePrepareCommand()));
+                pdfPreviewCommandFactory.buildPrepareVistaPreviaCertificadoCommand(buildPdfCommandContext()));
     }
 
     // =========================
@@ -546,12 +525,7 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     // =========================
     public void prepararVistaPrevia() {
         pdfPreviewFacade.prepararVistaPrevia(
-                new PdfPreviewFacade.PrepareVistaPreviaCommand(
-                        controllerActionTemplate,
-                        pdfPreviewState,
-                        pdfSessionStore,
-                        this::verificarFichaCompleta,
-                        buildBasePrepareCommand()));
+                pdfPreviewCommandFactory.buildPrepareVistaPreviaCommand(buildPdfCommandContext()));
     }
 
     public void limpiarVistaPrevia() {
@@ -563,8 +537,11 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
                 this::setMostrarDlgCedula));
     }
 
-    private PdfPreviewFacade.BasePrepareCommand buildBasePrepareCommand() {
-        return new PdfPreviewFacade.BasePrepareCommand(
+    private PdfPreviewCommandFactory.PdfCommandContext buildPdfCommandContext() {
+        return new PdfPreviewCommandFactory.PdfCommandContext(
+                controllerActionTemplate,
+                pdfPreviewState,
+                pdfSessionStore,
                 this,
                 LOG,
                 wizardViewState.getActiveStep(),
@@ -576,13 +553,6 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
                 this::verificarFichaCompleta,
                 fecha -> diagnosticoFormModel.setFechaEmision(fecha),
                 H_ROWS,
-                pdfFichaInputAssembler,
-                pdfCertificadoInputAssembler,
-                centroMedicoPdfTemplateCoordinator,
-                centroMedicoPdfFacade,
-                pdfResourceResolver,
-                pdfTemplateEngine,
-                certificadoPdfTemplateService,
                 this::setFicha,
                 wizardViewState::setActiveStep,
                 this::setMostrarDlgCedula);
