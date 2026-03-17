@@ -177,28 +177,10 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     private final WizardViewState wizardViewState = new WizardViewState();
     private final FichaContext fichaContext = new FichaContext();
 
-    // =========================
-    // VARIABLES DE ESTADO DEL WIZARD
-    // =========================
-    // VARIABLES DE DIÁLOGO
-    // =========================
-    // =========================
+
     // VARIABLES DE DATOS PERSONALES
     // =========================
     private final PacienteFormData pacienteFormData = step1FormModel.getPaciente();
-
-    // =========================
-    // VARIABLES DE ATENCIÓN PRIORITARIA
-    // =========================
-
-    // =========================
-    // VARIABLES DE SIGNOS VITALES
-    // =========================
-
-    // =========================
-    // VARIABLES DE PDF
-    // =========================
-
 
     // =========================
     // MÉTODOS DE EXCEPCIÓN Y VALIDACIÓN PRIVADOS
