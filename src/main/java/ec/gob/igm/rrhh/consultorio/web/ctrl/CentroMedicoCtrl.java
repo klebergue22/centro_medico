@@ -2140,24 +2140,48 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
         return antecedentesFormModel.getAntClinicoQuirurgico();
     }
 
+    public void setAntClinicoQuirurgico(String antClinicoQuirurgico) {
+        antecedentesFormModel.setAntClinicoQuirurgico(antClinicoQuirurgico);
+    }
+
     public String getAntFamiliares() {
         return antecedentesFormModel.getAntFamiliares();
+    }
+
+    public void setAntFamiliares(String antFamiliares) {
+        antecedentesFormModel.setAntFamiliares(antFamiliares);
     }
 
     public String getCondicionEspecial() {
         return antecedentesFormModel.getCondicionEspecial();
     }
 
+    public void setCondicionEspecial(String condicionEspecial) {
+        antecedentesFormModel.setCondicionEspecial(condicionEspecial);
+    }
+
     public String getAutorizaTransfusion() {
         return antecedentesFormModel.getAutorizaTransfusion();
+    }
+
+    public void setAutorizaTransfusion(String autorizaTransfusion) {
+        antecedentesFormModel.setAutorizaTransfusion(autorizaTransfusion);
     }
 
     public String getTratamientoHormonal() {
         return antecedentesFormModel.getTratamientoHormonal();
     }
 
+    public void setTratamientoHormonal(String tratamientoHormonal) {
+        antecedentesFormModel.setTratamientoHormonal(tratamientoHormonal);
+    }
+
     public String getTratamientoHormonalCual() {
         return antecedentesFormModel.getTratamientoHormonalCual();
+    }
+
+    public void setTratamientoHormonalCual(String tratamientoHormonalCual) {
+        antecedentesFormModel.setTratamientoHormonalCual(tratamientoHormonalCual);
     }
 
     public String getDiscapTipo() {
