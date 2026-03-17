@@ -2200,6 +2200,10 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
         return step2FormModel;
     }
 
+    public AntecedentesFormModel getAntecedentesFormModel() {
+        return antecedentesFormModel;
+    }
+
     public Step3FormModel getStep3FormModel() {
         return step3FormModel;
     }
