@@ -92,7 +92,7 @@ public class CentroMedicoPdfFacadeService implements Serializable {
                 ? cmd.ficha.getFechaEmision()
                 : ((cmd.fechaEmision != null) ? cmd.fechaEmision : new Date());
 
-        String aApto = "&nbsp;", aObs = "&nbsp;", aLim = "&nbsp;", aNo = "&nbsp;";
+        String aApto = "", aObs = "", aLim = "", aNo = "";
         if (cmd.aptitudSel != null) {
             switch (cmd.aptitudSel) {
                 case "APTO":
@@ -117,7 +117,7 @@ public class CentroMedicoPdfFacadeService implements Serializable {
             tipoEvaluacion = cmd.tipoEval;
         }
 
-        String chkIngreso = "&nbsp;", chkPeriodico = "&nbsp;", chkReintegro = "&nbsp;", chkRetiro = "&nbsp;";
+        String chkIngreso = "", chkPeriodico = "", chkReintegro = "", chkRetiro = "";
         if (tipoEvaluacion != null) {
             switch (tipoEvaluacion.toUpperCase()) {
                 case "INGRESO":
@@ -155,8 +155,14 @@ public class CentroMedicoPdfFacadeService implements Serializable {
         data.ruc = safe(cmd.ruc);
         data.noHistoria = safe(cmd.noHistoria);
         data.noArchivo = safe(cmd.noArchivo);
-        data.centroTrabajo = safe(cmd.centroTrabajo);
-        data.ciiu = safe(cmd.ciiu);
+        data.centroTrabajo = safe(firstNotBlank(
+                cmd.centroTrabajo,
+                cmd.ficha != null ? cmd.ficha.getEstablecimientoCt() : null));
+        data.ciiu = safe(firstNotBlank(
+                cmd.ciiu,
+                cmd.ficha != null ? cmd.ficha.getCiiu() : null,
+                cmd.ficha != null ? cmd.ficha.getPuestoTrabajoTxt() : null,
+                cmd.ficha != null ? cmd.ficha.getAreaTrabajo() : null));
         data.apellido1 = safe(cmd.apellido1);
         data.apellido2 = safe(cmd.apellido2);
         data.nombre1 = safe(cmd.nombre1);
@@ -168,6 +174,18 @@ public class CentroMedicoPdfFacadeService implements Serializable {
         data.medicoCodigo = safe(cmd.medicoCodigo);
         data.templateEngine = cmd.pdfTemplateEngine;
         return cmd.certificadoPdfTemplateService.construirHtmlDesdePlantilla(data);
+    }
+
+    private String firstNotBlank(String... values) {
+        if (values == null) {
+            return "";
+        }
+        for (String value : values) {
+            if (value != null && !value.trim().isEmpty()) {
+                return value;
+            }
+        }
+        return "";
     }
 
     public void showValidationMessage(FacesContext ctx, String summary, List<String> errors) {

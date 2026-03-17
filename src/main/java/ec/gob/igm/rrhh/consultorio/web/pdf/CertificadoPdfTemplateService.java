@@ -56,14 +56,14 @@ public class CertificadoPdfTemplateService {
     public static class CertificadoTemplateData {
         public String template;
         public Date fechaEmision;
-        public String apto = "&nbsp;";
-        public String obs = "&nbsp;";
-        public String lim = "&nbsp;";
-        public String noApto = "&nbsp;";
-        public String chkIngreso = "&nbsp;";
-        public String chkPeriodico = "&nbsp;";
-        public String chkReintegro = "&nbsp;";
-        public String chkRetiro = "&nbsp;";
+        public String apto = "";
+        public String obs = "";
+        public String lim = "";
+        public String noApto = "";
+        public String chkIngreso = "";
+        public String chkPeriodico = "";
+        public String chkReintegro = "";
+        public String chkRetiro = "";
         public String logoIgm = "";
         public String logoMidena = "";
         public String institucion = "";
