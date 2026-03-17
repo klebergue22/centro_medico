@@ -31,7 +31,7 @@ public class FichaPdfValidationService implements Serializable {
 
         if (!tieneEmpleado && !tienePersonaAux) {
             errores.add("Debe seleccionar un empleado o registrar una persona auxiliar.");
-        } else if (modoAux && !tienePersonaAux) {
+        } else if (modoAux && !tieneEmpleado && !tienePersonaAux) {
             errores.add("En modo ingreso manual: falta registrar la persona auxiliar.");
         } else if (!modoAux && !tieneEmpleado) {
             errores.add("Falta seleccionar el empleado.");
