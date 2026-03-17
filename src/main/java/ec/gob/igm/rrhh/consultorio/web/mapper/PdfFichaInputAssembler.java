@@ -63,6 +63,7 @@ public class PdfFichaInputAssembler {
         input.fichaPdfDataMapper = fichaPdfDataMapper;
         input.ficha = source.getFicha();
         input.empleadoSel = source.getEmpleadoSel();
+        input.personaAux = source.getPersonaAux();
         input.fechaNacimiento = source.getFechaNacimiento();
         input.institucionSetter = source::setInstitucion;
         input.rucSetter = source::setRuc;

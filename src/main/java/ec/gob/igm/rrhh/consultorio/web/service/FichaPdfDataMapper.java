@@ -10,6 +10,7 @@ import jakarta.ejb.Stateless;
 
 import ec.gob.igm.rrhh.consultorio.domain.model.DatEmpleado;
 import ec.gob.igm.rrhh.consultorio.domain.model.FichaOcupacional;
+import ec.gob.igm.rrhh.consultorio.domain.model.PersonaAux;
 
 @Stateless
 /**
@@ -17,7 +18,7 @@ import ec.gob.igm.rrhh.consultorio.domain.model.FichaOcupacional;
  */
 public class FichaPdfDataMapper implements Serializable {
 
-    public FichaPdfMappedData map(FichaOcupacional ficha, DatEmpleado empleadoSel, Date fechaNacimientoActual) {
+    public FichaPdfMappedData map(FichaOcupacional ficha, DatEmpleado empleadoSel, PersonaAux personaAux, Date fechaNacimientoActual) {
         FichaPdfMappedData data = new FichaPdfMappedData();
 
         if (ficha != null) {
@@ -46,6 +47,11 @@ public class FichaPdfDataMapper implements Serializable {
                 data.nombre1 = parts.length > 0 ? parts[0] : "";
                 data.nombre2 = parts.length > 1 ? parts[1] : "";
             }
+        } else if (personaAux != null) {
+            data.apellido1 = personaAux.getApellido1();
+            data.apellido2 = personaAux.getApellido2();
+            data.nombre1 = personaAux.getNombre1();
+            data.nombre2 = personaAux.getNombre2();
         }
 
         data.fechaNacimiento = fechaNacimientoActual;
