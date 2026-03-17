@@ -558,10 +558,6 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
                 this::setMostrarDlgCedula);
     }
 
-    private PdfPreviewFacade.BasePrepareCommand buildBasePrepareCommand() {
-        return pdfPreviewCommandFactory.buildBasePrepareCommand(buildPdfCommandContext());
-    }
-
     private void applyStep4State(CentroMedicoWizardNavigationCoordinator.Step4UiState state) {
         pdfSectionFacade.applyStep4State(
                 state,
