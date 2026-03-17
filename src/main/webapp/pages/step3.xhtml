@@ -50,62 +50,62 @@
                 </thead>
 
                 <tbody>
-                    <ui:repeat value="#{centroMedicoCtrl.actLabRows}" var="row" varStatus="st">
+                    <ui:repeat value="#{centroMedicoCtrl.actividadLaboralFormModel.actLabRows}" var="row" varStatus="st">
                         <tr>
                             <td>
                                 <p:inputText id="centro_#{st.index}"
-                                             value="#{centroMedicoCtrl.actLabCentroTrabajo[st.index]}"
+                                             value="#{centroMedicoCtrl.actividadLaboralFormModel.actLabCentroTrabajo[st.index]}"
                                              styleClass="hx-cell-input"
                                              placeholder="Centro #{st.index+1}"/>
                             </td>
 
                             <td>
                                 <p:inputText id="act_#{st.index}"
-                                             value="#{centroMedicoCtrl.actLabActividad[st.index]}"
+                                             value="#{centroMedicoCtrl.actividadLaboralFormModel.actLabActividad[st.index]}"
                                              styleClass="hx-cell-input"
                                              placeholder="Actividad #{st.index+1}"/>
                             </td>
 
                             <td style="text-align:center">
                                 <p:selectBooleanCheckbox id="trab_ant_#{st.index}"
-                                                         value="#{centroMedicoCtrl.actLabTrabajoAnterior[st.index]}"/>
+                                                         value="#{centroMedicoCtrl.actividadLaboralFormModel.actLabTrabajoAnterior[st.index]}"/>
                             </td>
                             <td style="text-align:center">
                                 <p:selectBooleanCheckbox id="trab_act_#{st.index}"
-                                                         value="#{centroMedicoCtrl.actLabTrabajoActual[st.index]}"/>
+                                                         value="#{centroMedicoCtrl.actividadLaboralFormModel.actLabTrabajoActual[st.index]}"/>
                             </td>
                             <td>
                                 <p:inputText id="trab_tiempo_#{st.index}"
-                                             value="#{centroMedicoCtrl.actLabTiempo[st.index]}"
+                                             value="#{centroMedicoCtrl.actividadLaboralFormModel.actLabTiempo[st.index]}"
                                              styleClass="hx-cell-input"
                                              placeholder="Tiempo"/>
                             </td>
 
                             <td style="text-align:center">
                                 <p:selectBooleanCheckbox id="incidente_#{st.index}"
-                                                         value="#{centroMedicoCtrl.actLabIncidenteChk[st.index]}"/>
+                                                         value="#{centroMedicoCtrl.actividadLaboralFormModel.actLabIncidenteChk[st.index]}"/>
                             </td>
                             <td style="text-align:center">
                                 <p:selectBooleanCheckbox id="accidente_#{st.index}"
-                                                         value="#{centroMedicoCtrl.actLabAccidenteChk[st.index]}"/>
+                                                         value="#{centroMedicoCtrl.actividadLaboralFormModel.actLabAccidenteChk[st.index]}"/>
                             </td>
                             <td style="text-align:center">
                                 <p:selectBooleanCheckbox id="enfermedad_#{st.index}"
-                                                         value="#{centroMedicoCtrl.actLabEnfermedadChk[st.index]}"/>
+                                                         value="#{centroMedicoCtrl.actividadLaboralFormModel.actLabEnfermedadChk[st.index]}"/>
                             </td>
 
                             <td style="text-align:center">
                                 <p:selectBooleanCheckbox id="iess_si_#{st.index}"
-                                                         value="#{centroMedicoCtrl.iessSi[st.index]}"/>
+                                                         value="#{centroMedicoCtrl.actividadLaboralFormModel.iessSi[st.index]}"/>
                             </td>
                             <td style="text-align:center">
                                 <p:selectBooleanCheckbox id="iess_no_#{st.index}"
-                                                         value="#{centroMedicoCtrl.iessNo[st.index]}"/>
+                                                         value="#{centroMedicoCtrl.actividadLaboralFormModel.iessNo[st.index]}"/>
                             </td>
 
                             <td class="hx-date">
                                 <p:datePicker id="iess_fecha_#{st.index}"
-                                              value="#{centroMedicoCtrl.iessFecha[st.index]}"
+                                              value="#{centroMedicoCtrl.actividadLaboralFormModel.iessFecha[st.index]}"
                                               pattern="dd/MM/yyyy"
                                               monthNavigator="true"
                                               yearNavigator="true"
@@ -116,7 +116,7 @@
 
                             <td>
                                 <p:inputTextarea id="iess_especificar_#{st.index}"
-                                                 value="#{centroMedicoCtrl.iessEspecificar[st.index]}"
+                                                 value="#{centroMedicoCtrl.actividadLaboralFormModel.iessEspecificar[st.index]}"
                                                  rows="2"
                                                  autoResize="true"
                                                  styleClass="hx-cell-textarea"
@@ -125,7 +125,7 @@
 
                             <td>
                                 <p:inputTextarea id="obs_#{st.index}"
-                                                 value="#{centroMedicoCtrl.actLabObservaciones[st.index]}"
+                                                 value="#{centroMedicoCtrl.actividadLaboralFormModel.actLabObservaciones[st.index]}"
                                                  rows="2"
                                                  autoResize="true"
                                                  styleClass="hx-cell-textarea"
@@ -166,14 +166,14 @@
                         <tr>
                             <td>
                                 <p:inputText id="tipoAct"
-                                             value="#{centroMedicoCtrl.tipoAct[st.index]}"
+                                             value="#{centroMedicoCtrl.actividadLaboralFormModel.tipoAct[st.index]}"
                                              styleClass="cell-input"
                                              placeholder="Tipo #{st.index+1}"/>
                             </td>
 
                             <td class="i-date">
                                 <p:datePicker id="fechaAct"
-                                              value="#{centroMedicoCtrl.fechaAct[st.index]}"
+                                              value="#{centroMedicoCtrl.actividadLaboralFormModel.fechaAct[st.index]}"
                                               pattern="dd/MM/yyyy"
                                               monthNavigator="true"
                                               yearNavigator="true"
@@ -184,7 +184,7 @@
 
                             <td>
                                 <p:inputTextarea id="descAct"
-                                                 value="#{centroMedicoCtrl.descAct[st.index]}"
+                                                 value="#{centroMedicoCtrl.actividadLaboralFormModel.descAct[st.index]}"
                                                  rows="2"
                                                  autoResize="true"
                                                  styleClass="cell-textarea"
@@ -225,14 +225,14 @@
                         <tr>
                             <td>
                                 <p:inputText id="examNombre"
-                                             value="#{centroMedicoCtrl.examNombre[st.index]}"
+                                             value="#{centroMedicoCtrl.examenesComplementariosFormModel.examNombre[st.index]}"
                                              styleClass="cell-input"
                                              placeholder="Examen #{st.index+1}"/>
                             </td>
 
                             <td class="j-date">
                                 <p:datePicker id="examFecha"
-                                              value="#{centroMedicoCtrl.examFecha[st.index]}"
+                                              value="#{centroMedicoCtrl.examenesComplementariosFormModel.examFecha[st.index]}"
                                               pattern="dd/MM/yyyy"
                                               monthNavigator="true"
                                               yearNavigator="true"
@@ -243,7 +243,7 @@
 
                             <td>
                                 <p:inputText id="examResultado"
-                                             value="#{centroMedicoCtrl.examResultado[st.index]}"
+                                             value="#{centroMedicoCtrl.examenesComplementariosFormModel.examResultado[st.index]}"
                                              styleClass="cell-input"
                                              placeholder="Resultado #{st.index+1}"/>
                             </td>
@@ -257,7 +257,7 @@
                                value="OBSERVACIONES:"
                                style="font-weight:bold; display:block; margin-bottom:4px;"/>
                 <p:inputTextarea id="obsJtxt"
-                                 value="#{centroMedicoCtrl.obsJ}"
+                                 value="#{centroMedicoCtrl.habitosConsumoFormModel.obsJ}"
                                  rows="4"
                                  autoResize="true"
                                  styleClass="cell-textarea j-observacion"
@@ -301,7 +301,7 @@
 
                     <tbody>
                         <ui:repeat id="kRep"
-                                   value="#{centroMedicoCtrl.listaDiag}"
+                                   value="#{centroMedicoCtrl.step3FormModel.listaDiag}"
                                    var="d"
                                    varStatus="st">
 
@@ -400,7 +400,7 @@
 
 
             <p:selectOneRadio id="aptitud" layout="custom"
-                              value="#{centroMedicoCtrl.aptitudSel}">
+                              value="#{centroMedicoCtrl.diagnosticoFormModel.aptitudSel}">
                 <f:selectItem itemLabel="APTO" itemValue="APTO"/>
                 <f:selectItem itemLabel="APTO_EN_OBS" itemValue="APTO_EN_OBS"/>
                 <f:selectItem itemLabel="APTO_LIMIT" itemValue="APTO_LIMIT"/>
@@ -446,7 +446,7 @@
                 <h:outputLabel for="l_obs" value="OBSERVACIONES:"
                                style="font-weight:bold; margin-bottom:4px;"/>
                 <p:inputTextarea id="l_obs"
-                                 value="#{centroMedicoCtrl.detalleObservaciones}"
+                                 value="#{centroMedicoCtrl.diagnosticoFormModel.detalleObservaciones}"
                                  rows="4"
                                  autoResize="true"
                                  styleClass="l-observaciones"
@@ -458,25 +458,25 @@
 
 
     <p:fieldset legend="M. Recomendaciones y/o tratamiento" toggleable="true" collapsed="true">
-        <p:inputTextarea id="i_rec" rows="3" style="width:100%" value="#{centroMedicoCtrl.recomendaciones}"/>
+        <p:inputTextarea id="i_rec" rows="3" style="width:100%" value="#{centroMedicoCtrl.diagnosticoFormModel.recomendaciones}"/>
     </p:fieldset>
 
 
     <p:outputPanel id="panelRetiro" layout="block">
-        <ui:fragment rendered="#{centroMedicoCtrl.tipoEval eq 'RETIRO'}">
+        <ui:fragment rendered="#{centroMedicoCtrl.step1FormModel.tipoEval eq 'RETIRO'}">
             <p:fieldset legend="N. RETIRO (evaluación)" toggleable="true">
                 <h:panelGroup layout="block" styleClass="ui-fluid">
 
 
                     <p:selectOneRadio id="n_realiza_eval" layout="custom"
-                                      value="#{centroMedicoCtrl.NRealizaEvaluacion}">
+                                      value="#{centroMedicoCtrl.diagnosticoFormModel.nRealizaEvaluacion}">
                         <f:selectItem itemLabel="SI" itemValue="S"/>
                         <f:selectItem itemLabel="NO" itemValue="N"/>
                     </p:selectOneRadio>
 
 
                     <p:selectOneRadio id="n_relacion_trabajo" layout="custom"
-                                      value="#{centroMedicoCtrl.NRelacionTrabajo}">
+                                      value="#{centroMedicoCtrl.diagnosticoFormModel.nRelacionTrabajo}">
                         <f:selectItem itemLabel="SI" itemValue="S"/>
                         <f:selectItem itemLabel="NO" itemValue="N"/>
                     </p:selectOneRadio>
@@ -510,7 +510,7 @@
                         <h:outputLabel for="n_obs" value="Observación:"
                                        style="font-weight:bold; margin-bottom:4px;"/>
                         <p:inputTextarea id="n_obs"
-                                         value="#{centroMedicoCtrl.NObsRetiro}"
+                                         value="#{centroMedicoCtrl.diagnosticoFormModel.nObsRetiro}"
                                          rows="3" autoResize="true"
                                          styleClass="n-observacion"
                                          placeholder="Detalle de la evaluación de retiro"/>
@@ -525,8 +525,8 @@
     <p:fieldset legend="O. Datos del profesional" toggleable="true" collapsed="true">
         <h:panelGrid columns="4" styleClass="ui-fluid">
 
-            <h:outputText value="Nombre y apellido"/><p:inputText id="nombreMedico"  value="#{centroMedicoCtrl.medicoNombre}"/>
-            <h:outputText value="Código médico"/><p:inputText id="codigoMedico" value="#{centroMedicoCtrl.medicoCodigo}"/>
+            <h:outputText value="Nombre y apellido"/><p:inputText id="nombreMedico"  value="#{centroMedicoCtrl.diagnosticoFormModel.medicoNombre}"/>
+            <h:outputText value="Código médico"/><p:inputText id="codigoMedico" value="#{centroMedicoCtrl.diagnosticoFormModel.medicoCodigo}"/>
         </h:panelGrid>
     </p:fieldset>
 
