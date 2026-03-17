@@ -170,7 +170,7 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     private final AtencionPrioritariaModel atencionPrioritariaModel = new AtencionPrioritariaModel();
     private final SignosVitalesFormModel signosVitalesFormModel = new SignosVitalesFormModel();
     private final DiagnosticoFormModel diagnosticoFormModel = new DiagnosticoFormModel();
-    private final AntecedentesFormModel antecedentesFormModel = new AntecedentesFormModel();
+    private AntecedentesFormModel antecedentesFormModel = new AntecedentesFormModel();
     private final GinecoObstetricoFormModel ginecoObstetricoFormModel = new GinecoObstetricoFormModel();
     private final ExamenFisicoFormModel examenFisicoFormModel = new ExamenFisicoFormModel();
     private final HabitosConsumoFormModel habitosConsumoFormModel = new HabitosConsumoFormModel();
@@ -2226,6 +2226,12 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
 
     public AntecedentesFormModel getAntecedentesFormModel() {
         return antecedentesFormModel;
+    }
+
+    public void setAntecedentesFormModel(AntecedentesFormModel antecedentesFormModel) {
+        this.antecedentesFormModel = (antecedentesFormModel != null)
+                ? antecedentesFormModel
+                : new AntecedentesFormModel();
     }
 
     public Step3FormModel getStep3FormModel() {
