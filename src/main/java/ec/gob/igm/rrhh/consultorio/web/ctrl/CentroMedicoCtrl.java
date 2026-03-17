@@ -1235,8 +1235,16 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
 
 
 
+    public String getApellido1() {
+        return pacienteFormData.getApellido1();
+    }
+
     public void setApellido1(String apellido1) {
         pacienteFormData.setApellido1(apellido1);
+    }
+
+    public String getApellido2() {
+        return pacienteFormData.getApellido2();
     }
 
     public void setApellido2(String apellido2) {
@@ -1295,6 +1303,10 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
 
     public void setDetalleObservaciones(String detalleObservaciones) {
         diagnosticoFormModel.setDetalleObservaciones(detalleObservaciones);
+    }
+
+    public Integer getEdad() {
+        return pacienteFormData.getEdad();
     }
 
     public void setEdad(Integer edad) {
@@ -1441,8 +1453,16 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
 
 
 
+    public String getNombre1() {
+        return pacienteFormData.getNombre1();
+    }
+
     public void setNombre1(String nombre1) {
         pacienteFormData.setNombre1(nombre1);
+    }
+
+    public String getNombre2() {
+        return pacienteFormData.getNombre2();
     }
 
     public void setNombre2(String nombre2) {
@@ -1498,6 +1518,10 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
 
 
 
+
+    public String getSexo() {
+        return pacienteFormData.getSexo();
+    }
 
     public void setSexo(String sexo) {
         pacienteFormData.setSexo(sexo);
@@ -2240,5 +2264,36 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
 
     public PacienteViewState getPacienteViewState() {
         return pacienteViewState;
+    }
+    public List<String> getActividadesLab() {
+        return step2FormModel.getActividadesLab();
+    }
+
+    public void setActividadesLab(List<String> actividadesLab) {
+        step2FormModel.setActividadesLab(actividadesLab);
+    }
+
+    public Map<String, Boolean> getRiesgos() {
+        return step2FormModel.getRiesgos();
+    }
+
+    public void setRiesgos(Map<String, Boolean> riesgos) {
+        step2FormModel.setRiesgos(riesgos);
+    }
+
+    public Map<String, String> getOtrosRiesgos() {
+        return step2FormModel.getOtrosRiesgos();
+    }
+
+    public void setOtrosRiesgos(Map<String, String> otrosRiesgos) {
+        step2FormModel.setOtrosRiesgos(otrosRiesgos);
+    }
+
+    public List<String> getMedidasPreventivas() {
+        return step2FormModel.getMedidasPreventivas();
+    }
+
+    public void setMedidasPreventivas(List<String> medidasPreventivas) {
+        step2FormModel.setMedidasPreventivas(medidasPreventivas);
     }
 }
