@@ -2196,6 +2196,14 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
         return diagnosticoFormModel.getAptitudSel();
     }
 
+    public String getLateralidad() {
+        return step1FormModel.getLateralidad();
+    }
+
+    public void setLateralidad(String lateralidad) {
+        step1FormModel.setLateralidad(lateralidad);
+    }
+
     public Step1FormModel getStep1FormModel() {
         return step1FormModel;
     }
