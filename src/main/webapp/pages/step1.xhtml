@@ -46,22 +46,22 @@
 
             <h:outputLabel value="Primer apellido"/>
             <h:panelGroup styleClass="field-wrap">
-                <p:inputText id="apellido1" value="#{centroMedicoCtrl.apellido1}"/>
+                <p:inputText id="apellido1" value="#{centroMedicoCtrl.step1.paciente.apellido1}"/>
             </h:panelGroup>
 
             <h:outputLabel value="Segundo apellido"/>
             <h:panelGroup styleClass="field-wrap">
-                <p:inputText value="#{centroMedicoCtrl.apellido2}"/>
+                <p:inputText value="#{centroMedicoCtrl.step1.paciente.apellido2}"/>
             </h:panelGroup>
 
             <h:outputLabel value="Primer nombre"/>
             <h:panelGroup styleClass="field-wrap">
-                <p:inputText id="nombre1" value="#{centroMedicoCtrl.nombre1}"/>
+                <p:inputText id="nombre1" value="#{centroMedicoCtrl.step1.paciente.nombre1}"/>
             </h:panelGroup>
 
             <h:outputLabel value="Segundo nombre"/>
             <h:panelGroup styleClass="field-wrap">
-                <p:inputText value="#{centroMedicoCtrl.nombre2}"/>
+                <p:inputText value="#{centroMedicoCtrl.step1.paciente.nombre2}"/>
             </h:panelGroup>
 
         </p:panelGrid>
@@ -200,7 +200,7 @@
 
             <h:outputLabel for="sexowd" value="Sexo"/>
 
-            <p:selectOneRadio id="sexowd" value="#{centroMedicoCtrl.sexo}">
+            <p:selectOneRadio id="sexowd" value="#{centroMedicoCtrl.step1.paciente.sexo}">
                 <f:selectItem itemLabel="Hombre" itemValue="M"/>
                 <f:selectItem itemLabel="Mujer"  itemValue="F"/>
 
@@ -233,7 +233,7 @@
             </p:calendar>
 
             <h:outputLabel for="edad" value="Edad (años)"/>
-            <p:inputText id="edad" value="#{centroMedicoCtrl.edad}" readonly="true"/>
+            <p:inputText id="edad" value="#{centroMedicoCtrl.step1.paciente.edad}" readonly="true"/>
 
 
 
@@ -368,7 +368,7 @@
 
             <!-- Condicional: REPRODUCTIVOS MASCULINOS -->
             <h:panelGroup id="panelReproMas"
-                          rendered="#{centroMedicoCtrl.sexo eq 'M'}"
+                          rendered="#{centroMedicoCtrl.step1.paciente.sexo eq 'M'}"
                           layout="block"
                           style="margin-top:8px;">
                 <p:fieldset legend="ANTECEDENTES REPRODUCTIVOS MASCULINOS" toggleable="true" collapsed="false">
@@ -387,7 +387,7 @@
 
             <!-- Condicional: GINECO OBSTÉTRICOS (MUJER) -->
             <h:panelGroup id="panelGineObst"
-                          rendered="#{centroMedicoCtrl.sexo eq 'F'}"
+                          rendered="#{centroMedicoCtrl.step1.paciente.sexo eq 'F'}"
                           layout="block"
                           style="margin-top:8px;">
 
