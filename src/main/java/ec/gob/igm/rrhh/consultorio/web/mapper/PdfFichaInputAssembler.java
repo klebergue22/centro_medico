@@ -83,6 +83,9 @@ public class PdfFichaInputAssembler {
         input.apellido2Setter = source::setApellido2;
         input.nombre1Setter = source::setNombre1;
         input.nombre2Setter = source::setNombre2;
+        input.sexoSetter = source::setSexo;
+        input.grupoSanguineoSetter = source::setGrupoSanguineo;
+        input.fechaNacimientoSetter = source::setFechaNacimiento;
         input.edadSetter = source::setEdad;
         return input;
     }

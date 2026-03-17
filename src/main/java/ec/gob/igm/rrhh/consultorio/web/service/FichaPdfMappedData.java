@@ -25,6 +25,8 @@ public class FichaPdfMappedData implements Serializable {
     public String apellido2;
     public String nombre1;
     public String nombre2;
+    public String sexo;
+    public String grupoSanguineo;
     public Integer edad;
     public Date fechaNacimiento;
 }
