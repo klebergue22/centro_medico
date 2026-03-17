@@ -2074,6 +2074,116 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
         return pdfPreviewState.getPdfTokenFicha();
     }
 
+    // Compatibilidad para assemblers y componentes legacy que aún consumen
+    // accesores aplanados del controlador.
+    public Date getFechaAtencion() {
+        return step1FormModel.getFechaAtencion();
+    }
+
+    public String getTipoEval() {
+        return step1FormModel.getTipoEval();
+    }
+
+    public String getPaStr() {
+        return signosVitalesFormModel.getPaStr();
+    }
+
+    public Double getTemp() {
+        return signosVitalesFormModel.getTemp();
+    }
+
+    public Integer getFc() {
+        return signosVitalesFormModel.getFc();
+    }
+
+    public Integer getFr() {
+        return signosVitalesFormModel.getFr();
+    }
+
+    public Integer getSatO2() {
+        return signosVitalesFormModel.getSatO2();
+    }
+
+    public Double getPeso() {
+        return signosVitalesFormModel.getPeso();
+    }
+
+    public Double getTallaCm() {
+        return signosVitalesFormModel.getTallaCm();
+    }
+
+    public Double getPerimetroAbd() {
+        return signosVitalesFormModel.getPerimetroAbd();
+    }
+
+    public boolean isApEmbarazada() {
+        return atencionPrioritariaModel.isEmbarazada();
+    }
+
+    public boolean isApDiscapacidad() {
+        return atencionPrioritariaModel.isDiscapacidad();
+    }
+
+    public boolean isApCatastrofica() {
+        return atencionPrioritariaModel.isCatastrofica();
+    }
+
+    public boolean isApLactancia() {
+        return atencionPrioritariaModel.isLactancia();
+    }
+
+    public boolean isApAdultoMayor() {
+        return atencionPrioritariaModel.isAdultoMayor();
+    }
+
+    public String getAntClinicoQuirurgico() {
+        return antecedentesFormModel.getAntClinicoQuirurgico();
+    }
+
+    public String getAntFamiliares() {
+        return antecedentesFormModel.getAntFamiliares();
+    }
+
+    public String getCondicionEspecial() {
+        return antecedentesFormModel.getCondicionEspecial();
+    }
+
+    public String getAutorizaTransfusion() {
+        return antecedentesFormModel.getAutorizaTransfusion();
+    }
+
+    public String getTratamientoHormonal() {
+        return antecedentesFormModel.getTratamientoHormonal();
+    }
+
+    public String getTratamientoHormonalCual() {
+        return antecedentesFormModel.getTratamientoHormonalCual();
+    }
+
+    public String getDiscapTipo() {
+        return atencionPrioritariaModel.getDiscapTipo();
+    }
+
+    public String getDiscapDesc() {
+        return atencionPrioritariaModel.getDiscapDesc();
+    }
+
+    public Integer getDiscapPorc() {
+        return atencionPrioritariaModel.getDiscapPorc();
+    }
+
+    public String getCatasDiagnostico() {
+        return atencionPrioritariaModel.getCatasDiagnostico();
+    }
+
+    public Boolean getCatasCalificada() {
+        return atencionPrioritariaModel.getCatasCalificada();
+    }
+
+    public String getAptitudSel() {
+        return diagnosticoFormModel.getAptitudSel();
+    }
+
     public Step1FormModel getStep1FormModel() {
         return step1FormModel;
     }
