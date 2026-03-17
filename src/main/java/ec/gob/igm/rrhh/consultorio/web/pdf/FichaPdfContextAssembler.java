@@ -114,10 +114,12 @@ public class FichaPdfContextAssembler implements Serializable {
                 continue;
             }
             Field sourceField = findField(source.getClass(), targetField.getName());
-            if (sourceField == null) {
-                continue;
+            Object value;
+            if (sourceField != null) {
+                value = getFieldValue(sourceField, source);
+            } else {
+                value = getPropertyValueByGetter(source, targetField.getName());
             }
-            Object value = getFieldValue(sourceField, source);
             if (value == null || !isAssignable(targetField.getType(), value.getClass())) {
                 continue;
             }
@@ -152,6 +154,25 @@ public class FichaPdfContextAssembler implements Serializable {
         } catch (IllegalAccessException ex) {
             throw new IllegalStateException("No se pudo escribir campo '" + field.getName() + "'", ex);
         }
+    }
+
+    private Object getPropertyValueByGetter(Object source, String fieldName) {
+        String suffix = Character.toUpperCase(fieldName.charAt(0)) + fieldName.substring(1);
+        String[] getterNames = new String[] {"get" + suffix, "is" + suffix};
+        for (String getterName : getterNames) {
+            try {
+                java.lang.reflect.Method method = source.getClass().getMethod(getterName);
+                if (Modifier.isStatic(method.getModifiers()) || method.getParameterCount() != 0) {
+                    continue;
+                }
+                return method.invoke(source);
+            } catch (NoSuchMethodException ex) {
+                // Probar siguiente alternativa de getter
+            } catch (ReflectiveOperationException ex) {
+                throw new IllegalStateException("No se pudo leer propiedad '" + fieldName + "'", ex);
+            }
+        }
+        return null;
     }
 
     private boolean isAssignable(Class<?> targetType, Class<?> sourceType) {
