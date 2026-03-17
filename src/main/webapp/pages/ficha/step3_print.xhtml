@@ -301,10 +301,10 @@
                             <h:outputText value="#{fichaPrintCtrl.cm.aptitudSel eq 'APTO' ? 'X' : ''}" />
                         </td>
                         <td class="l-cell-radio">
-                            <h:outputText value="#{(centroMedicoCtrl.aptitudSel eq 'APTO EN OBSERVACIÓN' or centroMedicoCtrl.aptitudSel eq 'APTO EN OBSERVACION') ? 'X' : ''}" />
+                            <h:outputText value="#{(centroMedicoCtrl.diagnosticoModel.aptitudSel eq 'APTO EN OBSERVACIÓN' or centroMedicoCtrl.diagnosticoModel.aptitudSel eq 'APTO EN OBSERVACION') ? 'X' : ''}" />
                         </td>
                         <td class="l-cell-radio">
-                            <h:outputText value="#{(centroMedicoCtrl.aptitudSel eq 'APTO CON LIMITACIONES') ? 'X' : ''}" />
+                            <h:outputText value="#{(centroMedicoCtrl.diagnosticoModel.aptitudSel eq 'APTO CON LIMITACIONES') ? 'X' : ''}" />
                         </td>
                         <td class="l-cell-radio">
                             <h:outputText value="#{fichaPrintCtrl.cm.aptitudSel eq 'NO APTO' ? 'X' : ''}" />
@@ -351,13 +351,13 @@
                 <tbody>
                     <tr>
                         <td>SE REALIZA LA EVALUACIÓN</td>
-                        <td class="n-center"><h:outputText value="#{(centroMedicoCtrl.NRealizaEvaluacion eq 'SI' or centroMedicoCtrl.NRealizaEvaluacion eq 'SÍ' or centroMedicoCtrl.NRealizaEvaluacion eq 'S') ? 'X' : ''}" /></td>
-                        <td class="n-center"><h:outputText value="#{(centroMedicoCtrl.NRealizaEvaluacion eq 'NO' or centroMedicoCtrl.NRealizaEvaluacion eq 'N') ? 'X' : ''}" /></td>
+                        <td class="n-center"><h:outputText value="#{(centroMedicoCtrl.diagnosticoModel.nRealizaEvaluacion eq 'SI' or centroMedicoCtrl.diagnosticoModel.nRealizaEvaluacion eq 'SÍ' or centroMedicoCtrl.diagnosticoModel.nRealizaEvaluacion eq 'S') ? 'X' : ''}" /></td>
+                        <td class="n-center"><h:outputText value="#{(centroMedicoCtrl.diagnosticoModel.nRealizaEvaluacion eq 'NO' or centroMedicoCtrl.diagnosticoModel.nRealizaEvaluacion eq 'N') ? 'X' : ''}" /></td>
                     </tr>
                     <tr>
                         <td>LA CONDICIÓN DE SALUD ESTÁ RELACIONADA CON EL TRABAJO</td>
-                        <td class="n-center"><h:outputText value="#{(centroMedicoCtrl.NRelacionTrabajo eq 'SI' or centroMedicoCtrl.NRelacionTrabajo eq 'SÍ' or centroMedicoCtrl.NRelacionTrabajo eq 'S') ? 'X' : ''}" /></td>
-                        <td class="n-center"><h:outputText value="#{(centroMedicoCtrl.NRelacionTrabajo eq 'NO' or centroMedicoCtrl.NRelacionTrabajo eq 'N') ? 'X' : ''}" /></td>
+                        <td class="n-center"><h:outputText value="#{(centroMedicoCtrl.diagnosticoModel.nRelacionTrabajo eq 'SI' or centroMedicoCtrl.diagnosticoModel.nRelacionTrabajo eq 'SÍ' or centroMedicoCtrl.diagnosticoModel.nRelacionTrabajo eq 'S') ? 'X' : ''}" /></td>
+                        <td class="n-center"><h:outputText value="#{(centroMedicoCtrl.diagnosticoModel.nRelacionTrabajo eq 'NO' or centroMedicoCtrl.diagnosticoModel.nRelacionTrabajo eq 'N') ? 'X' : ''}" /></td>
                     </tr>
                 </tbody>
             </table>

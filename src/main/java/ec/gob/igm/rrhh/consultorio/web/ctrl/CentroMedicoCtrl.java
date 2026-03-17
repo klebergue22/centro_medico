@@ -286,7 +286,7 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
                 pacienteFormData.getNombre1(),
                 pacienteFormData.getNombre2(),
                 pacienteFormData.getSexo(),
-                getTipoEval(),
+                step1FormModel.getTipoEval(),
                 signosVitalesFormModel.getPaStr(),
                 signosVitalesFormModel.getFc(),
                 signosVitalesFormModel.getPeso(),
@@ -544,7 +544,7 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     // CIE10 Y DIAGNÓSTICO
     // =========================
     public void syncTipoEvaluacion() {
-        setTipoEvaluacion(getTipoEval());
+        setTipoEvaluacion(step1FormModel.getTipoEval());
     }
 
     private void syncCie10PrincipalFromK() {
@@ -790,7 +790,7 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     // UTILIDADES DE SINCRONIZACIÓN PDF
     // =========================
     private String obtenerTipoEvaluacionPdf() {
-        return pdfSectionFacade.obtenerTipoEvaluacionPdf(getTipoEval(), getTipoEvaluacion());
+        return pdfSectionFacade.obtenerTipoEvaluacionPdf(step1FormModel.getTipoEval(), getTipoEvaluacion());
     }
 
     private void syncCamposDesdeObjetosInternal() {
@@ -879,16 +879,7 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
         wizardViewState.setActiveStep(activeStep);
     }
 
-    public Date getFechaAtencion() {
-        if (step1FormModel.getFechaAtencion() == null) {
-            step1FormModel.setFechaAtencion(new Date());
-        }
-        return step1FormModel.getFechaAtencion();
-    }
 
-    public void setFechaAtencion(Date fechaAtencion) {
-        step1FormModel.setFechaAtencion(fechaAtencion);
-    }
 
     public List<String> getTipoAct() {
         if (actividadLaboralFormModel.getTipoAct() == null) {
@@ -987,28 +978,9 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
         diagnosticoFormModel.setnObsRetiro(nObsRetiro);
     }
 
-    public Map<String, Boolean> getRiesgos() {
-        if (step2FormModel.getRiesgos() == null) {
-            step2FormModel.setRiesgos(new java.util.LinkedHashMap<>());
-        }
-        return step2FormModel.getRiesgos();
-    }
 
-    public Map<String, String> getOtrosRiesgos() {
-        if (step2FormModel.getOtrosRiesgos() == null) {
-            step2FormModel.setOtrosRiesgos(new java.util.LinkedHashMap<>());
-        }
-        return step2FormModel.getOtrosRiesgos();
-    }
 
-    public List<String> getRiskCols() {
-        List<String> cols = step2FormModel.getRiskCols();
-        return (cols == null || cols.isEmpty()) ? STATIC_RISK_COLS : cols;
-    }
 
-    public void setRiskCols(List<String> riskCols) {
-        step2FormModel.setRiskCols(riskCols);
-    }
 
     public void setEnfermedadActual(String enfermedadActual) {
         examenFisicoFormModel.setEnfermedadActual(enfermedadActual);
@@ -1254,13 +1226,7 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
         actividadLaboralFormModel.setActLabTrabajoAnterior(actLabTrabajoAnterior);
     }
 
-    public List<String> getActividadesLab() {
-        return step2FormModel.getActividadesLab();
-    }
 
-    public void setActividadesLab(List<String> actividadesLab) {
-        step2FormModel.setActividadesLab(actividadesLab);
-    }
 
     public String[] getAfCual() {
         return habitosConsumoFormModel.getAfCual();
@@ -1278,61 +1244,19 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
         habitosConsumoFormModel.setAfTiempo(afTiempo);
     }
 
-    public String getAntClinicoQuirurgico() {
-        return antecedentesFormModel.getAntClinicoQuirurgico();
-    }
 
-    public void setAntClinicoQuirurgico(String antClinicoQuirurgico) {
-        antecedentesFormModel.setAntClinicoQuirurgico(antClinicoQuirurgico);
-    }
 
-    public String getAntFamiliares() {
-        return antecedentesFormModel.getAntFamiliares();
-    }
 
-    public void setAntFamiliares(String antFamiliares) {
-        antecedentesFormModel.setAntFamiliares(antFamiliares);
-    }
 
-    public boolean isApAdultoMayor() {
-        return atencionPrioritariaModel.isAdultoMayor();
-    }
 
-    public void setApAdultoMayor(boolean apAdultoMayor) {
-        atencionPrioritariaModel.setAdultoMayor(apAdultoMayor);
-    }
 
-    public boolean isApCatastrofica() {
-        return atencionPrioritariaModel.isCatastrofica();
-    }
 
-    public void setApCatastrofica(boolean apCatastrofica) {
-        atencionPrioritariaModel.setCatastrofica(apCatastrofica);
-    }
 
-    public boolean isApDiscapacidad() {
-        return atencionPrioritariaModel.isDiscapacidad();
-    }
 
-    public void setApDiscapacidad(boolean apDiscapacidad) {
-        atencionPrioritariaModel.setDiscapacidad(apDiscapacidad);
-    }
 
-    public boolean isApEmbarazada() {
-        return atencionPrioritariaModel.isEmbarazada();
-    }
 
-    public void setApEmbarazada(boolean apEmbarazada) {
-        atencionPrioritariaModel.setEmbarazada(apEmbarazada);
-    }
 
-    public boolean isApLactancia() {
-        return atencionPrioritariaModel.isLactancia();
-    }
 
-    public void setApLactancia(boolean apLactancia) {
-        atencionPrioritariaModel.setLactancia(apLactancia);
-    }
 
     public String getApellido1() {
         return pacienteFormData.getApellido1();
@@ -1350,21 +1274,9 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
         pacienteFormData.setApellido2(apellido2);
     }
 
-    public String getAptitudSel() {
-        return diagnosticoFormModel.getAptitudSel();
-    }
 
-    public void setAptitudSel(String aptitudSel) {
-        diagnosticoFormModel.setAptitudSel(aptitudSel);
-    }
 
-    public String getAutorizaTransfusion() {
-        return antecedentesFormModel.getAutorizaTransfusion();
-    }
 
-    public void setAutorizaTransfusion(String autorizaTransfusion) {
-        antecedentesFormModel.setAutorizaTransfusion(autorizaTransfusion);
-    }
 
     public String getCedulaBusqueda() {
         return pacienteViewState.getCedulaBusqueda();
@@ -1390,13 +1302,7 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
         ginecoObstetricoFormModel.setCesareas(cesareas);
     }
 
-    public String getCondicionEspecial() {
-        return antecedentesFormModel.getCondicionEspecial();
-    }
 
-    public void setCondicionEspecial(String condicionEspecial) {
-        antecedentesFormModel.setCondicionEspecial(condicionEspecial);
-    }
 
     public Boolean[] getConsExConsumidor() {
         return habitosConsumoFormModel.getConsExConsumidor();
@@ -1462,37 +1368,13 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
         ginecoObstetricoFormModel.setExamenReproMasculino(examenReproMasculino);
     }
 
-    public Integer getFc() {
-        return signosVitalesFormModel.getFc();
-    }
 
-    public void setFc(Integer fc) {
-        signosVitalesFormModel.setFc(fc);
-    }
 
-    public Date getFecIngreso() {
-        return step1FormModel.getFecIngreso();
-    }
 
-    public void setFecIngreso(Date fecIngreso) {
-        step1FormModel.setFecIngreso(fecIngreso);
-    }
 
-    public Date getFecReintegro() {
-        return step1FormModel.getFecReintegro();
-    }
 
-    public void setFecReintegro(Date fecReintegro) {
-        step1FormModel.setFecReintegro(fecReintegro);
-    }
 
-    public Date getFecRetiro() {
-        return step1FormModel.getFecRetiro();
-    }
 
-    public void setFecRetiro(Date fecRetiro) {
-        step1FormModel.setFecRetiro(fecRetiro);
-    }
 
     public FichaOcupacional getFicha() {
         return fichaContext.getFicha();
@@ -1502,21 +1384,9 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
         fichaContext.setFicha(ficha);
     }
 
-    public FichaRiesgo getFichaRiesgo() {
-        return step2FormModel.getFichaRiesgo();
-    }
 
-    public void setFichaRiesgo(FichaRiesgo fichaRiesgo) {
-        step2FormModel.setFichaRiesgo(fichaRiesgo);
-    }
 
-    public Integer getFr() {
-        return signosVitalesFormModel.getFr();
-    }
 
-    public void setFr(Integer fr) {
-        signosVitalesFormModel.setFr(fr);
-    }
 
     public Integer getGestas() {
         return ginecoObstetricoFormModel.getGestas();
@@ -1526,13 +1396,7 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
         ginecoObstetricoFormModel.setGestas(gestas);
     }
 
-    public String getGrupoSanguineo() {
-        return step1FormModel.getGrupoSanguineo();
-    }
 
-    public void setGrupoSanguineo(String grupoSanguineo) {
-        step1FormModel.setGrupoSanguineo(grupoSanguineo);
-    }
 
     public List<String> getIessEspecificar() {
         return actividadLaboralFormModel.getIessEspecificar();
@@ -1566,21 +1430,9 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
         actividadLaboralFormModel.setIessSi(iessSi);
     }
 
-    public Double getImc() {
-        return signosVitalesFormModel.getImc();
-    }
 
-    public void setImc(Double imc) {
-        signosVitalesFormModel.setImc(imc);
-    }
 
-    public String getLateralidad() {
-        return step1FormModel.getLateralidad();
-    }
 
-    public void setLateralidad(String lateralidad) {
-        step1FormModel.setLateralidad(lateralidad);
-    }
 
     public List<ConsultaDiagnostico> getListaDiag() {
         return step3FormModel.getListaDiag();
@@ -1622,13 +1474,7 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
         diagnosticoFormModel.setMedicoNombre(medicoNombre);
     }
 
-    public List<String> getMedidasPreventivas() {
-        return step2FormModel.getMedidasPreventivas();
-    }
 
-    public void setMedidasPreventivas(List<String> medidasPreventivas) {
-        step2FormModel.setMedidasPreventivas(medidasPreventivas);
-    }
 
     public String getNombre1() {
         return pacienteFormData.getNombre1();
@@ -1654,17 +1500,8 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
         habitosConsumoFormModel.setObsJ(obsJ);
     }
 
-    public void setOtrosRiesgos(Map<String, String> otrosRiesgos) {
-        step2FormModel.setOtrosRiesgos(otrosRiesgos);
-    }
 
-    public String getPaStr() {
-        return signosVitalesFormModel.getPaStr();
-    }
 
-    public void setPaStr(String paStr) {
-        signosVitalesFormModel.setPaStr(paStr);
-    }
 
     public Integer getPartos() {
         return ginecoObstetricoFormModel.getPartos();
@@ -1682,13 +1519,7 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
         pdfPreviewState.setPdfTokenCertificado(pdfTokenCertificado);
     }
 
-    public Double getPerimetroAbd() {
-        return signosVitalesFormModel.getPerimetroAbd();
-    }
 
-    public void setPerimetroAbd(Double perimetroAbd) {
-        signosVitalesFormModel.setPerimetroAbd(perimetroAbd);
-    }
 
     public boolean isPermitirIngresoManual() {
         return pacienteViewState.isPermitirIngresoManual();
@@ -1698,13 +1529,7 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
         pacienteViewState.setPermitirIngresoManual(permitirIngresoManual);
     }
 
-    public Double getPeso() {
-        return signosVitalesFormModel.getPeso();
-    }
 
-    public void setPeso(Double peso) {
-        signosVitalesFormModel.setPeso(peso);
-    }
 
     public String getRecomendaciones() {
         return diagnosticoFormModel.getRecomendaciones();
@@ -1714,17 +1539,8 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
         diagnosticoFormModel.setRecomendaciones(recomendaciones);
     }
 
-    public void setRiesgos(Map<String, Boolean> riesgos) {
-        step2FormModel.setRiesgos(riesgos);
-    }
 
-    public Integer getSatO2() {
-        return signosVitalesFormModel.getSatO2();
-    }
 
-    public void setSatO2(Integer satO2) {
-        signosVitalesFormModel.setSatO2(satO2);
-    }
 
     public String getSexo() {
         return pacienteFormData.getSexo();
@@ -1734,21 +1550,9 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
         pacienteFormData.setSexo(sexo);
     }
 
-    public Double getTallaCm() {
-        return signosVitalesFormModel.getTallaCm();
-    }
 
-    public void setTallaCm(Double tallaCm) {
-        signosVitalesFormModel.setTallaCm(tallaCm);
-    }
 
-    public Double getTemp() {
-        return signosVitalesFormModel.getTemp();
-    }
 
-    public void setTemp(Double temp) {
-        signosVitalesFormModel.setTemp(temp);
-    }
 
     public Integer getTiempoReproMasculino() {
         return ginecoObstetricoFormModel.getTiempoReproMasculino();
@@ -1758,29 +1562,11 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
         ginecoObstetricoFormModel.setTiempoReproMasculino(tiempoReproMasculino);
     }
 
-    public String getTipoEval() {
-        return step1FormModel.getTipoEval();
-    }
 
-    public void setTipoEval(String tipoEval) {
-        step1FormModel.setTipoEval(tipoEval);
-    }
 
-    public String getTratamientoHormonal() {
-        return antecedentesFormModel.getTratamientoHormonal();
-    }
 
-    public void setTratamientoHormonal(String tratamientoHormonal) {
-        antecedentesFormModel.setTratamientoHormonal(tratamientoHormonal);
-    }
 
-    public String getTratamientoHormonalCual() {
-        return antecedentesFormModel.getTratamientoHormonalCual();
-    }
 
-    public void setTratamientoHormonalCual(String tratamientoHormonalCual) {
-        antecedentesFormModel.setTratamientoHormonalCual(tratamientoHormonalCual);
-    }
 
     public String getDialogDiagnosticoCodigo() {
         return step3FormModel.getDialogDiagnosticoCodigo();
@@ -2258,45 +2044,15 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
         historiaLaboralFormModel.sethEnfermedad(hEnfermedad);
     }
 
-    public String getDiscapTipo() {
-        return atencionPrioritariaModel.getDiscapTipo();
-    }
 
-    public void setDiscapTipo(String discapTipo) {
-        atencionPrioritariaModel.setDiscapTipo(discapTipo);
-    }
 
-    public String getDiscapDesc() {
-        return atencionPrioritariaModel.getDiscapDesc();
-    }
 
-    public void setDiscapDesc(String discapDesc) {
-        atencionPrioritariaModel.setDiscapDesc(discapDesc);
-    }
 
-    public Integer getDiscapPorc() {
-        return atencionPrioritariaModel.getDiscapPorc();
-    }
 
-    public void setDiscapPorc(Integer discapPorc) {
-        atencionPrioritariaModel.setDiscapPorc(discapPorc);
-    }
 
-    public String getCatasDiagnostico() {
-        return atencionPrioritariaModel.getCatasDiagnostico();
-    }
 
-    public void setCatasDiagnostico(String catasDiagnostico) {
-        atencionPrioritariaModel.setCatasDiagnostico(catasDiagnostico);
-    }
 
-    public Boolean getCatasCalificada() {
-        return atencionPrioritariaModel.getCatasCalificada();
-    }
 
-    public void setCatasCalificada(Boolean catasCalificada) {
-        atencionPrioritariaModel.setCatasCalificada(catasCalificada);
-    }
 
     public boolean isCertPdfListo() {
         return pdfPreviewState.isCertificadoListo();
@@ -2322,7 +2078,15 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
         return step1FormModel;
     }
 
+    public Step1FormModel getStep1() {
+        return step1FormModel;
+    }
+
     public Step2FormModel getStep2FormModel() {
+        return step2FormModel;
+    }
+
+    public Step2FormModel getStep2() {
         return step2FormModel;
     }
 
@@ -2330,7 +2094,15 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
         return step3FormModel;
     }
 
+    public Step3FormModel getStep3() {
+        return step3FormModel;
+    }
+
     public DiagnosticoFormModel getDiagnosticoFormModel() {
+        return diagnosticoFormModel;
+    }
+
+    public DiagnosticoFormModel getDiagnosticoModel() {
         return diagnosticoFormModel;
     }
 
@@ -2344,6 +2116,14 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
 
     public HabitosConsumoFormModel getHabitosConsumoFormModel() {
         return habitosConsumoFormModel;
+    }
+
+    public SignosVitalesFormModel getSignosModel() {
+        return signosVitalesFormModel;
+    }
+
+    public AtencionPrioritariaModel getAtencionPrioritariaModel() {
+        return atencionPrioritariaModel;
     }
 
     public PdfPreviewState getPdfPreviewState() {

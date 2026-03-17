@@ -301,7 +301,7 @@
 
                     <tbody>
                         <ui:repeat id="kRep"
-                                   value="#{centroMedicoCtrl.step3FormModel.listaDiag}"
+                                   value="#{centroMedicoCtrl.step3.listaDiag}"
                                    var="d"
                                    varStatus="st">
 
@@ -400,7 +400,7 @@
 
 
             <p:selectOneRadio id="aptitud" layout="custom"
-                              value="#{centroMedicoCtrl.diagnosticoFormModel.aptitudSel}">
+                              value="#{centroMedicoCtrl.diagnosticoModel.aptitudSel}">
                 <f:selectItem itemLabel="APTO" itemValue="APTO"/>
                 <f:selectItem itemLabel="APTO_EN_OBS" itemValue="APTO_EN_OBS"/>
                 <f:selectItem itemLabel="APTO_LIMIT" itemValue="APTO_LIMIT"/>
@@ -446,7 +446,7 @@
                 <h:outputLabel for="l_obs" value="OBSERVACIONES:"
                                style="font-weight:bold; margin-bottom:4px;"/>
                 <p:inputTextarea id="l_obs"
-                                 value="#{centroMedicoCtrl.diagnosticoFormModel.detalleObservaciones}"
+                                 value="#{centroMedicoCtrl.diagnosticoModel.detalleObservaciones}"
                                  rows="4"
                                  autoResize="true"
                                  styleClass="l-observaciones"
@@ -458,25 +458,25 @@
 
 
     <p:fieldset legend="M. Recomendaciones y/o tratamiento" toggleable="true" collapsed="true">
-        <p:inputTextarea id="i_rec" rows="3" style="width:100%" value="#{centroMedicoCtrl.diagnosticoFormModel.recomendaciones}"/>
+        <p:inputTextarea id="i_rec" rows="3" style="width:100%" value="#{centroMedicoCtrl.diagnosticoModel.recomendaciones}"/>
     </p:fieldset>
 
 
     <p:outputPanel id="panelRetiro" layout="block">
-        <ui:fragment rendered="#{centroMedicoCtrl.step1FormModel.tipoEval eq 'RETIRO'}">
+        <ui:fragment rendered="#{centroMedicoCtrl.step1.tipoEval eq 'RETIRO'}">
             <p:fieldset legend="N. RETIRO (evaluación)" toggleable="true">
                 <h:panelGroup layout="block" styleClass="ui-fluid">
 
 
                     <p:selectOneRadio id="n_realiza_eval" layout="custom"
-                                      value="#{centroMedicoCtrl.diagnosticoFormModel.nRealizaEvaluacion}">
+                                      value="#{centroMedicoCtrl.diagnosticoModel.nRealizaEvaluacion}">
                         <f:selectItem itemLabel="SI" itemValue="S"/>
                         <f:selectItem itemLabel="NO" itemValue="N"/>
                     </p:selectOneRadio>
 
 
                     <p:selectOneRadio id="n_relacion_trabajo" layout="custom"
-                                      value="#{centroMedicoCtrl.diagnosticoFormModel.nRelacionTrabajo}">
+                                      value="#{centroMedicoCtrl.diagnosticoModel.nRelacionTrabajo}">
                         <f:selectItem itemLabel="SI" itemValue="S"/>
                         <f:selectItem itemLabel="NO" itemValue="N"/>
                     </p:selectOneRadio>
@@ -510,7 +510,7 @@
                         <h:outputLabel for="n_obs" value="Observación:"
                                        style="font-weight:bold; margin-bottom:4px;"/>
                         <p:inputTextarea id="n_obs"
-                                         value="#{centroMedicoCtrl.diagnosticoFormModel.nObsRetiro}"
+                                         value="#{centroMedicoCtrl.diagnosticoModel.nObsRetiro}"
                                          rows="3" autoResize="true"
                                          styleClass="n-observacion"
                                          placeholder="Detalle de la evaluación de retiro"/>
@@ -525,8 +525,8 @@
     <p:fieldset legend="O. Datos del profesional" toggleable="true" collapsed="true">
         <h:panelGrid columns="4" styleClass="ui-fluid">
 
-            <h:outputText value="Nombre y apellido"/><p:inputText id="nombreMedico"  value="#{centroMedicoCtrl.diagnosticoFormModel.medicoNombre}"/>
-            <h:outputText value="Código médico"/><p:inputText id="codigoMedico" value="#{centroMedicoCtrl.diagnosticoFormModel.medicoCodigo}"/>
+            <h:outputText value="Nombre y apellido"/><p:inputText id="nombreMedico"  value="#{centroMedicoCtrl.diagnosticoModel.medicoNombre}"/>
+            <h:outputText value="Código médico"/><p:inputText id="codigoMedico" value="#{centroMedicoCtrl.diagnosticoModel.medicoCodigo}"/>
         </h:panelGrid>
     </p:fieldset>
 
