@@ -30,7 +30,7 @@ import ec.gob.igm.rrhh.consultorio.domain.model.FichaRiesgo;
 import ec.gob.igm.rrhh.consultorio.domain.model.PersonaAux;
 import ec.gob.igm.rrhh.consultorio.domain.model.SignosVitales;
 import ec.gob.igm.rrhh.consultorio.web.facade.CentroMedicoPdfFacade;
-import ec.gob.igm.rrhh.consultorio.web.facade.CentroMedicoWizardFacade;
+import ec.gob.igm.rrhh.consultorio.web.facade.CentroMedicoWizardCoordinator;
 import ec.gob.igm.rrhh.consultorio.web.jsf.CentroMedicoMessageService;
 import ec.gob.igm.rrhh.consultorio.web.mapper.Step3CommandAssembler;
 import ec.gob.igm.rrhh.consultorio.web.mapper.StepValidationInputAssembler;
@@ -170,6 +170,8 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     private transient PdfSectionFacade pdfSectionFacade;
     @Inject
     private transient PdfPreviewFacade pdfPreviewFacade;
+    @Inject
+    private transient CentroMedicoWizardCoordinator wizardCoordinator;
 
     // =========================
     // MODELOS DE FORMULARIO
@@ -291,23 +293,19 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
         controllerActionTemplate.executeWithResult(
                 "guardarStepActual",
                 () -> {
-                    wizardSectionFacade.guardarStepActual(
-                            new CentroMedicoWizardFacade.GuardarStepActualCommand(
+                    wizardCoordinator.guardarStepActual(
+                            new CentroMedicoWizardCoordinator.GuardarStepActualCoordinatorCommand(
                                     wizardViewState.getActiveStep(),
                                     this::guardarStep1,
                                     this::guardarStep2,
                                     this::guardarStep3,
                                     wizardViewState::setActiveStep,
-                                    "@([id$=wdzFicha])",
-                                    () -> pdfPreviewFacade.resetStep4PdfState(
-                                            pdfPreviewState,
-                                            this::setFicha,
-                                            wizardViewState::setActiveStep,
-                                            this::setMostrarDlgCedula),
                                     this::applyStep4State,
                                     getFicha(),
-                                    () -> pdfPreviewFacade.buildPrepareFichaCommandData(buildBasePrepareCommand()),
-                                    () -> pdfPreviewFacade.buildPrepareCertificadoCommandData(buildBasePrepareCommand())));
+                                    pdfPreviewState,
+                                    this::setFicha,
+                                    this::setMostrarDlgCedula,
+                                    this::buildBasePrepareCommand));
                     return wizardViewState.getActiveStep();
                 },
                 ignored -> {
