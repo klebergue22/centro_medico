@@ -2107,7 +2107,7 @@ td.j-date  .ui-datepicker-trigger{
 .k-ac-panel.ui-autocomplete-panel,
 .ui-autocomplete-panel.k-ac-panel {
   z-index: 2147483647 !important;
-  position: fixed !important;
+  position: absolute !important;
 }
 
 /* Ensure step/wizard containers do not clip overlays */
