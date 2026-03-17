@@ -311,9 +311,9 @@
                                     <p:autoComplete id="kCie"
                                                     value="#{d.codigo}"
                                                     completeMethod="#{centroMedicoCtrl.completarCie10FilaPorCodigo}"
-                                                    var="codigo"
-                                                    itemLabel="#{codigo}"
-                                                    itemValue="#{codigo}"
+                                                    var="cie"
+                                                    itemLabel="#{cie.codigo}"
+                                                    itemValue="#{cie.codigo}"
                                                     dropdown="true"
                                                     dropdownMode="current"
                                                     cache="false"
@@ -322,10 +322,11 @@
                                                     forceSelection="false"
                                                     appendTo="@(body)"
                                                     panelStyleClass="k-ac-panel"
+                                                    maxResults="20"
                                                     styleClass="cell-input">
 
                                         <p:column>
-                                            <h:outputText value="#{codigo}"/>
+                                            <h:outputText value="#{cie.codigo}"/>
                                         </p:column>
 
                                         <f:attribute name="idx" value="#{st.index}"/>
@@ -350,9 +351,9 @@
                                     <p:autoComplete id="kDesc"
                                                     value="#{d.descripcion}"
                                                     completeMethod="#{centroMedicoCtrl.completarCie10FilaPorDescripcion}"
-                                                    var="descripcion"
-                                                    itemLabel="#{descripcion}"
-                                                    itemValue="#{descripcion}"
+                                                    var="cie"
+                                                    itemLabel="#{cie.descripcion}"
+                                                    itemValue="#{cie.descripcion}"
                                                     dropdown="true"
                                                     dropdownMode="current"
                                                     cache="false"
@@ -361,10 +362,11 @@
                                                     forceSelection="false"
                                                     appendTo="@(body)"
                                                     panelStyleClass="k-ac-panel"
+                                                    maxResults="20"
                                                     styleClass="cell-input">
 
                                         <p:column>
-                                            <h:outputText value="#{descripcion}"/>
+                                            <h:outputText value="#{cie.descripcion}"/>
                                         </p:column>
 
                                         <f:attribute name="idx" value="#{st.index}"/>
