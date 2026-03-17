@@ -39,6 +39,7 @@ import ec.gob.igm.rrhh.consultorio.web.mapper.PdfFichaInputAssembler;
 import ec.gob.igm.rrhh.consultorio.web.facade.DiagnosticoSectionFacade;
 import ec.gob.igm.rrhh.consultorio.web.facade.PacienteSectionFacade;
 import ec.gob.igm.rrhh.consultorio.web.facade.PdfPreviewCommandFactory;
+import ec.gob.igm.rrhh.consultorio.web.facade.PdfCommandContextBuilder;
 import ec.gob.igm.rrhh.consultorio.web.facade.PdfPreviewFacade;
 import ec.gob.igm.rrhh.consultorio.web.facade.PdfSectionFacade;
 import ec.gob.igm.rrhh.consultorio.web.facade.Step1Facade;
@@ -103,17 +104,6 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     }
 
     // =========================
-    // CLASE INTERNA - EXCEPCIÓN
-    // =========================
-    public static class BusinessValidationException extends RuntimeException {
-        private static final long serialVersionUID = 2L;
-
-        public BusinessValidationException(String message) {
-            super(message);
-        }
-    }
-
-    // =========================
     // INYECCIONES DE DEPENDENCIAS - INJECT
     // =========================
     @Inject
@@ -161,6 +151,8 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     private transient PdfPreviewFacade pdfPreviewFacade;
     @Inject
     private transient PdfPreviewCommandFactory pdfPreviewCommandFactory;
+    @Inject
+    private transient PdfCommandContextBuilder pdfCommandContextBuilder;
     @Inject
     private transient CentroMedicoWizardCoordinator wizardCoordinator;
 
@@ -384,14 +376,8 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
                 this::validarStep2,
                 this::saveStep2,
                 null,
-                () -> {
-                    FacesContext ctx = FacesContext.getCurrentInstance();
-                    if (ctx != null) {
-                        ctx.addMessage(null, new FacesMessage(
-                                FacesMessage.SEVERITY_INFO, "Step 2",
-                                "Riesgos laborales guardados correctamente (encabezado + detalle)."));
-                    }
-                },
+                () -> messageService.addMsg(FacesMessage.SEVERITY_INFO, "Step 2",
+                        "Riesgos laborales guardados correctamente (encabezado + detalle)."),
                 LOG,
                 wizardViewState.getActiveStep(),
                 getNoPersonaSel(),
@@ -425,13 +411,7 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
                 null,
                 this::saveStep3,
                 null,
-                () -> {
-                    FacesContext ctx = FacesContext.getCurrentInstance();
-                    if (ctx != null) {
-                        ctx.addMessage(null, new FacesMessage(
-                                FacesMessage.SEVERITY_INFO, "OK", "Step 3 guardado correctamente."));
-                    }
-                },
+                () -> messageService.addMsg(FacesMessage.SEVERITY_INFO, "OK", "Step 3 guardado correctamente."),
                 LOG,
                 wizardViewState.getActiveStep(),
                 getNoPersonaSel(),
@@ -508,7 +488,7 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     }
 
     private PdfPreviewCommandFactory.PdfCommandContext buildPdfCommandContext() {
-        return new PdfPreviewCommandFactory.PdfCommandContext(
+        return pdfCommandContextBuilder.build(
                 controllerActionTemplate,
                 pdfPreviewState,
                 pdfSessionStore,
@@ -2071,16 +2051,19 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
         return pdfPreviewState.getPdfTokenFicha();
     }
 
-    // Compatibilidad para assemblers y componentes legacy que aún consumen
-    // accesores aplanados del controlador.
+    // Compatibilidad temporal para assemblers/componentes legacy: accesores aplanados.
+    // TODO: retirar progresivamente al migrar consumidores a form models/secciones.
+    @Deprecated
     public Date getFechaAtencion() {
         return step1FormModel.getFechaAtencion();
     }
 
+    @Deprecated
     public String getTipoEval() {
         return step1FormModel.getTipoEval();
     }
 
+    @Deprecated
     public String getPaStr() {
         return signosVitalesFormModel.getPaStr();
     }
