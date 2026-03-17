@@ -2330,6 +2330,22 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
         return step3FormModel;
     }
 
+    public DiagnosticoFormModel getDiagnosticoFormModel() {
+        return diagnosticoFormModel;
+    }
+
+    public ActividadLaboralFormModel getActividadLaboralFormModel() {
+        return actividadLaboralFormModel;
+    }
+
+    public ExamenesComplementariosFormModel getExamenesComplementariosFormModel() {
+        return examenesComplementariosFormModel;
+    }
+
+    public HabitosConsumoFormModel getHabitosConsumoFormModel() {
+        return habitosConsumoFormModel;
+    }
+
     public PdfPreviewState getPdfPreviewState() {
         return pdfPreviewState;
     }
