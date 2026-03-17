@@ -1527,14 +1527,6 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
         pacienteFormData.setSexo(sexo);
     }
 
-    public String getLateralidad() {
-        return step1FormModel.getLateralidad();
-    }
-
-    public void setLateralidad(String lateralidad) {
-        step1FormModel.setLateralidad(lateralidad);
-    }
-
     public String getGrupoSanguineo() {
         return step1FormModel.getGrupoSanguineo();
     }
