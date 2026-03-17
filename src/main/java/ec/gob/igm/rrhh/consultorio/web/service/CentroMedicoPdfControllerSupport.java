@@ -203,6 +203,7 @@ public class CentroMedicoPdfControllerSupport implements Serializable {
                 input.fichaPdfDataMapper,
                 input.ficha,
                 input.empleadoSel,
+                input.personaAux,
                 input.fechaNacimiento);
         input.institucionSetter.accept(data.institucion);
         input.rucSetter.accept(data.ruc);
@@ -403,6 +404,7 @@ public class CentroMedicoPdfControllerSupport implements Serializable {
         public FichaPdfDataMapper fichaPdfDataMapper;
         public FichaOcupacional ficha;
         public DatEmpleado empleadoSel;
+        public PersonaAux personaAux;
         public java.util.Date fechaNacimiento;
         public Consumer<String> institucionSetter;
         public Consumer<String> rucSetter;
