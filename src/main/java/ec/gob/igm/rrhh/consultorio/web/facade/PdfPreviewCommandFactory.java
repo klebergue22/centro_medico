@@ -66,7 +66,7 @@ public class PdfPreviewCommandFactory implements Serializable {
                 buildBasePrepareCommand(context));
     }
 
-    public PdfPreviewFacade.BasePrepareCommand buildBasePrepareCommand(PdfCommandContext context) {
+    private PdfPreviewFacade.BasePrepareCommand buildBasePrepareCommand(PdfCommandContext context) {
         return new PdfPreviewFacade.BasePrepareCommand(
                 context.controllerRef,
                 context.log,
