@@ -68,9 +68,11 @@ import ec.gob.igm.rrhh.consultorio.web.viewstate.ActividadLaboralFormModel;
 import ec.gob.igm.rrhh.consultorio.web.viewstate.AntecedentesFormModel;
 import ec.gob.igm.rrhh.consultorio.web.viewstate.DiagnosticoFormModel;
 import ec.gob.igm.rrhh.consultorio.web.viewstate.ExamenFisicoFormModel;
+import ec.gob.igm.rrhh.consultorio.web.viewstate.ExamenesComplementariosFormModel;
 import ec.gob.igm.rrhh.consultorio.web.viewstate.FichaContext;
 import ec.gob.igm.rrhh.consultorio.web.viewstate.GinecoObstetricoFormModel;
 import ec.gob.igm.rrhh.consultorio.web.viewstate.HabitosConsumoFormModel;
+import ec.gob.igm.rrhh.consultorio.web.viewstate.HistoriaLaboralFormModel;
 import ec.gob.igm.rrhh.consultorio.web.viewstate.SignosVitalesFormModel;
 import ec.gob.igm.rrhh.consultorio.web.viewstate.Step3FormModel;
 import ec.gob.igm.rrhh.consultorio.web.viewstate.WizardViewState;
@@ -173,6 +175,8 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     private final ExamenFisicoFormModel examenFisicoFormModel = new ExamenFisicoFormModel();
     private final HabitosConsumoFormModel habitosConsumoFormModel = new HabitosConsumoFormModel();
     private final ActividadLaboralFormModel actividadLaboralFormModel = new ActividadLaboralFormModel();
+    private final HistoriaLaboralFormModel historiaLaboralFormModel = new HistoriaLaboralFormModel();
+    private final ExamenesComplementariosFormModel examenesComplementariosFormModel = new ExamenesComplementariosFormModel();
     private final PdfPreviewState pdfPreviewState = new PdfPreviewState();
     private final PacienteViewState pacienteViewState = new PacienteViewState();
     private final WizardViewState wizardViewState = new WizardViewState();
@@ -195,38 +199,6 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     // =========================
     // VARIABLES DE SIGNOS VITALES
     // =========================
-
-    // =========================
-    // VARIABLES DE RIESGOS LABORALES
-    // =========================
-
-    private java.util.List<String> riskCols;
-
-    // =========================
-    // VARIABLES DE HISTORIA LABORAL (H)
-    // =========================
-    private String[] hCentroTrabajo;
-    private String[] hActividad;
-    private String[] hCargo;
-    private String[] hEnfermedad;
-    private Boolean[] hIncidente;
-    private Boolean[] hAccidente;
-    private Integer[] hTiempo;
-    private Boolean[] hEnfOcupacional;
-    private Boolean[] hEnfComun;
-    private Boolean[] hEnfProfesional;
-    private Boolean[] hOtros;
-    private String[] hOtrosCual;
-    private Date[] hFecha;
-    private String[] hEspecificacion;
-    private String[] hObservacion;
-
-    // =========================
-    // VARIABLES DE EXÁMENES COMPLEMENTARIOS
-    // =========================
-    private java.util.List<String> examNombre = new ArrayList<>();
-    private java.util.List<String> examResultado = new ArrayList<>();
-    private java.util.List<Date> examFecha = new ArrayList<>();
 
     // =========================
     // VARIABLES DE PDF
@@ -1033,11 +1005,12 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     }
 
     public List<String> getRiskCols() {
-        return riskCols != null ? riskCols : STATIC_RISK_COLS;
+        List<String> cols = step2FormModel.getRiskCols();
+        return (cols == null || cols.isEmpty()) ? STATIC_RISK_COLS : cols;
     }
 
     public void setRiskCols(List<String> riskCols) {
-        this.riskCols = riskCols;
+        step2FormModel.setRiskCols(riskCols);
     }
 
     public void setEnfermedadActual(String enfermedadActual) {
@@ -1461,27 +1434,27 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     }
 
     public List<Date> getExamFecha() {
-        return examFecha;
+        return examenesComplementariosFormModel.getExamFecha();
     }
 
     public void setExamFecha(List<Date> examFecha) {
-        this.examFecha = examFecha;
+        examenesComplementariosFormModel.setExamFecha(examFecha);
     }
 
     public List<String> getExamNombre() {
-        return examNombre;
+        return examenesComplementariosFormModel.getExamNombre();
     }
 
     public void setExamNombre(List<String> examNombre) {
-        this.examNombre = examNombre;
+        examenesComplementariosFormModel.setExamNombre(examNombre);
     }
 
     public List<String> getExamResultado() {
-        return examResultado;
+        return examenesComplementariosFormModel.getExamResultado();
     }
 
     public void setExamResultado(List<String> examResultado) {
-        this.examResultado = examResultado;
+        examenesComplementariosFormModel.setExamResultado(examResultado);
     }
 
     public String getExamenReproMasculino() {
@@ -2045,107 +2018,107 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     }
 
     public String[] gethCentroTrabajo() {
-        return hCentroTrabajo;
+        return historiaLaboralFormModel.gethCentroTrabajo();
     }
 
     public void sethCentroTrabajo(String[] hCentroTrabajo) {
-        this.hCentroTrabajo = hCentroTrabajo;
+        historiaLaboralFormModel.sethCentroTrabajo(hCentroTrabajo);
     }
 
     public String[] gethActividad() {
-        return hActividad;
+        return historiaLaboralFormModel.gethActividad();
     }
 
     public void sethActividad(String[] hActividad) {
-        this.hActividad = hActividad;
+        historiaLaboralFormModel.sethActividad(hActividad);
     }
 
     public Boolean[] gethIncidente() {
-        return hIncidente;
+        return historiaLaboralFormModel.gethIncidente();
     }
 
     public void sethIncidente(Boolean[] hIncidente) {
-        this.hIncidente = hIncidente;
+        historiaLaboralFormModel.sethIncidente(hIncidente);
     }
 
     public Boolean[] gethAccidente() {
-        return hAccidente;
+        return historiaLaboralFormModel.gethAccidente();
     }
 
     public void sethAccidente(Boolean[] hAccidente) {
-        this.hAccidente = hAccidente;
+        historiaLaboralFormModel.sethAccidente(hAccidente);
     }
 
     public Integer[] gethTiempo() {
-        return hTiempo;
+        return historiaLaboralFormModel.gethTiempo();
     }
 
     public void sethTiempo(Integer[] hTiempo) {
-        this.hTiempo = hTiempo;
+        historiaLaboralFormModel.sethTiempo(hTiempo);
     }
 
     public Boolean[] gethEnfOcupacional() {
-        return hEnfOcupacional;
+        return historiaLaboralFormModel.gethEnfOcupacional();
     }
 
     public void sethEnfOcupacional(Boolean[] hEnfOcupacional) {
-        this.hEnfOcupacional = hEnfOcupacional;
+        historiaLaboralFormModel.sethEnfOcupacional(hEnfOcupacional);
     }
 
     public Boolean[] gethEnfComun() {
-        return hEnfComun;
+        return historiaLaboralFormModel.gethEnfComun();
     }
 
     public void sethEnfComun(Boolean[] hEnfComun) {
-        this.hEnfComun = hEnfComun;
+        historiaLaboralFormModel.sethEnfComun(hEnfComun);
     }
 
     public Boolean[] gethEnfProfesional() {
-        return hEnfProfesional;
+        return historiaLaboralFormModel.gethEnfProfesional();
     }
 
     public void sethEnfProfesional(Boolean[] hEnfProfesional) {
-        this.hEnfProfesional = hEnfProfesional;
+        historiaLaboralFormModel.sethEnfProfesional(hEnfProfesional);
     }
 
     public Boolean[] gethOtros() {
-        return hOtros;
+        return historiaLaboralFormModel.gethOtros();
     }
 
     public void sethOtros(Boolean[] hOtros) {
-        this.hOtros = hOtros;
+        historiaLaboralFormModel.sethOtros(hOtros);
     }
 
     public String[] gethOtrosCual() {
-        return hOtrosCual;
+        return historiaLaboralFormModel.gethOtrosCual();
     }
 
     public void sethOtrosCual(String[] hOtrosCual) {
-        this.hOtrosCual = hOtrosCual;
+        historiaLaboralFormModel.sethOtrosCual(hOtrosCual);
     }
 
     public Date[] gethFecha() {
-        return hFecha;
+        return historiaLaboralFormModel.gethFecha();
     }
 
     public void sethFecha(Date[] hFecha) {
-        this.hFecha = hFecha;
+        historiaLaboralFormModel.sethFecha(hFecha);
     }
 
     public String[] gethEspecificacion() {
-        return hEspecificacion;
+        return historiaLaboralFormModel.gethEspecificacion();
     }
 
     public void sethEspecificacion(String[] hEspecificacion) {
-        this.hEspecificacion = hEspecificacion;
+        historiaLaboralFormModel.sethEspecificacion(hEspecificacion);
     }
 
     public String[] gethObservacion() {
-        return hObservacion;
+        return historiaLaboralFormModel.gethObservacion();
     }
 
     public void sethObservacion(String[] hObservacion) {
-        this.hObservacion = hObservacion;
+        historiaLaboralFormModel.sethObservacion(hObservacion);
     }
 
     public SignosVitales getSignos() {
@@ -2273,19 +2246,19 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     }
 
     public String[] gethCargo() {
-        return hCargo;
+        return historiaLaboralFormModel.gethCargo();
     }
 
     public void sethCargo(String[] hCargo) {
-        this.hCargo = hCargo;
+        historiaLaboralFormModel.sethCargo(hCargo);
     }
 
     public String[] gethEnfermedad() {
-        return hEnfermedad;
+        return historiaLaboralFormModel.gethEnfermedad();
     }
 
     public void sethEnfermedad(String[] hEnfermedad) {
-        this.hEnfermedad = hEnfermedad;
+        historiaLaboralFormModel.sethEnfermedad(hEnfermedad);
     }
 
     public String getDiscapTipo() {
