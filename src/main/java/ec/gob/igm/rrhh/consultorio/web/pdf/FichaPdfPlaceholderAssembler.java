@@ -76,8 +76,9 @@ public class FichaPdfPlaceholderAssembler implements Serializable {
             return;
         }
         for (Map.Entry<String, Boolean> e : riesgos.entrySet()) {
-            if (e.getKey() != null) {
-                rep.put(e.getKey().toLowerCase(), Boolean.TRUE.equals(e.getValue()) ? "X" : "");
+            String key = normalizePlaceholderKey(e.getKey());
+            if (key != null) {
+                rep.put(key, Boolean.TRUE.equals(e.getValue()) ? "X" : "");
             }
         }
     }
@@ -196,13 +197,28 @@ public class FichaPdfPlaceholderAssembler implements Serializable {
                 continue;
             }
             String value = PdfTextUtil.safePdf(e.getValue());
-            String ph = e.getKey().toLowerCase();
+            String ph = normalizePlaceholderKey(e.getKey());
+            if (ph == null) {
+                continue;
+            }
             rep.put(ph, value);
             String alias = normalizeOtrosPlaceholder(ph);
             if (alias != null) {
                 rep.put(alias, value);
             }
         }
+    }
+
+    private String normalizePlaceholderKey(String key) {
+        String normalized = PdfTextUtil.trimToNull(key);
+        if (normalized == null) {
+            return null;
+        }
+        normalized = normalized.toLowerCase();
+        if (normalized.startsWith("{{") && normalized.endsWith("}}") && normalized.length() > 4) {
+            normalized = normalized.substring(2, normalized.length() - 2).trim();
+        }
+        return PdfTextUtil.trimToNull(normalized);
     }
 
     private String normalizeOtrosPlaceholder(String keyLower) {

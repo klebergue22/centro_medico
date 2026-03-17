@@ -11,6 +11,8 @@ import jakarta.ejb.Stateless;
 import ec.gob.igm.rrhh.consultorio.domain.model.DatEmpleado;
 import ec.gob.igm.rrhh.consultorio.domain.model.FichaOcupacional;
 import ec.gob.igm.rrhh.consultorio.domain.model.PersonaAux;
+import ec.gob.igm.rrhh.consultorio.domain.enums.GrupoSangre;
+import ec.gob.igm.rrhh.consultorio.domain.enums.Sexo;
 
 @Stateless
 /**
@@ -47,16 +49,33 @@ public class FichaPdfDataMapper implements Serializable {
                 data.nombre1 = parts.length > 0 ? parts[0] : "";
                 data.nombre2 = parts.length > 1 ? parts[1] : "";
             }
+            Sexo sexoEmpleado = empleadoSel.getSexo();
+            if (sexoEmpleado != null) {
+                data.sexo = sexoEmpleado.getDescripcion();
+            }
+            GrupoSangre grupoSangre = empleadoSel.getGrupoSangre();
+            if (grupoSangre != null) {
+                data.grupoSanguineo = grupoSangre.getCodigo();
+            }
+            if (fechaNacimientoActual == null) {
+                data.fechaNacimiento = empleadoSel.getfNacimiento();
+            }
         } else if (personaAux != null) {
             data.apellido1 = personaAux.getApellido1();
             data.apellido2 = personaAux.getApellido2();
             data.nombre1 = personaAux.getNombre1();
             data.nombre2 = personaAux.getNombre2();
+            data.sexo = personaAux.getSexo();
+            if (fechaNacimientoActual == null) {
+                data.fechaNacimiento = personaAux.getFechaNac();
+            }
         }
 
-        data.fechaNacimiento = fechaNacimientoActual;
         if (fechaNacimientoActual != null) {
-            LocalDate fn = fechaNacimientoActual.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+            data.fechaNacimiento = fechaNacimientoActual;
+        }
+        if (data.fechaNacimiento != null) {
+            LocalDate fn = data.fechaNacimiento.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
             data.edad = Period.between(fn, LocalDate.now()).getYears();
         }
 

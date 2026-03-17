@@ -231,6 +231,15 @@ public class CentroMedicoPdfControllerSupport implements Serializable {
         if (data.nombre2 != null) {
             input.nombre2Setter.accept(data.nombre2);
         }
+        if (data.sexo != null) {
+            input.sexoSetter.accept(data.sexo);
+        }
+        if (data.grupoSanguineo != null) {
+            input.grupoSanguineoSetter.accept(data.grupoSanguineo);
+        }
+        if (data.fechaNacimiento != null) {
+            input.fechaNacimientoSetter.accept(data.fechaNacimiento);
+        }
         if (data.edad != null) {
             input.edadSetter.accept(data.edad);
         }
@@ -424,6 +433,9 @@ public class CentroMedicoPdfControllerSupport implements Serializable {
         public Consumer<String> apellido2Setter;
         public Consumer<String> nombre1Setter;
         public Consumer<String> nombre2Setter;
+        public Consumer<String> sexoSetter;
+        public Consumer<String> grupoSanguineoSetter;
+        public Consumer<java.util.Date> fechaNacimientoSetter;
         public Consumer<Integer> edadSetter;
     }
 }
