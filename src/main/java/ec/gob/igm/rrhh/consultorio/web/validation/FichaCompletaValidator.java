@@ -29,7 +29,9 @@ public class FichaCompletaValidator {
             return result;
         }
 
-        boolean modoAux = permitirIngresoManual || personaAux != null || ficha.getPersonaAux() != null;
+        boolean tieneEmpleado = (empleadoSel != null) || (ficha.getEmpleado() != null);
+        boolean tienePersonaAux = hasPersonaAux(personaAux, ficha.getPersonaAux());
+        boolean modoAux = !tieneEmpleado && (permitirIngresoManual || tienePersonaAux);
 
         if (modoAux) {
             if (personaAux != null && !isBlank(personaAux.getCedula())) {
@@ -47,9 +49,6 @@ public class FichaCompletaValidator {
         if (ficha.getFechaEmision() == null) {
             ficha.setFechaEmision(fechaEmision != null ? fechaEmision : new Date());
         }
-
-        boolean tieneEmpleado = (empleadoSel != null) || (ficha.getEmpleado() != null);
-        boolean tienePersonaAux = hasPersonaAux(personaAux, ficha.getPersonaAux());
 
         if (!tieneEmpleado && !tienePersonaAux) {
             result.addError("Debe seleccionar un empleado o registrar una persona auxiliar.");
