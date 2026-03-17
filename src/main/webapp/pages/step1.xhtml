@@ -71,12 +71,12 @@
 
             <div class="ap-grid">
                 <div class="ap-item">
-                    <p:selectBooleanCheckbox value="#{centroMedicoCtrl.apEmbarazada}" />
+                    <p:selectBooleanCheckbox value="#{centroMedicoCtrl.atencionPrioritariaModel.embarazada}" />
                     <h:outputText value="Embarazada" styleClass="ap-label"/>
                 </div>
 
                 <div class="ap-item">
-                    <p:selectBooleanCheckbox value="#{centroMedicoCtrl.apDiscapacidad}">
+                    <p:selectBooleanCheckbox value="#{centroMedicoCtrl.atencionPrioritariaModel.discapacidad}">
                         <p:ajax process="@this"
                                 listener="#{centroMedicoCtrl.onToggleDiscapacidad}"
                                 update="@form:apDiscapPanel"/>
@@ -85,7 +85,7 @@
                 </div>
 
                 <div class="ap-item">
-                    <p:selectBooleanCheckbox value="#{centroMedicoCtrl.apCatastrofica}">
+                    <p:selectBooleanCheckbox value="#{centroMedicoCtrl.atencionPrioritariaModel.catastrofica}">
                         <p:ajax process="@this"
                                 listener="#{centroMedicoCtrl.onToggleCatastrofica}"
                                 update="@form:apCatasPanel"/>
@@ -94,12 +94,12 @@
                 </div>
 
                 <div class="ap-item">
-                    <p:selectBooleanCheckbox value="#{centroMedicoCtrl.apLactancia}" />
+                    <p:selectBooleanCheckbox value="#{centroMedicoCtrl.atencionPrioritariaModel.lactancia}" />
                     <h:outputText value="Lactancia" styleClass="ap-label"/>
                 </div>
 
                 <div class="ap-item">
-                    <p:selectBooleanCheckbox value="#{centroMedicoCtrl.apAdultoMayor}" />
+                    <p:selectBooleanCheckbox value="#{centroMedicoCtrl.atencionPrioritariaModel.adultoMayor}" />
                     <h:outputText value="Adulto mayor" styleClass="ap-label"/>
                 </div>
             </div>
@@ -108,14 +108,14 @@
                  Discapacidad
                  ======================= -->
             <p:outputPanel id="apDiscapPanel" style="margin-top:.75rem;">
-                <ui:fragment rendered="#{centroMedicoCtrl.apDiscapacidad}">
+                <ui:fragment rendered="#{centroMedicoCtrl.atencionPrioritariaModel.discapacidad}">
                     <p:panel header="Discapacidad">
 
                         <div class="ui-fluid" style="display:flex; flex-wrap:wrap; gap:12px;">
 
                             <div style="flex: 1 1 280px; min-width:260px;">
                                 <h:outputLabel for="dis_tipo" value="Tipo:" style="font-weight:bold; display:block; margin-bottom:4px;"/>
-                                <p:selectOneMenu id="dis_tipo" value="#{centroMedicoCtrl.discapTipo}" style="width:100%;">
+                                <p:selectOneMenu id="dis_tipo" value="#{centroMedicoCtrl.atencionPrioritariaModel.discapTipo}" style="width:100%;">
                                     <f:selectItem itemLabel="Seleccione" itemValue="" noSelectionOption="true"/>
                                     <f:selectItem itemLabel="Físico" itemValue="FISICO"/>
                                     <f:selectItem itemLabel="Auditivo" itemValue="AUDITIVO"/>
@@ -131,7 +131,7 @@
 
                                 <div style="display:flex; align-items:center; gap:12px; width:100%;">
                                     <!-- input target del slider -->
-                                    <p:inputText id="dis_porc" value="#{centroMedicoCtrl.discapPorc}" style="width:80px; text-align:center;">
+                                    <p:inputText id="dis_porc" value="#{centroMedicoCtrl.atencionPrioritariaModel.discapPorc}" style="width:80px; text-align:center;">
                                         <f:convertNumber integerOnly="true" />
                                     </p:inputText>
 
@@ -145,7 +145,7 @@
                             <div style="flex: 1 1 100%; min-width:260px;">
                                 <h:outputLabel for="dis_desc" value="Descripción:" style="font-weight:bold; display:block; margin-bottom:4px;"/>
                                 <p:inputTextarea id="dis_desc"
-                                                 value="#{centroMedicoCtrl.discapDesc}"
+                                                 value="#{centroMedicoCtrl.atencionPrioritariaModel.discapDesc}"
                                                  rows="3" autoResize="true"
                                                  maxlength="500"
                                                  style="width:100%;"
@@ -162,7 +162,7 @@
                  Catastrófica / Huérfana / Rara
                  ======================= -->
             <p:outputPanel id="apCatasPanel" style="margin-top:.75rem;">
-                <ui:fragment rendered="#{centroMedicoCtrl.apCatastrofica}">
+                <ui:fragment rendered="#{centroMedicoCtrl.atencionPrioritariaModel.catastrofica}">
                     <p:panel header="Enfermedad Catastrófica, Huérfana y Rara">
 
                         <div class="ui-fluid" style="display:flex; flex-wrap:wrap; gap:12px;">
@@ -170,7 +170,7 @@
                             <div style="flex: 1 1 100%; min-width:260px;">
                                 <h:outputLabel for="cat_diag" value="Diagnóstico:" style="font-weight:bold; display:block; margin-bottom:4px;"/>
                                 <p:inputTextarea id="cat_diag"
-                                                 value="#{centroMedicoCtrl.catasDiagnostico}"
+                                                 value="#{centroMedicoCtrl.atencionPrioritariaModel.catasDiagnostico}"
                                                  rows="3" autoResize="true"
                                                  maxlength="500"
                                                  style="width:100%;"
@@ -179,7 +179,7 @@
 
                             <div style="flex: 0 0 260px; min-width:240px;">
                                 <h:outputLabel for="cat_calif" value="Calificada:" style="font-weight:bold; display:block; margin-bottom:4px;"/>
-                                <p:selectOneRadio id="cat_calif" value="#{centroMedicoCtrl.catasCalificada}" layout="lineDirection">
+                                <p:selectOneRadio id="cat_calif" value="#{centroMedicoCtrl.atencionPrioritariaModel.catasCalificada}" layout="lineDirection">
                                     <f:selectItem itemLabel="Sí" itemValue="true"/>
                                     <f:selectItem itemLabel="No" itemValue="false"/>
                                 </p:selectOneRadio>
@@ -238,7 +238,7 @@
 
 
             <h:outputLabel for="sangre" value="Grupo sanguíneo"/>
-            <p:selectOneMenu id="sangre" value="#{centroMedicoCtrl.grupoSanguineo}">
+            <p:selectOneMenu id="sangre" value="#{centroMedicoCtrl.step1.grupoSanguineo}">
                 <f:selectItem itemLabel="Seleccione" itemValue=""/>
                 <f:selectItem itemLabel="O+" itemValue="O+"/>
                 <f:selectItem itemLabel="O-" itemValue="O-"/>
@@ -251,7 +251,7 @@
             </p:selectOneMenu>
 
             <h:outputLabel for="lateralidad" value="Lateralidad"/>
-            <p:selectOneMenu id="lateralidad" value="#{centroMedicoCtrl.lateralidad}">
+            <p:selectOneMenu id="lateralidad" value="#{centroMedicoCtrl.step1.lateralidad}">
                 <f:selectItem itemLabel="Seleccione" itemValue=""/>
                 <f:selectItem itemLabel="Diestro" itemValue="DIESTRO"/>
                 <f:selectItem itemLabel="Zurdo" itemValue="ZURDO"/>
@@ -273,7 +273,7 @@
                      maxlength="20"/>
 
         <h:outputLabel value="Fecha de atención"/>
-        <p:calendar value="#{centroMedicoCtrl.fechaAtencion}"
+        <p:calendar value="#{centroMedicoCtrl.step1.fechaAtencion}"
                     pattern="dd/MM/yyyy"
                     navigator="true"
                     showOn="button"/>
@@ -281,7 +281,7 @@
         <!-- Selector de tipo de evaluación -->
         <h:panelGrid>
             <h:outputLabel for="tipoEval" value="Tipo Evaluación"/>
-            <p:selectOneRadio id="tipoEval" value="#{centroMedicoCtrl.tipoEval}">
+            <p:selectOneRadio id="tipoEval" value="#{centroMedicoCtrl.step1.tipoEval}">
                 <f:selectItem itemLabel="Ingreso" itemValue="INGRESO"/>
                 <f:selectItem itemLabel="Periódico" itemValue="PERIODICO"/>
                 <f:selectItem itemLabel="Reintegro" itemValue="REINTEGRO"/>
@@ -299,28 +299,28 @@
             <h:panelGrid columns="2" styleClass="ui-fluid">
 
                 <!-- Fecha de ingreso: INGRESO / PERIODICO -->
-                <ui:fragment rendered="#{centroMedicoCtrl.tipoEval eq 'INGRESO' or centroMedicoCtrl.tipoEval eq 'PERIODICO'}">
+                <ui:fragment rendered="#{centroMedicoCtrl.step1.tipoEval eq 'INGRESO' or centroMedicoCtrl.step1.tipoEval eq 'PERIODICO'}">
                     <h:outputLabel for="fecIngreso" value="Fecha de ingreso"/>
                     <p:calendar id="fecIngreso"
-                                value="#{centroMedicoCtrl.fecIngreso}"
+                                value="#{centroMedicoCtrl.step1.fecIngreso}"
                                 pattern="dd/MM/yyyy"
                                 showOn="button"/>
                 </ui:fragment>
 
                 <!-- Fecha de reintegro: solo REINTEGRO -->
-                <ui:fragment rendered="#{centroMedicoCtrl.tipoEval eq 'REINTEGRO'}">
+                <ui:fragment rendered="#{centroMedicoCtrl.step1.tipoEval eq 'REINTEGRO'}">
                     <h:outputLabel for="fecReintegro" value="Fecha de reintegro"/>
                     <p:calendar id="fecReintegro"
-                                value="#{centroMedicoCtrl.fecReintegro}"
+                                value="#{centroMedicoCtrl.step1.fecReintegro}"
                                 pattern="dd/MM/yyyy"
                                 showOn="button"/>
                 </ui:fragment>
 
                 <!-- Último día laboral: solo RETIRO -->
-                <ui:fragment rendered="#{centroMedicoCtrl.tipoEval eq 'RETIRO'}">
+                <ui:fragment rendered="#{centroMedicoCtrl.step1.tipoEval eq 'RETIRO'}">
                     <h:outputLabel for="fecRetiro" value="Último día laboral"/>
                     <p:calendar id="fecRetiro"
-                                value="#{centroMedicoCtrl.fecRetiro}"
+                                value="#{centroMedicoCtrl.step1.fecRetiro}"
                                 pattern="dd/MM/yyyy"
                                 showOn="button"/>
                 </ui:fragment>
@@ -330,7 +330,7 @@
 
         <h:outputLabel value="Observación" />
         <p:inputTextarea id="obsGeneral"
-                         value="#{centroMedicoCtrl.motivoObs}"
+                         value="#{centroMedicoCtrl.step1.motivoObs}"
                          style="width:190%; min-width:400px;" rows="2" autoResize="true"
                          maxlength="2000"
                          placeholder="Observación"/>
@@ -341,28 +341,28 @@
     <p:fieldset legend="C. ANTECEDENTES PERSONALES" toggleable="true">
         <h:panelGrid columns="2" columnClasses="w-20rem," styleClass="ui-fluid">
             <h:outputLabel value="Antecedentes clínicos y quirúrgicos"/>
-            <p:inputTextarea style="width:140%; min-width:600px;" rows="3" autoResize="true" value="#{centroMedicoCtrl.antClinicoQuirurgico}"/>
+            <p:inputTextarea style="width:140%; min-width:600px;" rows="3" autoResize="true" value="#{centroMedicoCtrl.antecedentesFormModel.antClinicoQuirurgico}"/>
 
             <h:outputLabel value="Antecedentes familiares"/>
-            <p:inputTextarea rows="3" style="width:140%; min-width:600px;" autoResize="true" value="#{centroMedicoCtrl.antFamiliares}"/>
+            <p:inputTextarea rows="3" style="width:140%; min-width:600px;" autoResize="true" value="#{centroMedicoCtrl.antecedentesFormModel.antFamiliares}"/>
 
             <h:outputLabel value="Condición especial (urgencias / emergencia / tx)"/>
-            <p:inputTextarea rows="2" style="width:140%; min-width:600px;" autoResize="true" value="#{centroMedicoCtrl.condicionEspecial}"/>
+            <p:inputTextarea rows="2" style="width:140%; min-width:600px;" autoResize="true" value="#{centroMedicoCtrl.antecedentesFormModel.condicionEspecial}"/>
 
             <h:outputLabel value="Autoriza transfusiones"/>
-            <p:selectOneRadio value="#{centroMedicoCtrl.autorizaTransfusion}">
+            <p:selectOneRadio value="#{centroMedicoCtrl.antecedentesFormModel.autorizaTransfusion}">
                 <f:selectItem itemLabel="Sí" itemValue="S"/>
                 <f:selectItem itemLabel="No" itemValue="N"/>
             </p:selectOneRadio>
 
             <h:outputLabel value="Tratamiento hormonal"/>
-            <p:selectOneRadio value="#{centroMedicoCtrl.tratamientoHormonal}">
+            <p:selectOneRadio value="#{centroMedicoCtrl.antecedentesFormModel.tratamientoHormonal}">
                 <f:selectItem itemLabel="Sí" itemValue="S"/>
                 <f:selectItem itemLabel="No" itemValue="N"/>
             </p:selectOneRadio>
 
             <h:outputLabel value="¿Cuál?"/>
-            <p:inputTextarea style="width:140%; min-width:600px;" value="#{centroMedicoCtrl.tratamientoHormonalCual}"/>
+            <p:inputTextarea style="width:140%; min-width:600px;" value="#{centroMedicoCtrl.antecedentesFormModel.tratamientoHormonalCual}"/>
         </h:panelGrid>
         <p:outputPanel id="sexoBlocks" layout="block"  style="margin-top:8px">
 
@@ -736,24 +736,24 @@
         <h:panelGrid columns="10" styleClass="ui-fluid vit-grid">
 
             <h:outputText value="Temp (°C)"/>
-            <p:inputNumber id="temp" value="#{centroMedicoCtrl.temp}" decimalPlaces="1"/>
+            <p:inputNumber id="temp" value="#{centroMedicoCtrl.signosModel.temp}" decimalPlaces="1"/>
 
             <h:outputText value="PA (mmHg)"/>
-            <p:inputText id="pa" value="#{centroMedicoCtrl.paStr}" placeholder="120&#47;80"/>
+            <p:inputText id="pa" value="#{centroMedicoCtrl.signosModel.paStr}" placeholder="120&#47;80"/>
 
             <h:outputText value="FC"/>
-            <p:inputNumber id="fc" value="#{centroMedicoCtrl.fc}" decimalPlaces="0"/>
+            <p:inputNumber id="fc" value="#{centroMedicoCtrl.signosModel.fc}" decimalPlaces="0"/>
 
             <h:outputText value="FR"/>
-            <p:inputNumber id="fr" value="#{centroMedicoCtrl.fr}" decimalPlaces="0"/>
+            <p:inputNumber id="fr" value="#{centroMedicoCtrl.signosModel.fr}" decimalPlaces="0"/>
 
             <h:outputText value="Sat O&#8322; (&#37;)"/>
-            <p:inputNumber id="satO2" value="#{centroMedicoCtrl.satO2}" decimalPlaces="0"/>
+            <p:inputNumber id="satO2" value="#{centroMedicoCtrl.signosModel.satO2}" decimalPlaces="0"/>
 
             <h:outputText value="Peso (kg)"/>
             <p:inputNumber id="peso"
                            widgetVar="wPeso"
-                           value="#{centroMedicoCtrl.peso}"
+                           value="#{centroMedicoCtrl.signosModel.peso}"
                            decimalPlaces="2"
                            decimalSeparator=","
                            thousandSeparator=""
@@ -762,7 +762,7 @@
             <h:outputText value="Talla (cm)"/>
             <p:inputNumber id="talla"
                            widgetVar="wTalla"
-                           value="#{centroMedicoCtrl.tallaCm}"
+                           value="#{centroMedicoCtrl.signosModel.tallaCm}"
                            decimalPlaces="2"
                            decimalSeparator=","
                            thousandSeparator=""
@@ -771,7 +771,7 @@
             <h:outputText value="IMC"/>
             <p:inputNumber id="imc"
                            widgetVar="wImc"
-                           value="#{centroMedicoCtrl.imc}"
+                           value="#{centroMedicoCtrl.signosModel.imc}"
                            decimalPlaces="2"
                            decimalSeparator=","
                            thousandSeparator=""
@@ -779,7 +779,7 @@
 
 
             <h:outputText value="Perímetro abd (cm)"/>
-            <p:inputNumber id="perimetroAbd" value="#{centroMedicoCtrl.perimetroAbd}" decimalPlaces="1"/>
+            <p:inputNumber id="perimetroAbd" value="#{centroMedicoCtrl.signosModel.perimetroAbd}" decimalPlaces="1"/>
         </h:panelGrid>
 
         <h:outputScript target="body">

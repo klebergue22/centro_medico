@@ -148,19 +148,19 @@
                 <h:panelGrid >
 
 
-                    <ui:fragment rendered="#{fichaPrintCtrl.cm.tipoEval eq 'INGRESO' or centroMedicoCtrl.tipoEval eq 'PERIODICO'}">
+                    <ui:fragment rendered="#{fichaPrintCtrl.cm.tipoEval eq 'INGRESO' or centroMedicoCtrl.step1.tipoEval eq 'PERIODICO'}">
                         <h:outputLabel for="fecIngreso" value="Fecha de ingreso"/>
                         <h:outputText value="#{fichaPrintCtrl.cm.fecIngreso}" />
                     </ui:fragment>
 
 
-                    <ui:fragment rendered="#{fichaPrintCtrl.cm.tipoEval eq 'REINTEGRO' or centroMedicoCtrl.tipoEval eq 'PERIODICO'}">
+                    <ui:fragment rendered="#{fichaPrintCtrl.cm.tipoEval eq 'REINTEGRO' or centroMedicoCtrl.step1.tipoEval eq 'PERIODICO'}">
                         <h:outputLabel for="fecReintegro" value="Fecha de reintegro"/>
                         <h:outputText value="#{fichaPrintCtrl.cm.fecReintegro}" />
                     </ui:fragment>
 
 
-                    <ui:fragment rendered="#{fichaPrintCtrl.cm.tipoEval eq 'RETIRO' or centroMedicoCtrl.tipoEval eq 'PERIODICO'}">
+                    <ui:fragment rendered="#{fichaPrintCtrl.cm.tipoEval eq 'RETIRO' or centroMedicoCtrl.step1.tipoEval eq 'PERIODICO'}">
                         <h:outputLabel for="fecRetiro" value="Último día laboral"/>
                         <h:outputText value="#{fichaPrintCtrl.cm.fecRetiro}" />
                     </ui:fragment>
