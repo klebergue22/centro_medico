@@ -212,6 +212,8 @@ public class Cie10LookupService {
         if (q.isEmpty()) {
             return new ArrayList<>();
         }
+        return out;
+    }
 
         List<Cie10> lista = cie10Service.buscarPorDescripcionLike(q, limite);
         Set<String> descripciones = new LinkedHashSet<>();
@@ -266,6 +268,15 @@ public class Cie10LookupService {
 
         return out;
     }
+
+    private String limpiarTexto(String value) {
+        return value == null ? "" : value.trim();
+    }
+
+    private String normalizarCodigo(String codigo) {
+        return limpiarTexto(codigo).toUpperCase().replaceAll("[^A-Z0-9]", "");
+    }
+
 
     private String limpiarTexto(String value) {
         return value == null ? "" : value.trim();
