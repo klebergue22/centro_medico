@@ -49,7 +49,7 @@ public class DiagnosticoFilaUiCoordinator {
             return;
         }
 
-        String codigo = selected.trim().toUpperCase();
+        String codigo = cie10LookupService.extraerCodigoDeSugerencia(selected);
         row.setCodigo(codigo);
 
         Cie10 cie = cie10Service.buscarPorCodigo(codigo);
@@ -81,7 +81,7 @@ public class DiagnosticoFilaUiCoordinator {
             return;
         }
 
-        String codigo = typed != null ? typed.trim() : "";
+        String codigo = cie10LookupService.extraerCodigoDeSugerencia(typed);
         if (codigo.isEmpty()) {
             row.setCodigo(null);
             row.setDescripcion(null);
