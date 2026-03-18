@@ -63,6 +63,12 @@ public class ConsultaDiagnostico implements Serializable {
     @Column(name = "ESTADO", length = 20, nullable = false)
     private String estado;
 
+    @Transient
+    private String codigoUi;
+
+    @Transient
+    private String descripcionUi;
+
     public ConsultaDiagnostico() {
     }
 
@@ -135,6 +141,10 @@ public class ConsultaDiagnostico implements Serializable {
 
     public void setCie10(Cie10 cie10) {
         this.cie10 = cie10;
+        if (cie10 != null) {
+            this.codigoUi = cie10.getCodigo();
+            this.descripcionUi = cie10.getDescripcion();
+        }
     }
 
     public String getTipoDiag() {
@@ -172,37 +182,50 @@ public class ConsultaDiagnostico implements Serializable {
     // Compatibilidad con UI/Controller (CentroMedicoCtrl)
 
     public String getCodigo() {
-        // si está asociado a CIE10 real, úsalo
         if (this.cie10 != null) {
             return this.cie10.getCodigo();
         }
-        return null;
+        return codigoUi;
     }
 
     public void setCodigo(String codigo) {
-        // para filas vacías de UI se permite null
         if (codigo == null || codigo.trim().isEmpty()) {
-            // NO crees un Cie10 nuevo aquí (evita TransientPropertyValueException)
-            // solo “desengancha” si venía algo
             this.cie10 = null;
+            this.codigoUi = null;
             return;
         }
 
-        // Si aquí tú ya manejas la selección de CIE10 en otro lado, este setter
-        // no debe inventarse un CIE10 nuevo.
-        // Deja que el controller/service asigne el cie10 real.
-        // Opcional: si ya hay un cie10 asignado, no lo cambies aquí.
+        this.codigoUi = codigo.trim().toUpperCase();
+        if (this.cie10 != null && this.cie10.getCodigo() != null
+                && !this.cie10.getCodigo().equalsIgnoreCase(this.codigoUi)) {
+            this.cie10 = null;
+            this.descripcionUi = null;
+        }
     }
 
     public String getDescripcion() {
         if (this.cie10 != null) {
             return this.cie10.getDescripcion();
         }
-        return null;
+        return descripcionUi;
     }
 
     public void setDescripcion(String descripcion) {
-        // Solo por compatibilidad: en tu caso descripción viene de CIE10.
-        // Para filas vacías, no hace nada.
+        if (descripcion == null || descripcion.trim().isEmpty()) {
+            this.descripcionUi = null;
+            if (this.cie10 == null) {
+                return;
+            }
+            if (this.cie10.getDescripcion() == null || this.cie10.getDescripcion().trim().isEmpty()) {
+                this.cie10 = null;
+            }
+            return;
+        }
+
+        this.descripcionUi = descripcion.trim();
+        if (this.cie10 != null && this.cie10.getDescripcion() != null
+                && !this.cie10.getDescripcion().equalsIgnoreCase(this.descripcionUi)) {
+            this.cie10 = null;
+        }
     }
 }
