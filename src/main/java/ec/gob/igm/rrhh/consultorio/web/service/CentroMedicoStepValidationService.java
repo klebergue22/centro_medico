@@ -1,6 +1,7 @@
 package ec.gob.igm.rrhh.consultorio.web.service;
 
 import java.io.Serializable;
+import java.util.Date;
 import java.util.List;
 
 import jakarta.enterprise.context.ApplicationScoped;
@@ -8,7 +9,9 @@ import jakarta.faces.application.FacesMessage;
 import jakarta.faces.context.FacesContext;
 
 import ec.gob.igm.rrhh.consultorio.domain.model.ConsultaDiagnostico;
+import ec.gob.igm.rrhh.consultorio.domain.model.DatEmpleado;
 import ec.gob.igm.rrhh.consultorio.domain.model.FichaRiesgo;
+import ec.gob.igm.rrhh.consultorio.domain.model.PersonaAux;
 import ec.gob.igm.rrhh.consultorio.domain.model.SignosVitales;
 import ec.gob.igm.rrhh.consultorio.web.validation.Step1Validator;
 import ec.gob.igm.rrhh.consultorio.web.validation.Step2Validator;
@@ -28,10 +31,13 @@ public class CentroMedicoStepValidationService implements Serializable {
     private final Step3Validator step3Validator = new Step3Validator();
 
     public ValidationResult validarStep1(String apellido1, String apellido2, String nombre1, String nombre2,
-                                         String sexo, String tipoEval, String paStr, Integer fc, Double peso, Double tallaCm,
-                                         SignosVitales signos, String puestoTrabajoCiuo, FichaRiesgo fichaRiesgo) {
-        return step1Validator.validate(apellido1, apellido2, nombre1, nombre2, sexo, tipoEval,
-                paStr, fc, peso, tallaCm, signos, puestoTrabajoCiuo, fichaRiesgo);
+                                         Date fechaAtencion, String sexo, String tipoEval, String paStr, Integer fc,
+                                         Double peso, Double tallaCm, SignosVitales signos, String puestoTrabajoCiuo,
+                                         FichaRiesgo fichaRiesgo, DatEmpleado empleadoSel, Integer noPersonaSel,
+                                         PersonaAux personaAux) {
+        return step1Validator.validate(apellido1, apellido2, nombre1, nombre2, fechaAtencion, sexo, tipoEval,
+                paStr, fc, peso, tallaCm, signos, puestoTrabajoCiuo, fichaRiesgo, empleadoSel, noPersonaSel,
+                personaAux);
     }
 
     public ValidationResult validarStep2(FichaRiesgo fichaRiesgo, List<String> actividadesLab, List<String> medidasPreventivas) {
