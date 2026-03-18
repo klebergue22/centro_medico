@@ -24,9 +24,11 @@
                                 <tr>
                                     <th colspan="8" style="text-align:left; background:#f5f5f5;">
                                         <h:outputText value="PUESTO DE TRABAJO"/>
-                                        <p:inputText id="puestoTrabajo"
-                                                     value="#{centroMedicoCtrl.ficha.ciiu}"
-                                                     style="width:60%; margin-left:10px"/>
+                                        <p:inputTextarea id="puestoTrabajo"
+                                                         value="#{centroMedicoCtrl.ficha.ciiu}"
+                                                         rows="2"
+                                                         autoResize="false"
+                                                         style="width:100%; margin:8px 0 0 0; display:block; box-sizing:border-box;"/>
                                     </th>
                                 </tr>
                                 <tr class="risk-header">
