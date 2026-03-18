@@ -1,7 +1,11 @@
 package ec.gob.igm.rrhh.consultorio.web.validation;
 
 import ec.gob.igm.rrhh.consultorio.domain.model.FichaRiesgo;
+import ec.gob.igm.rrhh.consultorio.domain.model.PersonaAux;
 import ec.gob.igm.rrhh.consultorio.domain.model.SignosVitales;
+import ec.gob.igm.rrhh.consultorio.domain.model.DatEmpleado;
+
+import java.util.Date;
 
 /**
  * Class Step1Validator: valida datos y reglas del flujo de formularios.
@@ -10,11 +14,17 @@ public class Step1Validator {
 
     public ValidationResult validate(String apellido1, String apellido2,
             String nombre1, String nombre2,
+            Date fechaAtencion,
             String sexo, String tipoEval,
             String paStr, Integer fc, Double peso, Double tallaCm,
-            SignosVitales signos, String puestoTrabajoCiuo, FichaRiesgo fichaRiesgo) {
+            SignosVitales signos, String puestoTrabajoCiuo, FichaRiesgo fichaRiesgo,
+            DatEmpleado empleadoSel, Integer noPersonaSel, PersonaAux personaAux) {
 
         ValidationResult result = new ValidationResult();
+
+        if (fechaAtencion == null) {
+            result.addError("Debe ingresar la fecha de atención.");
+        }
 
         if (isBlank(apellido1) && isBlank(apellido2)) {
             result.addError("Debe ingresar al menos un apellido.");
@@ -60,6 +70,21 @@ public class Step1Validator {
 
         if (!tienePuestoTrabajo) {
             result.addError("Debe ingresar el puesto de trabajo.");
+        }
+
+        boolean tieneEmpleadoSeleccionado = empleadoSel != null || noPersonaSel != null;
+        if (!tieneEmpleadoSeleccionado) {
+            if (personaAux == null || isBlank(personaAux.getCedula())) {
+                result.addError("Debe seleccionar un empleado de RRHH o registrar una persona auxiliar (cédula obligatoria).");
+            }
+
+            boolean faltanDatosPersonaAux = personaAux == null
+                    || isBlank(personaAux.getApellido1())
+                    || isBlank(personaAux.getNombre1())
+                    || isBlank(personaAux.getSexo());
+            if (faltanDatosPersonaAux) {
+                result.addError("En Persona Auxiliar: primer apellido, primer nombre y sexo son obligatorios.");
+            }
         }
 
         return result;

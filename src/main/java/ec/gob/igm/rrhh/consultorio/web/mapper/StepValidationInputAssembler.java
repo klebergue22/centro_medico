@@ -21,6 +21,7 @@ public class StepValidationInputAssembler {
             String apellido2,
             String nombre1,
             String nombre2,
+            Date fechaAtencion,
             String sexo,
             String tipoEval,
             String paStr,
@@ -28,12 +29,16 @@ public class StepValidationInputAssembler {
             Double peso,
             Double tallaCm,
             SignosVitales signos,
-            FichaRiesgo fichaRiesgo) {
+            FichaRiesgo fichaRiesgo,
+            DatEmpleado empleadoSel,
+            Integer noPersonaSel,
+            PersonaAux personaAux) {
         Step1ValidationInput input = new Step1ValidationInput();
         input.apellido1 = apellido1;
         input.apellido2 = apellido2;
         input.nombre1 = nombre1;
         input.nombre2 = nombre2;
+        input.fechaAtencion = fechaAtencion;
         input.sexo = sexo;
         input.tipoEval = tipoEval;
         input.paStr = paStr;
@@ -45,6 +50,9 @@ public class StepValidationInputAssembler {
                 ? fichaRiesgo.getFicha().getCiiu()
                 : null;
         input.fichaRiesgo = fichaRiesgo;
+        input.empleadoSel = empleadoSel;
+        input.noPersonaSel = noPersonaSel;
+        input.personaAux = personaAux;
         return input;
     }
 
@@ -67,4 +75,3 @@ public class StepValidationInputAssembler {
         return input;
     }
 }
-

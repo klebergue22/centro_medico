@@ -262,6 +262,7 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
                 pacienteFormData.getApellido2(),
                 pacienteFormData.getNombre1(),
                 pacienteFormData.getNombre2(),
+                step1FormModel.getFechaAtencion(),
                 pacienteFormData.getSexo(),
                 step1FormModel.getTipoEval(),
                 signosVitalesFormModel.getPaStr(),
@@ -269,7 +270,10 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
                 signosVitalesFormModel.getPeso(),
                 signosVitalesFormModel.getTallaCm(),
                 getSignos(),
-                fichaRiesgo);
+                fichaRiesgo,
+                getEmpleadoSel(),
+                getNoPersonaSel(),
+                getPersonaAux());
 
         ValidationUiResult uiResult = wizardSectionFacade.validarStep1(input);
         uiResult.applyUi(messageService);
@@ -325,7 +329,7 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     public void guardarStep1() {
         wizardStepActionService.execute(new WizardStepActionService.ExecuteStepActionCommand(
                 "guardarStep1",
-                null,
+                this::validarStep1,
                 this::saveStep1,
                 null,
                 () -> messageService.info("Step 1 guardado correctamente (BORRADOR)."),

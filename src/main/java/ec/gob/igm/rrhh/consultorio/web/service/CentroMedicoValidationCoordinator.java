@@ -1,6 +1,7 @@
 package ec.gob.igm.rrhh.consultorio.web.service;
 
 import java.io.Serializable;
+import java.util.Date;
 import java.util.List;
 import java.util.function.Supplier;
 
@@ -38,6 +39,7 @@ public class CentroMedicoValidationCoordinator implements Serializable {
                 input.apellido2,
                 input.nombre1,
                 input.nombre2,
+                input.fechaAtencion,
                 input.sexo,
                 input.tipoEval,
                 input.paStr,
@@ -46,7 +48,10 @@ public class CentroMedicoValidationCoordinator implements Serializable {
                 input.tallaCm,
                 input.signos,
                 input.puestoTrabajoCiuo,
-                input.fichaRiesgo);
+                input.fichaRiesgo,
+                input.empleadoSel,
+                input.noPersonaSel,
+                input.personaAux);
         return new ValidationUiResult(result, "Step 1", false, null, false);
     }
 
@@ -86,6 +91,7 @@ public class CentroMedicoValidationCoordinator implements Serializable {
         public String apellido2;
         public String nombre1;
         public String nombre2;
+        public Date fechaAtencion;
         public String sexo;
         public String tipoEval;
         public String paStr;
@@ -95,6 +101,9 @@ public class CentroMedicoValidationCoordinator implements Serializable {
         public SignosVitales signos;
         public String puestoTrabajoCiuo;
         public FichaRiesgo fichaRiesgo;
+        public DatEmpleado empleadoSel;
+        public Integer noPersonaSel;
+        public PersonaAux personaAux;
     }
 
     public static class FichaCompletaValidationInput implements Serializable {
