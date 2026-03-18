@@ -41,4 +41,6 @@ public class DiagnosticoSectionFacade implements Serializable {
     public void abrirDialogoDiagnostico(CentroMedicoCtrl ctrl, AjaxBehaviorEvent event) { diagnosticoViewDelegate.abrirDialogoDiagnostico(ctrl, event); }
     public void aceptarDialogoDiagnostico(CentroMedicoCtrl ctrl) { diagnosticoViewDelegate.aceptarDialogoDiagnostico(ctrl); }
     public void cerrarDialogoDiagnostico() { diagnosticoViewDelegate.cerrarDialogoDiagnostico(); }
+    public List<String> completarKCieStrings(String query) {return diagnosticoViewDelegate.completarKCieStrings(query);}
+    public List<String> completarKDescStrings(String query) {return diagnosticoViewDelegate.completarKDescStrings(query);}
 }
