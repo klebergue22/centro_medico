@@ -311,6 +311,9 @@
                                     <p:autoComplete id="kCie"
                                                     value="#{d.codigo}"
                                                     completeMethod="#{centroMedicoCtrl.completarCie10FilaPorCodigo}"
+                                                    var="sugerenciaCodigo"
+                                                    itemLabel="#{sugerenciaCodigo}"
+                                                    itemValue="#{sugerenciaCodigo}"
                                                     dropdown="true"
                                                     dropdownMode="current"
                                                     cache="false"
@@ -319,6 +322,7 @@
                                                     forceSelection="false"
                                                     appendTo="@(body)"
                                                     panelStyleClass="k-ac-panel"
+                                                    emptyMessage="No se encontraron coincidencias"
                                                     maxResults="20"
                                                     styleClass="cell-input">
 
@@ -344,6 +348,9 @@
                                     <p:autoComplete id="kDesc"
                                                     value="#{d.descripcion}"
                                                     completeMethod="#{centroMedicoCtrl.completarCie10FilaPorDescripcion}"
+                                                    var="sugerenciaDescripcion"
+                                                    itemLabel="#{sugerenciaDescripcion}"
+                                                    itemValue="#{sugerenciaDescripcion}"
                                                     dropdown="true"
                                                     dropdownMode="current"
                                                     cache="false"
@@ -352,6 +359,7 @@
                                                     forceSelection="false"
                                                     appendTo="@(body)"
                                                     panelStyleClass="k-ac-panel"
+                                                    emptyMessage="No se encontraron coincidencias"
                                                     maxResults="20"
                                                     styleClass="cell-input">
 
