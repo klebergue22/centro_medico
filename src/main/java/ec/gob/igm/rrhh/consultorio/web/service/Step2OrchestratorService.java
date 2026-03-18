@@ -46,6 +46,7 @@ public class Step2OrchestratorService implements Serializable {
     private FichaRiesgo upsertRiskHeader(Step2RiskCommand cmd, String user) {
         FichaRiesgo riesgo = cmd.fichaRiesgo() != null ? cmd.fichaRiesgo() : new FichaRiesgo();
         riesgo.setFicha(cmd.ficha());
+        riesgo.setPuestoTrabajo(cmd.ficha() != null ? cmd.ficha().getCiiu() : null);
 
         riskDetailMapper.mapRiskActivitiesToHeader(riesgo, cmd.actividadesLab());
         riesgo.setMedidasPreventivas(riskDetailMapper.construirMedidas(cmd.medidasPreventivas()));
