@@ -247,12 +247,19 @@ public class Cie10LookupService {
 
         List<Cie10> coincidencias = new ArrayList<>();
         Set<String> codigosAgregados = new LinkedHashSet<>();
+
+        // Priorizar coincidencias por código para que si el usuario escribe "K" vea primero K00, K01, K21, etc.
         agregarCoincidenciasPorCodigo(coincidencias, codigosAgregados, cie10Service.buscarJerarquiaPorTerm(qRaw), qCodigo, limite);
         agregarCoincidenciasPorCodigo(coincidencias, codigosAgregados, cie10Service.buscarPorCodigoAproximado(qRaw, limite), qCodigo, limite);
 
-        // Fallback flexible para evitar perder coincidencias por formato de código.
+        // Completar el panel con resultados combinados por código o descripción.
         if (coincidencias.size() < limite) {
-            agregarCoincidenciasPorCodigo(coincidencias, codigosAgregados, cie10Service.buscarPorTermino(qRaw, limite), qCodigo, limite);
+            agregarCoincidencias(coincidencias, codigosAgregados, cie10Service.buscarPorCodigoODescripcion(qRaw, limite), limite);
+        }
+
+        // Refuerzo extra para entradas que solo aparecen en descripción o por tildes/variantes.
+        if (coincidencias.size() < limite) {
+            agregarCoincidencias(coincidencias, codigosAgregados, cie10Service.buscarPorDescripcionLike(qRaw, limite), limite);
         }
 
         List<String> out = new ArrayList<>();
@@ -310,6 +317,28 @@ public class Cie10LookupService {
         return limitarResultados(descripciones, limite);
     }
 
+
+    private void agregarCoincidencias(List<Cie10> out, Set<String> codigosAgregados, List<Cie10> lista, int limite) {
+        if (out == null || codigosAgregados == null || lista == null || limite <= 0) {
+            return;
+        }
+
+        for (Cie10 cie10 : lista) {
+            if (cie10 == null || cie10.getCodigo() == null) {
+                continue;
+            }
+
+            String codigo = cie10.getCodigo().trim();
+            if (codigo.isEmpty() || !codigosAgregados.add(codigo)) {
+                continue;
+            }
+
+            out.add(cie10);
+            if (out.size() >= limite) {
+                return;
+            }
+        }
+    }
 
     private void agregarCoincidenciasPorCodigo(List<Cie10> out, Set<String> codigosAgregados, List<Cie10> lista, String qCodigo, int limite) {
         if (out == null || codigosAgregados == null || lista == null || limite <= 0) {
