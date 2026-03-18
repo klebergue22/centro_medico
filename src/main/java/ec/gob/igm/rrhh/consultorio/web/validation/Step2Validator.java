@@ -12,7 +12,13 @@ public class Step2Validator {
     public ValidationResult validate(FichaRiesgo fichaRiesgo, List<String> actividadesLab, List<String> medidasPreventivas) {
         ValidationResult result = new ValidationResult();
 
-        if (fichaRiesgo == null || isBlank(fichaRiesgo.getPuestoTrabajo())) {
+        String puestoTrabajo = fichaRiesgo != null
+                ? firstNonBlank(
+                        fichaRiesgo.getPuestoTrabajo(),
+                        fichaRiesgo.getFicha() != null ? fichaRiesgo.getFicha().getCiiu() : null)
+                : null;
+
+        if (isBlank(puestoTrabajo)) {
             result.addError("Debe ingresar el puesto de trabajo.");
         }
 
@@ -25,6 +31,18 @@ public class Step2Validator {
         }
 
         return result;
+    }
+
+    private String firstNonBlank(String... values) {
+        if (values == null) {
+            return null;
+        }
+        for (String value : values) {
+            if (!isBlank(value)) {
+                return value;
+            }
+        }
+        return null;
     }
 
     private boolean hasAnyValue(List<String> values) {

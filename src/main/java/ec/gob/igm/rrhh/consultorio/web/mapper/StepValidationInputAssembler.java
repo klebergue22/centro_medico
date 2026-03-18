@@ -41,7 +41,9 @@ public class StepValidationInputAssembler {
         input.peso = peso;
         input.tallaCm = tallaCm;
         input.signos = signos;
-        input.puestoTrabajoCiuo = fichaRiesgo != null ? fichaRiesgo.getPuestoTrabajo() : null;
+        input.puestoTrabajoCiuo = fichaRiesgo != null && fichaRiesgo.getFicha() != null
+                ? fichaRiesgo.getFicha().getCiiu()
+                : null;
         input.fichaRiesgo = fichaRiesgo;
         return input;
     }

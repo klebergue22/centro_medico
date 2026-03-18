@@ -92,6 +92,8 @@ public class CentroMedicoFormInitializer implements Serializable {
             ctrl.getStep2().setFichaRiesgo(fichaRiesgo);
         }
 
+        ctrl.getStep2().getFichaRiesgo().setPuestoTrabajo(ctrl.getFicha().getCiiu());
+
         if (ctrl.getStep2().getActividadesLab() == null) {
             ctrl.getStep2().setActividadesLab(new ArrayList<>());
         }
