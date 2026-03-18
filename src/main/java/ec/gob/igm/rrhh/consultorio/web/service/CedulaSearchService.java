@@ -63,6 +63,8 @@ public class CedulaSearchService implements Serializable {
         ficha.setEmpleado(emp);
         ficha.setPersonaAux(null);
 
+        String[] nombresSeparados = separarNombres(emp.getNombres());
+
         return CedulaSearchResult.found(
                 cedula,
                 ficha,
@@ -71,12 +73,24 @@ public class CedulaSearchService implements Serializable {
                 emp.getNoPersona(),
                 emp.getPriApellido(),
                 emp.getSegApellido(),
-                emp.getNombres(),
-                null,
+                nombresSeparados[0],
+                nombresSeparados[1],
                 (emp.getSexo() != null) ? emp.getSexo().getCodigo() : null,
                 emp.getfNacimiento(),
                 calcularEdad(emp.getfNacimiento())
         );
+    }
+
+    private String[] separarNombres(String nombresCompletos) {
+        String nombresNormalizados = SnUtils.trimToNull(nombresCompletos);
+        if (nombresNormalizados == null) {
+            return new String[] { null, null };
+        }
+
+        String[] partes = nombresNormalizados.split("\\s+", 2);
+        String nombre1 = partes.length > 0 ? partes[0] : null;
+        String nombre2 = partes.length > 1 ? partes[1] : null;
+        return new String[] { nombre1, nombre2 };
     }
 
     private CedulaSearchResult buildManualResult(String cedula, FichaOcupacional ficha, PersonaAux personaAux) {
