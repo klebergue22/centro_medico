@@ -274,8 +274,6 @@ public class Cie10LookupService {
         if (limpio.isEmpty()) {
             return limpio;
         }
-        return out;
-    }
 
         int sep = limpio.indexOf(" - ");
         String codigo = sep >= 0 ? limpio.substring(0, sep) : limpio;
