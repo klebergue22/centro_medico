@@ -191,27 +191,16 @@ public class Cie10LookupService {
         }
 
         String qCodigo = normalizarCodigo(qRaw);
-        Set<String> codigos = new LinkedHashSet<>();
-        agregarCodigos(codigos, cie10Service.buscarJerarquiaPorTerm(qRaw));
-        agregarCodigos(codigos, cie10Service.buscarPorCodigoAproximado(qRaw, limite));
-
-        if (codigos.size() < limite) {
-            agregarCodigos(codigos, cie10Service.buscarPorTermino(qRaw, limite));
-        }
-
         List<Cie10> out = new ArrayList<>();
-        for (String codigo : codigos) {
-            if (!qCodigo.isEmpty() && !normalizarCodigo(codigo).contains(qCodigo)) {
-                continue;
-            }
-            Cie10 cie = cie10Service.buscarPorCodigo(codigo);
-            if (cie != null) {
-                out.add(cie);
-            }
-            if (out.size() >= limite) {
-                break;
-            }
+        Set<String> codigosAgregados = new LinkedHashSet<>();
+
+        agregarCoincidenciasPorCodigo(out, codigosAgregados, cie10Service.buscarJerarquiaPorTerm(qRaw), qCodigo, limite);
+        agregarCoincidenciasPorCodigo(out, codigosAgregados, cie10Service.buscarPorCodigoAproximado(qRaw, limite), qCodigo, limite);
+
+        if (out.size() < limite) {
+            agregarCoincidenciasPorCodigo(out, codigosAgregados, cie10Service.buscarPorTermino(qRaw, limite), qCodigo, limite);
         }
+
         return out;
     }
 
@@ -223,27 +212,163 @@ public class Cie10LookupService {
         }
 
         List<Cie10> lista = cie10Service.buscarPorDescripcionLike(q, limite);
-        return lista == null ? new ArrayList<>() : lista;
+        List<Cie10> out = new ArrayList<>();
+        Set<String> claves = new LinkedHashSet<>();
+
+        if (lista != null) {
+            for (Cie10 cie10 : lista) {
+                if (cie10 == null || cie10.getCodigo() == null) {
+                    continue;
+                }
+
+                String codigo = cie10.getCodigo().trim();
+                if (codigo.isEmpty() || !claves.add(codigo)) {
+                    continue;
+                }
+
+                out.add(cie10);
+                if (out.size() >= limite) {
+                    break;
+                }
+            }
+        }
+        return out;
     }
 
     public List<String> completarFilaPorCodigo(String query) {
+        String qRaw = limpiarTexto(query);
+        if (qRaw.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        String qCodigo = normalizarCodigo(qRaw);
+        int limite = 20;
+
+        List<Cie10> coincidencias = new ArrayList<>();
+        Set<String> codigosAgregados = new LinkedHashSet<>();
+
+        // Priorizar coincidencias por código para que si el usuario escribe "K" vea primero K00, K01, K21, etc.
+        agregarCoincidenciasPorCodigo(coincidencias, codigosAgregados, cie10Service.buscarJerarquiaPorTerm(qRaw), qCodigo, limite);
+        agregarCoincidenciasPorCodigo(coincidencias, codigosAgregados, cie10Service.buscarPorCodigoAproximado(qRaw, limite), qCodigo, limite);
+
+        // Completar el panel con resultados combinados por código o descripción.
+        if (coincidencias.size() < limite) {
+            agregarCoincidencias(coincidencias, codigosAgregados, cie10Service.buscarPorCodigoODescripcion(qRaw, limite), limite);
+        }
+
+        // Refuerzo extra para entradas que solo aparecen en descripción o por tildes/variantes.
+        if (coincidencias.size() < limite) {
+            agregarCoincidencias(coincidencias, codigosAgregados, cie10Service.buscarPorDescripcionLike(qRaw, limite), limite);
+        }
+
         List<String> out = new ArrayList<>();
-        for (Cie10 cie : completarFilaCie10PorCodigo(query, 20)) {
-            if (cie != null && cie.getCodigo() != null && !cie.getCodigo().trim().isEmpty()) {
-                out.add(cie.getCodigo().trim());
-            }
+        for (Cie10 cie10 : coincidencias) {
+            out.add(formatearSugerenciaCodigo(cie10));
         }
         return out;
     }
 
-    public List<String> completarFilaPorDescripcion(String query, int max) {
-        List<String> out = new ArrayList<>();
-        for (Cie10 cie : completarFilaCie10PorDescripcion(query, max)) {
-            if (cie != null && cie.getDescripcion() != null && !cie.getDescripcion().trim().isEmpty()) {
-                out.add(cie.getDescripcion().trim());
-            }
+
+    public String extraerCodigoDeSugerencia(String value) {
+        String limpio = limpiarTexto(value);
+        if (limpio.isEmpty()) {
+            return limpio;
         }
         return out;
+    }
+
+        int sep = limpio.indexOf(" - ");
+        String codigo = sep >= 0 ? limpio.substring(0, sep) : limpio;
+        return codigo.trim().toUpperCase();
+    }
+
+    private String formatearSugerenciaCodigo(Cie10 cie10) {
+        if (cie10 == null || cie10.getCodigo() == null) {
+            return "";
+        }
+
+        String codigo = cie10.getCodigo().trim();
+        String descripcion = cie10.getDescripcion() != null ? cie10.getDescripcion().trim() : "";
+        if (descripcion.isEmpty()) {
+            return codigo;
+        }
+        return codigo + " - " + descripcion;
+    }
+
+    public List<String> completarFilaPorDescripcion(String query, int max) {
+        int limite = max > 0 ? max : 20;
+        String q = limpiarTexto(query);
+        if (q.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        List<Cie10> lista = cie10Service.buscarPorDescripcionLike(q, limite);
+        Set<String> descripciones = new LinkedHashSet<>();
+        if (lista != null) {
+            for (Cie10 c : lista) {
+                if (c != null && c.getDescripcion() != null) {
+                    String descripcion = c.getDescripcion().trim();
+                    if (!descripcion.isEmpty()) {
+                        descripciones.add(descripcion);
+                    }
+                }
+            }
+        }
+
+        return limitarResultados(descripciones, limite);
+    }
+
+
+    private void agregarCoincidencias(List<Cie10> out, Set<String> codigosAgregados, List<Cie10> lista, int limite) {
+        if (out == null || codigosAgregados == null || lista == null || limite <= 0) {
+            return;
+        }
+
+        for (Cie10 cie10 : lista) {
+            if (cie10 == null || cie10.getCodigo() == null) {
+                continue;
+            }
+
+            String codigo = cie10.getCodigo().trim();
+            if (codigo.isEmpty() || !codigosAgregados.add(codigo)) {
+                continue;
+            }
+
+            out.add(cie10);
+            if (out.size() >= limite) {
+                return;
+            }
+        }
+    }
+
+    private void agregarCoincidenciasPorCodigo(List<Cie10> out, Set<String> codigosAgregados, List<Cie10> lista, String qCodigo, int limite) {
+        if (out == null || codigosAgregados == null || lista == null || limite <= 0) {
+            return;
+        }
+
+        for (Cie10 cie10 : lista) {
+            if (cie10 == null || cie10.getCodigo() == null) {
+                continue;
+            }
+
+            String codigo = cie10.getCodigo().trim();
+            if (codigo.isEmpty()) {
+                continue;
+            }
+
+            if (!qCodigo.isEmpty() && !normalizarCodigo(codigo).contains(qCodigo)) {
+                continue;
+            }
+
+            if (!codigosAgregados.add(codigo)) {
+                continue;
+            }
+
+            out.add(cie10);
+            if (out.size() >= limite) {
+                return;
+            }
+        }
     }
 
     private void agregarCodigos(Set<String> out, List<Cie10> lista) {
@@ -268,6 +393,21 @@ public class Cie10LookupService {
         }
     }
 
+    private List<String> limitarResultados(Set<String> items, int limite) {
+        List<String> out = new ArrayList<>();
+        if (items == null || items.isEmpty() || limite <= 0) {
+            return out;
+        }
+
+        for (String item : items) {
+            out.add(item);
+            if (out.size() >= limite) {
+                break;
+            }
+        }
+
+        return out;
+    }
 
     private String limpiarTexto(String value) {
         return value == null ? "" : value.trim();

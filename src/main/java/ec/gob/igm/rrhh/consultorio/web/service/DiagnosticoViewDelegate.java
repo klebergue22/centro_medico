@@ -140,7 +140,7 @@ public class DiagnosticoViewDelegate implements Serializable {
 
             LOG.info("<<< [AC-K-DESC] RETURN out.size={}{}",
                     out.size(),
-                    out.isEmpty() ? "" : " first=[" + out.get(0).getCodigo() + "]");
+                    out.isEmpty() ? "" : " first=[" + out.get(0).getDescripcion() + "]");
             return out;
 
         } catch (Exception e) {

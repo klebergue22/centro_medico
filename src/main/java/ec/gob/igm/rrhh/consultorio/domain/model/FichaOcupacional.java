@@ -245,7 +245,7 @@ public class FichaOcupacional implements Serializable {
     @Column(name = "RUC_ESTABLECIMIENTO", length = 20)
     private String rucEstablecimiento;
 
-    @Column(name = "CIIU", length = 20)
+    @Column(name = "CIIU", length = 250)
     private String ciiu;
 
     @Column(name = "ESTABLECIMIENTO_CT", length = 250)
