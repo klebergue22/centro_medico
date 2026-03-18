@@ -182,6 +182,60 @@ public class Cie10LookupService {
         return bestScore >= 9 ? null : best;
     }
 
+
+    public List<Cie10> completarFilaCie10PorCodigo(String query, int max) {
+        int limite = max > 0 ? max : 20;
+        String qRaw = limpiarTexto(query);
+        if (qRaw.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        String qCodigo = normalizarCodigo(qRaw);
+        List<Cie10> out = new ArrayList<>();
+        Set<String> codigosAgregados = new LinkedHashSet<>();
+
+        agregarCoincidenciasPorCodigo(out, codigosAgregados, cie10Service.buscarJerarquiaPorTerm(qRaw), qCodigo, limite);
+        agregarCoincidenciasPorCodigo(out, codigosAgregados, cie10Service.buscarPorCodigoAproximado(qRaw, limite), qCodigo, limite);
+
+        if (out.size() < limite) {
+            agregarCoincidenciasPorCodigo(out, codigosAgregados, cie10Service.buscarPorTermino(qRaw, limite), qCodigo, limite);
+        }
+
+        return out;
+    }
+
+    public List<Cie10> completarFilaCie10PorDescripcion(String query, int max) {
+        int limite = max > 0 ? max : 20;
+        String q = limpiarTexto(query);
+        if (q.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        List<Cie10> lista = cie10Service.buscarPorDescripcionLike(q, limite);
+        List<Cie10> out = new ArrayList<>();
+        Set<String> claves = new LinkedHashSet<>();
+
+        if (lista != null) {
+            for (Cie10 cie10 : lista) {
+                if (cie10 == null || cie10.getCodigo() == null) {
+                    continue;
+                }
+
+                String codigo = cie10.getCodigo().trim();
+                if (codigo.isEmpty() || !claves.add(codigo)) {
+                    continue;
+                }
+
+                out.add(cie10);
+                if (out.size() >= limite) {
+                    break;
+                }
+            }
+        }
+
+        return out;
+    }
+
     public List<String> completarFilaPorCodigo(String query) {
         String qRaw = limpiarTexto(query);
         if (qRaw.isEmpty()) {
@@ -227,6 +281,37 @@ public class Cie10LookupService {
         }
 
         return limitarResultados(descripciones, limite);
+    }
+
+
+    private void agregarCoincidenciasPorCodigo(List<Cie10> out, Set<String> codigosAgregados, List<Cie10> lista, String qCodigo, int limite) {
+        if (out == null || codigosAgregados == null || lista == null || limite <= 0) {
+            return;
+        }
+
+        for (Cie10 cie10 : lista) {
+            if (cie10 == null || cie10.getCodigo() == null) {
+                continue;
+            }
+
+            String codigo = cie10.getCodigo().trim();
+            if (codigo.isEmpty()) {
+                continue;
+            }
+
+            if (!qCodigo.isEmpty() && !normalizarCodigo(codigo).contains(qCodigo)) {
+                continue;
+            }
+
+            if (!codigosAgregados.add(codigo)) {
+                continue;
+            }
+
+            out.add(cie10);
+            if (out.size() >= limite) {
+                return;
+            }
+        }
     }
 
     private void agregarCodigos(Set<String> out, List<Cie10> lista) {
