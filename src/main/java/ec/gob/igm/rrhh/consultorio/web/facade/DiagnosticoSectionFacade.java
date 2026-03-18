@@ -31,7 +31,7 @@ public class DiagnosticoSectionFacade implements Serializable {
     public void onCie10DescripcionSelect(CentroMedicoCtrl ctrl, SelectEvent event) { diagnosticoViewDelegate.onCie10DescripcionSelect(ctrl, event); }
     public void onCie10DescripcionBlur(CentroMedicoCtrl ctrl) { diagnosticoViewDelegate.onCie10DescripcionBlur(ctrl); }
     public Cie10 inferCie10PrincipalFromListaK(CentroMedicoCtrl ctrl) { return diagnosticoViewDelegate.inferCie10PrincipalFromListaK(ctrl); }
-    public List<String> completarCie10FilaPorCodigo(String query) { return diagnosticoViewDelegate.completarCie10FilaPorCodigo(query); }
+    public List<Cie10> completarCie10FilaPorCodigo(String query) { return diagnosticoViewDelegate.completarCie10FilaPorCodigo(query); }
     public List<String> completarCie10FilaPorDescripcion(String query) { return diagnosticoViewDelegate.completarCie10FilaPorDescripcion(query); }
     public void onKCieCodigoSelect(CentroMedicoCtrl ctrl, SelectEvent<String> event) { diagnosticoViewDelegate.onKCieCodigoSelect(ctrl, event); }
     public void onKCieCodigoBlur(CentroMedicoCtrl ctrl, AjaxBehaviorEvent event) { diagnosticoViewDelegate.onKCieCodigoBlur(ctrl, event); }

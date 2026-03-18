@@ -111,17 +111,17 @@ public class DiagnosticoViewDelegate implements Serializable {
         return diagnosticoPrincipalService.inferirPrincipalCie10DesdeLista(ctrl.getListaDiag());
     }
 
-    public List<String> completarCie10FilaPorCodigo(String query) {
+    public List<Cie10> completarCie10FilaPorCodigo(String query) {
         try {
             FacesContext fc = FacesContext.getCurrentInstance();
             String viewId = (fc != null && fc.getViewRoot() != null) ? fc.getViewRoot().getViewId() : "null";
             LOG.info(">>> [AC-K-COD] complete ENTER query=[{}] viewId={}", query, viewId);
 
-            List<String> out = cie10LookupService.completarFilaPorCodigo(query);
+            List<Cie10> out = cie10LookupService.completarFilaCie10PorCodigo(query, 20);
 
             LOG.info("<<< [AC-K-COD] RETURN out.size={}{}",
                     out.size(),
-                    out.isEmpty() ? "" : " first=[" + out.get(0) + "]");
+                    out.isEmpty() ? "" : " first=[" + out.get(0).getCodigo() + "]");
             return out;
 
         } catch (Exception e) {

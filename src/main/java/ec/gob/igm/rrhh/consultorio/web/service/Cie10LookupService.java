@@ -243,21 +243,48 @@ public class Cie10LookupService {
         }
 
         String qCodigo = normalizarCodigo(qRaw);
+        int limite = 20;
 
-        Set<String> codigos = new LinkedHashSet<>();
-        agregarCodigos(codigos, cie10Service.buscarJerarquiaPorTerm(qRaw));
-        agregarCodigos(codigos, cie10Service.buscarPorCodigoAproximado(qRaw, 20));
+        List<Cie10> coincidencias = new ArrayList<>();
+        Set<String> codigosAgregados = new LinkedHashSet<>();
+        agregarCoincidenciasPorCodigo(coincidencias, codigosAgregados, cie10Service.buscarJerarquiaPorTerm(qRaw), qCodigo, limite);
+        agregarCoincidenciasPorCodigo(coincidencias, codigosAgregados, cie10Service.buscarPorCodigoAproximado(qRaw, limite), qCodigo, limite);
 
         // Fallback flexible para evitar perder coincidencias por formato de código.
-        if (codigos.size() < 20) {
-            agregarCodigos(codigos, cie10Service.buscarPorTermino(qRaw, 20));
+        if (coincidencias.size() < limite) {
+            agregarCoincidenciasPorCodigo(coincidencias, codigosAgregados, cie10Service.buscarPorTermino(qRaw, limite), qCodigo, limite);
         }
 
-        if (!qCodigo.isEmpty()) {
-            codigos.removeIf(codigo -> !normalizarCodigo(codigo).contains(qCodigo));
+        List<String> out = new ArrayList<>();
+        for (Cie10 cie10 : coincidencias) {
+            out.add(formatearSugerenciaCodigo(cie10));
+        }
+        return out;
+    }
+
+
+    public String extraerCodigoDeSugerencia(String value) {
+        String limpio = limpiarTexto(value);
+        if (limpio.isEmpty()) {
+            return limpio;
         }
 
-        return limitarResultados(codigos, 20);
+        int sep = limpio.indexOf(" - ");
+        String codigo = sep >= 0 ? limpio.substring(0, sep) : limpio;
+        return codigo.trim().toUpperCase();
+    }
+
+    private String formatearSugerenciaCodigo(Cie10 cie10) {
+        if (cie10 == null || cie10.getCodigo() == null) {
+            return "";
+        }
+
+        String codigo = cie10.getCodigo().trim();
+        String descripcion = cie10.getDescripcion() != null ? cie10.getDescripcion().trim() : "";
+        if (descripcion.isEmpty()) {
+            return codigo;
+        }
+        return codigo + " - " + descripcion;
     }
 
     public List<String> completarFilaPorDescripcion(String query, int max) {
