@@ -394,7 +394,7 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     public void guardarStep3() {
         wizardStepActionService.execute(new WizardStepActionService.ExecuteStepActionCommand(
                 "guardarStep3",
-                null,
+                this::validarStep3,
                 this::saveStep3,
                 null,
                 () -> messageService.addMsg(FacesMessage.SEVERITY_INFO, "OK", "Step 3 guardado correctamente."),

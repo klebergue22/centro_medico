@@ -52,7 +52,7 @@ public class CentroMedicoValidationCoordinator implements Serializable {
                 input.empleadoSel,
                 input.noPersonaSel,
                 input.personaAux);
-        return new ValidationUiResult(result, "Step 1", false, null, false);
+        return new ValidationUiResult(result, "Step 1", false, null, true);
     }
 
     public ValidationUiResult validarStep2(FichaRiesgo fichaRiesgo, List<String> actividadesLab,
@@ -64,7 +64,7 @@ public class CentroMedicoValidationCoordinator implements Serializable {
     public ValidationUiResult validarStep3(List<ConsultaDiagnostico> listaDiag, String aptitudSel,
                                            String recomendaciones, String medicoNombre, String medicoCodigo) {
         ValidationResult result = step3Validator.validate(listaDiag, aptitudSel, recomendaciones, medicoNombre, medicoCodigo);
-        return new ValidationUiResult(result, "Step 3", false, null, false);
+        return new ValidationUiResult(result, "Step 3", false, null, true);
     }
 
     public ValidationUiResult verificarFichaCompleta(FichaCompletaValidationInput input) {
