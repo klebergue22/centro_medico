@@ -31,25 +31,26 @@ public class DiagnosticoFilaUiCoordinator {
     @EJB
     private Cie10LookupService cie10LookupService;
 
-    public void onCodigoSelect(SelectEvent<Cie10> event, List<ConsultaDiagnostico> listaDiag) {
+    public void onCodigoSelect(SelectEvent<String> event, List<ConsultaDiagnostico> listaDiag) {
         UIComponent comp = event != null ? event.getComponent() : null;
         Integer idx = extraerIdx(comp);
-        Cie10 selected = event != null ? event.getObject() : null;
+        String selected = event != null ? event.getObject() : null;
+        String codigoSeleccionado = cie10LookupService.extraerCodigoDeSugerencia(selected);
 
         LOG.info(">>> [AC-K-COD] itemSelect idx=" + idx
-                + " selected=[" + (selected != null ? selected.getCodigo() : null) + "] clientId=" + (comp != null ? comp.getClientId() : "null"));
+                + " selected=[" + codigoSeleccionado + "] clientId=" + (comp != null ? comp.getClientId() : "null"));
 
         ConsultaDiagnostico row = getDiagRow(listaDiag, idx, "AC-K-COD itemSelect");
         if (row == null) {
             return;
         }
 
-        if (selected == null || selected.getCodigo() == null || selected.getCodigo().trim().isEmpty()) {
+        if (codigoSeleccionado == null || codigoSeleccionado.trim().isEmpty()) {
             LOG.info("<<< [AC-K-COD] itemSelect empty selection => no-op");
             return;
         }
 
-        String codigo = selected.getCodigo().trim().toUpperCase();
+        String codigo = codigoSeleccionado.trim().toUpperCase();
         row.setCodigo(codigo);
 
         Cie10 cie = cie10Service.buscarPorCodigo(codigo);

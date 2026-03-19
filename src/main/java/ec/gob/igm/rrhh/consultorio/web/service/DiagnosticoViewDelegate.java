@@ -158,7 +158,7 @@ public class DiagnosticoViewDelegate implements Serializable {
     }
 
 
-    public void onKCieCodigoSelect(CentroMedicoCtrl ctrl, SelectEvent<Cie10> event) {
+    public void onKCieCodigoSelect(CentroMedicoCtrl ctrl, SelectEvent<String> event) {
         diagnosticoFilaUiCoordinator.onCodigoSelect(event, ctrl.getListaDiag());
         syncCie10PrincipalFromK(ctrl);
     }
@@ -249,4 +249,3 @@ public class DiagnosticoViewDelegate implements Serializable {
         }
     }
 }
-
