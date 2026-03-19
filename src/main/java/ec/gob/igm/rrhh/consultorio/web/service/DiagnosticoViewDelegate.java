@@ -149,13 +149,6 @@ public class DiagnosticoViewDelegate implements Serializable {
         }
     }
 
-    public List<String> completarCie10FilaPorCodigo(String query) {
-        return completarKCieStrings(query);
-    }
-
-    public List<String> completarCie10FilaPorDescripcion(String query) {
-        return completarKDescStrings(query);
-    }
 
     public void onKCieCodigoSelect(CentroMedicoCtrl ctrl, SelectEvent<String> event) {
         diagnosticoFilaUiCoordinator.onCodigoSelect(event, ctrl.getListaDiag());
