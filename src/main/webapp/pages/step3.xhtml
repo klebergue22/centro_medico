@@ -310,7 +310,7 @@
                                 <td>
                                     <p:autoComplete id="kCie"
                                                     value="#{d.codigo}"
-                                                    completeMethod="#{centroMedicoCtrl.completarKCieStrings}"
+                                                    completeMethod="#{centroMedicoCtrl.completarCie10FilaPorCodigo}"
                                                     var="sugerenciaCodigo"
                                                     itemLabel="#{sugerenciaCodigo}"
                                                     itemValue="#{sugerenciaCodigo}"
@@ -322,7 +322,6 @@
                                                     forceSelection="false"
                                                     appendTo="@(body)"
                                                     panelStyleClass="k-ac-panel"
-                                                    emptyMessage="No se encontraron coincidencias"
                                                     maxResults="20"
                                                     styleClass="cell-input">
 
@@ -347,7 +346,7 @@
                                 <td>
                                     <p:autoComplete id="kDesc"
                                                     value="#{d.descripcion}"
-                                                    completeMethod="#{centroMedicoCtrl.completarKDescStrings}"
+                                                    completeMethod="#{centroMedicoCtrl.completarCie10FilaPorDescripcion}"
                                                     var="sugerenciaDescripcion"
                                                     itemLabel="#{sugerenciaDescripcion}"
                                                     itemValue="#{sugerenciaDescripcion}"
@@ -359,7 +358,6 @@
                                                     forceSelection="false"
                                                     appendTo="@(body)"
                                                     panelStyleClass="k-ac-panel"
-                                                    emptyMessage="No se encontraron coincidencias"
                                                     maxResults="20"
                                                     styleClass="cell-input">
 
