@@ -310,19 +310,17 @@
                                 <td>
                                     <p:autoComplete id="kCie"
                                                     value="#{d.codigo}"
-                                                    completeMethod="#{centroMedicoCtrl.completarCie10FilaPorCodigo}"
-                                                    var="sugerenciaCodigo"
-                                                    itemLabel="#{sugerenciaCodigo}"
-                                                    itemValue="#{sugerenciaCodigo}"
+                                                    completeMethod="#{centroMedicoCtrl.completarKCieStrings}"
                                                     dropdown="true"
                                                     dropdownMode="current"
                                                     cache="false"
                                                     minQueryLength="1"
                                                     queryDelay="200"
                                                     forceSelection="false"
-                                                    appendTo="@(body)"
                                                     panelStyleClass="k-ac-panel"
+                                                    appendTo="@(body)"
                                                     maxResults="20"
+                                                    scrollHeight="250"
                                                     styleClass="cell-input">
 
                                         <f:attribute name="idx" value="#{st.index}"/>
@@ -333,12 +331,6 @@
                                                 process="@this"
                                                 update="kPanel"/>
 
-                                        <p:ajax event="blur"
-                                                global="false"
-                                                listener="#{centroMedicoCtrl.onKCieCodigoBlur}"
-                                                process="@this"
-                                                update="kPanel"/>
-
                                     </p:autoComplete>
                                 </td>
 
@@ -346,19 +338,17 @@
                                 <td>
                                     <p:autoComplete id="kDesc"
                                                     value="#{d.descripcion}"
-                                                    completeMethod="#{centroMedicoCtrl.completarCie10FilaPorDescripcion}"
-                                                    var="sugerenciaDescripcion"
-                                                    itemLabel="#{sugerenciaDescripcion}"
-                                                    itemValue="#{sugerenciaDescripcion}"
+                                                    completeMethod="#{centroMedicoCtrl.completarKDescStrings}"
                                                     dropdown="true"
-                                                    dropdownMode="current"
                                                     cache="false"
                                                     minQueryLength="1"
                                                     queryDelay="200"
                                                     forceSelection="false"
                                                     appendTo="@(body)"
-                                                    panelStyleClass="k-ac-panel"
+                                                   
+ 
                                                     maxResults="20"
+                                                    scrollHeight="250"
                                                     styleClass="cell-input">
 
                                         <f:attribute name="idx" value="#{st.index}"/>
