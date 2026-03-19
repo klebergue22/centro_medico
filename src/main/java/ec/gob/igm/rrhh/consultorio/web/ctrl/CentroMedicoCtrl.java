@@ -554,12 +554,12 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
         return diagnosticoSectionFacade.inferCie10PrincipalFromListaK(this);
     }
 
-    public List<String> completarKCieStrings(String query) {
-        return diagnosticoSectionFacade.completarKCieStrings(query);
+    public List<String> completarCie10FilaPorCodigo(String query) {
+        return diagnosticoSectionFacade.completarCie10FilaPorCodigo(query);
     }
 
-    public List<String> completarKDescStrings(String query) {
-        return diagnosticoSectionFacade.completarKDescStrings(query);
+    public List<String> completarCie10FilaPorDescripcion(String query) {
+        return diagnosticoSectionFacade.completarCie10FilaPorDescripcion(query);
     }
 
     public void onKCieCodigoSelect(SelectEvent<String> event) {

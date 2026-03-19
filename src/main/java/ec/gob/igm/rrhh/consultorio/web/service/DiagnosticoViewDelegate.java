@@ -111,7 +111,7 @@ public class DiagnosticoViewDelegate implements Serializable {
         return diagnosticoPrincipalService.inferirPrincipalCie10DesdeLista(ctrl.getListaDiag());
     }
 
-    public List<String> completarKCieStrings(String query) {
+    public List<String> completarCie10FilaPorCodigo(String query) {
         try {
             FacesContext fc = FacesContext.getCurrentInstance();
             String viewId = (fc != null && fc.getViewRoot() != null) ? fc.getViewRoot().getViewId() : "null";
@@ -130,7 +130,7 @@ public class DiagnosticoViewDelegate implements Serializable {
         }
     }
 
-    public List<String> completarKDescStrings(String query) {
+    public List<String> completarCie10FilaPorDescripcion(String query) {
         try {
             FacesContext fc = FacesContext.getCurrentInstance();
             String viewId = (fc != null && fc.getViewRoot() != null) ? fc.getViewRoot().getViewId() : "null";
@@ -147,6 +147,14 @@ public class DiagnosticoViewDelegate implements Serializable {
             LOG.error("!!! [AC-K-DESC] ERROR {} : {}", e.getClass().getName(), e.getMessage(), e);
             return new ArrayList<>();
         }
+    }
+
+    public List<String> completarCie10FilaPorCodigo(String query) {
+        return completarKCieStrings(query);
+    }
+
+    public List<String> completarCie10FilaPorDescripcion(String query) {
+        return completarKDescStrings(query);
     }
 
     public void onKCieCodigoSelect(CentroMedicoCtrl ctrl, SelectEvent<String> event) {
