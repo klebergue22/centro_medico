@@ -152,10 +152,12 @@ public class DiagnosticoViewDelegate implements Serializable {
 
     public void onKCieCodigoSelect(CentroMedicoCtrl ctrl, SelectEvent<String> event) {
         diagnosticoFilaUiCoordinator.onCodigoSelect(event, ctrl.getListaDiag());
+        syncCie10PrincipalFromK(ctrl);
     }
 
     public void onKCieCodigoBlur(CentroMedicoCtrl ctrl, AjaxBehaviorEvent event) {
         diagnosticoFilaUiCoordinator.onCodigoBlur(event, ctrl.getListaDiag());
+        syncCie10PrincipalFromK(ctrl);
     }
 
     public void onKDescSelect(CentroMedicoCtrl ctrl, SelectEvent<String> event) {
@@ -201,5 +203,41 @@ public class DiagnosticoViewDelegate implements Serializable {
 
     public void cerrarDialogoDiagnostico() {
         diagnosticoDialogControllerSupport.cerrarDialogo();
+    }
+
+    public List<String> completarKCieStrings(String query) {
+        try {
+            FacesContext fc = FacesContext.getCurrentInstance();
+            String viewId = (fc != null && fc.getViewRoot() != null) ? fc.getViewRoot().getViewId() : "null";
+            LOG.info(">>> [AC-K-COD-STR] complete ENTER query=[{}] viewId={}", query, viewId);
+
+            List<String> out = cie10LookupService.completarFilaPorCodigo(query);
+
+            LOG.info("<<< [AC-K-COD-STR] RETURN out.size={}{}",
+                    out.size(),
+                    out.isEmpty() ? "" : " first=[" + out.get(0) + "]");
+            return out;
+        } catch (Exception e) {
+            LOG.error("!!! [AC-K-COD-STR] ERROR {} : {}", e.getClass().getName(), e.getMessage(), e);
+            return new ArrayList<>();
+        }
+    }
+
+    public List<String> completarKDescStrings(String query) {
+        try {
+            FacesContext fc = FacesContext.getCurrentInstance();
+            String viewId = (fc != null && fc.getViewRoot() != null) ? fc.getViewRoot().getViewId() : "null";
+            LOG.info(">>> [AC-K-DESC-STR] complete ENTER query=[{}] viewId={}", query, viewId);
+
+            List<String> out = cie10LookupService.completarFilaPorDescripcion(query, 20);
+
+            LOG.info("<<< [AC-K-DESC-STR] RETURN out.size={}{}",
+                    out.size(),
+                    out.isEmpty() ? "" : " first=[" + out.get(0) + "]");
+            return out;
+        } catch (Exception e) {
+            LOG.error("!!! [AC-K-DESC-STR] ERROR {} : {}", e.getClass().getName(), e.getMessage(), e);
+            return new ArrayList<>();
+        }
     }
 }
