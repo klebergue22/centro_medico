@@ -149,13 +149,6 @@ public class DiagnosticoViewDelegate implements Serializable {
         }
     }
 
-    public List<Cie10> completarKCieItems(String query) {
-        return cie10LookupService.completarFilaCie10PorCodigo(query, 20);
-    }
-
-    public List<Cie10> completarKDescItems(String query) {
-        return cie10LookupService.completarFilaCie10PorDescripcion(query, 20);
-    }
 
 
     public void onKCieCodigoSelect(CentroMedicoCtrl ctrl, SelectEvent<String> event) {
