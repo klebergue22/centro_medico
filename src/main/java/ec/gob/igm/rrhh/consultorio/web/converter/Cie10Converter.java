@@ -2,17 +2,18 @@ package ec.gob.igm.rrhh.consultorio.web.converter;
 
 import ec.gob.igm.rrhh.consultorio.domain.model.Cie10;
 import ec.gob.igm.rrhh.consultorio.service.Cie10Service;
-import jakarta.ejb.EJB;
+import jakarta.enterprise.inject.Instance;
 import jakarta.enterprise.inject.spi.CDI;
 import jakarta.faces.component.UIComponent;
 import jakarta.faces.context.FacesContext;
 import jakarta.faces.convert.Converter;
 import jakarta.faces.convert.FacesConverter;
+import jakarta.inject.Inject;
 
 @FacesConverter(value = "cie10Converter", managed = true)
 public class Cie10Converter implements Converter<Cie10> {
 
-    @EJB
+    @Inject
     private Cie10Service cie10Service;
 
     @Override
@@ -32,7 +33,8 @@ public class Cie10Converter implements Converter<Cie10> {
             return null;
         }
 
-        Cie10 cie10 = obtenerCie10Service().buscarPorCodigo(codigo);
+        Cie10Service service = obtenerCie10Service();
+        Cie10 cie10 = service.buscarPorCodigo(codigo);
         if (cie10 != null) {
             return cie10;
         }
@@ -57,11 +59,21 @@ public class Cie10Converter implements Converter<Cie10> {
         }
 
         try {
-            cie10Service = CDI.current().select(Cie10Service.class).get();
-            return cie10Service;
+            Instance<Cie10Service> instancia = CDI.current().select(Cie10Service.class);
+            if (instancia.isResolvable()) {
+                cie10Service = instancia.get();
+            }
         } catch (IllegalStateException | jakarta.enterprise.inject.UnsatisfiedResolutionException
                  | jakarta.enterprise.inject.AmbiguousResolutionException ex) {
-            throw new IllegalStateException("No se pudo resolver Cie10Service para el converter cie10Converter.", ex);
+            throw new IllegalStateException(
+                    "No se pudo resolver Cie10Service para el converter cie10Converter.", ex);
         }
+
+        if (cie10Service == null) {
+            throw new IllegalStateException(
+                    "Cie10Service no fue inyectado ni resuelto por CDI en el converter cie10Converter.");
+        }
+
+        return cie10Service;
     }
 }
