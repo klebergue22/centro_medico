@@ -8,7 +8,10 @@
     <h:outputScript target="body"><![CDATA[
         window.handleDiagnosticoAutocompleteEnter = window.handleDiagnosticoAutocompleteEnter || function(event, widgetVar) {
             var key = event.which || event.keyCode;
-            if (key !== 13) {
+            var isEnter = key === 13;
+            var isTab = key === 9;
+
+            if (!isEnter && !isTab) {
                 return true;
             }
 
@@ -17,15 +20,17 @@
                 return true;
             }
 
-            if (event.preventDefault) {
-                event.preventDefault();
-            }
-            if (event.stopPropagation) {
-                event.stopPropagation();
-            }
-
             var panelVisible = widget.panel && widget.panel.is(':visible');
             if (!panelVisible) {
+                if (isTab) {
+                    return true;
+                }
+                if (event.preventDefault) {
+                    event.preventDefault();
+                }
+                if (event.stopPropagation) {
+                    event.stopPropagation();
+                }
                 widget.search(widget.input.val());
                 return false;
             }
@@ -35,10 +40,26 @@
             var itemToSelect = highlighted.length ? highlighted : firstItem;
 
             if (itemToSelect.length) {
+                if (event.preventDefault) {
+                    event.preventDefault();
+                }
+                if (event.stopPropagation) {
+                    event.stopPropagation();
+                }
                 itemToSelect.trigger('click');
                 return false;
             }
 
+            if (isTab) {
+                return true;
+            }
+
+            if (event.preventDefault) {
+                event.preventDefault();
+            }
+            if (event.stopPropagation) {
+                event.stopPropagation();
+            }
             widget.search(widget.input.val());
             return false;
         };
@@ -382,6 +403,7 @@
                                                     widgetVar="kDescAc_#{st.index}"
                                                     value="#{d.descripcion}"
                                                     completeMethod="#{centroMedicoCtrl.completarKDescStrings}"
+                                                    var="sugerenciaDescripcion"
                                                     dropdown="true"
                                                     cache="false"
                                                     minQueryLength="1"
