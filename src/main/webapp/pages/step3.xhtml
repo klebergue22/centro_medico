@@ -5,6 +5,46 @@
                 xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
 
 
+    <h:outputScript target="body"><![CDATA[
+        window.handleDiagnosticoAutocompleteEnter = window.handleDiagnosticoAutocompleteEnter || function(event, widgetVar) {
+            var key = event.which || event.keyCode;
+            if (key !== 13) {
+                return true;
+            }
+
+            var widget = PF(widgetVar);
+            if (!widget || !widget.input) {
+                return true;
+            }
+
+            if (event.preventDefault) {
+                event.preventDefault();
+            }
+            if (event.stopPropagation) {
+                event.stopPropagation();
+            }
+
+            var panelVisible = widget.panel && widget.panel.is(':visible');
+            if (!panelVisible) {
+                widget.search(widget.input.val());
+                return false;
+            }
+
+            var highlighted = widget.panel.find('li.ui-state-highlight:visible').first();
+            var firstItem = widget.panel.find('li.ui-autocomplete-item:visible').first();
+            var itemToSelect = highlighted.length ? highlighted : firstItem;
+
+            if (itemToSelect.length) {
+                itemToSelect.trigger('click');
+                return false;
+            }
+
+            widget.search(widget.input.val());
+            return false;
+        };
+    ]]></h:outputScript>
+
+
 
 
 
@@ -309,6 +349,7 @@
 
                                 <td>
                                     <p:autoComplete id="kCie"
+                                                    widgetVar="kCieAc_#{st.index}"
                                                     value="#{d.codigo}"
                                                     completeMethod="#{centroMedicoCtrl.completarKCieStrings}"
                                                     var="sugerenciaCodigo"
@@ -325,7 +366,8 @@
                                                     maxResults="20"
                                                     scrollHeight="250"
                                                     maxlength="200"
-                                                    styleClass="cell-input">
+                                                    styleClass="cell-input"
+                                                    onkeydown="return handleDiagnosticoAutocompleteEnter(event, 'kCieAc_#{st.index}')">
 
                                         <f:attribute name="idx" value="#{st.index}"/>
 
@@ -351,6 +393,7 @@
 
                                 <td>
                                     <p:autoComplete id="kDesc"
+                                                    widgetVar="kDescAc_#{st.index}"
                                                     value="#{d.descripcion}"
                                                     completeMethod="#{centroMedicoCtrl.completarKDescStrings}"
                                                     var="sugerenciaDescripcion"
@@ -367,7 +410,8 @@
                                                     maxResults="20"
                                                     scrollHeight="250"
                                                     maxlength="200"
-                                                    styleClass="cell-input">
+                                                    styleClass="cell-input"
+                                                    onkeydown="return handleDiagnosticoAutocompleteEnter(event, 'kDescAc_#{st.index}')">
 
                                         <f:attribute name="idx" value="#{st.index}"/>
 
