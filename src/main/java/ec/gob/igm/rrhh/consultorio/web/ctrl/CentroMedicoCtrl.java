@@ -570,7 +570,7 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
         return diagnosticoSectionFacade.completarKDescItems(query);
     }
 
-    public void onKCieCodigoSelect(SelectEvent<String> event) {
+    public void onKCieCodigoSelect(SelectEvent<Cie10> event) {
         diagnosticoSectionFacade.onKCieCodigoSelect(this, event);
     }
 
