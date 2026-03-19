@@ -372,10 +372,7 @@
                                     <p:autoComplete id="kCie"
                                                     widgetVar="kCieAc_#{st.index}"
                                                     value="#{d.codigo}"
-                                                    completeMethod="#{centroMedicoCtrl.completarKCieItems}"
-                                                    var="sugerenciaCodigo"
-                                                    itemLabel="#{sugerenciaCodigo.codigo} - #{sugerenciaCodigo.descripcion}"
-                                                    itemValue="#{sugerenciaCodigo.codigo} - #{sugerenciaCodigo.descripcion}"
+                                                    completeMethod="#{centroMedicoCtrl.completarKCieStrings}"
                                                     dropdown="true"
                                                     dropdownMode="current"
                                                     cache="false"
@@ -404,10 +401,6 @@
                                                 process="@this"
                                                 update="kPanel"/>
 
-                                        <p:column>
-                                            <h:outputText value="#{sugerenciaCodigo.codigo} - #{sugerenciaCodigo.descripcion}"/>
-                                        </p:column>
-
                                     </p:autoComplete>
                                 </td>
 
@@ -416,10 +409,7 @@
                                     <p:autoComplete id="kDesc"
                                                     widgetVar="kDescAc_#{st.index}"
                                                     value="#{d.descripcion}"
-                                                    completeMethod="#{centroMedicoCtrl.completarKDescItems}"
-                                                    var="sugerenciaDescripcion"
-                                                    itemLabel="#{sugerenciaDescripcion.descripcion}"
-                                                    itemValue="#{sugerenciaDescripcion.descripcion}"
+                                                    completeMethod="#{centroMedicoCtrl.completarKDescStrings}"
                                                     dropdown="true"
                                                     cache="false"
                                                     minQueryLength="1"
@@ -446,10 +436,6 @@
                                                 listener="#{centroMedicoCtrl.onKDescBlur}"
                                                 process="@this"
                                                 update="kPanel"/>
-
-                                        <p:column>
-                                            <h:outputText value="#{sugerenciaDescripcion.descripcion}"/>
-                                        </p:column>
 
                                     </p:autoComplete>
                                 </td>
