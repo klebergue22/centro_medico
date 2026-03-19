@@ -794,6 +794,14 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
                 actividadLaboralFormModel.getActLabObservaciones(),
                 rep);
     }
+    
+    public List<String> completarKCieStrings(String query) {
+    return diagnosticoSectionFacade.completarKCieStrings(query);
+}
+
+public List<String> completarKDescStrings(String query) {
+    return diagnosticoSectionFacade.completarKDescStrings(query);
+}
 
     // =========================
     // GETTERS Y SETTERS
