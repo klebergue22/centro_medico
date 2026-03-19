@@ -348,17 +348,18 @@
                                     <p:autoComplete id="kDesc"
                                                     value="#{d.descripcion}"
                                                     completeMethod="#{centroMedicoCtrl.completarKDescStrings}"
-                                                    var="sugerenciaDescripcion"
-                                                    itemLabel="#{sugerenciaDescripcion}"
-                                                    itemValue="#{sugerenciaDescripcion}"
                                                     dropdown="true"
-                                                    dropdownMode="current"
                                                     cache="false"
                                                     minQueryLength="1"
                                                     queryDelay="200"
                                                     forceSelection="false"
+<<<<<<< HEAD
                                                     panelStyleClass="k-ac-panel"
                                                     appendTo="@(body)"
+=======
+                                                    appendTo="@(body)"
+                                                    emptyMessage="No se encontraron coincidencias"
+>>>>>>> d03e243e5f9446ef87ccfd81e73f36427e75f474
                                                     maxResults="20"
                                                     scrollHeight="250"
                                                     styleClass="cell-input">
