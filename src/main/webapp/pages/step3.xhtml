@@ -309,12 +309,11 @@
 
                                 <td>
                                     <p:autoComplete id="kCie"
-                                                    value="#{d.cie10}"
-                                                    completeMethod="#{centroMedicoCtrl.completarKCieItems}"
+                                                    value="#{d.codigo}"
+                                                    completeMethod="#{centroMedicoCtrl.completarKCieStrings}"
                                                     var="sugerenciaCodigo"
-                                                    itemLabel="#{sugerenciaCodigo.codigo} - #{sugerenciaCodigo.descripcion}"
+                                                    itemLabel="#{sugerenciaCodigo}"
                                                     itemValue="#{sugerenciaCodigo}"
-                                                    converter="cie10Converter"
                                                     dropdown="true"
                                                     dropdownMode="current"
                                                     cache="false"
@@ -341,6 +340,10 @@
                                                 listener="#{centroMedicoCtrl.onKCieCodigoBlur}"
                                                 process="@this"
                                                 update="kPanel"/>
+
+                                        <p:column>
+                                            <h:outputText value="#{sugerenciaCodigo}"/>
+                                        </p:column>
 
                                     </p:autoComplete>
                                 </td>
