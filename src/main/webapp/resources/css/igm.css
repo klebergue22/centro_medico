@@ -2079,50 +2079,22 @@ td.j-date  .ui-datepicker-trigger{
 .dp-100 .ui-datepicker { width: 100%; }
 /* datePicker: input 100% */
 .dp-100 input { width: 100% !important; box-sizing: border-box; }
-/* ===== Fix PrimeFaces AutoComplete (panel de sugerencias) ===== */
-
-/* 1) que el panel siempre se vea por encima */
+/* =========================================
+   FIX AUTOCOMPLETE - PANEL VISIBLE
+   ========================================= */
 .ui-autocomplete-panel,
-.k-ac-panel{
-  z-index: 999999 !important;
-}
-
-/* 2) evita que los contenedores del step lo recorten */
-.k-fieldset,
-.k-fieldset .ui-fieldset-content,
-.k-fieldset .panel-scroll{
-  overflow: visible !important;
-}
-.panel-scroll{
-  overflow-x: auto;
-  overflow-y: visible !important;
-}
-
-.k-ac-panel.ui-autocomplete-panel{
-  z-index: 999999 !important;
-}
-
-
-/* ==== FIX Autocomplete overlays inside wizard/scroll containers ==== */
-.k-ac-panel.ui-autocomplete-panel,
-.ui-autocomplete-panel.k-ac-panel {
+.ui-autocomplete-panel.k-ac-panel,
+.k-ac-panel.ui-autocomplete-panel {
   z-index: 2147483647 !important;
-  position: absolute !important;
-}
-
-/* Ensure step/wizard containers do not clip overlays */
-.ui-wizard-content,
-.ui-wizard-step-content,
-.panel-scroll,
-.k-fieldset,
-.k-grid {
-  overflow: visible !important;
-}
-
-/* If any parent uses transform, it can break overlay stacking; disable for step containers */
-.ui-wizard-content,
-.panel-scroll {
-  transform: none !important;
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  position: fixed !important;
+  background: #ffffff !important;
+  border: 2px solid var(--olive-700, #436137) !important;
+  border-radius: 8px !important;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.25) !important;
+  min-width: 240px !important;
 }
 
 /* ================================
