@@ -311,9 +311,6 @@
                                     <p:autoComplete id="kCie"
                                                     value="#{d.codigo}"
                                                     completeMethod="#{centroMedicoCtrl.completarKCieStrings}"
-                                                    var="sugerenciaCodigo"
-                                                    itemLabel="#{sugerenciaCodigo}"
-                                                    itemValue="#{sugerenciaCodigo}"
                                                     dropdown="true"
                                                     dropdownMode="current"
                                                     cache="false"
@@ -353,13 +350,9 @@
                                                     minQueryLength="1"
                                                     queryDelay="200"
                                                     forceSelection="false"
-<<<<<<< HEAD
-                                                    panelStyleClass="k-ac-panel"
-                                                    appendTo="@(body)"
-=======
                                                     appendTo="@(body)"
                                                     emptyMessage="No se encontraron coincidencias"
->>>>>>> d03e243e5f9446ef87ccfd81e73f36427e75f474
+ 
                                                     maxResults="20"
                                                     scrollHeight="250"
                                                     styleClass="cell-input">
