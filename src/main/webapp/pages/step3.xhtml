@@ -352,9 +352,6 @@
                                                     widgetVar="kCieAc_#{st.index}"
                                                     value="#{d.codigo}"
                                                     completeMethod="#{centroMedicoCtrl.completarKCieStrings}"
-                                                    var="sugerenciaCodigo"
-                                                    itemLabel="#{sugerenciaCodigo}"
-                                                    itemValue="#{sugerenciaCodigo}"
                                                     dropdown="true"
                                                     dropdownMode="current"
                                                     cache="false"
@@ -376,16 +373,6 @@
                                                 process="@this"
                                                 update="kPanel"/>
 
-                                        <p:ajax event="blur"
-                                                global="false"
-                                                listener="#{centroMedicoCtrl.onKCieCodigoBlur}"
-                                                process="@this"
-                                                update="kPanel"/>
-
-                                        <p:column>
-                                            <h:outputText value="#{sugerenciaCodigo}"/>
-                                        </p:column>
-
                                     </p:autoComplete>
                                 </td>
 
@@ -395,16 +382,13 @@
                                                     widgetVar="kDescAc_#{st.index}"
                                                     value="#{d.descripcion}"
                                                     completeMethod="#{centroMedicoCtrl.completarKDescStrings}"
-                                                    var="sugerenciaDescripcion"
-                                                    itemLabel="#{sugerenciaDescripcion}"
-                                                    itemValue="#{sugerenciaDescripcion}"
                                                     dropdown="true"
-                                                    dropdownMode="current"
                                                     cache="false"
                                                     minQueryLength="1"
                                                     queryDelay="200"
                                                     forceSelection="false"
-                                                    panelStyleClass="k-ac-panel"
+                                                    appendTo="@(body)"
+                                                    emptyMessage="No se encontraron coincidencias"
                                                     maxResults="20"
                                                     scrollHeight="250"
                                                     maxlength="200"
