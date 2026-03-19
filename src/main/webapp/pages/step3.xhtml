@@ -310,7 +310,7 @@
                                 <td>
                                     <p:autoComplete id="kCie"
                                                     value="#{d.codigo}"
-                                                    completeMethod="#{centroMedicoCtrl.completarCie10FilaPorCodigo}"
+                                                    completeMethod="#{centroMedicoCtrl.completarKCieStrings}"
                                                     var="sugerenciaCodigo"
                                                     itemLabel="#{sugerenciaCodigo}"
                                                     itemValue="#{sugerenciaCodigo}"
@@ -347,7 +347,7 @@
                                 <td>
                                     <p:autoComplete id="kDesc"
                                                     value="#{d.descripcion}"
-                                                    completeMethod="#{centroMedicoCtrl.completarCie10FilaPorDescripcion}"
+                                                    completeMethod="#{centroMedicoCtrl.completarKDescStrings}"
                                                     var="sugerenciaDescripcion"
                                                     itemLabel="#{sugerenciaDescripcion}"
                                                     itemValue="#{sugerenciaDescripcion}"
