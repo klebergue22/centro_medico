@@ -309,11 +309,12 @@
 
                                 <td>
                                     <p:autoComplete id="kCie"
-                                                    value="#{d.codigo}"
-                                                    completeMethod="#{centroMedicoCtrl.completarKCieStrings}"
+                                                    value="#{d.cie10}"
+                                                    completeMethod="#{centroMedicoCtrl.completarKCieItems}"
                                                     var="sugerenciaCodigo"
-                                                    itemLabel="#{sugerenciaCodigo}"
+                                                    itemLabel="#{sugerenciaCodigo.codigo} - #{sugerenciaCodigo.descripcion}"
                                                     itemValue="#{sugerenciaCodigo}"
+                                                    converter="cie10Converter"
                                                     dropdown="true"
                                                     dropdownMode="current"
                                                     cache="false"
