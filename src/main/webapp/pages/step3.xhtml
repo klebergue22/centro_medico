@@ -310,10 +310,10 @@
                                 <td>
                                     <p:autoComplete id="kCie"
                                                     value="#{d.codigo}"
-                                                    completeMethod="#{centroMedicoCtrl.completarCie10FilaPorCodigo}"
-                                                    var="cie"
-                                                    itemLabel="#{cie}"
-                                                    itemValue="#{cie}"
+                                                    completeMethod="#{centroMedicoCtrl.completarKCieStrings}"
+                                                    var="sugerenciaCodigo"
+                                                    itemLabel="#{sugerenciaCodigo}"
+                                                    itemValue="#{sugerenciaCodigo}"
                                                     dropdown="true"
                                                     dropdownMode="current"
                                                     cache="false"
@@ -322,6 +322,7 @@
                                                     forceSelection="false"
                                                     appendTo="@(body)"
                                                     panelStyleClass="k-ac-panel"
+                                                    emptyMessage="No se encontraron coincidencias"
                                                     maxResults="20"
                                                     styleClass="cell-input">
 
@@ -331,13 +332,13 @@
                                                 global="false"
                                                 listener="#{centroMedicoCtrl.onKCieCodigoSelect}"
                                                 process="@this"
-                                                update="@([id$=kPanel])"/>
+                                                update="kPanel"/>
 
                                         <p:ajax event="blur"
                                                 global="false"
                                                 listener="#{centroMedicoCtrl.onKCieCodigoBlur}"
                                                 process="@this"
-                                                update="@([id$=kPanel])"/>
+                                                update="kPanel"/>
 
                                     </p:autoComplete>
                                 </td>
@@ -346,10 +347,10 @@
                                 <td>
                                     <p:autoComplete id="kDesc"
                                                     value="#{d.descripcion}"
-                                                    completeMethod="#{centroMedicoCtrl.completarCie10FilaPorDescripcion}"
-                                                    var="cie"
-                                                    itemLabel="#{cie}"
-                                                    itemValue="#{cie}"
+                                                    completeMethod="#{centroMedicoCtrl.completarKDescStrings}"
+                                                    var="sugerenciaDescripcion"
+                                                    itemLabel="#{sugerenciaDescripcion}"
+                                                    itemValue="#{sugerenciaDescripcion}"
                                                     dropdown="true"
                                                     dropdownMode="current"
                                                     cache="false"
@@ -358,6 +359,7 @@
                                                     forceSelection="false"
                                                     appendTo="@(body)"
                                                     panelStyleClass="k-ac-panel"
+                                                    emptyMessage="No se encontraron coincidencias"
                                                     maxResults="20"
                                                     styleClass="cell-input">
 
@@ -367,13 +369,13 @@
                                                 global="false"
                                                 listener="#{centroMedicoCtrl.onKDescSelect}"
                                                 process="@this"
-                                                update="@([id$=kPanel])"/>
+                                                update="kPanel"/>
 
                                         <p:ajax event="blur"
                                                 global="false"
                                                 listener="#{centroMedicoCtrl.onKDescBlur}"
                                                 process="@this"
-                                                update="@([id$=kPanel])"/>
+                                                update="kPanel"/>
 
                                     </p:autoComplete>
                                 </td>

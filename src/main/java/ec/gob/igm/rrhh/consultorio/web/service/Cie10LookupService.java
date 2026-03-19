@@ -232,7 +232,6 @@ public class Cie10LookupService {
                 }
             }
         }
-
         return out;
     }
 
