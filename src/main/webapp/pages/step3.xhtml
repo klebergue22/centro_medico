@@ -372,10 +372,10 @@
                                     <p:autoComplete id="kCie"
                                                     widgetVar="kCieAc_#{st.index}"
                                                     value="#{d.codigo}"
-                                                    completeMethod="#{centroMedicoCtrl.completarKCieStrings}"
+                                                    completeMethod="#{centroMedicoCtrl.completarKCieItems}"
                                                     var="sugerenciaCodigo"
-                                                    itemLabel="#{sugerenciaCodigo}"
-                                                    itemValue="#{sugerenciaCodigo}"
+                                                    itemLabel="#{sugerenciaCodigo.codigo} - #{sugerenciaCodigo.descripcion}"
+                                                    itemValue="#{sugerenciaCodigo.codigo} - #{sugerenciaCodigo.descripcion}"
                                                     dropdown="true"
                                                     dropdownMode="current"
                                                     cache="false"
@@ -405,7 +405,7 @@
                                                 update="kPanel"/>
 
                                         <p:column>
-                                            <h:outputText value="#{sugerenciaCodigo}"/>
+                                            <h:outputText value="#{sugerenciaCodigo.codigo} - #{sugerenciaCodigo.descripcion}"/>
                                         </p:column>
 
                                     </p:autoComplete>
@@ -418,8 +418,8 @@
                                                     value="#{d.descripcion}"
                                                     completeMethod="#{centroMedicoCtrl.completarKDescItems}"
                                                     var="sugerenciaDescripcion"
-                                                    itemLabel="#{sugerenciaDescripcion}"
-                                                    itemValue="#{sugerenciaDescripcion}"
+                                                    itemLabel="#{sugerenciaDescripcion.descripcion}"
+                                                    itemValue="#{sugerenciaDescripcion.descripcion}"
                                                     dropdown="true"
                                                     cache="false"
                                                     minQueryLength="1"
@@ -448,7 +448,7 @@
                                                 update="kPanel"/>
 
                                         <p:column>
-                                            <h:outputText value="#{sugerenciaDescripcion}"/>
+                                            <h:outputText value="#{sugerenciaDescripcion.descripcion}"/>
                                         </p:column>
 
                                     </p:autoComplete>
