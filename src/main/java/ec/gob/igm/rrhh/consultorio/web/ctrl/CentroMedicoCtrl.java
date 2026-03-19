@@ -562,6 +562,14 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
         return diagnosticoSectionFacade.completarCie10FilaPorDescripcion(query);
     }
 
+    public List<Cie10> completarKCieItems(String query) {
+        return diagnosticoSectionFacade.completarKCieItems(query);
+    }
+
+    public List<Cie10> completarKDescItems(String query) {
+        return diagnosticoSectionFacade.completarKDescItems(query);
+    }
+
     public void onKCieCodigoSelect(SelectEvent<String> event) {
         diagnosticoSectionFacade.onKCieCodigoSelect(this, event);
     }
@@ -796,12 +804,12 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     }
     
     public List<String> completarKCieStrings(String query) {
-    return diagnosticoSectionFacade.completarKCieStrings(query);
-}
+        return diagnosticoSectionFacade.completarKCieStrings(query);
+    }
 
-public List<String> completarKDescStrings(String query) {
-    return diagnosticoSectionFacade.completarKDescStrings(query);
-}
+    public List<String> completarKDescStrings(String query) {
+        return diagnosticoSectionFacade.completarKDescStrings(query);
+    }
 
     // =========================
     // GETTERS Y SETTERS
