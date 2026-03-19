@@ -2079,12 +2079,22 @@ td.j-date  .ui-datepicker-trigger{
 .dp-100 .ui-datepicker { width: 100%; }
 /* datePicker: input 100% */
 .dp-100 input { width: 100% !important; box-sizing: border-box; }
-/* ===== Fix PrimeFaces AutoComplete (panel de sugerencias) ===== */
-/* Limitar el ajuste al autocomplete de Diagnóstico para evitar efectos
-   colaterales en otros overlays/paneles del wizard. */
+/* =========================================
+   FIX AUTOCOMPLETE - PANEL VISIBLE
+   ========================================= */
+.ui-autocomplete-panel,
 .ui-autocomplete-panel.k-ac-panel,
 .k-ac-panel.ui-autocomplete-panel {
   z-index: 2147483647 !important;
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  position: fixed !important;
+  background: #ffffff !important;
+  border: 2px solid var(--olive-700, #436137) !important;
+  border-radius: 8px !important;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.25) !important;
+  min-width: 240px !important;
 }
 
 /* ================================
