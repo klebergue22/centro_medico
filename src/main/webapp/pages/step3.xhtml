@@ -311,36 +311,11 @@
                                     <p:autoComplete id="kCie"
                                                     value="#{d.codigo}"
                                                     completeMethod="#{centroMedicoCtrl.completarKCieStrings}"
-                                                    var="sugerenciaCodigo"
-                                                    itemLabel="#{sugerenciaCodigo}"
-                                                    itemValue="#{sugerenciaCodigo}"
-                                                    dropdown="true"
-                                                    dropdownMode="current"
                                                     cache="false"
                                                     minQueryLength="1"
                                                     queryDelay="200"
                                                     forceSelection="false"
-                                                    appendTo="@(body)"
-                                                    panelStyleClass="k-ac-panel"
-                                                    emptyMessage="No se encontraron coincidencias"
-                                                    maxResults="20"
-                                                    styleClass="cell-input">
-
-                                        <f:attribute name="idx" value="#{st.index}"/>
-
-                                        <p:ajax event="itemSelect"
-                                                global="false"
-                                                listener="#{centroMedicoCtrl.onKCieCodigoSelect}"
-                                                process="@this"
-                                                update="kPanel"/>
-
-                                        <p:ajax event="blur"
-                                                global="false"
-                                                listener="#{centroMedicoCtrl.onKCieCodigoBlur}"
-                                                process="@this"
-                                                update="kPanel"/>
-
-                                    </p:autoComplete>
+                                                    styleClass="cell-input"/>
                                 </td>
 
 
@@ -348,36 +323,11 @@
                                     <p:autoComplete id="kDesc"
                                                     value="#{d.descripcion}"
                                                     completeMethod="#{centroMedicoCtrl.completarKDescStrings}"
-                                                    var="sugerenciaDescripcion"
-                                                    itemLabel="#{sugerenciaDescripcion}"
-                                                    itemValue="#{sugerenciaDescripcion}"
-                                                    dropdown="true"
-                                                    dropdownMode="current"
                                                     cache="false"
                                                     minQueryLength="1"
                                                     queryDelay="200"
                                                     forceSelection="false"
-                                                    appendTo="@(body)"
-                                                    panelStyleClass="k-ac-panel"
-                                                    emptyMessage="No se encontraron coincidencias"
-                                                    maxResults="20"
-                                                    styleClass="cell-input">
-
-                                        <f:attribute name="idx" value="#{st.index}"/>
-
-                                        <p:ajax event="itemSelect"
-                                                global="false"
-                                                listener="#{centroMedicoCtrl.onKDescSelect}"
-                                                process="@this"
-                                                update="kPanel"/>
-
-                                        <p:ajax event="blur"
-                                                global="false"
-                                                listener="#{centroMedicoCtrl.onKDescBlur}"
-                                                process="@this"
-                                                update="kPanel"/>
-
-                                    </p:autoComplete>
+                                                    styleClass="cell-input"/>
                                 </td>
 
 
