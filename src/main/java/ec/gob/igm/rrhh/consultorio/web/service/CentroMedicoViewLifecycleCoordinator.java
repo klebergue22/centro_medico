@@ -122,6 +122,8 @@ public class CentroMedicoViewLifecycleCoordinator implements Serializable {
 
         return value.contains("probeCieCodigo")
                 || value.contains("probeCieDesc")
+                || value.contains("probeStep1CieCodigo")
+                || value.contains("probeStep1CieDesc")
                 || value.contains(":kCie")
                 || value.contains(":kDesc")
                 || value.endsWith("kCie")
