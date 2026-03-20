@@ -4,6 +4,64 @@
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
 
+
+    <p:panel id="diagAutocompleteProbeStep1"
+             header="Prueba técnica: autocomplete CIE-10"
+             style="margin-bottom:10px">
+        <p:panelGrid columns="2"
+                     layout="grid"
+                     styleClass="ui-fluid"
+                     columnClasses="col-label,col-field">
+
+            <h:outputLabel for="probeStep1CieCodigo" value="Código"/>
+            <p:autoComplete id="probeStep1CieCodigo"
+                            value="#{centroMedicoCtrl.codCie10Ppal}"
+                            completeMethod="#{centroMedicoCtrl.completarKCieStrings}"
+                            dropdown="true"
+                            dropdownMode="current"
+                            cache="false"
+                            minQueryLength="1"
+                            queryDelay="500"
+                            forceSelection="false"
+                            appendTo="@(body)"
+                            panelStyleClass="k-ac-panel">
+                <p:ajax event="itemSelect"
+                        global="false"
+                        listener="#{centroMedicoCtrl.onCie10CodigoSelect}"
+                        process="@this"
+                        update="diagAutocompleteProbeStep1"/>
+                <p:ajax event="blur"
+                        global="false"
+                        listener="#{centroMedicoCtrl.onCie10CodigoBlur}"
+                        process="@this"
+                        update="diagAutocompleteProbeStep1"/>
+            </p:autoComplete>
+
+            <h:outputLabel for="probeStep1CieDesc" value="Descripción"/>
+            <p:autoComplete id="probeStep1CieDesc"
+                            value="#{centroMedicoCtrl.descCie10Ppal}"
+                            completeMethod="#{centroMedicoCtrl.completarKDescStrings}"
+                            dropdown="true"
+                            cache="false"
+                            minQueryLength="1"
+                            queryDelay="500"
+                            forceSelection="false"
+                            appendTo="@(body)"
+                            panelStyleClass="k-ac-panel">
+                <p:ajax event="itemSelect"
+                        global="false"
+                        listener="#{centroMedicoCtrl.onCie10DescripcionSelect}"
+                        process="@this"
+                        update="diagAutocompleteProbeStep1"/>
+                <p:ajax event="blur"
+                        global="false"
+                        listener="#{centroMedicoCtrl.onCie10DescripcionBlur}"
+                        process="@this"
+                        update="diagAutocompleteProbeStep1"/>
+            </p:autoComplete>
+        </p:panelGrid>
+    </p:panel>
+
     <!-- A. DATOS DEL ESTABLECIMIENTO / USUARIO -->
     <p:fieldset legend="A. DATOS DEL ESTABLECIMIENTO / USUARIO" toggleable="true">
 
