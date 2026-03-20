@@ -14,6 +14,63 @@
             <h:outputText value="Selecciona un módulo en el menú superior."/>
         </p:panel>
 
+        <p:panel id="diagAutocompleteProbe"
+                 header="Prueba técnica: autocomplete CIE-10"
+                 style="margin-top:10px">
+            <p:panelGrid columns="2"
+                         layout="grid"
+                         styleClass="ui-fluid"
+                         columnClasses="col-12 md:col-4,col-12 md:col-8">
+
+                <h:outputLabel for="probeCieCodigo" value="Código"/>
+                <p:autoComplete id="probeCieCodigo"
+                                value="#{centroMedicoCtrl.codCie10Ppal}"
+                                completeMethod="#{centroMedicoCtrl.completarKCieStrings}"
+                                dropdown="true"
+                                dropdownMode="current"
+                                cache="false"
+                                minQueryLength="1"
+                                queryDelay="200"
+                                forceSelection="false"
+                                appendTo="@(body)"
+                                panelStyleClass="k-ac-panel">
+                    <p:ajax event="itemSelect"
+                            global="false"
+                            listener="#{centroMedicoCtrl.onCie10CodigoSelect}"
+                            process="@this"
+                            update="diagAutocompleteProbe"/>
+                    <p:ajax event="blur"
+                            global="false"
+                            listener="#{centroMedicoCtrl.onCie10CodigoBlur}"
+                            process="@this"
+                            update="diagAutocompleteProbe"/>
+                </p:autoComplete>
+
+                <h:outputLabel for="probeCieDesc" value="Descripción"/>
+                <p:autoComplete id="probeCieDesc"
+                                value="#{centroMedicoCtrl.descCie10Ppal}"
+                                completeMethod="#{centroMedicoCtrl.completarKDescStrings}"
+                                dropdown="true"
+                                cache="false"
+                                minQueryLength="1"
+                                queryDelay="200"
+                                forceSelection="false"
+                                appendTo="@(body)"
+                                panelStyleClass="k-ac-panel">
+                    <p:ajax event="itemSelect"
+                            global="false"
+                            listener="#{centroMedicoCtrl.onCie10DescripcionSelect}"
+                            process="@this"
+                            update="diagAutocompleteProbe"/>
+                    <p:ajax event="blur"
+                            global="false"
+                            listener="#{centroMedicoCtrl.onCie10DescripcionBlur}"
+                            process="@this"
+                            update="diagAutocompleteProbe"/>
+                </p:autoComplete>
+            </p:panelGrid>
+        </p:panel>
+
     </ui:define>
 
 </ui:composition>
