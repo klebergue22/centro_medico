@@ -381,11 +381,8 @@
                                                     forceSelection="false"
                                                     appendTo="@(body)"
                                                     panelStyleClass="k-ac-panel"
-                                                    maxResults="20"
-                                                    scrollHeight="250"
-                                                    maxlength="200"
                                                     styleClass="cell-input"
-                                                    onkeydown="return handleDiagnosticoAutocompleteEnter(event, 'kCieAc_#{st.index}')">
+>
 
                                         <f:attribute name="idx" value="#{st.index}"/>
 
@@ -393,13 +390,13 @@
                                                 global="false"
                                                 listener="#{centroMedicoCtrl.onKCieCodigoSelect}"
                                                 process="@this"
-                                                update="kPanel"/>
+                                                update="kDesc"/>
 
                                         <p:ajax event="blur"
                                                 global="false"
                                                 listener="#{centroMedicoCtrl.onKCieCodigoBlur}"
                                                 process="@this"
-                                                update="kPanel"/>
+                                                update="kDesc"/>
 
                                     </p:autoComplete>
                                 </td>
@@ -417,11 +414,8 @@
                                                     forceSelection="false"
                                                     appendTo="@(body)"
                                                     panelStyleClass="k-ac-panel"
-                                                    maxResults="20"
-                                                    scrollHeight="250"
-                                                    maxlength="200"
                                                     styleClass="cell-input"
-                                                    onkeydown="return handleDiagnosticoAutocompleteEnter(event, 'kDescAc_#{st.index}')">
+>
 
                                         <f:attribute name="idx" value="#{st.index}"/>
 
@@ -429,13 +423,13 @@
                                                 global="false"
                                                 listener="#{centroMedicoCtrl.onKDescSelect}"
                                                 process="@this"
-                                                update="kPanel"/>
+                                                update="kCie"/>
 
                                         <p:ajax event="blur"
                                                 global="false"
                                                 listener="#{centroMedicoCtrl.onKDescBlur}"
                                                 process="@this"
-                                                update="kPanel"/>
+                                                update="kCie"/>
 
                                     </p:autoComplete>
                                 </td>
