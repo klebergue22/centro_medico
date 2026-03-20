@@ -2080,21 +2080,15 @@ td.j-date  .ui-datepicker-trigger{
 /* datePicker: input 100% */
 .dp-100 input { width: 100% !important; box-sizing: border-box; }
 /* =========================================
-   FIX AUTOCOMPLETE - PANEL VISIBLE
+   AUTOCOMPLETE K - respetar el ciclo nativo de PrimeFaces
    ========================================= */
-.ui-autocomplete-panel,
-.ui-autocomplete-panel.k-ac-panel,
 .k-ac-panel.ui-autocomplete-panel {
   z-index: 2147483647 !important;
-  display: block !important;
-  visibility: visible !important;
-  opacity: 1 !important;
-  position: fixed !important;
-  background: #ffffff !important;
-  border: 2px solid var(--olive-700, #436137) !important;
-  border-radius: 8px !important;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.25) !important;
-  min-width: 240px !important;
+  background: #ffffff;
+  border: 2px solid var(--olive-700, #436137);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+  min-width: 240px;
 }
 
 /* ================================
