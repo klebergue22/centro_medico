@@ -93,16 +93,39 @@ public class CentroMedicoViewLifecycleCoordinator implements Serializable {
             return true;
         }
 
+        String source = params.get("javax.faces.source");
+        if (isAutocompleteSource(source)) {
+            return true;
+        }
+
+        String execute = params.get("javax.faces.partial.execute");
+        if (isAutocompleteSource(execute)) {
+            return true;
+        }
+
         for (String key : params.keySet()) {
             if (key == null) {
                 continue;
             }
-            if (key.endsWith("_query")) {
+            if (key.endsWith("_query") || key.endsWith("_input")) {
                 return true;
             }
         }
 
         return false;
+    }
+
+    private boolean isAutocompleteSource(String value) {
+        if (value == null || value.isBlank()) {
+            return false;
+        }
+
+        return value.contains("probeCieCodigo")
+                || value.contains("probeCieDesc")
+                || value.contains(":kCie")
+                || value.contains(":kDesc")
+                || value.endsWith("kCie")
+                || value.endsWith("kDesc");
     }
 
 }
