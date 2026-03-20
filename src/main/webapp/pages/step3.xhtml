@@ -5,13 +5,13 @@
                 xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
 
 
-    <h:outputScript target="body"><![CDATA[
+    <h:outputScript target="body">
         window.handleDiagnosticoAutocompleteEnter = window.handleDiagnosticoAutocompleteEnter || function(event, widgetVar) {
             var key = event.which || event.keyCode;
             var isEnter = key === 13;
             var isTab = key === 9;
 
-            if (!isEnter && !isTab) {
+            if (!isEnter &amp;&amp; !isTab) {
                 return true;
             }
 
@@ -20,7 +20,7 @@
                 return true;
             }
 
-            var panelVisible = widget.panel && widget.panel.is(':visible');
+            var panelVisible = widget.panel &amp;&amp; widget.panel.is(':visible');
             if (!panelVisible) {
                 if (isTab) {
                     return true;
@@ -63,7 +63,7 @@
             widget.search(widget.input.val());
             return false;
         };
-    ]]></h:outputScript>
+    </h:outputScript>
 
 
 
@@ -377,15 +377,12 @@
                                                     dropdownMode="current"
                                                     cache="false"
                                                     minQueryLength="1"
-                                                    queryDelay="200"
+                                                    queryDelay="500"
                                                     forceSelection="false"
                                                     appendTo="@(body)"
                                                     panelStyleClass="k-ac-panel"
-                                                    maxResults="20"
-                                                    scrollHeight="250"
-                                                    maxlength="200"
                                                     styleClass="cell-input"
-                                                    onkeydown="return handleDiagnosticoAutocompleteEnter(event, 'kCieAc_#{st.index}')">
+>
 
                                         <f:attribute name="idx" value="#{st.index}"/>
 
@@ -393,13 +390,13 @@
                                                 global="false"
                                                 listener="#{centroMedicoCtrl.onKCieCodigoSelect}"
                                                 process="@this"
-                                                update="kPanel"/>
+                                                update="kDesc"/>
 
                                         <p:ajax event="blur"
                                                 global="false"
                                                 listener="#{centroMedicoCtrl.onKCieCodigoBlur}"
                                                 process="@this"
-                                                update="kPanel"/>
+                                                update="kDesc"/>
 
                                     </p:autoComplete>
                                 </td>
@@ -413,15 +410,12 @@
                                                     dropdown="true"
                                                     cache="false"
                                                     minQueryLength="1"
-                                                    queryDelay="200"
+                                                    queryDelay="500"
                                                     forceSelection="false"
                                                     appendTo="@(body)"
                                                     panelStyleClass="k-ac-panel"
-                                                    maxResults="20"
-                                                    scrollHeight="250"
-                                                    maxlength="200"
                                                     styleClass="cell-input"
-                                                    onkeydown="return handleDiagnosticoAutocompleteEnter(event, 'kDescAc_#{st.index}')">
+>
 
                                         <f:attribute name="idx" value="#{st.index}"/>
 
@@ -429,13 +423,13 @@
                                                 global="false"
                                                 listener="#{centroMedicoCtrl.onKDescSelect}"
                                                 process="@this"
-                                                update="kPanel"/>
+                                                update="kCie"/>
 
                                         <p:ajax event="blur"
                                                 global="false"
                                                 listener="#{centroMedicoCtrl.onKDescBlur}"
                                                 process="@this"
-                                                update="kPanel"/>
+                                                update="kCie"/>
 
                                     </p:autoComplete>
                                 </td>
