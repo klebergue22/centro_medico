@@ -5,13 +5,13 @@
                 xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
 
 
-    <h:outputScript target="body"><![CDATA[
+    <h:outputScript target="body">
         window.handleDiagnosticoAutocompleteEnter = window.handleDiagnosticoAutocompleteEnter || function(event, widgetVar) {
             var key = event.which || event.keyCode;
             var isEnter = key === 13;
             var isTab = key === 9;
 
-            if (!isEnter && !isTab) {
+            if (!isEnter &amp;&amp; !isTab) {
                 return true;
             }
 
@@ -20,7 +20,7 @@
                 return true;
             }
 
-            var panelVisible = widget.panel && widget.panel.is(':visible');
+            var panelVisible = widget.panel &amp;&amp; widget.panel.is(':visible');
             if (!panelVisible) {
                 if (isTab) {
                     return true;
@@ -63,7 +63,7 @@
             widget.search(widget.input.val());
             return false;
         };
-    ]]></h:outputScript>
+    </h:outputScript>
 
 
 
