@@ -109,16 +109,22 @@
                                                     widgetVar="kCieAc_#{st.index}"
                                                     value="#{d.codigo}"
                                                     completeMethod="#{centroMedicoCtrl.completarKCieStrings}"
+                                                    var="sugerenciaCodigo"
+                                                    itemLabel="#{sugerenciaCodigo}"
+                                                    itemValue="#{sugerenciaCodigo}"
                                                     dropdown="true"
                                                     dropdownMode="current"
                                                     cache="false"
                                                     minQueryLength="1"
-                                                    queryDelay="500"
+                                                    queryDelay="200"
                                                     forceSelection="false"
                                                     appendTo="@(body)"
                                                     panelStyleClass="k-ac-panel"
+                                                    maxResults="20"
+                                                    scrollHeight="250"
+                                                    maxlength="200"
                                                     styleClass="cell-input"
->
+                                                    onkeydown="return handleDiagnosticoAutocompleteEnter(event, 'kCieAc_#{st.index}')">
 
                                         <f:attribute name="idx" value="#{st.index}"/>
 
@@ -126,13 +132,11 @@
                                                 global="false"
                                                 listener="#{centroMedicoCtrl.onKCieCodigoSelect}"
                                                 process="@this"
-                                                update="kDesc"/>
+                                                update="kPanel"/>
 
-                                        <p:ajax event="blur"
-                                                global="false"
-                                                listener="#{centroMedicoCtrl.onKCieCodigoBlur}"
-                                                process="@this"
-                                                update="kDesc"/>
+                                        <p:column>
+                                            <h:outputText value="#{sugerenciaCodigo}"/>
+                                        </p:column>
 
                                     </p:autoComplete>
                                 </td>
@@ -143,15 +147,21 @@
                                                     widgetVar="kDescAc_#{st.index}"
                                                     value="#{d.descripcion}"
                                                     completeMethod="#{centroMedicoCtrl.completarKDescStrings}"
+                                                    var="sugerenciaDesc"
+                                                    itemLabel="#{sugerenciaDesc}"
+                                                    itemValue="#{sugerenciaDesc}"
                                                     dropdown="true"
                                                     cache="false"
                                                     minQueryLength="1"
-                                                    queryDelay="500"
+                                                    queryDelay="200"
                                                     forceSelection="false"
                                                     appendTo="@(body)"
                                                     panelStyleClass="k-ac-panel"
+                                                    maxResults="20"
+                                                    scrollHeight="250"
+                                                    maxlength="200"
                                                     styleClass="cell-input"
->
+                                                    onkeydown="return handleDiagnosticoAutocompleteEnter(event, 'kDescAc_#{st.index}')">
 
                                         <f:attribute name="idx" value="#{st.index}"/>
 
@@ -159,13 +169,11 @@
                                                 global="false"
                                                 listener="#{centroMedicoCtrl.onKDescSelect}"
                                                 process="@this"
-                                                update="kCie"/>
+                                                update="kPanel"/>
 
-                                        <p:ajax event="blur"
-                                                global="false"
-                                                listener="#{centroMedicoCtrl.onKDescBlur}"
-                                                process="@this"
-                                                update="kCie"/>
+                                        <p:column>
+                                            <h:outputText value="#{sugerenciaDesc}"/>
+                                        </p:column>
 
                                     </p:autoComplete>
                                 </td>
