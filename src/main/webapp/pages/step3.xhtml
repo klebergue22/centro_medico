@@ -402,7 +402,7 @@
                                                 global="false"
                                                 listener="#{centroMedicoCtrl.onKCieCodigoSelect}"
                                                 process="@this"
-                                                update="kPanel"/>
+                                                update="@([id$=kPanel])"/>
 
                                         <p:column>
                                             <h:outputText value="#{sugerenciaCodigo}"/>
@@ -439,7 +439,7 @@
                                                 global="false"
                                                 listener="#{centroMedicoCtrl.onKDescSelect}"
                                                 process="@this"
-                                                update="kPanel"/>
+                                                update="@([id$=kPanel])"/>
 
                                         <p:column>
                                             <h:outputText value="#{sugerenciaDesc}"/>
@@ -453,7 +453,7 @@
                                     <p:selectOneRadio id="kTipo" value="#{d.tipoDiag}" layout="custom">
                                         <f:selectItem itemLabel="PRE" itemValue="P"/>
                                         <f:selectItem itemLabel="DEF" itemValue="D"/>
-                                        <p:ajax event="change" process="@this" update="kPanel"/>
+                                        <p:ajax event="change" process="@this" update="@([id$=kPanel])"/>
                                     </p:selectOneRadio>
                                     <p:radioButton for="kTipo" itemIndex="0"/>
                                 </td>
