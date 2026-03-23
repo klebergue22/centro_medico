@@ -8,311 +8,42 @@
                 xmlns:pt="http://xmlns.jcp.org/jsf/passthrough">
 
     <ui:define name="metadata">
+        <!--
         <f:viewAction action="#{centroMedicoViewLifecycleCoordinator.preRender(centroMedicoCtrl)}" onPostback="false"/>
+        -->
     </ui:define>
 
     <ui:define name="content">
-        <h:form id="centroForm">
-            <h:panelGroup id="panelPruebaAutocomplete" layout="block" style="margin:20px 0;">
-                <h3>Prueba Autocomplete CIE10</h3>
+        <h:form id="formAutoTest">
+            <h3>Prueba Autocomplete CIE10</h3>
 
-                <p:autoComplete id="ciePrueba"
-                                widgetVar="ciePruebaWidget"
-                                value="#{centroMedicoCtrl.pruebaCieTexto}"
-                                completeMethod="#{centroMedicoCtrl.completarCiePruebaFija}"
-                                dropdown="true"
-                                dropdownMode="current"
-                                minQueryLength="0"
-                                queryDelay="0"
-                                maxResults="20"
-                                scrollHeight="250"
-                                appendTo="@(body)"
-                                forceSelection="false"
-                                cache="false"
-                                var="cieItem"
-                                itemLabel="#{cieItem}"
-                                itemValue="#{cieItem}"
-                                emptyMessage="Escriba código o descripción"
-                                onkeydown="return handleAutocompleteEnter(event, 'ciePruebaWidget')"/>
-            </h:panelGroup>
-
-            <h:outputText value="Evaluación Médica Ocupacional" />
-            <h:outputStylesheet library="primefaces" name="primeicons/primeicons.css"/>
-
-            <p:growl id="growl" showDetail="true" life="4000" sticky="false"/>
-            <p:messages id="msgs" closable="true" showDetail="true"/>
-
-            <p:remoteCommand name="rcAutoOpenCedulaDlg"
-                             autoRun="true"
-                             process="@this"
-                             actionListener="#{centroMedicoCtrl.consumirAutoOpenCedulaDlg}"
-                             oncomplete="if (args &amp;&amp; args.openCedulaDlg === true) { if (PF('dlgCedula')) { PF('dlgCedula').show(); } else { setTimeout(function () { if (PF('dlgCedula')) { PF('dlgCedula').show(); } }, 200); } }"/>
-
-            <p:remoteCommand name="rcUpdateWizard"
-                             process="@this"
-                             update="@([id$=wdzFicha]) @([id$=msgs])"/>
-
-            <p:wizard id="wdzFicha" widgetVar="wdzFicha"
-                      showNavBar="false" showStepStatus="true"
-                      nextLabel="Siguiente" backLabel="Anterior"
-                      dynamic="true"
-                      cache="false">
-
-                <p:tab id="step1" title="Formulario (A–F)">
-                    <h:outputText value="step1 vacio"/>
-                </p:tab>
-
-                <p:tab id="step2" title="Riesgos (G)">
-                    <h:outputText value="step2 vacio"/>
-                </p:tab>
-
-                <p:tab id="step3" title="Historia / Resultados (H–O)">
-                    <h:outputText value="step3 vacio"/>
-                </p:tab>
-
-                <p:tab id="step4" title="Certificado (PDF)">
-                    <h:outputText value="step4 vacio"/>
-                </p:tab>
-
-            </p:wizard>
-
-            <p:toolbar styleClass="mt-3">
-                <p:toolbarGroup>
-                    <p:commandButton value="Anterior"
-                                     icon="pi pi-angle-left"
-                                     actionListener="#{centroMedicoCtrl.retrocederStep}"
-                                     process="@form"
-                                     update="@([id$=wdzFicha]) @([id$=msgs])" />
-                    <p:spacer width="8"/>
-                    <p:commandButton value="Siguiente"
-                                     icon="pi pi-angle-right"
-                                     action="#{centroMedicoCtrl.guardarStepActual}"
-                                     process="@form"
-                                     update="@([id$=wdzFicha]) @([id$=msgs])" />
-                </p:toolbarGroup>
-            </p:toolbar>
+            <p:autoComplete id="ciePrueba"
+                            widgetVar="ciePruebaWidget"
+                            value="#{centroMedicoCtrl.pruebaCieTexto}"
+                            completeMethod="#{centroMedicoCtrl.completarCiePruebaFija}"
+                            var="item"
+                            itemLabel="#{item}"
+                            itemValue="#{item}"
+                            dropdown="true"
+                            dropdownMode="current"
+                            minQueryLength="0"
+                            queryDelay="0"
+                            maxResults="20"
+                            scrollHeight="250"
+                            appendTo="@(body)"
+                            forceSelection="false"
+                            cache="false">
+                <p:column>
+                    <h:outputText value="#{item}" />
+                </p:column>
+            </p:autoComplete>
         </h:form>
+
+        <!--
+        <h:form id="centroForm">
+            Todo el contenido original de la vista queda comentado temporalmente
+            para aislar la prueba mínima del autocomplete en esta ruta.
+        </h:form>
+        -->
     </ui:define>
-
-    <ui:define name="dialogs">
-        <p:dialog id="dlgCedula"
-                  widgetVar="dlgCedula"
-                  header="Buscar por cédula"
-                  modal="true"
-                  closable="false"
-                  resizable="false"
-                  draggable="false"
-                  appendTo="@(body)"
-                  width="560">
-
-            <h:form id="dlgCedulaForm">
-                <p:messages id="msgCedula" showDetail="true" closable="true"/>
-
-                <h:panelGrid id="gridCedula" columns="2"
-                             columnClasses="col-label-man,col-field-man"
-                             styleClass="grid-manual">
-
-                    <h:outputLabel for="cedulaBusqueda" value="Cédula *"/>
-
-                    <p:inputText id="cedulaBusqueda"
-                                 value="#{centroMedicoCtrl.cedulaBusqueda}"
-                                 maxlength="10"
-                                 autocomplete="off" />
-
-                    <h:outputLabel/>
-
-                    <h:panelGroup layout="block" style="text-align:right;">
-                        <p:commandButton id="btnBuscarCedula"
-                                         value="BUSCAR"
-                                         icon="pi pi-search"
-                                         action="#{centroMedicoCtrl.buscarCedula}"
-                                         process="@this cedulaBusqueda"
-                                         update="dlgCedulaForm:msgCedula dlgCedulaForm:panelBtnManualWrap @([id$=msgs])"
-                                         oncomplete="if (args) { if (args.encontrado) { PF('dlgCedula').hide(); rcUpdateWizard(); } else if (args.mostrarManual) { PF('dlgPersonaAux').show(); } }"/>
-
-                        <p:commandButton id="btnCerrarCedula"
-                                         value="Cerrar"
-                                         icon="pi pi-times"
-                                         type="button"
-                                         onclick="PF('dlgCedula').hide();"
-                                         styleClass="ui-button-secondary"
-                                         style="margin-left:.5rem;"/>
-                    </h:panelGroup>
-                </h:panelGrid>
-
-                <p:outputPanel id="panelBtnManualWrap"
-                               layout="block"
-                               style="margin-top:14px;"
-                               rendered="#{centroMedicoCtrl.permitirIngresoManual}">
-
-                    <p:separator/>
-
-                    <h:panelGroup layout="block" style="text-align:center;">
-                        <h:outputText value="No se encontró el empleado. Puede ingresar los datos manualmente."
-                                      style="display:block; margin-bottom:10px; font-weight:600;"/>
-
-                        <p:commandButton id="btnIngresoManual"
-                                         value="INGRESAR DATOS MANUALMENTE"
-                                         icon="pi pi-user-plus"
-                                         type="button"
-                                         styleClass="ui-button-warning"
-                                         onclick="PF('dlgPersonaAux').show();"/>
-
-                        <p:commandButton id="btnReintentar"
-                                         value="Limpiar / Reintentar"
-                                         icon="pi pi-refresh"
-                                         styleClass="ui-button-secondary"
-                                         style="margin-left:.5rem;"
-                                         action="#{centroMedicoCtrl.limpiarBusquedaCedula}"
-                                         process="@this"
-                                         update="dlgCedulaForm:msgCedula dlgCedulaForm:panelBtnManualWrap dlgCedulaForm:cedulaBusqueda"/>
-                    </h:panelGroup>
-                </p:outputPanel>
-            </h:form>
-        </p:dialog>
-
-        <p:dialog id="dlgPersonaAux"
-                  widgetVar="dlgPersonaAux"
-                  header="Ingreso manual de datos"
-                  modal="true"
-                  closable="true"
-                  resizable="false"
-                  draggable="false"
-                  appendTo="@(body)"
-                  width="680">
-
-            <h:form id="dlgPersonaAuxForm">
-                <p:messages id="msgPersonaAux" showDetail="true" closable="true"/>
-
-                <h:panelGroup layout="block" styleClass="manual-info">
-                    <i class="pi pi-exclamation-triangle" style="margin-right:.5rem;"></i>
-                    <h:outputText value="No se encontró el empleado. Puede ingresar los datos manualmente."/>
-                </h:panelGroup>
-
-                <p:panelGrid id="gridManual"
-                             columns="2"
-                             layout="grid"
-                             styleClass="ui-fluid manual-grid"
-                             columnClasses="manual-label,manual-field">
-
-                    <h:outputLabel for="cedManual" value="Cédula *"/>
-                    <p:inputText id="cedManual"
-                                 value="#{centroMedicoCtrl.personaAux.cedula}"
-                                 maxlength="10"
-                                 readonly="true"/>
-
-                    <h:outputLabel for="ap1" value="Primer apellido *"/>
-                    <p:inputText id="ap1"
-                                 value="#{centroMedicoCtrl.personaAux.apellido1}"
-                                 required="true"/>
-
-                    <h:outputLabel for="ap2" value="Segundo apellido"/>
-                    <p:inputText id="ap2"
-                                 value="#{centroMedicoCtrl.personaAux.apellido2}"/>
-
-                    <h:outputLabel for="nom1" value="Primer nombre *"/>
-                    <p:inputText id="nom1"
-                                 value="#{centroMedicoCtrl.personaAux.nombre1}"
-                                 required="true"/>
-
-                    <h:outputLabel for="nom2" value="Segundo nombre"/>
-                    <p:inputText id="nom2"
-                                 value="#{centroMedicoCtrl.personaAux.nombre2}"/>
-
-                    <h:outputLabel for="sexoManual" value="Sexo *"/>
-                    <p:selectOneMenu id="sexoManual"
-                                     value="#{centroMedicoCtrl.personaAux.sexo}"
-                                     required="true"
-                                     appendTo="@(body)">
-                        <f:selectItem itemLabel="-- Seleccione --" itemValue=""/>
-                        <f:selectItem itemLabel="Masculino" itemValue="M"/>
-                        <f:selectItem itemLabel="Femenino" itemValue="F"/>
-                    </p:selectOneMenu>
-
-                    <h:outputLabel for="fnManual" value="Fecha nacimiento *"/>
-                    <p:calendar id="fnManual"
-                                value="#{centroMedicoCtrl.personaAux.fechaNac}"
-                                pattern="dd/MM/yyyy"
-                                navigator="true"
-                                showOn="button"
-                                yearRange="1924:2007"
-                                required="true"/>
-                </p:panelGrid>
-
-                <p:separator/>
-
-                <p:commandButton id="btnGuardarPersonaAux"
-                                 value="GUARDAR Y USAR EN FICHA"
-                                 icon="pi pi-save"
-                                 action="#{centroMedicoCtrl.guardarPersonaAuxYUsar}"
-                                 process="@form"
-                                 update="@([id$=msgs])"
-                                 styleClass="manual-btn-guardar"
-                                 oncomplete="if (args &amp;&amp; !args.validationFailed) { PF('dlgPersonaAux').hide(); PF('dlgCedula').hide(); rcUpdateWizard(); }"/>
-            </h:form>
-        </p:dialog>
-    </ui:define>
-
-    <ui:define name="footer-scripts">
-        <h:outputScript target="body">
-            window.handleAutocompleteEnter = window.handleAutocompleteEnter || function(event, widgetVar) {
-                var key = event.which || event.keyCode;
-                var isEnter = key === 13;
-                var isTab = key === 9;
-
-                if (!isEnter &amp;&amp; !isTab) {
-                    return true;
-                }
-
-                var widget = PF(widgetVar);
-                if (!widget || !widget.input) {
-                    return true;
-                }
-
-                var panelVisible = widget.panel &amp;&amp; widget.panel.is(':visible');
-                if (!panelVisible) {
-                    if (isTab) {
-                        return true;
-                    }
-                    if (event.preventDefault) {
-                        event.preventDefault();
-                    }
-                    if (event.stopPropagation) {
-                        event.stopPropagation();
-                    }
-                    widget.search(widget.input.val());
-                    return false;
-                }
-
-                var highlighted = widget.panel.find('li.ui-state-highlight:visible').first();
-                var firstItem = widget.panel.find('li.ui-autocomplete-item:visible').first();
-                var itemToSelect = highlighted.length ? highlighted : firstItem;
-
-                if (itemToSelect.length) {
-                    if (event.preventDefault) {
-                        event.preventDefault();
-                    }
-                    if (event.stopPropagation) {
-                        event.stopPropagation();
-                    }
-                    itemToSelect.trigger('click');
-                    return false;
-                }
-
-                if (isTab) {
-                    return true;
-                }
-
-                if (event.preventDefault) {
-                    event.preventDefault();
-                }
-                if (event.stopPropagation) {
-                    event.stopPropagation();
-                }
-                widget.search(widget.input.val());
-                return false;
-            };
-        </h:outputScript>
-    </ui:define>
-
 </ui:composition>
