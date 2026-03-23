@@ -50,45 +50,44 @@
 
             <p:remoteCommand name="rcUpdateWizard"
                              process="@this"
-                             update="@([id$=wdzFicha]) @([id$=msgs])"/>
+                             update="@([id$=tabsFicha]) @([id$=msgs])"/>
 
-            <p:wizard id="wdzFicha" widgetVar="wdzFicha"
-                      showNavBar="false" showStepStatus="true"
-                      nextLabel="Siguiente" backLabel="Anterior"
-                      dynamic="true"
-                      cache="false">
+            <p:tabView id="tabsFicha"
+                       activeIndex="#{centroMedicoCtrl.activeTabIndex}"
+                       dynamic="true"
+                       cache="false">
 
                 <p:tab id="step1" title="Formulario (A–F)">
-                    <h:outputText value="step1 vacio"/>
+                    <ui:include src="/pages/step1.xhtml"/>
                 </p:tab>
 
                 <p:tab id="step2" title="Riesgos (G)">
-                    <h:outputText value="step2 vacio"/>
+                    <ui:include src="/pages/step2.xhtml"/>
                 </p:tab>
 
                 <p:tab id="step3" title="Historia / Resultados (H–O)">
-                    <h:outputText value="step3 vacio"/>
+                    <ui:include src="/pages/step3.xhtml"/>
                 </p:tab>
 
                 <p:tab id="step4" title="Certificado (PDF)">
-                    <h:outputText value="step4 vacio"/>
+                    <ui:include src="/pages/step4.xhtml"/>
                 </p:tab>
 
-            </p:wizard>
+            </p:tabView>
 
             <p:toolbar styleClass="mt-3">
                 <p:toolbarGroup>
                     <p:commandButton value="Anterior"
                                      icon="pi pi-angle-left"
-                                     actionListener="#{centroMedicoCtrl.retrocederStep}"
-                                     process="@form"
-                                     update="@([id$=wdzFicha]) @([id$=msgs])" />
+                                     actionListener="#{centroMedicoCtrl.anteriorTab}"
+                                     process="@this"
+                                     update="@([id$=tabsFicha]) @([id$=msgs])" />
                     <p:spacer width="8"/>
                     <p:commandButton value="Siguiente"
                                      icon="pi pi-angle-right"
-                                     action="#{centroMedicoCtrl.guardarStepActual}"
-                                     process="@form"
-                                     update="@([id$=wdzFicha]) @([id$=msgs])" />
+                                     actionListener="#{centroMedicoCtrl.siguienteTab}"
+                                     process="@this"
+                                     update="@([id$=tabsFicha]) @([id$=msgs])" />
                 </p:toolbarGroup>
             </p:toolbar>
         </h:form>

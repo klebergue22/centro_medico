@@ -210,7 +210,7 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     // =========================
     public String onFlow(FlowEvent event) {
         final String nextStep = event.getNewStep();
-        this.wizardViewState.setActiveStep(nextStep);
+        this.setActiveStep(nextStep);
         if ("step1".equals(nextStep)) {
             wizardViewState.setCedulaDlgAutoOpened(false);
         }
@@ -218,7 +218,49 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     }
 
     public void retrocederStep() {
-        wizardViewState.setActiveStep(wizardSectionFacade.retrocederStep(wizardViewState.getActiveStep()));
+        setActiveStep(wizardSectionFacade.retrocederStep(wizardViewState.getActiveStep()));
+    }
+
+    public int getActiveTabIndex() {
+        return stepToIndex(wizardViewState.getActiveStep());
+    }
+
+    public void setActiveTabIndex(int activeTabIndex) {
+        setActiveStep(indexToStep(activeTabIndex));
+    }
+
+    public void siguienteTab() {
+        int currentIndex = getActiveTabIndex();
+        if (currentIndex < 3) {
+            setActiveTabIndex(currentIndex + 1);
+        }
+    }
+
+    public void anteriorTab() {
+        int currentIndex = getActiveTabIndex();
+        if (currentIndex > 0) {
+            setActiveTabIndex(currentIndex - 1);
+        }
+    }
+
+    private int stepToIndex(String step) {
+        return switch (step) {
+            case "step2" -> 1;
+            case "step3" -> 2;
+            case "step4" -> 3;
+            case "step1" -> 0;
+            default -> 0;
+        };
+    }
+
+    private String indexToStep(int index) {
+        return switch (index) {
+            case 1 -> "step2";
+            case 2 -> "step3";
+            case 3 -> "step4";
+            case 0 -> "step1";
+            default -> wizardViewState.getActiveStep() != null ? wizardViewState.getActiveStep() : "step1";
+        };
     }
 
     public void guardarStepActual() {
@@ -232,7 +274,7 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
                                     this::guardarStep1,
                                     this::guardarStep2,
                                     this::guardarStep3,
-                                    wizardViewState::setActiveStep,
+                                    this::setActiveStep,
                                     this::applyStep4State,
                                     getFicha(),
                                     pdfPreviewState,
@@ -467,7 +509,7 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
                 pdfSessionStore,
                 pdfPreviewState,
                 this::setFicha,
-                wizardViewState::setActiveStep,
+                this::setActiveStep,
                 this::setMostrarDlgCedula));
     }
 
@@ -488,7 +530,7 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
                 fecha -> diagnosticoFormModel.setFechaEmision(fecha),
                 H_ROWS,
                 this::setFicha,
-                wizardViewState::setActiveStep,
+                this::setActiveStep,
                 this::setMostrarDlgCedula);
     }
 
@@ -497,7 +539,7 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
                 state,
                 pdfPreviewState,
                 this::setFicha,
-                wizardViewState::setActiveStep,
+                this::setActiveStep,
                 this::setMostrarDlgCedula);
     }
 
@@ -854,6 +896,7 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
 
     public void setActiveStep(String activeStep) {
         wizardViewState.setActiveStep(activeStep);
+        wizardViewState.setStepIndex(stepToIndex(activeStep));
     }
 
     public List<String> getTipoAct() {
@@ -895,6 +938,7 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
 
     public void setStepIndex(int stepIndex) {
         wizardViewState.setStepIndex(stepIndex);
+        wizardViewState.setActiveStep(indexToStep(stepIndex));
     }
 
     public Integer[] getConsTiempoConsumo() {
