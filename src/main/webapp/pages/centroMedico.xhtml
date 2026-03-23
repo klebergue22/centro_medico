@@ -38,18 +38,17 @@
                             widgetVar="ciePruebaWidget"
                             value="#{centroMedicoCtrl.pruebaCieTexto}"
                             completeMethod="#{centroMedicoCtrl.completarCiePruebaFija}"
-                            var="item"
-                            itemLabel="#{item}"
-                            itemValue="#{item}"
-                            minQueryLength="1"
-                            queryDelay="300"
+                            dropdown="true"
+                            dropdownMode="current"
+                            minQueryLength="0"
+                            queryDelay="0"
+                            maxResults="20"
+                            scrollHeight="250"
+                            appendTo="@(body)"
                             forceSelection="false"
                             cache="false"
-                            onkeydown="return handleAutocompleteEnter(event, 'ciePruebaWidget')">
-                <p:column>
-                    <h:outputText value="#{item}" />
-                </p:column>
-            </p:autoComplete>
+                            emptyMessage="Escriba código o descripción"
+                            onkeydown="return handleAutocompleteEnter(event, 'ciePruebaWidget')"/>
         </h:panelGroup>
 
 
