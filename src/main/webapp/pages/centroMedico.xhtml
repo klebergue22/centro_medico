@@ -56,7 +56,9 @@
                       showNavBar="false" showStepStatus="true"
                       nextLabel="Siguiente" backLabel="Anterior"
                       flowListener="#{centroMedicoCtrl.onFlow}"
-                      step="#{centroMedicoCtrl.activeStep}">
+                      step="#{centroMedicoCtrl.activeStep}"
+                      dynamic="true"
+                      cache="false">
 
                 <p:tab id="step1" title="Formulario (A–F)">
                     <ui:include src="/pages/step1.xhtml"/>
