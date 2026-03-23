@@ -2228,6 +2228,15 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
         step2FormModel.setMedidasPreventivas(medidasPreventivas);
     }
 
+    private static final List<String> CIE10_PRUEBA_FIJA = List.of(
+            "K00 - TRASTORNOS DEL DESARROLLO Y DE LA ERUPCION DE LOS DIENTES",
+            "K01 - DIENTES INCLUIDOS E IMPACTADOS",
+            "K02 - CARIES DENTAL",
+            "K03 - OTRAS ENFERMEDADES DE LOS TEJIDOS DUROS DE LOS DIENTES",
+            "K04 - ENFERMEDADES DE LA PULPA Y DE LOS TEJIDOS PERIAPICALES",
+            "K05 - GINGIVITIS Y ENFERMEDADES PERIODONTALES"
+    );
+
     private String pruebaCieTexto;
 
     public String getPruebaCieTexto() {
@@ -2238,12 +2247,19 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
         this.pruebaCieTexto = pruebaCieTexto;
     }
 
-    public java.util.List<String> completarCiePruebaFija(String query) {
-        java.util.List<String> out = new java.util.ArrayList<>();
-        out.add("K00 - TRASTORNOS DEL DESARROLLO Y DE LA ERUPCION DE LOS DIENTES");
-        out.add("K01 - DIENTES INCLUIDOS E IMPACTADOS");
-        out.add("K02 - CARIES DENTAL");
-        out.add("K03 - OTRAS ENFERMEDADES DE LOS TEJIDOS DUROS DE LOS DIENTES");
+    public List<String> completarCiePruebaFija(String query) {
+        String q = query == null ? "" : query.trim().toLowerCase(Locale.ROOT);
+        List<String> out = new ArrayList<>();
+
+        for (String item : CIE10_PRUEBA_FIJA) {
+            if (q.isEmpty() || item.toLowerCase(Locale.ROOT).contains(q)) {
+                out.add(item);
+            }
+        }
+
+        if (out.isEmpty()) {
+            out.addAll(CIE10_PRUEBA_FIJA);
+        }
 
         LOG.info(">>> [PRUEBA-FIJA] ENTER query=[{}]", query);
         LOG.info("<<< [PRUEBA-FIJA] RETURN size={} first=[{}]",
