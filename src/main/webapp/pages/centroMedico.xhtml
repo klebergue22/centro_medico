@@ -14,13 +14,14 @@
 
 
     <ui:define name="content">
-        <h:outputText value="Evaluación Médica Ocupacional" />
-        <h:outputStylesheet library="primefaces" name="primeicons/primeicons.css"/>
+        <h:form id="centroForm" prependId="false">
+            <h:outputText value="Evaluación Médica Ocupacional" />
+            <h:outputStylesheet library="primefaces" name="primeicons/primeicons.css"/>
 
+            <p:growl id="growl" showDetail="true" life="4000" sticky="false"/>
+            <p:messages id="msgs" closable="true" showDetail="true"/>
 
-
-
-        <p:remoteCommand name="rcAutoOpenCedulaDlg"
+            <p:remoteCommand name="rcAutoOpenCedulaDlg"
                          autoRun="true"
                          process="@this"
                          actionListener="#{centroMedicoCtrl.consumirAutoOpenCedulaDlg}"
@@ -47,7 +48,7 @@
                             appendTo="@(body)"
                             forceSelection="false"
                             cache="false"
-                      
+                            emptyMessage="Escriba código o descripción"
                             onkeydown="return handleAutocompleteEnter(event, 'ciePruebaWidget')"/>
         </h:panelGroup>
 
@@ -78,7 +79,7 @@
         </p:wizard>
 
 
-        <p:toolbar styleClass="mt-3">
+            <p:toolbar styleClass="mt-3">
             <p:toolbarGroup>
                 <p:commandButton value="Anterior"
                                  icon="pi pi-angle-left"
@@ -93,8 +94,8 @@
                                  update="@([id$=wdzFicha]) @([id$=msgs])" />
 
             </p:toolbarGroup>
-        </p:toolbar>
-
+            </p:toolbar>
+        </h:form>
     </ui:define>
 
 

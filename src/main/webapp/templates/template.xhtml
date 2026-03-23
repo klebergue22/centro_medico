@@ -25,10 +25,7 @@
 
     <h:body>
 
-        <h:form id="layoutForm" prependId="false">
-
-
-            <p:dialog modal="true" widgetVar="statusDialog"
+        <p:dialog modal="true" widgetVar="statusDialog"
                       header="Por favor espere..."
                       draggable="false" closable="false" resizable="false"
                       appendTo="@(body)"
@@ -40,9 +37,6 @@
                     <p>Procesando su solicitud...</p>
                 </div>
             </p:dialog>
-
-            <p:growl id="growl" showDetail="true" life="4000" sticky="false"/>
-            <p:messages id="msgs" closable="true" showDetail="true"/>
 
             <div class="topbar">
                 <p:menubar styleClass="navbar-militar">
@@ -68,10 +62,9 @@
                 onsuccess="try{PF('statusDialog').hide();}catch(e){}"
                 onerror="try{PF('statusDialog').hide();}catch(e){}"/>
 
-            <ui:insert name="footer-scripts"/>
-        </h:form>
-
         <ui:insert name="dialogs"/>
+
+        <ui:insert name="footer-scripts"/>
 
     </h:body>
 </f:view>

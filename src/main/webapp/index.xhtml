@@ -10,30 +10,31 @@
     <ui:define name="title">Inicio</ui:define>
 
     <ui:define name="content">
-        <p:panel header="Bienvenido" style="margin-top:10px">
-            <h:outputText value="Selecciona un módulo en el menú superior."/>
-        </p:panel>
-        
-           <h:panelGroup id="panelPruebaAutocomplete" layout="block" style="margin:20px 0;">
-            <h3>Prueba Autocomplete CIE10</h3>
+        <h:form id="indexForm" prependId="false">
+            <p:panel header="Bienvenido" style="margin-top:10px">
+                <h:outputText value="Selecciona un módulo en el menú superior."/>
+            </p:panel>
 
-            <p:autoComplete id="ciePrueba"
-                            widgetVar="ciePruebaWidget"
-                            value="#{centroMedicoCtrl.pruebaCieTexto}"
-                            completeMethod="#{centroMedicoCtrl.completarCiePruebaFija}"
-                            dropdown="true"
-                            dropdownMode="current"
-                            minQueryLength="0"
-                            queryDelay="0"
-                            maxResults="20"
-                            scrollHeight="250"
-                            appendTo="@(body)"
-                            forceSelection="false"
-                            cache="false"
-                            
-                            onkeydown="return handleAutocompleteEnter(event, 'ciePruebaWidget')"/>
-        </h:panelGroup>
+            <h:panelGroup id="panelPruebaAutocomplete" layout="block" style="margin:20px 0;">
+                <h3>Prueba Autocomplete CIE10</h3>
 
+                <p:autoComplete id="ciePrueba"
+                                widgetVar="ciePruebaWidget"
+                                value="#{centroMedicoCtrl.pruebaCieTexto}"
+                                completeMethod="#{centroMedicoCtrl.completarCiePruebaFija}"
+                                dropdown="true"
+                                dropdownMode="current"
+                                minQueryLength="0"
+                                queryDelay="0"
+                                maxResults="20"
+                                scrollHeight="250"
+                                appendTo="@(body)"
+                                forceSelection="false"
+                                cache="false"
+                                emptyMessage="Escriba código o descripción"
+                                onkeydown="return handleAutocompleteEnter(event, 'ciePruebaWidget')"/>
+            </h:panelGroup>
+        </h:form>
     </ui:define>
 
 </ui:composition>
