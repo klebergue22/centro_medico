@@ -2297,7 +2297,7 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
             LOG.info(">>> [PRUEBA-FIJA] viewId={}",
                     FacesContext.getCurrentInstance().getViewRoot().getViewId());
         } else {
-            LOG.info(">>> [PRUEBA-FIJA] viewId={}", null);
+            LOG.info(">>> [PRUEBA-FIJA] viewId={}", (Object) null);
         }
         LOG.info(">>> [PRUEBA-FIJA] query=[{}]", query);
 
