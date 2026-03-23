@@ -12,7 +12,7 @@
     </ui:define>
 
     <ui:define name="content">
-        <h:form id="formAutoTest" prependId="false">
+        <h:form id="centroForm" prependId="false">
             <h:panelGroup id="panelPruebaAutocomplete" layout="block" style="margin:20px 0;">
                 <h3>Prueba Autocomplete CIE10</h3>
 
@@ -35,9 +35,7 @@
                                 emptyMessage="Escriba código o descripción"
                                 onkeydown="return handleAutocompleteEnter(event, 'ciePruebaWidget')"/>
             </h:panelGroup>
-        </h:form>
 
-        <h:form id="centroForm" prependId="false">
             <h:outputText value="Evaluación Médica Ocupacional" />
             <h:outputStylesheet library="primefaces" name="primeicons/primeicons.css"/>
 
