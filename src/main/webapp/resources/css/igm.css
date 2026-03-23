@@ -205,66 +205,66 @@ input.ui-inputfield:focus, textarea.ui-inputfield:focus{
 .topbar .brand{ color:#fff; font-weight:700; margin-left:8px; }
 
 /* ===================== SOLO DIALOGO EMPLEADO ===================== */
-/* Escapamos el ':' en el id renderizado por JSF: layoutForm:dlg */
-#layoutForm\\:dlg .ui-dialog-content{
+/* Selectores del diálogo de empleado con ids planos (prependId=false). */
+#dlg .ui-dialog-content{
   padding: 10px 14px;
 }
 
 /* PanelGrid 3C: Label | Field | Msg (solo en el diálogo) */
-#layoutForm\\:dlg .emp-3col .ui-panelgrid,
-#layoutForm\\:dlg .emp-3col .ui-panelgrid .ui-panelgrid-content{
+#dlg .emp-3col .ui-panelgrid,
+#dlg .emp-3col .ui-panelgrid .ui-panelgrid-content{
   display: table !important;
   width: 100%;
   table-layout: fixed;   /* evita saltos y columnas raras */
 }
 
-#layoutForm\\:dlg .emp-3col .ui-panelgrid tbody tr>td{
+#dlg .emp-3col .ui-panelgrid tbody tr>td{
   padding: 6px 8px !important;
   vertical-align: middle !important;
   border-top: 1px solid rgba(50,60,40,.08);
 }
 
 /* Anchos por columna (sólo diálogo) */
-#layoutForm\\:dlg .emp-3col .ui-panelgrid tbody tr>td:nth-child(3n+1){ width: 230px; } /* Label */
-#layoutForm\\:dlg .emp-3col .ui-panelgrid tbody tr>td:nth-child(3n+2){ width: auto;  } /* Field */
-#layoutForm\\:dlg .emp-3col .ui-panelgrid tbody tr>td:nth-child(3n+3){ width: 28px;  } /* Msg */
+#dlg .emp-3col .ui-panelgrid tbody tr>td:nth-child(3n+1){ width: 230px; } /* Label */
+#dlg .emp-3col .ui-panelgrid tbody tr>td:nth-child(3n+2){ width: auto;  } /* Field */
+#dlg .emp-3col .ui-panelgrid tbody tr>td:nth-child(3n+3){ width: 28px;  } /* Msg */
 
 /* Campos 100% + altura uniforme */
-#layoutForm\\:dlg .emp-3col .ui-panelgrid-cell.fld > *{
+#dlg .emp-3col .ui-panelgrid-cell.fld > *{
   width:100% !important; box-sizing: border-box;
 }
-#layoutForm\\:dlg .emp-3col input.ui-inputfield,
-#layoutForm\\:dlg .emp-3col .ui-selectonemenu,
-#layoutForm\\:dlg .emp-3col .ui-selectonemenu-label{
+#dlg .emp-3col input.ui-inputfield,
+#dlg .emp-3col .ui-selectonemenu,
+#dlg .emp-3col .ui-selectonemenu-label{
   height:34px !important; line-height:32px !important;
 }
 
 /* SelectOneMenu trigger consistente */
-#layoutForm\\:dlg .emp-3col .ui-selectonemenu-trigger{
+#dlg .emp-3col .ui-selectonemenu-trigger{
   width:36px; border-left:1px solid var(--olive-500) !important;
 }
 
 /* DatePicker: icono alineado al campo (y sin romper columnas) */
-#layoutForm\\:dlg .emp-3col .ui-datepicker-trigger{
+#dlg .emp-3col .ui-datepicker-trigger{
   height:34px; width:34px; margin-left:6px;
   display:inline-flex; align-items:center; justify-content:center;
 }
 
 /* Mensajes compactos */
-#layoutForm\\:dlg .emp-3col .ui-message{
+#dlg .emp-3col .ui-message{
   display:inline-flex; align-items:center; height:22px;
 }
 
 /* Footer del diálogo (manteniendo tu paleta) */
-#layoutForm\\:dlg .ui-dialog-footer .ui-button{
+#dlg .ui-dialog-footer .ui-button{
   text-transform: uppercase; font-weight:700; border-radius:8px;
 }
 
 /* Responsive sólo para el diálogo */
 @media (max-width:900px){
-  #layoutForm\\:dlg .emp-3col .ui-panelgrid,
-  #layoutForm\\:dlg .emp-3col .ui-panelgrid .ui-panelgrid-content{ display:block !important; }
-  #layoutForm\\:dlg .emp-3col .ui-panelgrid tbody tr>td{
+  #dlg .emp-3col .ui-panelgrid,
+  #dlg .emp-3col .ui-panelgrid .ui-panelgrid-content{ display:block !important; }
+  #dlg .emp-3col .ui-panelgrid tbody tr>td{
     display:block !important; width:100% !important; border-top:0;
   }
 }
@@ -790,14 +790,14 @@ input.ui-inputfield:focus, textarea.ui-inputfield:focus{
 .field-col { width: auto;  }
 
 /* Opcional: que los radios no “salten” de línea */
-#layoutForm\\:tipoEval td { padding-right: 1rem; }
+#tipoEval td { padding-right: 1rem; }
 
 /* Anchos consistentes */
 .lbl  { width: 14rem; vertical-align: middle; }
 .fld  { width: auto; }
 
 /* Radio en una sola línea y con respiración */
-#layoutForm\\:tipoEval td { padding-right: .75rem; }
+#tipoEval td { padding-right: .75rem; }
 
  /* Contenedor y respiración */
 .mc-fieldset .mc-row { margin-top: .5rem; }
@@ -812,15 +812,15 @@ input.ui-inputfield:focus, textarea.ui-inputfield:focus{
 .mc-subpanel .ui-panel-titlebar { padding: .4rem .8rem; }
 
 /* Radios en una línea con espacio */
-#layoutForm\\:tipoEval td { padding-right: .9rem; }
+#tipoEval td { padding-right: .9rem; }
 
 /* Calendarios: que el input ocupe todo el ancho del contenedor */
 .ui-calendar, .ui-calendar input { width: 100%; }
 
 /* Hace más ancha solo el textarea de Observación */
-#layoutForm\\:obs, 
-#layoutForm\\:obs_input, 
-#layoutForm\\:obs textarea {
+#obs, 
+#obs_input, 
+#obs textarea {
     width: 100% !important;  /* ocupa todo el ancho disponible */
     min-width: 400px;        /* puedes ajustar el valor mínimo */
 }

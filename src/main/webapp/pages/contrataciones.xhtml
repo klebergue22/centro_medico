@@ -14,9 +14,9 @@
 
 
     <ui:define name="content">
+        <h:form id="contratacionesForm" prependId="false">
 
-
-        <p:messages id="msgsPage" closable="true" showIcon="true" showSummary="true"/>
+            <p:messages id="msgsPage" closable="true" showIcon="true" showSummary="true"/>
 
 
 
@@ -108,7 +108,12 @@
 
 
 
-        <p:dialog id="dlg"
+        </h:form>
+    </ui:define>
+
+    <ui:define name="dialogs">
+        <h:form id="contratacionesDialogForm" prependId="false">
+            <p:dialog id="dlg"
                   widgetVar="dlgCont"
                   header="Contratación"
                   modal="true"
@@ -208,7 +213,7 @@
                 <p:commandButton value="Guardar"
                                  icon="pi pi-check"
                                  actionListener="#{contratacionController.guardar}"
-                                 process="dlg"
+                                 process="@form"
                                  update="msgsPage tbl dlgBody dlgMsgs"
                                  oncomplete="if (args &amp;&amp; args.validationFailed) PF('dlgCont').show(); else PF('dlgCont').hide();"/>
 
@@ -221,10 +226,7 @@
 
         </p:dialog>
 
-
-
-
-        <p:dialog id="dlgCrear"
+            <p:dialog id="dlgCrear"
                   widgetVar="dlgCrear"
                   header="Sin contratos"
                   modal="true"
@@ -245,7 +247,7 @@
                                  onclick="PF('dlgCrear').hide(); return false;"
                                  styleClass="ui-button-secondary"/>
             </f:facet>
-        </p:dialog>
-
+            </p:dialog>
+        </h:form>
     </ui:define>
 </ui:composition>
