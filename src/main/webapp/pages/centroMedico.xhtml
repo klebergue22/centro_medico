@@ -34,43 +34,7 @@
         </h:form>
 
         <h:form id="centroForm">
-
-            <p:growl id="growl" showDetail="true" life="4000" sticky="false"/>
-            <p:messages id="msgs" closable="true" showDetail="true"/>
-
-            <p:tabView id="tabsFicha"
-                       activeIndex="#{centroMedicoCtrl.activeTabIndex}"
-                       dynamic="true"
-                       cache="false">
-                <p:tab id="step1" title="Formulario (A–F)">
-                    <h:outputText value="step1"/>
-                </p:tab>
-                <p:tab id="step2" title="Riesgos (G)">
-                    <h:outputText value="step2"/>
-                </p:tab>
-                <p:tab id="step3" title="Historia / Resultados (H–O)">
-                    <h:outputText value="step3"/>
-                </p:tab>
-                <p:tab id="step4" title="Certificado (PDF)">
-                    <h:outputText value="step4"/>
-                </p:tab>
-            </p:tabView>
-
-            <p:toolbar styleClass="mt-3">
-                <p:toolbarGroup>
-                    <p:commandButton value="Anterior"
-                                     icon="pi pi-angle-left"
-                                     actionListener="#{centroMedicoCtrl.anteriorTab}"
-                                     process="@this"
-                                     update="tabsFicha msgs"/>
-                    <p:spacer width="8"/>
-                    <p:commandButton value="Siguiente"
-                                     icon="pi pi-angle-right"
-                                     actionListener="#{centroMedicoCtrl.siguienteTab}"
-                                     process="@this"
-                                     update="tabsFicha msgs"/>
-                </p:toolbarGroup>
-            </p:toolbar>
+            <h:outputText value="Evaluación Médica Ocupacional" />
         </h:form>
 
     </ui:define>
