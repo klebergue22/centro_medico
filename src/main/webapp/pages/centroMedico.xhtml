@@ -18,7 +18,6 @@
         <h:form id="formAutoTest" prependId="false">
             <h3>Prueba Autocomplete CIE10</h3>
 
-<<<<<<< HEAD
                 <p:autoComplete id="ciePrueba"
                                 widgetVar="ciePruebaWidget"
                                 value="#{centroMedicoCtrl.pruebaCieTexto}"
@@ -53,23 +52,6 @@
         <p:remoteCommand name="rcUpdateWizard"
                          process="@this"
                          update="@([id$=wdzFicha]) @([id$=msgs])"/>
-=======
-            <h:panelGroup layout="block" styleClass="ui-fluid">
-                <h:inputText id="ciePrueba"
-                             value="#{centroMedicoCtrl.pruebaCieTexto}"
-                             styleClass="ui-inputfield ui-inputtext ui-widget ui-state-default ui-corner-all"
-                             pt:list="ciePruebaList"
-                             pt:autocomplete="off"
-                             pt:placeholder="Escriba código o descripción"/>
-
-                <datalist id="ciePruebaList">
-                    <ui:repeat value="#{centroMedicoCtrl.ciePruebaOpciones}" var="item">
-                        <option value="#{item}"></option>
-                    </ui:repeat>
-                </datalist>
-            </h:panelGroup>
-        </h:panelGroup>
->>>>>>> 9f82a0cf0279eb1ce823a5f81c678a99f8c3661a
 
 
 
