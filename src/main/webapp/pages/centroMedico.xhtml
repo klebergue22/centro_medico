@@ -11,6 +11,7 @@
         <h:form id="formAutoTest" prependId="false">
             <h3>Prueba Autocomplete CIE10</h3>
 
+            <h:panelGroup layout="block">
                 <p:autoComplete id="ciePrueba"
                                 widgetVar="ciePruebaWidget"
                                 value="#{centroMedicoCtrl.pruebaCieTexto}"
@@ -24,7 +25,6 @@
                                 appendTo="@(body)"
                                 forceSelection="false"
                                 cache="false"
-                                
                                 onkeydown="return handleAutocompleteEnter(event, 'ciePruebaWidget')"/>
             </h:panelGroup>
         </h:form>
