@@ -29,6 +29,9 @@
                                 appendTo="@(body)"
                                 forceSelection="false"
                                 cache="false"
+                                var="cieItem"
+                                itemLabel="#{cieItem}"
+                                itemValue="#{cieItem}"
                                 emptyMessage="Escriba código o descripción"
                                 onkeydown="return handleAutocompleteEnter(event, 'ciePruebaWidget')"/>
             </h:panelGroup>
