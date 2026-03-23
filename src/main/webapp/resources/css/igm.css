@@ -371,6 +371,18 @@ input.ui-inputfield:focus, textarea.ui-inputfield:focus{
     border: 1px solid #406343 !important;
 }
 
+/*
+ * En el wizard de Centro Médico varios dropdowns viven dentro de fieldsets y
+ * contenedores PrimeFaces con overflow. Forzar que el panel del overlay salga
+ * al body evita que quede recortado y hace visible el despliegue.
+ */
+.ui-wizard,
+.ui-wizard-content,
+.ui-wizard-step-panels,
+.ui-fieldset-content {
+  overflow: visible;
+}
+
 .ui-selectonemenu-items .ui-selectonemenu-item:hover {
     background: #d8f3d8 !important; /* verde claro hover */
     color: #0f3d0f !important;
