@@ -431,12 +431,12 @@
                 <p:ajax event="dateSelect"
                         listener="#{centroMedicoCtrl.onFechaNacimientoSelect}"
                         process="@this"
-                        update=":layoutForm:edad :layoutForm:msgs" />
+                        update="edad msgs" />
 
                 <p:ajax event="change"
                         listener="#{centroMedicoCtrl.onFechaNacimientoChange}"
                         process="@this"
-                        update=":layoutForm:edad :layoutForm:msgs"/>
+                        update="edad msgs"/>
 
             </p:calendar>
 
