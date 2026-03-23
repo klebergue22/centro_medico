@@ -127,7 +127,7 @@
                                          icon="pi pi-search"
                                          action="#{centroMedicoCtrl.buscarCedula}"
                                          process="@this cedulaBusqueda"
-                                         update="dlgCedulaForm:msgCedula dlgCedulaForm:panelBtnManualWrap :msgs"
+                                         update="dlgCedulaForm:msgCedula dlgCedulaForm:panelBtnManualWrap @([id$=msgs])"
                                          oncomplete="if (args) { if (args.encontrado) { PF('dlgCedula').hide(); rcUpdateWizard(); } else if (args.mostrarManual) { PF('dlgPersonaAux').show(); } }"/>
 
                         <p:commandButton id="btnCerrarCedula"
@@ -246,7 +246,7 @@
                                  icon="pi pi-save"
                                  action="#{centroMedicoCtrl.guardarPersonaAuxYUsar}"
                                  process="@form"
-                                 update=":msgs"
+                                 update="@([id$=msgs])"
                                  styleClass="manual-btn-guardar"
                                  oncomplete="if (args &amp;&amp; !args.validationFailed) { PF('dlgPersonaAux').hide(); PF('dlgCedula').hide(); rcUpdateWizard(); }"/>
             </h:form>
