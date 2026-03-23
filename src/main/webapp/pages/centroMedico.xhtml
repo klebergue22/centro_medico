@@ -55,26 +55,23 @@
             <p:wizard id="wdzFicha" widgetVar="wdzFicha"
                       showNavBar="false" showStepStatus="true"
                       nextLabel="Siguiente" backLabel="Anterior"
-                      flowListener="#{centroMedicoCtrl.onFlow}"
-                      step="#{centroMedicoCtrl.activeStep}"
                       dynamic="true"
                       cache="false">
 
                 <p:tab id="step1" title="Formulario (A–F)">
-                    <ui:include src="/pages/step1.xhtml"/>
+                    <h:outputText value="step1 vacio"/>
                 </p:tab>
 
                 <p:tab id="step2" title="Riesgos (G)">
-                    <ui:include src="/pages/step2.xhtml"/>
+                    <h:outputText value="step2 vacio"/>
                 </p:tab>
 
                 <p:tab id="step3" title="Historia / Resultados (H–O)">
-                    <!-- Prueba diagnóstica: aislar step3 para validar conflicto del wizard con autocomplete -->
-                    <!-- <ui:include src="/pages/step3.xhtml"/> -->
+                    <h:outputText value="step3 vacio"/>
                 </p:tab>
 
                 <p:tab id="step4" title="Certificado (PDF)">
-                    <ui:include src="/pages/step4.xhtml"/>
+                    <h:outputText value="step4 vacio"/>
                 </p:tab>
 
             </p:wizard>
