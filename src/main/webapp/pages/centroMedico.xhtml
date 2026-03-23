@@ -272,7 +272,8 @@
                     <h:outputLabel for="sexoManual" value="Sexo *"/>
                     <p:selectOneMenu id="sexoManual"
                                      value="#{centroMedicoCtrl.personaAux.sexo}"
-                                     required="true">
+                                     required="true"
+                                     appendTo="@(body)">
                         <f:selectItem itemLabel="-- Seleccione --" itemValue=""/>
                         <f:selectItem itemLabel="Masculino" itemValue="M"/>
                         <f:selectItem itemLabel="Femenino" itemValue="F"/>
