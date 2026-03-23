@@ -6,7 +6,7 @@
 
 
     <h:outputScript target="body">
-        window.handleDiagnosticoAutocompleteEnter = window.handleDiagnosticoAutocompleteEnter || function(event, widgetVar) {
+        window.handleAutocompleteEnter = window.handleAutocompleteEnter || function(event, widgetVar) {
             var key = event.which || event.keyCode;
             var isEnter = key === 13;
             var isTab = key === 9;
@@ -62,6 +62,10 @@
             }
             widget.search(widget.input.val());
             return false;
+        };
+
+        window.handleDiagnosticoAutocompleteEnter = window.handleDiagnosticoAutocompleteEnter || function(event, widgetVar) {
+            return window.handleAutocompleteEnter(event, widgetVar);
         };
     </h:outputScript>
 
