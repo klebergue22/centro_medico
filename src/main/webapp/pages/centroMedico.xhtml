@@ -3,7 +3,8 @@
                 xmlns:h="http://xmlns.jcp.org/jsf/html"
                 xmlns:f="http://xmlns.jcp.org/jsf/core"
                 xmlns:p="http://primefaces.org/ui"
-                xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:pt="http://xmlns.jcp.org/jsf/passthrough">
 
 
     <ui:define name="metadata">
@@ -17,18 +18,65 @@
         <h:form id="formAutoTest" prependId="false">
             <h3>Prueba Autocomplete CIE10</h3>
 
-            <p:autoComplete id="ciePrueba"
-                            widgetVar="ciePruebaWidget"
-                            value="#{centroMedicoCtrl.pruebaCieTexto}"
-                            completeMethod="#{centroMedicoCtrl.completarCiePruebaFija}"
-                            minQueryLength="1"
-                            queryDelay="300"
-                            forceSelection="false"
-                            cache="false"
-                            appendTo="@(body)"
-                            global="false"
-                            dropdown="true"
-                            dropdownMode="current"/>
+            <h:panelGroup layout="block" styleClass="ui-fluid">
+                <h:inputText id="ciePrueba"
+                             value="#{centroMedicoCtrl.pruebaCieTexto}"
+                             styleClass="ui-inputfield ui-inputtext ui-widget ui-state-default ui-corner-all"
+                             pt:list="ciePruebaList"
+                             pt:autocomplete="off"
+                             pt:placeholder="Escriba código o descripción"/>
+
+                <datalist id="ciePruebaList">
+                    <ui:repeat value="#{centroMedicoCtrl.ciePruebaOpciones}" var="item">
+                        <option value="#{item}"></option>
+                    </ui:repeat>
+                </datalist>
+            </h:panelGroup>
+        </h:panelGroup>
+
+
+
+        <p:wizard id="wdzFicha" widgetVar="wdzFicha"
+                  showNavBar="false" showStepStatus="true"
+                  nextLabel="Siguiente" backLabel="Anterior"
+                  flowListener="#{centroMedicoCtrl.onFlow}"
+                  step="#{centroMedicoCtrl.activeStep}">
+
+            <p:tab id="step1" title="Formulario (A–F)">
+                <ui:include src="/pages/step1.xhtml"/>
+            </p:tab>
+
+            <p:tab id="step2" title="Riesgos (G)">
+                <ui:include src="/pages/step2.xhtml"/>
+            </p:tab>
+
+            <p:tab id="step3" title="Historia / Resultados (H–O)">
+                <ui:include src="/pages/step3.xhtml"/>
+            </p:tab>
+
+            <p:tab id="step4" title="Certificado (PDF)">
+                <ui:include src="/pages/step4.xhtml"/>
+            </p:tab>
+
+        </p:wizard>
+
+
+            <p:toolbar styleClass="mt-3">
+            <p:toolbarGroup>
+                <p:commandButton value="Anterior"
+                                 icon="pi pi-angle-left"
+                                 actionListener="#{centroMedicoCtrl.retrocederStep}"
+                                 process="@form"
+                                 update="@([id$=wdzFicha]) @([id$=msgs])" />
+                <p:spacer width="8"/>
+                <p:commandButton value="Siguiente"
+                                 icon="pi pi-angle-right"
+                                 action="#{centroMedicoCtrl.guardarStepActual}"
+                                 process="@form"
+                                 update="@([id$=wdzFicha]) @([id$=msgs])" />
+
+            </p:toolbarGroup>
+            </p:toolbar>
         </h:form>
     </ui:define>
 
