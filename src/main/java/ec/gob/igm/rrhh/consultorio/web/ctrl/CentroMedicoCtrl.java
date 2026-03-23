@@ -2247,6 +2247,17 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
         this.pruebaCieTexto = pruebaCieTexto;
     }
 
+    public List<String> completarCiePruebaFija(String query) {
+        if (query == null || query.trim().isEmpty()) {
+            return CIE10_PRUEBA_FIJA;
+        }
+
+        String q = query.trim().toUpperCase();
+        return CIE10_PRUEBA_FIJA.stream()
+                .filter(item -> item.toUpperCase().contains(q))
+                .toList();
+    }
+
     public List<String> getCiePruebaOpciones() {
         return CIE10_PRUEBA_FIJA;
     }
