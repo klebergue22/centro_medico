@@ -85,7 +85,7 @@
                     <p:selectBooleanCheckbox value="#{centroMedicoCtrl.atencionPrioritariaModel.discapacidad}">
                         <p:ajax process="@this"
                                 listener="#{centroMedicoCtrl.onToggleDiscapacidad}"
-                                update="@form:apDiscapPanel"/>
+                                update="apDiscapPanel"/>
                     </p:selectBooleanCheckbox>
                     <h:outputText value="Discapacidad" styleClass="ap-label"/>
                 </div>
@@ -94,7 +94,7 @@
                     <p:selectBooleanCheckbox value="#{centroMedicoCtrl.atencionPrioritariaModel.catastrofica}">
                         <p:ajax process="@this"
                                 listener="#{centroMedicoCtrl.onToggleCatastrofica}"
-                                update="@form:apCatasPanel"/>
+                                update="apCatasPanel"/>
                     </p:selectBooleanCheckbox>
                     <h:outputText value="Enf. catastrófica" styleClass="ap-label"/>
                 </div>
