@@ -2292,14 +2292,27 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     }
 
     public List<String> completarCiePruebaFija(String query) {
+        if (FacesContext.getCurrentInstance() != null
+                && FacesContext.getCurrentInstance().getViewRoot() != null) {
+            LOG.info(">>> [PRUEBA-FIJA] viewId={}",
+                    FacesContext.getCurrentInstance().getViewRoot().getViewId());
+        } else {
+            LOG.info(">>> [PRUEBA-FIJA] viewId={}", null);
+        }
+        LOG.info(">>> [PRUEBA-FIJA] query=[{}]", query);
+
+        List<String> out;
         if (query == null || query.trim().isEmpty()) {
-            return CIE10_PRUEBA_FIJA;
+            out = CIE10_PRUEBA_FIJA;
+        } else {
+            String q = query.trim().toUpperCase();
+            out = CIE10_PRUEBA_FIJA.stream()
+                    .filter(item -> item.toUpperCase().contains(q))
+                    .toList();
         }
 
-        String q = query.trim().toUpperCase();
-        return CIE10_PRUEBA_FIJA.stream()
-                .filter(item -> item.toUpperCase().contains(q))
-                .toList();
+        LOG.info("<<< [PRUEBA-FIJA] size={} items={}", out.size(), out);
+        return out;
     }
 
     public List<String> getCiePruebaOpciones() {
