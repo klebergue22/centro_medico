@@ -8,9 +8,9 @@
 
     <ui:define name="content">
         <h:form id="formAutoTest" prependId="false">
-            <h:panelGroup id="panelPruebaAutocomplete" layout="block" style="margin:20px 0;">
-                <h3>Prueba Autocomplete CIE10</h3>
+            <h3>Prueba Autocomplete CIE10</h3>
 
+            <h:panelGroup layout="block">
                 <p:autoComplete id="ciePrueba"
                                 widgetVar="ciePruebaWidget"
                                 value="#{centroMedicoCtrl.pruebaCieTexto}"
@@ -24,7 +24,6 @@
                                 appendTo="@(body)"
                                 forceSelection="false"
                                 cache="false"
-                                emptyMessage="Escriba código o descripción"
                                 onkeydown="return handleAutocompleteEnter(event, 'ciePruebaWidget')"/>
             </h:panelGroup>
         </h:form>
