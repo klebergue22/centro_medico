@@ -1,6 +1,5 @@
 package ec.gob.igm.rrhh.consultorio.web.ctrl;
 
-
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -128,7 +127,7 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     private transient CentroMedicoFormStateService centroMedicoFormStateService;
     @Inject
     private transient CentroMedicoReactiveUiService reactiveUiService;
-    
+
     @Inject
     private transient Step3CommandAssembler step3CommandAssembler;
     @Inject
@@ -176,7 +175,6 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     private final PacienteViewState pacienteViewState = new PacienteViewState();
     private final WizardViewState wizardViewState = new WizardViewState();
     private final FichaContext fichaContext = new FichaContext();
-
 
     // VARIABLES DE DATOS PERSONALES
     // =========================
@@ -802,7 +800,7 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
                 actividadLaboralFormModel.getActLabObservaciones(),
                 rep);
     }
-    
+
     public List<String> completarKCieStrings(String query) {
         return diagnosticoSectionFacade.completarKCieStrings(query);
     }
@@ -857,8 +855,6 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     public void setActiveStep(String activeStep) {
         wizardViewState.setActiveStep(activeStep);
     }
-
-
 
     public List<String> getTipoAct() {
         if (actividadLaboralFormModel.getTipoAct() == null) {
@@ -956,10 +952,6 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     public void setNObsRetiro(String nObsRetiro) {
         diagnosticoFormModel.setnObsRetiro(nObsRetiro);
     }
-
-
-
-
 
     public void setEnfermedadActual(String enfermedadActual) {
         examenFisicoFormModel.setEnfermedadActual(enfermedadActual);
@@ -1205,8 +1197,6 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
         actividadLaboralFormModel.setActLabTrabajoAnterior(actLabTrabajoAnterior);
     }
 
-
-
     public String[] getAfCual() {
         return habitosConsumoFormModel.getAfCual();
     }
@@ -1223,20 +1213,6 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
         habitosConsumoFormModel.setAfTiempo(afTiempo);
     }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     public String getApellido1() {
         return pacienteFormData.getApellido1();
     }
@@ -1252,10 +1228,6 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     public void setApellido2(String apellido2) {
         pacienteFormData.setApellido2(apellido2);
     }
-
-
-
-
 
     public String getCedulaBusqueda() {
         return pacienteViewState.getCedulaBusqueda();
@@ -1280,8 +1252,6 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     public void setCesareas(Integer cesareas) {
         ginecoObstetricoFormModel.setCesareas(cesareas);
     }
-
-
 
     public Boolean[] getConsExConsumidor() {
         return habitosConsumoFormModel.getConsExConsumidor();
@@ -1347,14 +1317,6 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
         ginecoObstetricoFormModel.setExamenReproMasculino(examenReproMasculino);
     }
 
-
-
-
-
-
-
-
-
     public FichaOcupacional getFicha() {
         return fichaContext.getFicha();
     }
@@ -1363,10 +1325,6 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
         fichaContext.setFicha(ficha);
     }
 
-
-
-
-
     public Integer getGestas() {
         return ginecoObstetricoFormModel.getGestas();
     }
@@ -1374,8 +1332,6 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     public void setGestas(Integer gestas) {
         ginecoObstetricoFormModel.setGestas(gestas);
     }
-
-
 
     public List<String> getIessEspecificar() {
         return actividadLaboralFormModel.getIessEspecificar();
@@ -1408,10 +1364,6 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     public void setIessSi(List<Boolean> iessSi) {
         actividadLaboralFormModel.setIessSi(iessSi);
     }
-
-
-
-
 
     public List<ConsultaDiagnostico> getListaDiag() {
         return step3FormModel.getListaDiag();
@@ -1453,8 +1405,6 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
         diagnosticoFormModel.setMedicoNombre(medicoNombre);
     }
 
-
-
     public String getNombre1() {
         return pacienteFormData.getNombre1();
     }
@@ -1479,9 +1429,6 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
         habitosConsumoFormModel.setObsJ(obsJ);
     }
 
-
-
-
     public Integer getPartos() {
         return ginecoObstetricoFormModel.getPartos();
     }
@@ -1498,8 +1445,6 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
         pdfPreviewState.setPdfTokenCertificado(pdfTokenCertificado);
     }
 
-
-
     public boolean isPermitirIngresoManual() {
         return pacienteViewState.isPermitirIngresoManual();
     }
@@ -1508,8 +1453,6 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
         pacienteViewState.setPermitirIngresoManual(permitirIngresoManual);
     }
 
-
-
     public String getRecomendaciones() {
         return diagnosticoFormModel.getRecomendaciones();
     }
@@ -1517,9 +1460,6 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     public void setRecomendaciones(String recomendaciones) {
         diagnosticoFormModel.setRecomendaciones(recomendaciones);
     }
-
-
-
 
     public String getSexo() {
         return pacienteFormData.getSexo();
@@ -1537,10 +1477,6 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
         step1FormModel.setGrupoSanguineo(grupoSanguineo);
     }
 
-
-
-
-
     public Integer getTiempoReproMasculino() {
         return ginecoObstetricoFormModel.getTiempoReproMasculino();
     }
@@ -1548,12 +1484,6 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     public void setTiempoReproMasculino(Integer tiempoReproMasculino) {
         ginecoObstetricoFormModel.setTiempoReproMasculino(tiempoReproMasculino);
     }
-
-
-
-
-
-
 
     public String getDialogDiagnosticoCodigo() {
         return step3FormModel.getDialogDiagnosticoCodigo();
@@ -2031,16 +1961,6 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
         historiaLaboralFormModel.sethEnfermedad(hEnfermedad);
     }
 
-
-
-
-
-
-
-
-
-
-
     public boolean isCertPdfListo() {
         return pdfPreviewState.isCertificadoListo();
     }
@@ -2275,6 +2195,7 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     public PacienteViewState getPacienteViewState() {
         return pacienteViewState;
     }
+
     public List<String> getActividadesLab() {
         return step2FormModel.getActividadesLab();
     }
@@ -2305,5 +2226,29 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
 
     public void setMedidasPreventivas(List<String> medidasPreventivas) {
         step2FormModel.setMedidasPreventivas(medidasPreventivas);
+    }
+
+    private String pruebaCieTexto;
+
+    public String getPruebaCieTexto() {
+        return pruebaCieTexto;
+    }
+
+    public void setPruebaCieTexto(String pruebaCieTexto) {
+        this.pruebaCieTexto = pruebaCieTexto;
+    }
+
+    public java.util.List<String> completarCiePruebaFija(String query) {
+        java.util.List<String> out = new java.util.ArrayList<>();
+        out.add("K00 - TRASTORNOS DEL DESARROLLO Y DE LA ERUPCION DE LOS DIENTES");
+        out.add("K01 - DIENTES INCLUIDOS E IMPACTADOS");
+        out.add("K02 - CARIES DENTAL");
+        out.add("K03 - OTRAS ENFERMEDADES DE LOS TEJIDOS DUROS DE LOS DIENTES");
+
+        LOG.info(">>> [PRUEBA-FIJA] ENTER query=[{}]", query);
+        LOG.info("<<< [PRUEBA-FIJA] RETURN size={} first=[{}]",
+                out.size(),
+                out.isEmpty() ? "" : out.get(0));
+        return out;
     }
 }
