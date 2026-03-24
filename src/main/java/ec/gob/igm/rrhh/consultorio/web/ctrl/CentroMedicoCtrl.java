@@ -256,6 +256,8 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     // VALIDACIÓN DE STEPS
     // =========================
     private boolean validarStep1() {
+        syncPatientStateFromFicha();
+
         FichaRiesgo fichaRiesgo = step2FormModel.getFichaRiesgo();
         Step1ValidationInput input = stepValidationInputAssembler.buildStep1Input(
                 pacienteFormData.getApellido1(),
@@ -501,6 +503,14 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
                 this::setFicha,
                 wizardViewState::setActiveStep,
                 this::setMostrarDlgCedula);
+        syncPatientStateFromFicha();
+    }
+
+    private void syncPatientStateFromFicha() {
+        if (getFicha() == null) {
+            return;
+        }
+        pacienteSectionFacade.syncPatientStateFromFicha(this);
     }
 
     // =========================

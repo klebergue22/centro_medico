@@ -37,6 +37,10 @@ public class PacienteSectionFacade implements Serializable {
         pacienteViewFlowDelegate.asegurarPersonaAuxPersistida(ctrl);
     }
 
+    public void syncPatientStateFromFicha(CentroMedicoCtrl ctrl) {
+        pacienteViewFlowDelegate.syncPatientStateFromFicha(ctrl);
+    }
+
     public void onBuscarPorCedulaRh(CentroMedicoCtrl ctrl, Logger log) {
         pacienteViewFlowDelegate.onBuscarPorCedulaRh(ctrl, log);
     }

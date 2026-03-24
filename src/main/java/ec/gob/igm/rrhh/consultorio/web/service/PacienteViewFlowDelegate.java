@@ -85,6 +85,15 @@ public class PacienteViewFlowDelegate implements Serializable {
                 ficha));
     }
 
+    public void syncPatientStateFromFicha(CentroMedicoCtrl ctrl) {
+        applyPacienteUiResult(ctrl, pacienteRegistrationFacade.syncPatientStateAfterStep1(
+                ctrl.isPermitirIngresoManual(),
+                ctrl.getEmpleadoSel(),
+                ctrl.getNoPersonaSel(),
+                ctrl.getPersonaAux(),
+                ctrl.getFicha()));
+    }
+
     public void applyPacienteUiResult(CentroMedicoCtrl ctrl, PacienteRegistrationFacade.UiResult uiResult) {
         if (uiResult == null || ctrl == null) {
             return;
