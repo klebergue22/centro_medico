@@ -242,7 +242,7 @@
                                      action="#{centroMedicoCtrl.guardarPersonaAuxYUsar}"
                                      process="@form"
                                      update="dlgPersonaAuxForm:msgPersonaAux :centroForm:msgs :centroForm:tabsFicha"
-                                     oncomplete="if (!(args && args.validationFailed)) { PF('dlgPersonaAux').hide(); PF('dlgCedula').hide(); }"/>
+                                     oncomplete="if (!(args &amp;&amp; args.validationFailed)) { PF('dlgPersonaAux').hide(); PF('dlgCedula').hide(); }"/>
                 </h:panelGroup>
             </h:form>
         </p:dialog>
