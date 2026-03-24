@@ -7,6 +7,7 @@ import java.util.Locale;
 import java.util.Map;
 
 import jakarta.ejb.Stateless;
+import jakarta.persistence.Persistence;
 
 import ec.gob.igm.rrhh.consultorio.domain.model.DatEmpleado;
 import ec.gob.igm.rrhh.consultorio.domain.model.FichaOcupacional;
@@ -205,10 +206,26 @@ public class FichaPdfViewModelBuilder implements Serializable {
         if (empleadoSel != null && empleadoSel.getNoCedula() != null && !empleadoSel.getNoCedula().isBlank()) {
             return empleadoSel.getNoCedula();
         }
-        if (personaAux != null && personaAux.getCedula() != null && !personaAux.getCedula().isBlank()) {
-            return personaAux.getCedula();
+        String cedulaPersonaAux = getCedulaIfLoaded(personaAux);
+        if (cedulaPersonaAux != null && !cedulaPersonaAux.isBlank()) {
+            return cedulaPersonaAux;
         }
         return cedulaBusqueda == null ? "" : cedulaBusqueda;
+    }
+
+    private static String getCedulaIfLoaded(PersonaAux personaAux) {
+        if (personaAux == null) {
+            return null;
+        }
+        try {
+            boolean loaded = Persistence.getPersistenceUtil().isLoaded(personaAux, "cedula");
+            if (!loaded) {
+                return null;
+            }
+            return personaAux.getCedula();
+        } catch (RuntimeException ex) {
+            return null;
+        }
     }
 
     private static String trimToNull(String s) {

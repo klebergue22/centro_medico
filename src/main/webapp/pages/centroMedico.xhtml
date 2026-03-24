@@ -1,108 +1,91 @@
-<!DOCTYPE html>
 <ui:composition template="/templates/template.xhtml"
                 xmlns="http://www.w3.org/1999/xhtml"
                 xmlns:h="http://xmlns.jcp.org/jsf/html"
                 xmlns:f="http://xmlns.jcp.org/jsf/core"
-                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
-                xmlns:p="http://primefaces.org/ui">
-
-    <ui:define name="metadata">
-        <f:viewAction action="#{centroMedicoViewLifecycleCoordinator.preRender(centroMedicoCtrl)}"
-                      onPostback="false"/>
-    </ui:define>
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
 
     <ui:define name="content">
-
-        <h:form id="formAutoTest">
-            <h3>Prueba Autocomplete CIE10</h3>
-
-            <p:autoComplete id="ciePrueba"
-                            widgetVar="ciePruebaWidget"
-                            value="#{centroMedicoCtrl.pruebaCieTexto}"
-                            completeMethod="#{centroMedicoCtrl.completarCiePruebaFija}"
-                            var="item"
-                            itemLabel="#{item}"
-                            itemValue="#{item}"
-                            dropdown="true"
-                            dropdownMode="current"
-                            minQueryLength="0"
-                            queryDelay="0"
-                            maxResults="20"
-                            scrollHeight="250"
-                            appendTo="@(body)"
-                            forceSelection="false"
-                            cache="false">
-                <p:column>
-                    <h:outputText value="#{item}" />
-                </p:column>
-            </p:autoComplete>
-        </h:form>
-
         <h:form id="centroForm">
             <h:outputText value="Evaluación Médica Ocupacional" />
-
+            <h:outputStylesheet library="primefaces" name="primeicons/primeicons.css"/>
             <p:growl id="growl" showDetail="true" life="4000" sticky="false"/>
             <p:messages id="msgs" closable="true" showDetail="true"/>
 
-            <p:remoteCommand name="rcAutoOpenCedulaDlg"
-                             autoRun="true"
-                             process="@this"
-                             actionListener="#{centroMedicoCtrl.consumirAutoOpenCedulaDlg}"
-                             oncomplete="if (args &amp;&amp; args.openCedulaDlg === true) { if (PF('dlgCedula')) { PF('dlgCedula').show(); } else { setTimeout(function () { if (PF('dlgCedula')) { PF('dlgCedula').show(); } }, 200); } }"/>
 
-            <p:remoteCommand name="rcOnDlgCedulaShown"
-                             process="@this"
-                             actionListener="#{centroMedicoCtrl.onDlgCedulaShown}"/>
 
-            <p:remoteCommand name="rcOnDlgCedulaHide"
-                             process="@this"
-                             actionListener="#{centroMedicoCtrl.onDlgCedulaHide}"/>
 
-            <p:remoteCommand name="rcUpdateWizard"
-                             process="@this"
-                             update="tabsFicha msgs"/>
+        <p:remoteCommand name="rcAutoOpenCedulaDlg"
+                         autoRun="true"
+                         process="@this"
+                         actionListener="#{centroMedicoCtrl.consumirAutoOpenCedulaDlg}"
+                         oncomplete="if (args.openCedulaDlg === true) {
+                         if (PF('dlgCedula')) {
+                         PF('dlgCedula').show();
+                         } else {
+                         setTimeout(function () {
+                         if (PF('dlgCedula')) {
+                         PF('dlgCedula').show();
+                         }
+                         }, 200);
+                         }
+                         }"/>
 
-            <p:tabView id="tabsFicha"
-                       activeIndex="#{centroMedicoCtrl.activeTabIndex}"
-                       dynamic="true"
-                       cache="false">
+        <p:remoteCommand name="rcUpdateWizard"
+                         process="@this"
+                         update="@([id$=wdzFicha]) @([id$=msgs])"/>
 
-                <p:tab id="step1" title="Formulario (A–F)">
-                    <ui:include src="/pages/steps/step1.xhtml"/>
-                </p:tab>
 
-                <p:tab id="step2" title="Riesgos (G)">
-                    <ui:include src="/pages/steps/step2.xhtml"/>
-                </p:tab>
+        <p:wizard id="wdzFicha" widgetVar="wdzFicha"
+                  showNavBar="false" showStepStatus="true"
+                  nextLabel="Siguiente" backLabel="Anterior"
+                  flowListener="#{centroMedicoCtrl.onFlow}"
+                  step="#{centroMedicoCtrl.activeStep}">
 
-                <p:tab id="step3" title="Historia / Resultados (H–O)">
-                    <h:outputText value="step3"/>
-                </p:tab>
+            <p:tab id="step1" title="Formulario (A–F)">
+                <ui:include src="/pages/step1.xhtml"/>
+            </p:tab>
 
-                <p:tab id="step4" title="Certificado (PDF)">
-                    <h:outputText value="step4"/>
-                </p:tab>
+            <p:tab id="step2" title="Riesgos (G)">
+                <ui:include src="/pages/step2.xhtml"/>
+            </p:tab>
 
-            </p:tabView>
+            <p:tab id="step3" title="Historia / Resultados (H–O)">
+                <ui:include src="/pages/step3.xhtml"/>
+            </p:tab>
 
-            <p:toolbar styleClass="mt-3">
-                <p:toolbarGroup>
-                    <p:commandButton value="Anterior"
-                                     icon="pi pi-angle-left"
-                                     actionListener="#{centroMedicoCtrl.anteriorTab}"
-                                     process="@this"
-                                     update="tabsFicha msgs"/>
+            <p:tab id="step4" title="Certificado (PDF)">
+                <ui:include src="/pages/step4.xhtml"/>
+            </p:tab>
 
-                    <p:spacer width="8"/>
+        </p:wizard>
 
-                    <p:commandButton value="Siguiente"
-                                     icon="pi pi-angle-right"
-                                     actionListener="#{centroMedicoCtrl.siguienteTab}"
-                                     process="@this"
-                                     update="tabsFicha msgs"/>
-                </p:toolbarGroup>
-            </p:toolbar>
+
+        <p:toolbar styleClass="mt-3">
+            <p:toolbarGroup>
+                <p:commandButton value="Anterior"
+                                 icon="pi pi-angle-left"
+                                 actionListener="#{centroMedicoCtrl.retrocederStep}"
+                                 process="@form"
+                                 update="@([id$=wdzFicha]) @([id$=msgs])" />
+                <p:spacer width="8"/>
+                <p:commandButton value="Siguiente"
+                                 icon="pi pi-angle-right"
+                                 action="#{centroMedicoCtrl.guardarStepActual}"
+                                 process="@form"
+                                 update="@([id$=wdzFicha]) @([id$=msgs])" />
+
+            </p:toolbarGroup>
+        </p:toolbar>
+
         </h:form>
+    </ui:define>
+
+
+
+
+    <ui:define name="dialogs">
+
 
         <p:dialog id="dlgCedula"
                   widgetVar="dlgCedula"
@@ -112,11 +95,10 @@
                   resizable="false"
                   draggable="false"
                   appendTo="@(body)"
-                  onShow="rcOnDlgCedulaShown();"
-                  onHide="rcOnDlgCedulaHide();"
                   width="560">
 
             <h:form id="dlgCedulaForm">
+
                 <p:messages id="msgCedula" showDetail="true" closable="true"/>
 
                 <h:panelGrid id="gridCedula" columns="2"
@@ -128,18 +110,28 @@
                     <p:inputText id="cedulaBusqueda"
                                  value="#{centroMedicoCtrl.cedulaBusqueda}"
                                  maxlength="10"
-                                 autocomplete="off"/>
+                                 autocomplete="off" />
 
                     <h:outputLabel/>
 
                     <h:panelGroup layout="block" style="text-align:right;">
+
                         <p:commandButton id="btnBuscarCedula"
                                          value="BUSCAR"
                                          icon="pi pi-search"
                                          action="#{centroMedicoCtrl.buscarCedula}"
                                          process="@this cedulaBusqueda"
-                                         update="dlgCedulaForm:msgCedula dlgCedulaForm:panelBtnManualWrap :centroForm:msgs :centroForm:tabsFicha"
-                                         oncomplete="if (args) { if (args.encontrado) { PF('dlgCedula').hide(); } else if (args.mostrarManual) { PF('dlgPersonaAux').show(); } }"/>
+                                         update="msgCedula panelBtnManualWrap :centroForm:msgs"
+                                         oncomplete="
+                                          if (args) {
+                                          if (args.encontrado) {
+                                         PF('dlgCedula').hide();
+                                         rcUpdateWizard();
+                                         } else if (args.mostrarManual) {
+                                         PF('dlgPersonaAux').show();
+                                         }
+                                         }
+                                         "/>
 
                         <p:commandButton id="btnCerrarCedula"
                                          value="Cerrar"
@@ -148,8 +140,11 @@
                                          onclick="PF('dlgCedula').hide();"
                                          styleClass="ui-button-secondary"
                                          style="margin-left:.5rem;"/>
+
                     </h:panelGroup>
+
                 </h:panelGrid>
+
 
                 <p:outputPanel id="panelBtnManualWrap"
                                layout="block"
@@ -176,96 +171,100 @@
                                          style="margin-left:.5rem;"
                                          action="#{centroMedicoCtrl.limpiarBusquedaCedula}"
                                          process="@this"
-                                         update="dlgCedulaForm:msgCedula dlgCedulaForm:panelBtnManualWrap dlgCedulaForm:cedulaBusqueda"/>
+                                         update="msgCedula panelBtnManualWrap cedulaBusqueda"/>
                     </h:panelGroup>
+
                 </p:outputPanel>
+
             </h:form>
         </p:dialog>
 
+
         <p:dialog id="dlgPersonaAux"
                   widgetVar="dlgPersonaAux"
-                  header="Ingreso manual de paciente"
+                  header="Ingreso manual de datos"
                   modal="true"
+                  dynamic="true"
                   closable="true"
                   resizable="false"
                   draggable="false"
                   appendTo="@(body)"
-                  width="640">
+                  width="680">
 
             <h:form id="dlgPersonaAuxForm">
+
                 <p:messages id="msgPersonaAux" showDetail="true" closable="true"/>
 
-                <h:outputText value="Complete los datos mínimos para continuar con la ficha."
-                              styleClass="manual-info"/>
+                <h:panelGroup layout="block" styleClass="manual-info">
+                    <i class="pi pi-exclamation-triangle" style="margin-right:.5rem;"></i>
+                    <h:outputText value="No se encontró el empleado. Puede ingresar los datos manualmente."/>
+                </h:panelGroup>
 
-                <h:panelGrid id="gridManual" columns="2"
-                             columnClasses="manual-label,manual-field"
-                             styleClass="manual-grid">
+                <p:panelGrid id="gridManual"
+                             columns="2"
+                             layout="grid"
+                             styleClass="ui-fluid manual-grid"
+                             columnClasses="manual-label,manual-field">
 
                     <h:outputLabel for="cedManual" value="Cédula *"/>
                     <p:inputText id="cedManual"
                                  value="#{centroMedicoCtrl.personaAux.cedula}"
                                  maxlength="10"
-                                 required="true"
-                                 requiredMessage="La cédula es obligatoria."
                                  readonly="true"/>
 
-                    <h:outputLabel for="ap1Manual" value="Primer apellido *"/>
-                    <p:inputText id="ap1Manual"
+                    <h:outputLabel for="ap1" value="Primer apellido *"/>
+                    <p:inputText id="ap1"
                                  value="#{centroMedicoCtrl.personaAux.apellido1}"
-                                 maxlength="60"
-                                 required="true"
-                                 requiredMessage="El primer apellido es obligatorio."/>
+                                 required="true"/>
 
-                    <h:outputLabel for="ap2Manual" value="Segundo apellido"/>
-                    <p:inputText id="ap2Manual"
-                                 value="#{centroMedicoCtrl.personaAux.apellido2}"
-                                 maxlength="60"/>
+                    <h:outputLabel for="ap2" value="Segundo apellido"/>
+                    <p:inputText id="ap2"
+                                 value="#{centroMedicoCtrl.personaAux.apellido2}"/>
 
-                    <h:outputLabel for="nom1Manual" value="Primer nombre *"/>
-                    <p:inputText id="nom1Manual"
+                    <h:outputLabel for="nom1" value="Primer nombre *"/>
+                    <p:inputText id="nom1"
                                  value="#{centroMedicoCtrl.personaAux.nombre1}"
-                                 maxlength="60"
-                                 required="true"
-                                 requiredMessage="El primer nombre es obligatorio."/>
+                                 required="true"/>
 
-                    <h:outputLabel for="nom2Manual" value="Segundo nombre"/>
-                    <p:inputText id="nom2Manual"
-                                 value="#{centroMedicoCtrl.personaAux.nombre2}"
-                                 maxlength="60"/>
+                    <h:outputLabel for="nom2" value="Segundo nombre"/>
+                    <p:inputText id="nom2"
+                                 value="#{centroMedicoCtrl.personaAux.nombre2}"/>
 
                     <h:outputLabel for="sexoManual" value="Sexo *"/>
                     <p:selectOneMenu id="sexoManual"
                                      value="#{centroMedicoCtrl.personaAux.sexo}"
-                                     required="true"
-                                     requiredMessage="El sexo es obligatorio.">
-                        <f:selectItem itemLabel="Seleccione" itemValue="" noSelectionOption="true"/>
+                                     required="true">
+                        <f:selectItem itemLabel="-- Seleccione --" itemValue=""/>
                         <f:selectItem itemLabel="Masculino" itemValue="M"/>
                         <f:selectItem itemLabel="Femenino" itemValue="F"/>
                     </p:selectOneMenu>
 
-                    <h:outputLabel for="fechaNacManual" value="Fecha nacimiento *"/>
-                    <p:calendar id="fechaNacManual"
+                    <h:outputLabel for="fnManual" value="Fecha nacimiento *"/>
+
+                    <p:calendar id="fnManual"
                                 value="#{centroMedicoCtrl.personaAux.fechaNac}"
                                 pattern="dd/MM/yyyy"
                                 navigator="true"
-                                yearRange="c-100:c"
                                 showOn="button"
-                                mask="true"
-                                required="true"
-                                requiredMessage="La fecha de nacimiento es obligatoria."/>
-                </h:panelGrid>
+                                yearRange="1924:2007"
+                                required="true"/>
 
-                <h:panelGroup layout="block" style="margin-top:12px; text-align:right;">
-                    <p:commandButton id="btnGuardarManual"
-                                     value="GUARDAR Y USAR"
-                                     icon="pi pi-check"
-                                     styleClass="manual-btn-guardar"
-                                     action="#{centroMedicoCtrl.guardarPersonaAuxYUsar}"
-                                     process="@form"
-                                     update="dlgPersonaAuxForm:msgPersonaAux :centroForm:msgs :centroForm:tabsFicha"
-                                     oncomplete="if (!(args &amp;&amp; args.validationFailed)) { PF('dlgPersonaAux').hide(); PF('dlgCedula').hide(); }"/>
-                </h:panelGroup>
+                </p:panelGrid>
+
+                <p:separator/>
+
+                <p:commandButton id="btnGuardarPersonaAux"
+                                 value="GUARDAR Y USAR EN FICHA"
+                                 icon="pi pi-save"
+                                 action="#{centroMedicoCtrl.guardarPersonaAuxYUsar}"
+                                 process="@form"
+                                 update=":centroForm:msgs"
+                                 styleClass="manual-btn-guardar"
+                                 oncomplete="if (args &amp;&amp; !args.validationFailed) {
+                                  PF('dlgPersonaAux').hide();
+                                 PF('dlgCedula').hide();
+                                 rcUpdateWizard();
+                                 }"/>
             </h:form>
         </p:dialog>
 

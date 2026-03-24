@@ -78,15 +78,67 @@ public class Step3OrchestratorService implements Serializable {
     }
 
     private void applyPrincipalCie10(Step3SaveCommand cmd) {
-        if (isBlank(cmd.codCie10Ppal())) {
-            cmd.ficha().setCie10Principal(null);
-            return;
-        }
-        Cie10 cie = cie10Service.buscarPorCodigo(cmd.codCie10Ppal().trim());
-        if (cie == null) {
-            throw new IllegalArgumentException("El código CIE10 principal no existe: " + cmd.codCie10Ppal());
-        }
+        Cie10 cie = resolvePrincipalCie10(cmd);
         cmd.ficha().setCie10Principal(cie);
+    }
+
+    private Cie10 resolvePrincipalCie10(Step3SaveCommand cmd) {
+        String codigoPrincipal = trimToNull(cmd.codCie10Ppal());
+        Cie10 cie = buscarCie10PorCodigo(codigoPrincipal);
+        if (cie != null) {
+            return cie;
+        }
+
+        if (codigoPrincipal != null) {
+            LOG.warn("STEP3-A: CIE10 principal invalido [{}]. Se intentara inferir desde lista K.", codigoPrincipal);
+        }
+
+        Cie10 inferido = inferirPrincipalDesdeLista(cmd.listaDiag());
+        if (inferido != null) {
+            return inferido;
+        }
+
+        if (codigoPrincipal != null) {
+            throw new IllegalArgumentException("El codigo CIE10 principal no existe: " + cmd.codCie10Ppal());
+        }
+
+        return null;
+    }
+
+    private Cie10 inferirPrincipalDesdeLista(List<ConsultaDiagnostico> listaDiag) {
+        if (listaDiag == null || listaDiag.isEmpty()) {
+            return null;
+        }
+
+        Cie10 fallback = null;
+        for (ConsultaDiagnostico diagnostico : listaDiag) {
+            if (diagnostico == null) {
+                continue;
+            }
+
+            Cie10 cie = buscarCie10PorCodigo(trimToNull(diagnostico.getCodigo()));
+            if (cie == null) {
+                continue;
+            }
+
+            if ("D".equals(trimToNull(diagnostico.getTipoDiag()))) {
+                return cie;
+            }
+
+            if (fallback == null) {
+                fallback = cie;
+            }
+        }
+
+        return fallback;
+    }
+
+    private Cie10 buscarCie10PorCodigo(String codigo) {
+        if (codigo == null) {
+            return null;
+        }
+
+        return cie10Service.buscarPorCodigo(codigo);
     }
 
     private void applyClinicalSummaryData(Step3SaveCommand cmd) {

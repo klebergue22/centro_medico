@@ -87,6 +87,7 @@ public class PdfFichaInputAssembler {
         input.grupoSanguineoSetter = source::setGrupoSanguineo;
         input.fechaNacimientoSetter = source::setFechaNacimiento;
         input.edadSetter = source::setEdad;
+        input.personaAuxSetter = source::setPersonaAux;
         return input;
     }
 

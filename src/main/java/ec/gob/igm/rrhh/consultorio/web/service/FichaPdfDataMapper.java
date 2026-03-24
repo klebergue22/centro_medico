@@ -28,6 +28,7 @@ public class FichaPdfDataMapper implements Serializable {
     public FichaPdfMappedData map(FichaOcupacional ficha, DatEmpleado empleadoSel, PersonaAux personaAux, Date fechaNacimientoActual) {
         FichaPdfMappedData data = new FichaPdfMappedData();
         PersonaAux personaAuxData = resolvePersonaAux(ficha, personaAux);
+        data.personaAux = personaAuxData;
 
         if (ficha != null) {
             data.institucion = ficha.getInstSistema();

@@ -37,16 +37,9 @@ public class DiagnosticoViewDelegate implements Serializable {
     private transient CentroMedicoFormStateService centroMedicoFormStateService;
 
     public void syncCie10PrincipalFromK(CentroMedicoCtrl ctrl) {
-        DiagnosticoPrincipalService.DiagnosticoPrincipalData principal = diagnosticoPrincipalService.inferirPrincipal(
-                ctrl.getListaDiag(),
-                ctrl.getCodCie10Ppal(),
-                ctrl.getDescCie10Ppal());
-        if (!principal.hasCodigo()) {
-            return;
-        }
-
-        ctrl.setCodCie10Ppal(principal.getCodigo());
-        ctrl.setDescCie10Ppal(principal.getDescripcion());
+        Cie10 principal = diagnosticoPrincipalService.inferirPrincipalCie10DesdeLista(ctrl.getListaDiag());
+        ctrl.setCodCie10Ppal(principal != null ? principal.getCodigo() : null);
+        ctrl.setDescCie10Ppal(principal != null ? principal.getDescripcion() : null);
     }
 
     public void onCie10BlurCodigo(CentroMedicoCtrl ctrl, int index) {
@@ -150,14 +143,6 @@ public class DiagnosticoViewDelegate implements Serializable {
     }
 
 
-    public List<Cie10> completarKCieItems(String query) {
-        return cie10LookupService.completarFilaCie10PorCodigo(query, 20);
-    }
-
-    public List<Cie10> completarKDescItems(String query) {
-        return cie10LookupService.completarFilaCie10PorDescripcion(query, 20);
-    }
-
     public void onKCieCodigoSelect(CentroMedicoCtrl ctrl, SelectEvent<String> event) {
         diagnosticoFilaUiCoordinator.onCodigoSelect(event, ctrl.getListaDiag());
         syncCie10PrincipalFromK(ctrl);
@@ -175,10 +160,12 @@ public class DiagnosticoViewDelegate implements Serializable {
 
     public void onKDescBlur(CentroMedicoCtrl ctrl, AjaxBehaviorEvent event) {
         diagnosticoFilaUiCoordinator.onDescripcionBlur(event, ctrl.getListaDiag());
+        syncCie10PrincipalFromK(ctrl);
     }
 
     public void onKTipoChange(CentroMedicoCtrl ctrl, AjaxBehaviorEvent event) {
         diagnosticoDialogControllerSupport.onKTipoChange(event, ctrl.getListaDiag());
+        syncCie10PrincipalFromK(ctrl);
     }
 
     public void abrirDialogoDiagnostico(CentroMedicoCtrl ctrl, AjaxBehaviorEvent event) {
@@ -212,40 +199,39 @@ public class DiagnosticoViewDelegate implements Serializable {
     public void cerrarDialogoDiagnostico() {
         diagnosticoDialogControllerSupport.cerrarDialogo();
     }
-
     public List<String> completarKCieStrings(String query) {
-        try {
-            FacesContext fc = FacesContext.getCurrentInstance();
-            String viewId = (fc != null && fc.getViewRoot() != null) ? fc.getViewRoot().getViewId() : "null";
-            LOG.info(">>> [AC-K-COD-STR] complete ENTER query=[{}] viewId={}", query, viewId);
+    try {
+        FacesContext fc = FacesContext.getCurrentInstance();
+        String viewId = (fc != null && fc.getViewRoot() != null) ? fc.getViewRoot().getViewId() : "null";
+        LOG.info(">>> [AC-K-COD-STR] complete ENTER query=[{}] viewId={}", query, viewId);
 
-            List<String> out = cie10LookupService.completarFilaPorCodigo(query);
+        List<String> out = cie10LookupService.completarFilaPorCodigo(query);
 
-            LOG.info("<<< [AC-K-COD-STR] RETURN out.size={}{}",
-                    out.size(),
-                    out.isEmpty() ? "" : " first=[" + out.get(0) + "]");
-            return out;
-        } catch (Exception e) {
-            LOG.error("!!! [AC-K-COD-STR] ERROR {} : {}", e.getClass().getName(), e.getMessage(), e);
-            return new ArrayList<>();
-        }
+        LOG.info("<<< [AC-K-COD-STR] RETURN out.size={}{}",
+                out.size(),
+                out.isEmpty() ? "" : " first=[" + out.get(0) + "]");
+        return out;
+    } catch (Exception e) {
+        LOG.error("!!! [AC-K-COD-STR] ERROR {} : {}", e.getClass().getName(), e.getMessage(), e);
+        return new ArrayList<>();
     }
+}
 
-    public List<String> completarKDescStrings(String query) {
-        try {
-            FacesContext fc = FacesContext.getCurrentInstance();
-            String viewId = (fc != null && fc.getViewRoot() != null) ? fc.getViewRoot().getViewId() : "null";
-            LOG.info(">>> [AC-K-DESC-STR] complete ENTER query=[{}] viewId={}", query, viewId);
+public List<String> completarKDescStrings(String query) {
+    try {
+        FacesContext fc = FacesContext.getCurrentInstance();
+        String viewId = (fc != null && fc.getViewRoot() != null) ? fc.getViewRoot().getViewId() : "null";
+        LOG.info(">>> [AC-K-DESC-STR] complete ENTER query=[{}] viewId={}", query, viewId);
 
-            List<String> out = cie10LookupService.completarFilaPorDescripcion(query, 20);
+        List<String> out = cie10LookupService.completarFilaPorDescripcion(query, 20);
 
-            LOG.info("<<< [AC-K-DESC-STR] RETURN out.size={}{}",
-                    out.size(),
-                    out.isEmpty() ? "" : " first=[" + out.get(0) + "]");
-            return out;
-        } catch (Exception e) {
-            LOG.error("!!! [AC-K-DESC-STR] ERROR {} : {}", e.getClass().getName(), e.getMessage(), e);
-            return new ArrayList<>();
-        }
+        LOG.info("<<< [AC-K-DESC-STR] RETURN out.size={}{}",
+                out.size(),
+                out.isEmpty() ? "" : " first=[" + out.get(0) + "]");
+        return out;
+    } catch (Exception e) {
+        LOG.error("!!! [AC-K-DESC-STR] ERROR {} : {}", e.getClass().getName(), e.getMessage(), e);
+        return new ArrayList<>();
     }
+}
 }

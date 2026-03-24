@@ -20,25 +20,37 @@ public class DiagnosticoPrincipalService {
     public DiagnosticoPrincipalData inferirPrincipal(List<ConsultaDiagnostico> diagnosticos,
             String codigoPrincipalActual,
             String descripcionPrincipalActual) {
-        if (codigoPrincipalActual != null && !codigoPrincipalActual.trim().isEmpty()) {
-            return DiagnosticoPrincipalData.of(codigoPrincipalActual, descripcionPrincipalActual);
+        DiagnosticoPrincipalData principalActual = resolverPrincipalActual(codigoPrincipalActual,
+                descripcionPrincipalActual);
+        if (principalActual.hasCodigo()) {
+            return principalActual;
         }
 
-        ConsultaDiagnostico mejorDiagnostico = seleccionarMejorDiagnostico(diagnosticos);
-        if (mejorDiagnostico == null) {
+        Cie10 principalDesdeLista = cie10LookupService.inferirPrincipalDesdeLista(diagnosticos);
+        if (principalDesdeLista == null) {
             return DiagnosticoPrincipalData.empty();
         }
 
-        return DiagnosticoPrincipalData.of(mejorDiagnostico.getCodigo(), mejorDiagnostico.getDescripcion());
+        return DiagnosticoPrincipalData.of(principalDesdeLista.getCodigo(), principalDesdeLista.getDescripcion());
     }
 
     public DiagnosticoPrincipalData sincronizarCodigoYDescripcion(String codigo, String descripcion) {
         if (codigo != null && !codigo.trim().isEmpty()) {
-            return DiagnosticoPrincipalData.of(codigo, cie10LookupService.buscarDescripcionPorCodigo(codigo));
+            String codigoNormalizado = codigo.trim().toUpperCase();
+            String descripcionResuelta = cie10LookupService.buscarDescripcionPorCodigo(codigoNormalizado);
+            if (descripcionResuelta == null) {
+                return DiagnosticoPrincipalData.empty();
+            }
+            return DiagnosticoPrincipalData.of(codigoNormalizado, descripcionResuelta);
         }
 
         if (descripcion != null && !descripcion.trim().isEmpty()) {
-            return DiagnosticoPrincipalData.of(cie10LookupService.buscarCodigoPorDescripcion(descripcion), descripcion);
+            String descripcionNormalizada = descripcion.trim();
+            String codigoResuelto = cie10LookupService.buscarCodigoPorDescripcion(descripcionNormalizada);
+            if (codigoResuelto == null) {
+                return DiagnosticoPrincipalData.empty();
+            }
+            return DiagnosticoPrincipalData.of(codigoResuelto, descripcionNormalizada);
         }
 
         return DiagnosticoPrincipalData.empty();
@@ -74,6 +86,16 @@ public class DiagnosticoPrincipalService {
         }
 
         return best;
+    }
+
+    private DiagnosticoPrincipalData resolverPrincipalActual(String codigoPrincipalActual,
+            String descripcionPrincipalActual) {
+        DiagnosticoPrincipalData porCodigo = sincronizarCodigoYDescripcion(codigoPrincipalActual, null);
+        if (porCodigo.hasCodigo()) {
+            return porCodigo;
+        }
+
+        return sincronizarCodigoYDescripcion(null, descripcionPrincipalActual);
     }
 
     public static final class DiagnosticoPrincipalData {

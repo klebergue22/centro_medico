@@ -42,8 +42,8 @@ public class CentroMedicoViewLifecycleCoordinator implements Serializable {
         }
 
         try {
-            if (shouldSkipForAjaxRequest(fc)) {
-                LOG.debug("Skip preRender for ajax request. activeStep={}", ctrl.getActiveStep());
+            if (shouldSkipForAutocompleteAjax(fc)) {
+                LOG.debug("Skip preRender for autocomplete ajax request. activeStep={}", ctrl.getActiveStep());
                 return;
             }
 
@@ -73,17 +73,14 @@ public class CentroMedicoViewLifecycleCoordinator implements Serializable {
         }
     }
 
-    private boolean shouldSkipForAjaxRequest(FacesContext fc) {
+    private boolean shouldSkipForAutocompleteAjax(FacesContext fc) {
         if (fc == null) {
             return false;
         }
 
         PartialViewContext pvc = fc.getPartialViewContext();
-        if (pvc == null) {
+        if (pvc == null || !pvc.isAjaxRequest()) {
             return false;
-        }
-        if (pvc.isAjaxRequest()) {
-            return true;
         }
 
         Map<String, String> params = fc.getExternalContext().getRequestParameterMap();
@@ -125,10 +122,7 @@ public class CentroMedicoViewLifecycleCoordinator implements Serializable {
 
         return value.contains(":kCie")
                 || value.contains(":kDesc")
-                || value.contains(":ciePrueba")
                 || value.endsWith("kCie")
-                || value.endsWith("kDesc")
-                || value.endsWith("ciePrueba");
+                || value.endsWith("kDesc");
     }
-
 }

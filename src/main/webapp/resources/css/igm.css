@@ -205,66 +205,66 @@ input.ui-inputfield:focus, textarea.ui-inputfield:focus{
 .topbar .brand{ color:#fff; font-weight:700; margin-left:8px; }
 
 /* ===================== SOLO DIALOGO EMPLEADO ===================== */
-/* Selectores del diálogo de empleado con ids planos (prependId=false). */
-#dlg .ui-dialog-content{
+/* Escapamos el ':' en el id renderizado por JSF: layoutForm:dlg */
+#layoutForm\\:dlg .ui-dialog-content{
   padding: 10px 14px;
 }
 
 /* PanelGrid 3C: Label | Field | Msg (solo en el diálogo) */
-#dlg .emp-3col .ui-panelgrid,
-#dlg .emp-3col .ui-panelgrid .ui-panelgrid-content{
+#layoutForm\\:dlg .emp-3col .ui-panelgrid,
+#layoutForm\\:dlg .emp-3col .ui-panelgrid .ui-panelgrid-content{
   display: table !important;
   width: 100%;
   table-layout: fixed;   /* evita saltos y columnas raras */
 }
 
-#dlg .emp-3col .ui-panelgrid tbody tr>td{
+#layoutForm\\:dlg .emp-3col .ui-panelgrid tbody tr>td{
   padding: 6px 8px !important;
   vertical-align: middle !important;
   border-top: 1px solid rgba(50,60,40,.08);
 }
 
 /* Anchos por columna (sólo diálogo) */
-#dlg .emp-3col .ui-panelgrid tbody tr>td:nth-child(3n+1){ width: 230px; } /* Label */
-#dlg .emp-3col .ui-panelgrid tbody tr>td:nth-child(3n+2){ width: auto;  } /* Field */
-#dlg .emp-3col .ui-panelgrid tbody tr>td:nth-child(3n+3){ width: 28px;  } /* Msg */
+#layoutForm\\:dlg .emp-3col .ui-panelgrid tbody tr>td:nth-child(3n+1){ width: 230px; } /* Label */
+#layoutForm\\:dlg .emp-3col .ui-panelgrid tbody tr>td:nth-child(3n+2){ width: auto;  } /* Field */
+#layoutForm\\:dlg .emp-3col .ui-panelgrid tbody tr>td:nth-child(3n+3){ width: 28px;  } /* Msg */
 
 /* Campos 100% + altura uniforme */
-#dlg .emp-3col .ui-panelgrid-cell.fld > *{
+#layoutForm\\:dlg .emp-3col .ui-panelgrid-cell.fld > *{
   width:100% !important; box-sizing: border-box;
 }
-#dlg .emp-3col input.ui-inputfield,
-#dlg .emp-3col .ui-selectonemenu,
-#dlg .emp-3col .ui-selectonemenu-label{
+#layoutForm\\:dlg .emp-3col input.ui-inputfield,
+#layoutForm\\:dlg .emp-3col .ui-selectonemenu,
+#layoutForm\\:dlg .emp-3col .ui-selectonemenu-label{
   height:34px !important; line-height:32px !important;
 }
 
 /* SelectOneMenu trigger consistente */
-#dlg .emp-3col .ui-selectonemenu-trigger{
+#layoutForm\\:dlg .emp-3col .ui-selectonemenu-trigger{
   width:36px; border-left:1px solid var(--olive-500) !important;
 }
 
 /* DatePicker: icono alineado al campo (y sin romper columnas) */
-#dlg .emp-3col .ui-datepicker-trigger{
+#layoutForm\\:dlg .emp-3col .ui-datepicker-trigger{
   height:34px; width:34px; margin-left:6px;
   display:inline-flex; align-items:center; justify-content:center;
 }
 
 /* Mensajes compactos */
-#dlg .emp-3col .ui-message{
+#layoutForm\\:dlg .emp-3col .ui-message{
   display:inline-flex; align-items:center; height:22px;
 }
 
 /* Footer del diálogo (manteniendo tu paleta) */
-#dlg .ui-dialog-footer .ui-button{
+#layoutForm\\:dlg .ui-dialog-footer .ui-button{
   text-transform: uppercase; font-weight:700; border-radius:8px;
 }
 
 /* Responsive sólo para el diálogo */
 @media (max-width:900px){
-  #dlg .emp-3col .ui-panelgrid,
-  #dlg .emp-3col .ui-panelgrid .ui-panelgrid-content{ display:block !important; }
-  #dlg .emp-3col .ui-panelgrid tbody tr>td{
+  #layoutForm\\:dlg .emp-3col .ui-panelgrid,
+  #layoutForm\\:dlg .emp-3col .ui-panelgrid .ui-panelgrid-content{ display:block !important; }
+  #layoutForm\\:dlg .emp-3col .ui-panelgrid tbody tr>td{
     display:block !important; width:100% !important; border-top:0;
   }
 }
@@ -369,18 +369,6 @@ input.ui-inputfield:focus, textarea.ui-inputfield:focus{
 .ui-selectonemenu-panel {
     background: #ffffff !important;
     border: 1px solid #406343 !important;
-}
-
-/*
- * En el wizard de Centro Médico varios dropdowns viven dentro de fieldsets y
- * contenedores PrimeFaces con overflow. Forzar que el panel del overlay salga
- * al body evita que quede recortado y hace visible el despliegue.
- */
-.ui-wizard,
-.ui-wizard-content,
-.ui-wizard-step-panels,
-.ui-fieldset-content {
-  overflow: visible;
 }
 
 .ui-selectonemenu-items .ui-selectonemenu-item:hover {
@@ -790,14 +778,14 @@ input.ui-inputfield:focus, textarea.ui-inputfield:focus{
 .field-col { width: auto;  }
 
 /* Opcional: que los radios no “salten” de línea */
-#tipoEval td { padding-right: 1rem; }
+#layoutForm\\:tipoEval td { padding-right: 1rem; }
 
 /* Anchos consistentes */
 .lbl  { width: 14rem; vertical-align: middle; }
 .fld  { width: auto; }
 
 /* Radio en una sola línea y con respiración */
-#tipoEval td { padding-right: .75rem; }
+#layoutForm\\:tipoEval td { padding-right: .75rem; }
 
  /* Contenedor y respiración */
 .mc-fieldset .mc-row { margin-top: .5rem; }
@@ -812,15 +800,15 @@ input.ui-inputfield:focus, textarea.ui-inputfield:focus{
 .mc-subpanel .ui-panel-titlebar { padding: .4rem .8rem; }
 
 /* Radios en una línea con espacio */
-#tipoEval td { padding-right: .9rem; }
+#layoutForm\\:tipoEval td { padding-right: .9rem; }
 
 /* Calendarios: que el input ocupe todo el ancho del contenedor */
 .ui-calendar, .ui-calendar input { width: 100%; }
 
 /* Hace más ancha solo el textarea de Observación */
-#obs, 
-#obs_input, 
-#obs textarea {
+#layoutForm\\:obs, 
+#layoutForm\\:obs_input, 
+#layoutForm\\:obs textarea {
     width: 100% !important;  /* ocupa todo el ancho disponible */
     min-width: 400px;        /* puedes ajustar el valor mínimo */
 }
@@ -2091,16 +2079,50 @@ td.j-date  .ui-datepicker-trigger{
 .dp-100 .ui-datepicker { width: 100%; }
 /* datePicker: input 100% */
 .dp-100 input { width: 100% !important; box-sizing: border-box; }
-/* =========================================
-   AUTOCOMPLETE K - respetar el ciclo nativo de PrimeFaces
-   ========================================= */
-.k-ac-panel.ui-autocomplete-panel {
+/* ===== Fix PrimeFaces AutoComplete (panel de sugerencias) ===== */
+
+/* 1) que el panel siempre se vea por encima */
+.ui-autocomplete-panel,
+.k-ac-panel{
+  z-index: 999999 !important;
+}
+
+/* 2) evita que los contenedores del step lo recorten */
+.k-fieldset,
+.k-fieldset .ui-fieldset-content,
+.k-fieldset .panel-scroll{
+  overflow: visible !important;
+}
+.panel-scroll{
+  overflow-x: auto;
+  overflow-y: visible !important;
+}
+
+.k-ac-panel.ui-autocomplete-panel{
+  z-index: 999999 !important;
+}
+
+
+/* ==== FIX Autocomplete overlays inside wizard/scroll containers ==== */
+.k-ac-panel.ui-autocomplete-panel,
+.ui-autocomplete-panel.k-ac-panel {
   z-index: 2147483647 !important;
-  background: #ffffff;
-  border: 2px solid var(--olive-700, #436137);
-  border-radius: 8px;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.25);
-  min-width: 240px;
+  position: absolute !important;
+}
+
+/* Ensure step/wizard containers do not clip overlays */
+.ui-wizard-content,
+.ui-wizard-step-content,
+.panel-scroll,
+.k-fieldset,
+.k-grid {
+  overflow: visible !important;
+}
+
+/* If any parent uses transform, it can break overlay stacking; disable for step containers */
+.ui-wizard-content,
+.panel-scroll {
+  transform: none !important;
 }
 
 /* ================================

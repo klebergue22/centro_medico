@@ -115,7 +115,7 @@ public class Cie10LookupService {
             return null;
         }
 
-        ConsultaDiagnostico best = null;
+        Cie10 best = null;
 
         for (ConsultaDiagnostico r : listaDiag) {
             if (r == null) {
@@ -126,20 +126,20 @@ public class Cie10LookupService {
                 continue;
             }
 
+            Cie10 cie = cie10Service.buscarPorCodigo(cod);
+            if (cie == null) {
+                continue;
+            }
+
             if ("D".equals(r.getTipoDiag())) {
-                best = r;
-                break;
+                return cie;
             }
             if (best == null) {
-                best = r;
+                best = cie;
             }
         }
 
-        if (best == null || best.getCodigo() == null || best.getCodigo().trim().isEmpty()) {
-            return null;
-        }
-
-        return cie10Service.buscarPorCodigo(best.getCodigo().trim());
+        return best;
     }
 
     public Cie10 buscarMejorCoincidenciaPorDescripcion(List<Cie10> lista, String input) {
@@ -236,22 +236,29 @@ public class Cie10LookupService {
     }
 
     public List<String> completarFilaPorCodigo(String query) {
-        int limite = 20;
         String qRaw = limpiarTexto(query);
         if (qRaw.isEmpty()) {
             return new ArrayList<>();
         }
 
-        List<Cie10> coincidencias = new ArrayList<>(completarFilaCie10PorCodigo(qRaw, limite));
-        Set<String> codigosAgregados = new LinkedHashSet<>();
-        agregarCodigos(codigosAgregados, coincidencias);
+        String qCodigo = normalizarCodigo(qRaw);
+        int limite = 20;
 
+        List<Cie10> coincidencias = new ArrayList<>();
+        Set<String> codigosAgregados = new LinkedHashSet<>();
+
+        // Priorizar coincidencias por código para que si el usuario escribe "K" vea primero K00, K01, K21, etc.
+        agregarCoincidenciasPorCodigo(coincidencias, codigosAgregados, cie10Service.buscarJerarquiaPorTerm(qRaw), qCodigo, limite);
+        agregarCoincidenciasPorCodigo(coincidencias, codigosAgregados, cie10Service.buscarPorCodigoAproximado(qRaw, limite), qCodigo, limite);
+
+        // Completar el panel con resultados combinados por código o descripción.
         if (coincidencias.size() < limite) {
             agregarCoincidencias(coincidencias, codigosAgregados, cie10Service.buscarPorCodigoODescripcion(qRaw, limite), limite);
         }
 
-        if (coincidencias.isEmpty()) {
-            agregarCoincidencias(coincidencias, codigosAgregados, cie10Service.buscarJerarquiaPorTerm(qRaw), limite);
+        // Refuerzo extra para entradas que solo aparecen en descripción o por tildes/variantes.
+        if (coincidencias.size() < limite) {
+            agregarCoincidencias(coincidencias, codigosAgregados, cie10Service.buscarPorDescripcionLike(qRaw, limite), limite);
         }
 
         List<String> out = new ArrayList<>();
@@ -293,10 +300,7 @@ public class Cie10LookupService {
             return new ArrayList<>();
         }
 
-        List<Cie10> lista = completarFilaCie10PorDescripcion(q, limite);
-        if (lista.isEmpty()) {
-            lista = cie10Service.buscarPorCodigoODescripcion(q, limite);
-        }
+        List<Cie10> lista = cie10Service.buscarPorDescripcionLike(q, limite);
         Set<String> descripciones = new LinkedHashSet<>();
         if (lista != null) {
             for (Cie10 c : lista) {

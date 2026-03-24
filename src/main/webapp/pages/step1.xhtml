@@ -4,10 +4,6 @@
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
 
-
-
-
-
     <!-- A. DATOS DEL ESTABLECIMIENTO / USUARIO -->
     <p:fieldset legend="A. DATOS DEL ESTABLECIMIENTO / USUARIO" toggleable="true">
 
@@ -121,10 +117,7 @@
 
                             <div style="flex: 1 1 280px; min-width:260px;">
                                 <h:outputLabel for="dis_tipo" value="Tipo:" style="font-weight:bold; display:block; margin-bottom:4px;"/>
-                                <p:selectOneMenu id="dis_tipo"
-                                                 value="#{centroMedicoCtrl.atencionPrioritariaModel.discapTipo}"
-                                                 style="width:100%;"
-                                                 appendTo="@(body)">
+                                <p:selectOneMenu id="dis_tipo" value="#{centroMedicoCtrl.atencionPrioritariaModel.discapTipo}" style="width:100%;">
                                     <f:selectItem itemLabel="Seleccione" itemValue="" noSelectionOption="true"/>
                                     <f:selectItem itemLabel="Físico" itemValue="FISICO"/>
                                     <f:selectItem itemLabel="Auditivo" itemValue="AUDITIVO"/>
@@ -232,12 +225,12 @@
                 <p:ajax event="dateSelect"
                         listener="#{centroMedicoCtrl.onFechaNacimientoSelect}"
                         process="@this"
-                        update="edad msgs" />
+                        update="edad :centroForm:msgs" />
 
                 <p:ajax event="change"
                         listener="#{centroMedicoCtrl.onFechaNacimientoChange}"
                         process="@this"
-                        update="edad msgs"/>
+                        update="edad :centroForm:msgs"/>
 
             </p:calendar>
 
@@ -247,9 +240,7 @@
 
 
             <h:outputLabel for="sangre" value="Grupo sanguíneo"/>
-            <p:selectOneMenu id="sangre"
-                             value="#{centroMedicoCtrl.step1.grupoSanguineo}"
-                             appendTo="@(body)">
+            <p:selectOneMenu id="sangre" value="#{centroMedicoCtrl.step1.grupoSanguineo}">
                 <f:selectItem itemLabel="Seleccione" itemValue=""/>
                 <f:selectItem itemLabel="O+" itemValue="O+"/>
                 <f:selectItem itemLabel="O-" itemValue="O-"/>
@@ -262,9 +253,7 @@
             </p:selectOneMenu>
 
             <h:outputLabel for="lateralidad" value="Lateralidad"/>
-            <p:selectOneMenu id="lateralidad"
-                             value="#{centroMedicoCtrl.step1.lateralidad}"
-                             appendTo="@(body)">
+            <p:selectOneMenu id="lateralidad" value="#{centroMedicoCtrl.step1.lateralidad}">
                 <f:selectItem itemLabel="Seleccione" itemValue=""/>
                 <f:selectItem itemLabel="Diestro" itemValue="DIESTRO"/>
                 <f:selectItem itemLabel="Zurdo" itemValue="ZURDO"/>

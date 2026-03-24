@@ -3,6 +3,8 @@ package ec.gob.igm.rrhh.consultorio.web.service;
 import java.io.Serializable;
 import java.util.Date;
 
+import ec.gob.igm.rrhh.consultorio.domain.model.PersonaAux;
+
 /**
  * Class FichaPdfMappedData: orquesta la lógica de presentación y flujo web.
  */
@@ -29,4 +31,5 @@ public class FichaPdfMappedData implements Serializable {
     public String grupoSanguineo;
     public Integer edad;
     public Date fechaNacimiento;
+    public PersonaAux personaAux;
 }

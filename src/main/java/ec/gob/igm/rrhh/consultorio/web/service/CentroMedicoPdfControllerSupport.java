@@ -243,6 +243,9 @@ public class CentroMedicoPdfControllerSupport implements Serializable {
         if (data.edad != null) {
             input.edadSetter.accept(data.edad);
         }
+        if (data.personaAux != null && input.personaAuxSetter != null) {
+            input.personaAuxSetter.accept(data.personaAux);
+        }
     }
 
     public void showValidationMessage(FacesContext ctx, String summary, List<String> errors) {
@@ -437,5 +440,6 @@ public class CentroMedicoPdfControllerSupport implements Serializable {
         public Consumer<String> grupoSanguineoSetter;
         public Consumer<java.util.Date> fechaNacimientoSetter;
         public Consumer<Integer> edadSetter;
+        public Consumer<PersonaAux> personaAuxSetter;
     }
 }

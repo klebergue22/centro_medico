@@ -34,7 +34,7 @@ public class FichaCompletaValidator {
         boolean modoAux = !tieneEmpleado && (permitirIngresoManual || tienePersonaAux);
 
         if (modoAux) {
-            if (personaAux != null && !isBlank(personaAux.getCedula())) {
+            if (hasPersonaAuxReference(personaAux)) {
                 ficha.setPersonaAux(personaAux);
             }
             ficha.setEmpleado(null);
@@ -93,13 +93,13 @@ public class FichaCompletaValidator {
     }
 
     private boolean hasPersonaAux(PersonaAux personaAuxCtrl, PersonaAux personaAuxFicha) {
-        if (personaAuxCtrl != null && !isBlank(personaAuxCtrl.getCedula())) {
+        if (hasPersonaAuxReference(personaAuxCtrl)) {
             return true;
         }
 
         if (personaAuxFicha != null) {
             try {
-                boolean loaded = Persistence.getPersistenceUtil().isLoaded(personaAuxFicha);
+                boolean loaded = Persistence.getPersistenceUtil().isLoaded(personaAuxFicha, "cedula");
                 if (loaded) {
                     return !isBlank(personaAuxFicha.getCedula());
                 }
@@ -110,6 +110,35 @@ public class FichaCompletaValidator {
         }
 
         return false;
+    }
+
+    private boolean hasPersonaAuxReference(PersonaAux personaAux) {
+        if (personaAux == null) {
+            return false;
+        }
+        if (hasCedulaLoaded(personaAux)) {
+            return true;
+        }
+        try {
+            return personaAux.getIdPersonaAux() != null;
+        } catch (RuntimeException ex) {
+            return true;
+        }
+    }
+
+    private boolean hasCedulaLoaded(PersonaAux personaAux) {
+        if (personaAux == null) {
+            return false;
+        }
+        try {
+            boolean loaded = Persistence.getPersistenceUtil().isLoaded(personaAux, "cedula");
+            if (!loaded) {
+                return false;
+            }
+            return !isBlank(personaAux.getCedula());
+        } catch (RuntimeException ex) {
+            return false;
+        }
     }
 
     private boolean isBlank(String value) {
