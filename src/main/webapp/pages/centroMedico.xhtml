@@ -90,7 +90,7 @@
                     <p:commandButton value="Anterior"
                                      icon="pi pi-angle-left"
                                      actionListener="#{centroMedicoCtrl.anteriorTab}"
-                                     process="@this"
+                                     process="@form"
                                      update="tabsFicha msgs"/>
 
                     <p:spacer width="8"/>
@@ -98,7 +98,7 @@
                     <p:commandButton value="Siguiente"
                                      icon="pi pi-angle-right"
                                      actionListener="#{centroMedicoCtrl.siguienteTab}"
-                                     process="@this"
+                                     process="@form"
                                      update="tabsFicha msgs"/>
                 </p:toolbarGroup>
             </p:toolbar>
