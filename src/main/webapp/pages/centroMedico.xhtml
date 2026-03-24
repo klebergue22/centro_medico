@@ -76,11 +76,11 @@
                 </p:tab>
 
                 <p:tab id="step3" title="Historia / Resultados (H–O)">
-                    <ui:include src="/pages/steps/step3.xhtml"/>
+                    <h:outputText value="step3"/>
                 </p:tab>
 
                 <p:tab id="step4" title="Certificado (PDF)">
-                    <ui:include src="/pages/steps/step4.xhtml"/>
+                    <h:outputText value="step4"/>
                 </p:tab>
 
             </p:tabView>
@@ -90,7 +90,7 @@
                     <p:commandButton value="Anterior"
                                      icon="pi pi-angle-left"
                                      actionListener="#{centroMedicoCtrl.anteriorTab}"
-                                     process="@form"
+                                     process="@this"
                                      update="tabsFicha msgs"/>
 
                     <p:spacer width="8"/>
@@ -98,7 +98,7 @@
                     <p:commandButton value="Siguiente"
                                      icon="pi pi-angle-right"
                                      actionListener="#{centroMedicoCtrl.siguienteTab}"
-                                     process="@form"
+                                     process="@this"
                                      update="tabsFicha msgs"/>
                 </p:toolbarGroup>
             </p:toolbar>
@@ -115,12 +115,6 @@
                   onShow="rcOnDlgCedulaShown();"
                   onHide="rcOnDlgCedulaHide();"
                   width="560">
-
-
-           <p:ajax event="open" listener="#{centroMedicoCtrl.onDlgCedulaShown}"/>
-
-
-            <p:ajax event="close" listener="#{centroMedicoCtrl.onDlgCedulaClose}"/>
 
             <h:form id="dlgCedulaForm">
                 <p:messages id="msgCedula" showDetail="true" closable="true"/>
