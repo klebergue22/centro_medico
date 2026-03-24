@@ -45,6 +45,14 @@
                              actionListener="#{centroMedicoCtrl.consumirAutoOpenCedulaDlg}"
                              oncomplete="if (args &amp;&amp; args.openCedulaDlg === true) { if (PF('dlgCedula')) { PF('dlgCedula').show(); } else { setTimeout(function () { if (PF('dlgCedula')) { PF('dlgCedula').show(); } }, 200); } }"/>
 
+            <p:remoteCommand name="rcOnDlgCedulaShown"
+                             process="@this"
+                             actionListener="#{centroMedicoCtrl.onDlgCedulaShown}"/>
+
+            <p:remoteCommand name="rcOnDlgCedulaHide"
+                             process="@this"
+                             actionListener="#{centroMedicoCtrl.onDlgCedulaHide}"/>
+
             <p:tabView id="tabsFicha"
                        activeIndex="#{centroMedicoCtrl.activeTabIndex}"
                        dynamic="true"
@@ -77,6 +85,8 @@
                   resizable="false"
                   draggable="false"
                   appendTo="@(body)"
+                  onShow="rcOnDlgCedulaShown();"
+                  onHide="rcOnDlgCedulaHide();"
                   width="560">
 
 
@@ -107,7 +117,7 @@
                                          icon="pi pi-search"
                                          action="#{centroMedicoCtrl.buscarCedula}"
                                          process="@this cedulaBusqueda"
-                                         update="dlgCedulaForm:msgCedula dlgCedulaForm:panelBtnManualWrap :msgs"
+                                         update="dlgCedulaForm:msgCedula dlgCedulaForm:panelBtnManualWrap :centroForm:msgs :centroForm:tabsFicha"
                                          oncomplete="if (args) { if (args.encontrado) { PF('dlgCedula').hide(); } else if (args.mostrarManual) { PF('dlgPersonaAux').show(); } }"/>
 
                         <p:commandButton id="btnCerrarCedula"
