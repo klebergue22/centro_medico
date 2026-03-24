@@ -67,7 +67,7 @@
                 </p:tab>
 
                 <p:tab id="step3" title="Historia / Resultados (H–O)">
-                    <h:outputText value="step3"/>
+                         <ui:include src="/pages/step3.xhtml"/>
                 </p:tab>
 
                 <p:tab id="step4" title="Certificado (PDF)">
@@ -89,6 +89,11 @@
                   onHide="rcOnDlgCedulaHide();"
                   width="560">
 
+
+           <p:ajax event="open" listener="#{centroMedicoCtrl.onDlgCedulaShown}"/>
+
+
+            <p:ajax event="close" listener="#{centroMedicoCtrl.onDlgCedulaClose}"/>
 
             <h:form id="dlgCedulaForm">
                 <p:messages id="msgCedula" showDetail="true" closable="true"/>
