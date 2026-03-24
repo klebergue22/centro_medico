@@ -79,7 +79,10 @@
                   appendTo="@(body)"
                   width="560">
 
+
            <p:ajax event="open" listener="#{centroMedicoCtrl.onDlgCedulaShown}"/>
+
+
             <p:ajax event="close" listener="#{centroMedicoCtrl.onDlgCedulaClose}"/>
 
             <h:form id="dlgCedulaForm">
