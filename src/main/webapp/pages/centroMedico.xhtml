@@ -37,6 +37,32 @@
             <h:outputText value="Evaluación Médica Ocupacional" />
         </h:form>
 
+        <p:growl id="growl" showDetail="true" life="4000" sticky="false"/>
+        <p:messages id="msgs" closable="true" showDetail="true"/>
+
+        <p:tabView id="tabsFicha"
+                   activeIndex="#{centroMedicoCtrl.activeTabIndex}"
+                   dynamic="true"
+                   cache="false">
+
+            <p:tab id="step1" title="Formulario (A–F)">
+                <ui:include src="/pages/step1.xhtml"/>
+            </p:tab>
+
+            <p:tab id="step2" title="Riesgos (G)">
+                <h:outputText value="step2"/>
+            </p:tab>
+
+            <p:tab id="step3" title="Historia / Resultados (H–O)">
+                <h:outputText value="step3"/>
+            </p:tab>
+
+            <p:tab id="step4" title="Certificado (PDF)">
+                <h:outputText value="step4"/>
+            </p:tab>
+
+        </p:tabView>
+
     </ui:define>
 
 </ui:composition>
