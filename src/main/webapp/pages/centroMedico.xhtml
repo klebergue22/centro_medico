@@ -226,10 +226,11 @@
                     <h:outputLabel for="fechaNacManual" value="Fecha nacimiento *"/>
                     <p:calendar id="fechaNacManual"
                                 value="#{centroMedicoCtrl.personaAux.fechaNac}"
-                                pattern="yyyy-MM-dd"
+                                pattern="dd/MM/yyyy"
                                 navigator="true"
                                 yearRange="c-100:c"
                                 showOn="button"
+                                mask="true"
                                 required="true"
                                 requiredMessage="La fecha de nacimiento es obligatoria."/>
                 </h:panelGrid>
