@@ -161,6 +161,92 @@
             </h:form>
         </p:dialog>
 
+        <p:dialog id="dlgPersonaAux"
+                  widgetVar="dlgPersonaAux"
+                  header="Ingreso manual de paciente"
+                  modal="true"
+                  closable="true"
+                  resizable="false"
+                  draggable="false"
+                  appendTo="@(body)"
+                  width="640">
+
+            <h:form id="dlgPersonaAuxForm">
+                <p:messages id="msgPersonaAux" showDetail="true" closable="true"/>
+
+                <h:outputText value="Complete los datos mínimos para continuar con la ficha."
+                              styleClass="manual-info"/>
+
+                <h:panelGrid id="gridManual" columns="2"
+                             columnClasses="manual-label,manual-field"
+                             styleClass="manual-grid">
+
+                    <h:outputLabel for="cedManual" value="Cédula *"/>
+                    <p:inputText id="cedManual"
+                                 value="#{centroMedicoCtrl.personaAux.cedula}"
+                                 maxlength="10"
+                                 required="true"
+                                 requiredMessage="La cédula es obligatoria."
+                                 readonly="true"/>
+
+                    <h:outputLabel for="ap1Manual" value="Primer apellido *"/>
+                    <p:inputText id="ap1Manual"
+                                 value="#{centroMedicoCtrl.personaAux.apellido1}"
+                                 maxlength="60"
+                                 required="true"
+                                 requiredMessage="El primer apellido es obligatorio."/>
+
+                    <h:outputLabel for="ap2Manual" value="Segundo apellido"/>
+                    <p:inputText id="ap2Manual"
+                                 value="#{centroMedicoCtrl.personaAux.apellido2}"
+                                 maxlength="60"/>
+
+                    <h:outputLabel for="nom1Manual" value="Primer nombre *"/>
+                    <p:inputText id="nom1Manual"
+                                 value="#{centroMedicoCtrl.personaAux.nombre1}"
+                                 maxlength="60"
+                                 required="true"
+                                 requiredMessage="El primer nombre es obligatorio."/>
+
+                    <h:outputLabel for="nom2Manual" value="Segundo nombre"/>
+                    <p:inputText id="nom2Manual"
+                                 value="#{centroMedicoCtrl.personaAux.nombre2}"
+                                 maxlength="60"/>
+
+                    <h:outputLabel for="sexoManual" value="Sexo *"/>
+                    <p:selectOneMenu id="sexoManual"
+                                     value="#{centroMedicoCtrl.personaAux.sexo}"
+                                     required="true"
+                                     requiredMessage="El sexo es obligatorio.">
+                        <f:selectItem itemLabel="Seleccione" itemValue="" noSelectionOption="true"/>
+                        <f:selectItem itemLabel="Masculino" itemValue="M"/>
+                        <f:selectItem itemLabel="Femenino" itemValue="F"/>
+                    </p:selectOneMenu>
+
+                    <h:outputLabel for="fechaNacManual" value="Fecha nacimiento *"/>
+                    <p:calendar id="fechaNacManual"
+                                value="#{centroMedicoCtrl.personaAux.fechaNac}"
+                                pattern="yyyy-MM-dd"
+                                navigator="true"
+                                yearRange="c-100:c"
+                                showOn="button"
+                                required="true"
+                                requiredMessage="La fecha de nacimiento es obligatoria."/>
+                </h:panelGrid>
+
+                <h:panelGroup layout="block" style="margin-top:12px; text-align:right;">
+                    <p:commandButton id="btnGuardarManual"
+                                     value="GUARDAR Y USAR"
+                                     icon="pi pi-check"
+                                     styleClass="manual-btn-guardar"
+                                     action="#{centroMedicoCtrl.guardarPersonaAuxYUsar}"
+                                     process="@form"
+                                     update="dlgPersonaAuxForm:msgPersonaAux :centroForm:msgs :centroForm:tabsFicha"
+                                     oncomplete="if (!(args && args.validationFailed)) { PF('dlgPersonaAux').hide(); PF('dlgCedula').hide(); }"/>
+                </h:panelGroup>
+            </h:form>
+        </p:dialog>
+
     </ui:define>
 
 </ui:composition>
