@@ -53,6 +53,10 @@
                              process="@this"
                              actionListener="#{centroMedicoCtrl.onDlgCedulaHide}"/>
 
+            <p:remoteCommand name="rcUpdateWizard"
+                             process="@this"
+                             update="tabsFicha msgs"/>
+
             <p:tabView id="tabsFicha"
                        activeIndex="#{centroMedicoCtrl.activeTabIndex}"
                        dynamic="true"
