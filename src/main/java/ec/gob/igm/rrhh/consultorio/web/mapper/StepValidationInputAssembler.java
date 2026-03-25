@@ -34,25 +34,9 @@ public class StepValidationInputAssembler {
             Integer noPersonaSel,
             PersonaAux personaAux) {
         Step1ValidationInput input = new Step1ValidationInput();
-        input.apellido1 = apellido1;
-        input.apellido2 = apellido2;
-        input.nombre1 = nombre1;
-        input.nombre2 = nombre2;
-        input.fechaAtencion = fechaAtencion;
-        input.sexo = sexo;
-        input.tipoEval = tipoEval;
-        input.paStr = paStr;
-        input.fc = fc;
-        input.peso = peso;
-        input.tallaCm = tallaCm;
-        input.signos = signos;
-        input.puestoTrabajoCiuo = fichaRiesgo != null && fichaRiesgo.getFicha() != null
-                ? fichaRiesgo.getFicha().getCiiu()
-                : null;
-        input.fichaRiesgo = fichaRiesgo;
-        input.empleadoSel = empleadoSel;
-        input.noPersonaSel = noPersonaSel;
-        input.personaAux = personaAux;
+        populateBasicStep1Fields(input, apellido1, apellido2, nombre1, nombre2, fechaAtencion, sexo, tipoEval);
+        populateClinicalStep1Fields(input, paStr, fc, peso, tallaCm, signos, fichaRiesgo);
+        populatePatientStep1Fields(input, empleadoSel, noPersonaSel, personaAux);
         return input;
     }
 
@@ -73,5 +57,36 @@ public class StepValidationInputAssembler {
         input.fechaEmision = fechaEmision;
         input.cie10PrincipalSupplier = cie10PrincipalSupplier;
         return input;
+    }
+
+    private void populateBasicStep1Fields(Step1ValidationInput input, String apellido1, String apellido2,
+            String nombre1, String nombre2, Date fechaAtencion, String sexo, String tipoEval) {
+        input.apellido1 = apellido1;
+        input.apellido2 = apellido2;
+        input.nombre1 = nombre1;
+        input.nombre2 = nombre2;
+        input.fechaAtencion = fechaAtencion;
+        input.sexo = sexo;
+        input.tipoEval = tipoEval;
+    }
+
+    private void populateClinicalStep1Fields(Step1ValidationInput input, String paStr, Integer fc, Double peso,
+            Double tallaCm, SignosVitales signos, FichaRiesgo fichaRiesgo) {
+        input.paStr = paStr;
+        input.fc = fc;
+        input.peso = peso;
+        input.tallaCm = tallaCm;
+        input.signos = signos;
+        input.puestoTrabajoCiuo = fichaRiesgo != null && fichaRiesgo.getFicha() != null
+                ? fichaRiesgo.getFicha().getCiiu()
+                : null;
+        input.fichaRiesgo = fichaRiesgo;
+    }
+
+    private void populatePatientStep1Fields(Step1ValidationInput input, DatEmpleado empleadoSel, Integer noPersonaSel,
+            PersonaAux personaAux) {
+        input.empleadoSel = empleadoSel;
+        input.noPersonaSel = noPersonaSel;
+        input.personaAux = personaAux;
     }
 }

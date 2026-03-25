@@ -208,44 +208,64 @@ public class CentroMedicoPdfUiCoordinator implements Serializable {
         if (state == null) {
             return;
         }
+        applyFichaUiState(state, pdfPreviewState, fichaSetter, fichaPdfListoSetter, pdfTokenFichaSetter);
+        applyCertificadoUiState(state, pdfPreviewState, certificadoListoSetter, pdfTokenCertificadoSetter,
+                pdfObjectUrlSetter);
+        applyNavigationUiState(state, activeStepSetter, mostrarDlgCedulaSetter);
+    }
+
+    private void applyFichaUiState(PdfUiState state, PdfPreviewState pdfPreviewState,
+            Consumer<FichaOcupacional> fichaSetter, Consumer<Boolean> fichaPdfListoSetter,
+            Consumer<String> pdfTokenFichaSetter) {
         if (state.ficha != null) {
             fichaSetter.accept(state.ficha);
         }
-        if (state.fichaPdfListo != null) {
-            fichaPdfListoSetter.accept(state.fichaPdfListo);
-            if (pdfPreviewState != null) {
-                pdfPreviewState.setFichaPdfListo(state.fichaPdfListo);
-            }
-        }
+        syncBooleanState(state.fichaPdfListo, pdfPreviewState, fichaPdfListoSetter, pdfPreviewState::setFichaPdfListo);
         if (state.pdfTokenFicha != null || Boolean.TRUE.equals(state.fichaPdfListo)) {
-            pdfTokenFichaSetter.accept(state.pdfTokenFicha);
-            if (pdfPreviewState != null) {
-                pdfPreviewState.setPdfTokenFicha(state.pdfTokenFicha);
-            }
+            syncStringState(state.pdfTokenFicha, pdfPreviewState, pdfTokenFichaSetter, pdfPreviewState::setPdfTokenFicha);
         }
-        if (state.certificadoListo != null) {
-            certificadoListoSetter.accept(state.certificadoListo);
-            if (pdfPreviewState != null) {
-                pdfPreviewState.setCertificadoListo(state.certificadoListo);
-            }
-        }
+    }
+
+    private void applyCertificadoUiState(PdfUiState state, PdfPreviewState pdfPreviewState,
+            Consumer<Boolean> certificadoListoSetter, Consumer<String> pdfTokenCertificadoSetter,
+            Consumer<String> pdfObjectUrlSetter) {
+        syncBooleanState(state.certificadoListo, pdfPreviewState, certificadoListoSetter,
+                pdfPreviewState::setCertificadoListo);
         if (state.pdfTokenCertificado != null || Boolean.FALSE.equals(state.certificadoListo)) {
-            pdfTokenCertificadoSetter.accept(state.pdfTokenCertificado);
-            if (pdfPreviewState != null) {
-                pdfPreviewState.setPdfTokenCertificado(state.pdfTokenCertificado);
-            }
+            syncStringState(state.pdfTokenCertificado, pdfPreviewState, pdfTokenCertificadoSetter,
+                    pdfPreviewState::setPdfTokenCertificado);
         }
         if (state.pdfObjectUrl != null || Boolean.FALSE.equals(state.certificadoListo)) {
-            pdfObjectUrlSetter.accept(state.pdfObjectUrl);
-            if (pdfPreviewState != null) {
-                pdfPreviewState.setPdfObjectUrl(state.pdfObjectUrl);
-            }
+            syncStringState(state.pdfObjectUrl, pdfPreviewState, pdfObjectUrlSetter, pdfPreviewState::setPdfObjectUrl);
         }
+    }
+
+    private void applyNavigationUiState(PdfUiState state, Consumer<String> activeStepSetter,
+            Consumer<Boolean> mostrarDlgCedulaSetter) {
         if (state.activeStep != null) {
             activeStepSetter.accept(state.activeStep);
         }
         if (state.mostrarDlgCedula != null) {
             mostrarDlgCedulaSetter.accept(state.mostrarDlgCedula);
+        }
+    }
+
+    private void syncBooleanState(Boolean value, PdfPreviewState pdfPreviewState, Consumer<Boolean> setter,
+            Consumer<Boolean> previewSetter) {
+        if (value == null) {
+            return;
+        }
+        setter.accept(value);
+        if (pdfPreviewState != null) {
+            previewSetter.accept(value);
+        }
+    }
+
+    private void syncStringState(String value, PdfPreviewState pdfPreviewState, Consumer<String> setter,
+            Consumer<String> previewSetter) {
+        setter.accept(value);
+        if (pdfPreviewState != null) {
+            previewSetter.accept(value);
         }
     }
 

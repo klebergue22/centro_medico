@@ -15,7 +15,7 @@ import ec.gob.igm.rrhh.consultorio.web.facade.CentroMedicoPdfFacade;
 
 @Stateless
 /**
- * Class FichaPdfPreparationService: orquesta la lógica de presentación y flujo web.
+ * Class FichaPdfPreparationService: orquesta la lÃ³gica de presentaciÃ³n y flujo web.
  */
 public class FichaPdfPreparationService implements Serializable {
 
@@ -39,21 +39,18 @@ public class FichaPdfPreparationService implements Serializable {
         }
 
         asegurarPersonaAuxPersistida.run();
-
-        FichaOcupacional actualizada = fichaService.actualizar(ficha);
-        if (actualizada != null && actualizada.getIdFicha() != null) {
-            FichaOcupacional fresh = fichaService.reloadById(actualizada.getIdFicha());
-            if (fresh != null) {
-                actualizada = fresh;
-            }
-        }
-
-        CentroMedicoPdfFacade.PdfPreviewResult result = facade.prepararPreviewDesdeHtml(
-                null,
-                htmlBuilder,
-                "FICHA_");
-
+        FichaOcupacional actualizada = refreshFicha(ficha);
+        CentroMedicoPdfFacade.PdfPreviewResult result = facade.prepararPreviewDesdeHtml(null, htmlBuilder, "FICHA_");
         return FichaPdfPrepareResult.ready(actualizada, result.getToken(), result.isListo());
+    }
+
+    private FichaOcupacional refreshFicha(FichaOcupacional ficha) {
+        FichaOcupacional actualizada = fichaService.actualizar(ficha);
+        if (actualizada == null || actualizada.getIdFicha() == null) {
+            return actualizada;
+        }
+        FichaOcupacional fresh = fichaService.reloadById(actualizada.getIdFicha());
+        return fresh != null ? fresh : actualizada;
     }
 
     public static class FichaPdfPrepareResult implements Serializable {

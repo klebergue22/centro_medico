@@ -48,92 +48,17 @@ public class DiagnosticoFilaUiCoordinator {
             LOG.info("<<< [AC-K-COD] itemSelect empty selection => no-op");
             return;
         }
-
-        String codigo = cie10LookupService.extraerCodigoDeSugerencia(selected);
-        row.setCodigo(codigo);
-
-        Cie10 cie = cie10Service.buscarPorCodigo(codigo);
-        LOG.info("... [AC-K-COD] itemSelect buscarPorCodigo(" + codigo + ") => " + (cie != null ? cie.getCodigo() : "null"));
-
-        if (cie != null) {
-            row.setCodigo(cie.getCodigo());
-            row.setDescripcion(cie.getDescripcion());
-            row.setCie10(cie);
-        } else {
-            row.setDescripcion(null);
-            row.setCie10(null);
-        }
-
+        applySelectedCodigo(row, selected);
         LOG.info("<<< [AC-K-COD] itemSelect AFTER codigo=[" + row.getCodigo() + "] desc=[" + row.getDescripcion() + "]");
     }
 
     public void onCodigoBlur(AjaxBehaviorEvent event, List<ConsultaDiagnostico> listaDiag) {
-        UIComponent comp = event != null ? event.getComponent() : null;
-        Integer idx = extraerIdx(comp);
-
-        String clientId = safeClientId(comp);
-        String typed = getAutoCompleteTypedRobusto(comp);
-
-        LOG.info(">>> [AC-K-COD] blur idx=" + idx + " clientId=" + clientId + " typed=[" + typed + "]");
-
-        ConsultaDiagnostico row = getDiagRow(listaDiag, idx, "AC-K-COD blur");
+        BlurInput blurInput = buildBlurInput(event, "AC-K-COD");
+        ConsultaDiagnostico row = getDiagRow(listaDiag, blurInput.idx, "AC-K-COD blur");
         if (row == null) {
             return;
         }
-
-        String codigo = cie10LookupService.extraerCodigoDeSugerencia(typed);
-        if (codigo.isEmpty()) {
-            row.setCodigo(null);
-            row.setDescripcion(null);
-            row.setCie10(null);
-            LOG.info("<<< [AC-K-COD] blur empty => cleared row");
-            return;
-        }
-
-        String codigoUp = codigo.toUpperCase();
-
-        if (codigoUp.length() < 3) {
-            row.setCodigo(codigoUp);
-            row.setDescripcion(null);
-            row.setCie10(null);
-            LOG.info("<<< [AC-K-COD] blur partial [" + codigoUp + "] => keep, no exact lookup");
-            return;
-        }
-
-        Cie10 cie = cie10Service.buscarPorCodigo(codigoUp);
-
-        if (cie == null) {
-            List<Cie10> sugerencias = cie10Service.buscarJerarquiaPorTerm(codigoUp);
-            if (sugerencias != null) {
-                String codigoNorm = codigoUp.replaceAll("[^A-Z0-9]", "");
-                for (Cie10 candidato : sugerencias) {
-                    if (candidato == null || candidato.getCodigo() == null) {
-                        continue;
-                    }
-
-                    String candidatoNorm = candidato.getCodigo().toUpperCase().replaceAll("[^A-Z0-9]", "");
-                    if (candidatoNorm.equals(codigoNorm)) {
-                        cie = candidato;
-                        break;
-                    }
-                }
-            }
-        }
-
-        LOG.debug("... [AC-K-COD] buscarPorCodigo(" + codigoUp + ") => "
-                + (cie != null ? (cie.getCodigo() + " | " + cie.getDescripcion()) : "null"));
-        if (cie != null) {
-            row.setCodigo(cie.getCodigo());
-            row.setDescripcion(cie.getDescripcion());
-            row.setCie10(cie);
-            LOG.info("<<< [AC-K-COD] blur AFTER MATCH codigo=[" + row.getCodigo() + "] desc=[" + row.getDescripcion() + "]");
-            return;
-        }
-
-        row.setCodigo(codigoUp);
-        row.setDescripcion(null);
-        row.setCie10(null);
-        LOG.info("<<< [AC-K-COD] blur AFTER NO-MATCH keep codigo=[" + row.getCodigo() + "]");
+        handleCodigoBlur(row, blurInput.typed);
     }
 
     public void onDescripcionSelect(SelectEvent<String> event, List<ConsultaDiagnostico> listaDiag) {
@@ -168,58 +93,12 @@ public class DiagnosticoFilaUiCoordinator {
     }
 
     public void onDescripcionBlur(AjaxBehaviorEvent event, List<ConsultaDiagnostico> listaDiag) {
-        UIComponent comp = event != null ? event.getComponent() : null;
-        Integer idx = extraerIdx(comp);
-        String clientId = safeClientId(comp);
-        String typed = getAutoCompleteTypedRobusto(comp);
-
-        LOG.info(">>> [AC-K-DESC] blur idx=" + idx + " clientId=" + clientId + " typed=[" + typed + "]");
-
-        ConsultaDiagnostico row = getDiagRow(listaDiag, idx, "AC-K-DESC blur");
+        BlurInput blurInput = buildBlurInput(event, "AC-K-DESC");
+        ConsultaDiagnostico row = getDiagRow(listaDiag, blurInput.idx, "AC-K-DESC blur");
         if (row == null) {
             return;
         }
-
-        String desc = typed != null ? typed.trim() : "";
-        if (desc.isEmpty()) {
-            row.setDescripcion(null);
-            row.setCie10(null);
-            LOG.info("<<< [AC-K-DESC] blur empty => cleared descripcion");
-            return;
-        }
-
-        row.setDescripcion(desc);
-
-        if (desc.length() < 4) {
-            row.setCie10(null);
-            LOG.info("<<< [AC-K-DESC] blur partial => keep desc only");
-            return;
-        }
-
-        Cie10 cie = null;
-        try {
-            List<Cie10> candidatos = cie10Service.buscarPorDescripcionLike(desc, 20);
-            LOG.info("... [AC-K-DESC] candidatos.size=" + (candidatos == null ? "null" : candidatos.size()));
-            if (candidatos != null && !candidatos.isEmpty()) {
-                cie = cie10LookupService.buscarMejorCoincidenciaPorDescripcion(candidatos, desc);
-            }
-        } catch (RuntimeException e) {
-            LOG.error("!!! [AC-K-DESC] error: {}", e.getMessage(), e);
-        }
-
-        LOG.debug("... [AC-K-DESC] pickBest => "
-                + (cie != null ? (cie.getCodigo() + " | " + cie.getDescripcion()) : "null"));
-
-        if (cie != null) {
-            row.setCodigo(cie.getCodigo());
-            row.setDescripcion(cie.getDescripcion());
-            row.setCie10(cie);
-            LOG.info("<<< [AC-K-DESC] blur AFTER MATCH codigo=[" + row.getCodigo() + "] desc=[" + row.getDescripcion() + "]");
-            return;
-        }
-
-        row.setCie10(null);
-        LOG.info("<<< [AC-K-DESC] blur AFTER NO-MATCH keep desc=[" + row.getDescripcion() + "]");
+        handleDescripcionBlur(row, blurInput.typed);
     }
 
     public DiagnosticoDialogState abrirDialogo(AjaxBehaviorEvent event, List<ConsultaDiagnostico> listaDiag) {
@@ -242,27 +121,43 @@ public class DiagnosticoFilaUiCoordinator {
             return false;
         }
 
-        String codigo = codCie10Ppal != null ? codCie10Ppal.trim().toUpperCase() : "";
-        String descripcion = descCie10Ppal != null ? descCie10Ppal.trim() : "";
+        String codigo = normalizeDialogCodigo(codCie10Ppal);
+        String descripcion = normalizeDialogDescripcion(descCie10Ppal);
+        applyDialogSelection(row, codigo, descripcion, resolveDialogCie10(codigo, descripcion));
+        return true;
+    }
 
-        Cie10 cie = null;
+    private String normalizeDialogCodigo(String codigo) {
+        return codigo != null ? codigo.trim().toUpperCase() : "";
+    }
+
+    private String normalizeDialogDescripcion(String descripcion) {
+        return descripcion != null ? descripcion.trim() : "";
+    }
+
+    private Cie10 resolveDialogCie10(String codigo, String descripcion) {
         if (!codigo.isEmpty()) {
-            cie = cie10Service.buscarPorCodigo(codigo);
+            Cie10 cie = cie10Service.buscarPorCodigo(codigo);
+            if (cie != null) {
+                return cie;
+            }
         }
-        if (cie == null && !descripcion.isEmpty()) {
-            cie = cie10Service.buscarPrimeroPorDescripcion(descripcion);
+        if (!descripcion.isEmpty()) {
+            return cie10Service.buscarPrimeroPorDescripcion(descripcion);
         }
+        return null;
+    }
 
+    private void applyDialogSelection(ConsultaDiagnostico row, String codigo, String descripcion, Cie10 cie) {
         if (cie != null) {
             row.setCodigo(cie.getCodigo());
             row.setDescripcion(cie.getDescripcion());
             row.setCie10(cie);
-        } else {
-            row.setCodigo(codigo.isEmpty() ? null : codigo);
-            row.setDescripcion(descripcion.isEmpty() ? null : descripcion);
-            row.setCie10(null);
+            return;
         }
-        return true;
+        row.setCodigo(codigo.isEmpty() ? null : codigo);
+        row.setDescripcion(descripcion.isEmpty() ? null : descripcion);
+        row.setCie10(null);
     }
 
     private Integer extraerIdx(UIComponent comp) {
@@ -311,35 +206,9 @@ public class DiagnosticoFilaUiCoordinator {
 
             String base = comp.getClientId(fc);
             Map<String, String> params = fc.getExternalContext().getRequestParameterMap();
-
-            String[] keys = new String[] {
-                    base + "_input",
-                    base,
-                    base + "_hinput",
-                    base + "_query"
-            };
-
-            String emptyCandidate = null;
-            for (String k : keys) {
-                String v = params.get(k);
-                if (v == null) {
-                    continue;
-                }
-
-                LOG.info("... [REQ] AC typed key=" + k + " => [" + v + "]");
-
-                String trimmed = v.trim();
-                if (!trimmed.isEmpty()) {
-                    return v;
-                }
-
-                if (emptyCandidate == null) {
-                    emptyCandidate = v;
-                }
-            }
-
-            if (emptyCandidate != null) {
-                return emptyCandidate;
+            String typed = findTypedRequestValue(params, buildAutoCompleteKeys(base));
+            if (typed != null) {
+                return typed;
             }
 
             LOG.warn("!!! [REQ] AC typed NOT FOUND for base=" + base
@@ -350,6 +219,205 @@ public class DiagnosticoFilaUiCoordinator {
             LOG.error("!!! [REQ] getAutoCompleteTypedRobusto ERROR: {}", e.getMessage(), e);
             return null;
         }
+    }
+
+    private void applySelectedCodigo(ConsultaDiagnostico row, String selected) {
+        String codigo = cie10LookupService.extraerCodigoDeSugerencia(selected);
+        row.setCodigo(codigo);
+
+        Cie10 cie = cie10Service.buscarPorCodigo(codigo);
+        LOG.info("... [AC-K-COD] itemSelect buscarPorCodigo(" + codigo + ") => " + (cie != null ? cie.getCodigo() : "null"));
+        if (cie != null) {
+            applyResolvedCie(row, cie);
+            return;
+        }
+        row.setDescripcion(null);
+        row.setCie10(null);
+    }
+
+    private BlurInput buildBlurInput(AjaxBehaviorEvent event, String prefix) {
+        UIComponent comp = event != null ? event.getComponent() : null;
+        BlurInput input = new BlurInput(extraerIdx(comp), safeClientId(comp), getAutoCompleteTypedRobusto(comp));
+        LOG.info(">>> [" + prefix + "] blur idx=" + input.idx + " clientId=" + input.clientId + " typed=[" + input.typed + "]");
+        return input;
+    }
+
+    private void handleCodigoBlur(ConsultaDiagnostico row, String typed) {
+        String codigo = cie10LookupService.extraerCodigoDeSugerencia(typed);
+        if (clearCodigoRowWhenEmpty(row, codigo)) {
+            return;
+        }
+
+        String codigoUp = codigo.toUpperCase();
+        if (keepPartialCodigo(row, codigoUp)) {
+            return;
+        }
+
+        Cie10 cie = buscarCiePorCodigoFlexible(codigoUp);
+        logCodigoLookup(codigoUp, cie);
+        if (cie != null) {
+            applyResolvedCie(row, cie);
+            LOG.info("<<< [AC-K-COD] blur AFTER MATCH codigo=[" + row.getCodigo() + "] desc=[" + row.getDescripcion() + "]");
+            return;
+        }
+        keepCodigoWithoutMatch(row, codigoUp);
+    }
+
+    private boolean clearCodigoRowWhenEmpty(ConsultaDiagnostico row, String codigo) {
+        if (!codigo.isEmpty()) {
+            return false;
+        }
+        row.setCodigo(null);
+        row.setDescripcion(null);
+        row.setCie10(null);
+        LOG.info("<<< [AC-K-COD] blur empty => cleared row");
+        return true;
+    }
+
+    private boolean keepPartialCodigo(ConsultaDiagnostico row, String codigoUp) {
+        if (codigoUp.length() >= 3) {
+            return false;
+        }
+        row.setCodigo(codigoUp);
+        row.setDescripcion(null);
+        row.setCie10(null);
+        LOG.info("<<< [AC-K-COD] blur partial [" + codigoUp + "] => keep, no exact lookup");
+        return true;
+    }
+
+    private Cie10 buscarCiePorCodigoFlexible(String codigoUp) {
+        Cie10 cie = cie10Service.buscarPorCodigo(codigoUp);
+        if (cie != null) {
+            return cie;
+        }
+
+        List<Cie10> sugerencias = cie10Service.buscarJerarquiaPorTerm(codigoUp);
+        if (sugerencias == null) {
+            return null;
+        }
+        return buscarCoincidenciaExactaNormalizada(sugerencias, normalizeCodigo(codigoUp));
+    }
+
+    private Cie10 buscarCoincidenciaExactaNormalizada(List<Cie10> sugerencias, String codigoNorm) {
+        for (Cie10 candidato : sugerencias) {
+            if (candidato == null || candidato.getCodigo() == null) {
+                continue;
+            }
+            if (normalizeCodigo(candidato.getCodigo()).equals(codigoNorm)) {
+                return candidato;
+            }
+        }
+        return null;
+    }
+
+    private String normalizeCodigo(String codigo) {
+        return codigo.toUpperCase().replaceAll("[^A-Z0-9]", "");
+    }
+
+    private void logCodigoLookup(String codigoUp, Cie10 cie) {
+        LOG.debug("... [AC-K-COD] buscarPorCodigo(" + codigoUp + ") => "
+                + (cie != null ? (cie.getCodigo() + " | " + cie.getDescripcion()) : "null"));
+    }
+
+    private void keepCodigoWithoutMatch(ConsultaDiagnostico row, String codigoUp) {
+        row.setCodigo(codigoUp);
+        row.setDescripcion(null);
+        row.setCie10(null);
+        LOG.info("<<< [AC-K-COD] blur AFTER NO-MATCH keep codigo=[" + row.getCodigo() + "]");
+    }
+
+    private boolean clearDescripcionWhenEmpty(ConsultaDiagnostico row, String desc) {
+        if (!desc.isEmpty()) {
+            return false;
+        }
+        row.setDescripcion(null);
+        row.setCie10(null);
+        LOG.info("<<< [AC-K-DESC] blur empty => cleared descripcion");
+        return true;
+    }
+
+    private boolean keepPartialDescripcion(ConsultaDiagnostico row, String desc) {
+        if (desc.length() >= 4) {
+            return false;
+        }
+        row.setCie10(null);
+        LOG.info("<<< [AC-K-DESC] blur partial => keep desc only");
+        return true;
+    }
+
+    private void handleDescripcionBlur(ConsultaDiagnostico row, String typed) {
+        String desc = typed != null ? typed.trim() : "";
+        if (clearDescripcionWhenEmpty(row, desc)) {
+            return;
+        }
+
+        row.setDescripcion(desc);
+        if (keepPartialDescripcion(row, desc)) {
+            return;
+        }
+
+        Cie10 cie = buscarMejorCoincidenciaPorDescripcion(desc);
+        logDescripcionLookup(cie);
+        if (cie != null) {
+            applyResolvedCie(row, cie);
+            LOG.info("<<< [AC-K-DESC] blur AFTER MATCH codigo=[" + row.getCodigo() + "] desc=[" + row.getDescripcion() + "]");
+            return;
+        }
+        row.setCie10(null);
+        LOG.info("<<< [AC-K-DESC] blur AFTER NO-MATCH keep desc=[" + row.getDescripcion() + "]");
+    }
+
+    private Cie10 buscarMejorCoincidenciaPorDescripcion(String desc) {
+        try {
+            List<Cie10> candidatos = cie10Service.buscarPorDescripcionLike(desc, 20);
+            LOG.info("... [AC-K-DESC] candidatos.size=" + (candidatos == null ? "null" : candidatos.size()));
+            if (candidatos == null || candidatos.isEmpty()) {
+                return null;
+            }
+            return cie10LookupService.buscarMejorCoincidenciaPorDescripcion(candidatos, desc);
+        } catch (RuntimeException e) {
+            LOG.error("!!! [AC-K-DESC] error: {}", e.getMessage(), e);
+            return null;
+        }
+    }
+
+    private void logDescripcionLookup(Cie10 cie) {
+        LOG.debug("... [AC-K-DESC] pickBest => "
+                + (cie != null ? (cie.getCodigo() + " | " + cie.getDescripcion()) : "null"));
+    }
+
+    private void applyResolvedCie(ConsultaDiagnostico row, Cie10 cie) {
+        row.setCodigo(cie.getCodigo());
+        row.setDescripcion(cie.getDescripcion());
+        row.setCie10(cie);
+    }
+
+    private String[] buildAutoCompleteKeys(String base) {
+        return new String[] {
+                base + "_input",
+                base,
+                base + "_hinput",
+                base + "_query"
+        };
+    }
+
+    private String findTypedRequestValue(Map<String, String> params, String[] keys) {
+        String emptyCandidate = null;
+        for (String key : keys) {
+            String value = params.get(key);
+            if (value == null) {
+                continue;
+            }
+
+            LOG.info("... [REQ] AC typed key=" + key + " => [" + value + "]");
+            if (!value.trim().isEmpty()) {
+                return value;
+            }
+            if (emptyCandidate == null) {
+                emptyCandidate = value;
+            }
+        }
+        return emptyCandidate;
     }
 
     private String safeClientId(UIComponent comp) {
@@ -396,6 +464,18 @@ public class DiagnosticoFilaUiCoordinator {
 
         public String getDescripcion() {
             return descripcion;
+        }
+    }
+
+    private static final class BlurInput {
+        private final Integer idx;
+        private final String clientId;
+        private final String typed;
+
+        private BlurInput(Integer idx, String clientId, String typed) {
+            this.idx = idx;
+            this.clientId = clientId;
+            this.typed = typed;
         }
     }
 }

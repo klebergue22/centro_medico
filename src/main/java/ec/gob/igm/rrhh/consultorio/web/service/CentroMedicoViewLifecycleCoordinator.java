@@ -16,7 +16,7 @@ import jakarta.inject.Named;
 @Named("centroMedicoViewLifecycleCoordinator")
 @RequestScoped
 /**
- * Class CentroMedicoViewLifecycleCoordinator: orquesta la lógica de presentación y flujo web.
+ * Class CentroMedicoViewLifecycleCoordinator: orquesta la logica de presentacion y flujo web.
  */
 public class CentroMedicoViewLifecycleCoordinator implements Serializable {
 
@@ -42,31 +42,7 @@ public class CentroMedicoViewLifecycleCoordinator implements Serializable {
         }
 
         try {
-            if (shouldSkipForAutocompleteAjax(fc)) {
-                LOG.debug("Skip preRender for autocomplete ajax request. activeStep={}", ctrl.getActiveStep());
-                return;
-            }
-
-            PacienteUiFlowCoordinator.UiFlowResult result = pacienteUiFlowCoordinator.ensureEmpleadoSelEnViewScope(
-                    ctrl.isPermitirIngresoManual(),
-                    ctrl.getEmpleadoSel(),
-                    ctrl.getNoPersonaSel(),
-                    ctrl.getFicha(),
-                    ctrl.getPersonaAux());
-            pacienteUiStateApplier.apply(pacienteViewBinder.forGeneralFlow(result), ctrl);
-
-            ctrl.setMostrarDlgCedula("step1".equals(ctrl.getActiveStep()) && ctrl.getEmpleadoSel() == null);
-
-            centroMedicoFormStateService.prepareStep3Collections(ctrl, H_ROWS, DIAG_ROWS, ACT_LAB_ROWS);
-            if (!ctrl.isPreRenderDone()) {
-                ctrl.setPreRenderDone(true);
-            }
-
-            LOG.info("GET? {} activeStep={} empleadoSel={} mostrarDlgCedula={}",
-                    !fc.isPostback(),
-                    ctrl.getActiveStep(),
-                    (ctrl.getEmpleadoSel() == null),
-                    ctrl.isMostrarDlgCedula());
+            runPreRenderFlow(fc, ctrl);
         } catch (RuntimeException e) {
             LOG.error("preRender failed. activeStep={}, noPersonaSel={}, cedulaBusqueda={}",
                     ctrl.getActiveStep(), ctrl.getNoPersonaSel(), ctrl.getCedulaBusqueda(), e);
@@ -84,35 +60,11 @@ public class CentroMedicoViewLifecycleCoordinator implements Serializable {
         }
 
         Map<String, String> params = fc.getExternalContext().getRequestParameterMap();
-        if (params == null || params.isEmpty()) {
-            return false;
-        }
-
-        String partialEvent = params.get("javax.faces.partial.event");
-        if ("query".equalsIgnoreCase(partialEvent)) {
-            return true;
-        }
-
-        String source = params.get("javax.faces.source");
-        if (isAutocompleteSource(source)) {
-            return true;
-        }
-
-        String execute = params.get("javax.faces.partial.execute");
-        if (isAutocompleteSource(execute)) {
-            return true;
-        }
-
-        for (String key : params.keySet()) {
-            if (key == null) {
-                continue;
-            }
-            if (key.endsWith("_query") || key.endsWith("_input")) {
-                return true;
-            }
-        }
-
-        return false;
+        return params != null
+                && !params.isEmpty()
+                && (hasAutocompleteAjaxEvent(params)
+                || hasAutocompleteSourceParam(params)
+                || hasAutocompleteQueryParam(params));
     }
 
     private boolean isAutocompleteSource(String value) {
@@ -124,5 +76,51 @@ public class CentroMedicoViewLifecycleCoordinator implements Serializable {
                 || value.contains(":kDesc")
                 || value.endsWith("kCie")
                 || value.endsWith("kDesc");
+    }
+
+    private void runPreRenderFlow(FacesContext fc, CentroMedicoCtrl ctrl) {
+        if (shouldSkipForAutocompleteAjax(fc)) {
+            LOG.debug("Skip preRender for autocomplete ajax request. activeStep={}", ctrl.getActiveStep());
+            return;
+        }
+
+        PacienteUiFlowCoordinator.UiFlowResult result = pacienteUiFlowCoordinator.ensureEmpleadoSelEnViewScope(
+                ctrl.isPermitirIngresoManual(),
+                ctrl.getEmpleadoSel(),
+                ctrl.getNoPersonaSel(),
+                ctrl.getFicha(),
+                ctrl.getPersonaAux());
+        pacienteUiStateApplier.apply(pacienteViewBinder.forGeneralFlow(result), ctrl);
+        ctrl.setMostrarDlgCedula("step1".equals(ctrl.getActiveStep()) && ctrl.getEmpleadoSel() == null);
+        centroMedicoFormStateService.prepareStep3Collections(ctrl, H_ROWS, DIAG_ROWS, ACT_LAB_ROWS);
+        if (!ctrl.isPreRenderDone()) ctrl.setPreRenderDone(true);
+        logPreRenderState(fc, ctrl);
+    }
+
+    private boolean hasAutocompleteAjaxEvent(Map<String, String> params) {
+        String partialEvent = params.get("javax.faces.partial.event");
+        return "query".equalsIgnoreCase(partialEvent);
+    }
+
+    private boolean hasAutocompleteSourceParam(Map<String, String> params) {
+        return isAutocompleteSource(params.get("javax.faces.source"))
+                || isAutocompleteSource(params.get("javax.faces.partial.execute"));
+    }
+
+    private boolean hasAutocompleteQueryParam(Map<String, String> params) {
+        for (String key : params.keySet()) {
+            if (key != null && (key.endsWith("_query") || key.endsWith("_input"))) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private void logPreRenderState(FacesContext fc, CentroMedicoCtrl ctrl) {
+        LOG.info("GET? {} activeStep={} empleadoSel={} mostrarDlgCedula={}",
+                !fc.isPostback(),
+                ctrl.getActiveStep(),
+                (ctrl.getEmpleadoSel() == null),
+                ctrl.isMostrarDlgCedula());
     }
 }

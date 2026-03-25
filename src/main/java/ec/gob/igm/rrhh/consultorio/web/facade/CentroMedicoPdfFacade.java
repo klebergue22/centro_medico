@@ -7,11 +7,11 @@ package ec.gob.igm.rrhh.consultorio.web.facade;
 import ec.gob.igm.rrhh.consultorio.web.pdf.PdfRenderer;
 import ec.gob.igm.rrhh.consultorio.web.pdf.PdfSessionStore;
 import ec.gob.igm.rrhh.consultorio.web.pdf.PdfTemplateEngine;
+import jakarta.faces.component.UIViewRoot;
 import jakarta.faces.context.ExternalContext;
 import jakarta.faces.context.FacesContext;
 import jakarta.faces.context.PartialViewContext;
 import jakarta.faces.context.ResponseWriter;
-import jakarta.faces.component.UIViewRoot;
 import jakarta.faces.view.ViewDeclarationLanguage;
 import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Inject;
@@ -21,23 +21,23 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.Serializable;
 import java.io.PrintWriter;
+import java.io.Serializable;
 import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
-import java.util.regex.Pattern;
 import java.util.function.Supplier;
+import java.util.regex.Pattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @Named("centroMedicoPdfFacade")
 @ViewScoped
 /**
- * Class CentroMedicoPdfFacade: expone una fachada para simplificar operaciones del módulo web.
+ * Class CentroMedicoPdfFacade: expone una fachada para simplificar operaciones del modulo web.
  */
 public class CentroMedicoPdfFacade implements Serializable {
 
@@ -160,31 +160,12 @@ public class CentroMedicoPdfFacade implements Serializable {
             throw new IllegalStateException("No existe FacesContext activo para resolver recursos.");
         }
 
-        try (InputStream in = ctx.getExternalContext().getResourceAsStream("/resources/" + pathFromResources)) {
+        try (InputStream in = openResourceStream(ctx, pathFromResources)) {
             if (in == null) {
-                LOG.warn("No se encontró recurso: /resources/{}", pathFromResources);
+                LOG.warn("No se encontro recurso: /resources/{}", pathFromResources);
                 return "";
             }
-
-            byte[] bytes;
-            try (ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
-                byte[] buf = new byte[8192];
-                int r;
-                while ((r = in.read(buf)) != -1) {
-                    bos.write(buf, 0, r);
-                }
-                bytes = bos.toByteArray();
-            }
-
-            String mime = "image/png";
-            String lower = pathFromResources.toLowerCase(Locale.ROOT);
-            if (lower.endsWith(".jpg") || lower.endsWith(".jpeg")) {
-                mime = "image/jpeg";
-            } else if (lower.endsWith(".gif")) {
-                mime = "image/gif";
-            }
-
-            return "data:" + mime + ";base64," + Base64.getEncoder().encodeToString(bytes);
+            return buildDataUri(pathFromResources, readResourceBytes(in));
         }
     }
 
@@ -196,60 +177,17 @@ public class CentroMedicoPdfFacade implements Serializable {
 
         UIViewRoot originalViewRoot = fc.getViewRoot();
         ResponseWriter originalWriter = fc.getResponseWriter();
-
         PartialViewContext pvc = fc.getPartialViewContext();
         boolean hadPvc = (pvc != null);
-        boolean oldRenderAll = false;
-        if (hadPvc) {
-            try {
-                oldRenderAll = pvc.isRenderAll();
-                pvc.setRenderAll(true);
-            } catch (Exception ignore) {
-            }
-        }
+        boolean oldRenderAll = enableFullRender(pvc, hadPvc);
 
         try {
-            ViewDeclarationLanguage vdl = fc.getApplication()
-                    .getViewHandler()
-                    .getViewDeclarationLanguage(fc, viewId);
-
-            UIViewRoot tempViewRoot = vdl.createView(fc, viewId);
-            tempViewRoot.setLocale(fc.getViewRoot() != null ? fc.getViewRoot().getLocale() : fc.getApplication().getDefaultLocale());
-            tempViewRoot.setRenderKitId(fc.getApplication().getViewHandler().calculateRenderKitId(fc));
-
-            vdl.buildView(fc, tempViewRoot);
-
-            StringWriter sw = new StringWriter(128 * 1024);
-            ResponseWriter rw = fc.getRenderKit()
-                    .createResponseWriter(new PrintWriter(sw), "text/html", "UTF-8");
-
-            fc.setViewRoot(tempViewRoot);
-            fc.setResponseWriter(rw);
-
-            fc.getApplication().getViewHandler().renderView(fc, tempViewRoot);
-            rw.flush();
-
-            return sw.toString();
-
+            return renderTemporaryView(fc, viewId);
         } catch (Exception e) {
             LOG.error("Error renderizando facelet viewId={}", viewId, e);
             throw new RuntimeException("Error renderizando facelet " + viewId, e);
-
         } finally {
-            try {
-                fc.setResponseWriter(originalWriter);
-            } catch (Exception ignore) {
-            }
-            try {
-                fc.setViewRoot(originalViewRoot);
-            } catch (Exception ignore) {
-            }
-            if (hadPvc) {
-                try {
-                    pvc.setRenderAll(oldRenderAll);
-                } catch (Exception ignore) {
-                }
-            }
+            restoreOriginalContext(fc, originalWriter, originalViewRoot, pvc, hadPvc, oldRenderAll);
         }
     }
 
@@ -298,7 +236,7 @@ public class CentroMedicoPdfFacade implements Serializable {
     private String leerRecursoComoString(ExternalContext externalContext, String path) throws IOException {
         InputStream is = externalContext.getResourceAsStream(path);
         if (is == null) {
-            throw new IOException("No se encontró el recurso: " + path);
+            throw new IOException("No se encontro el recurso: " + path);
         }
 
         StringBuilder sb = new StringBuilder();
@@ -318,13 +256,90 @@ public class CentroMedicoPdfFacade implements Serializable {
         }
 
         String xhtml = html.trim();
-
         xhtml = AMPERSAND_PATTERN.matcher(xhtml).replaceAll("&amp;");
-
         if (!xhtml.contains("xmlns=\"http://www.w3.org/1999/xhtml\"")) {
             xhtml = xhtml.replaceFirst("<html(\\s*?)>", "<html xmlns=\"http://www.w3.org/1999/xhtml\">");
         }
-
         return xhtml;
+    }
+
+    private InputStream openResourceStream(FacesContext ctx, String pathFromResources) {
+        return ctx.getExternalContext().getResourceAsStream("/resources/" + pathFromResources);
+    }
+
+    private byte[] readResourceBytes(InputStream in) throws IOException {
+        try (ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
+            byte[] buf = new byte[8192];
+            int r;
+            while ((r = in.read(buf)) != -1) {
+                bos.write(buf, 0, r);
+            }
+            return bos.toByteArray();
+        }
+    }
+
+    private String buildDataUri(String pathFromResources, byte[] bytes) {
+        return "data:" + resolveMimeType(pathFromResources) + ";base64," + Base64.getEncoder().encodeToString(bytes);
+    }
+
+    private String resolveMimeType(String pathFromResources) {
+        String lower = pathFromResources.toLowerCase(Locale.ROOT);
+        if (lower.endsWith(".jpg") || lower.endsWith(".jpeg")) {
+            return "image/jpeg";
+        }
+        if (lower.endsWith(".gif")) {
+            return "image/gif";
+        }
+        return "image/png";
+    }
+
+    private boolean enableFullRender(PartialViewContext pvc, boolean hadPvc) {
+        boolean oldRenderAll = false;
+        if (hadPvc) {
+            try {
+                oldRenderAll = pvc.isRenderAll();
+                pvc.setRenderAll(true);
+            } catch (Exception ignore) {
+            }
+        }
+        return oldRenderAll;
+    }
+
+    private String renderTemporaryView(FacesContext fc, String viewId) throws IOException {
+        ViewDeclarationLanguage vdl = fc.getApplication().getViewHandler().getViewDeclarationLanguage(fc, viewId);
+        UIViewRoot tempViewRoot = createTemporaryView(fc, viewId, vdl);
+        StringWriter sw = new StringWriter(128 * 1024);
+        ResponseWriter rw = fc.getRenderKit().createResponseWriter(new PrintWriter(sw), "text/html", "UTF-8");
+        fc.setViewRoot(tempViewRoot);
+        fc.setResponseWriter(rw);
+        fc.getApplication().getViewHandler().renderView(fc, tempViewRoot);
+        rw.flush();
+        return sw.toString();
+    }
+
+    private UIViewRoot createTemporaryView(FacesContext fc, String viewId, ViewDeclarationLanguage vdl) throws IOException {
+        UIViewRoot tempViewRoot = vdl.createView(fc, viewId);
+        tempViewRoot.setLocale(fc.getViewRoot() != null ? fc.getViewRoot().getLocale() : fc.getApplication().getDefaultLocale());
+        tempViewRoot.setRenderKitId(fc.getApplication().getViewHandler().calculateRenderKitId(fc));
+        vdl.buildView(fc, tempViewRoot);
+        return tempViewRoot;
+    }
+
+    private void restoreOriginalContext(FacesContext fc, ResponseWriter originalWriter, UIViewRoot originalViewRoot,
+            PartialViewContext pvc, boolean hadPvc, boolean oldRenderAll) {
+        try {
+            fc.setResponseWriter(originalWriter);
+        } catch (Exception ignore) {
+        }
+        try {
+            fc.setViewRoot(originalViewRoot);
+        } catch (Exception ignore) {
+        }
+        if (hadPvc) {
+            try {
+                pvc.setRenderAll(oldRenderAll);
+            } catch (Exception ignore) {
+            }
+        }
     }
 }

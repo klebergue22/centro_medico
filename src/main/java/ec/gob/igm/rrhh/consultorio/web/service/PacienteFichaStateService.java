@@ -12,7 +12,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 
 @ApplicationScoped
 /**
- * Class PacienteFichaStateService: orquesta la lógica de presentación y flujo web.
+ * Class PacienteFichaStateService: orquesta la lÃ³gica de presentaciÃ³n y flujo web.
  */
 public class PacienteFichaStateService implements Serializable {
 
@@ -79,6 +79,28 @@ public class PacienteFichaStateService implements Serializable {
             return new PatientState(null, empleadoSel, noPersonaSel, personaAux, permitirIngresoManual);
         }
 
+        PatientState existingState = resolveExistingPatientState(permitirIngresoManual, empleadoSel, noPersonaSel,
+                personaAux, ficha);
+        if (existingState != null) {
+            return existingState;
+        }
+
+        PatientState selectedState = resolveSelectedPatientState(empleadoSel, noPersonaSel, personaAux, ficha);
+        if (selectedState != null) {
+            return selectedState;
+        }
+
+        PatientState persistedState = resolvePersistedPatientState(ficha);
+        if (persistedState != null) {
+            return persistedState;
+        }
+
+        throw new IllegalStateException(
+                "Debe seleccionar un empleado o registrar una persona auxiliar antes de guardar el Step 3.");
+    }
+
+    private PatientState resolveExistingPatientState(boolean permitirIngresoManual, DatEmpleado empleadoSel,
+            Integer noPersonaSel, PersonaAux personaAux, FichaOcupacional ficha) {
         if (ficha.getEmpleado() != null && ficha.getPersonaAux() != null) {
             if (permitirIngresoManual && personaAux != null) {
                 ficha.setEmpleado(null);
@@ -87,47 +109,51 @@ public class PacienteFichaStateService implements Serializable {
             }
             return syncPatientStateAfterStep1(permitirIngresoManual, empleadoSel, noPersonaSel, personaAux, ficha);
         }
-
         if (ficha.getEmpleado() != null || ficha.getPersonaAux() != null) {
             return syncPatientStateAfterStep1(permitirIngresoManual, empleadoSel, noPersonaSel, personaAux, ficha);
         }
+        return null;
+    }
 
+    private PatientState resolveSelectedPatientState(DatEmpleado empleadoSel, Integer noPersonaSel, PersonaAux personaAux,
+            FichaOcupacional ficha) {
         DatEmpleado empleado = empleadoSel;
         if (empleado == null && noPersonaSel != null) {
             empleado = empleadoService.buscarPorId(noPersonaSel);
         }
-
         if (empleado != null) {
             ficha.setEmpleado(empleado);
             ficha.setPersonaAux(null);
             return new PatientState(ficha, empleado, empleado.getNoPersona(), null, false);
         }
-
         if (personaAux != null) {
             ficha.setPersonaAux(personaAux);
             ficha.setEmpleado(null);
             return new PatientState(ficha, null, null, personaAux, true);
         }
+        return null;
+    }
 
-        if (ficha.getIdFicha() != null) {
-            FichaOcupacional persisted = fichaService.findById(ficha.getIdFicha());
-            if (persisted != null) {
-                if (persisted.getEmpleado() != null) {
-                    DatEmpleado empleadoPersistido = resolveEmpleadoForView(persisted.getEmpleado());
-                    ficha.setEmpleado(empleadoPersistido);
-                    ficha.setPersonaAux(null);
-                    return new PatientState(ficha, empleadoPersistido, empleadoPersistido.getNoPersona(), null, false);
-                }
-                if (persisted.getPersonaAux() != null) {
-                    ficha.setPersonaAux(persisted.getPersonaAux());
-                    ficha.setEmpleado(null);
-                    return new PatientState(ficha, null, null, persisted.getPersonaAux(), true);
-                }
-            }
+    private PatientState resolvePersistedPatientState(FichaOcupacional ficha) {
+        if (ficha.getIdFicha() == null) {
+            return null;
         }
-
-        throw new IllegalStateException(
-                "Debe seleccionar un empleado o registrar una persona auxiliar antes de guardar el Step 3.");
+        FichaOcupacional persisted = fichaService.findById(ficha.getIdFicha());
+        if (persisted == null) {
+            return null;
+        }
+        if (persisted.getEmpleado() != null) {
+            DatEmpleado empleadoPersistido = resolveEmpleadoForView(persisted.getEmpleado());
+            ficha.setEmpleado(empleadoPersistido);
+            ficha.setPersonaAux(null);
+            return new PatientState(ficha, empleadoPersistido, empleadoPersistido.getNoPersona(), null, false);
+        }
+        if (persisted.getPersonaAux() != null) {
+            ficha.setPersonaAux(persisted.getPersonaAux());
+            ficha.setEmpleado(null);
+            return new PatientState(ficha, null, null, persisted.getPersonaAux(), true);
+        }
+        return null;
     }
 
     private DatEmpleado resolveEmpleadoForView(DatEmpleado empleado) {

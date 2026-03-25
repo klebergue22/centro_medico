@@ -38,22 +38,8 @@ public class PdfCommandContextBuilder implements Serializable {
             Consumer<String> setActiveStep,
             Consumer<Boolean> setMostrarDlgCedula) {
         return new PdfPreviewCommandFactory.PdfCommandContext(
-                controllerActionTemplate,
-                pdfPreviewState,
-                pdfSessionStore,
-                ctrl,
-                log,
-                activeStep,
-                noPersonaSel,
-                cedulaBusqueda,
-                asegurarPersonaAuxPersistida,
-                syncCamposDesdeObjetos,
-                recalcularImc,
-                verificarFichaCompleta,
-                setFechaEmision,
-                hRows,
-                setFicha,
-                setActiveStep,
-                setMostrarDlgCedula);
+                controllerActionTemplate, pdfPreviewState, pdfSessionStore, ctrl, log, activeStep, noPersonaSel,
+                cedulaBusqueda, asegurarPersonaAuxPersistida, syncCamposDesdeObjetos, recalcularImc,
+                verificarFichaCompleta, setFechaEmision, hRows, setFicha, setActiveStep, setMostrarDlgCedula);
     }
 }

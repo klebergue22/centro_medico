@@ -19,38 +19,9 @@ public class PdfFichaInputAssembler {
             PdfResourceResolver pdfResourceResolver,
             int hRows) {
         CentroMedicoPdfControllerSupport.CapturePdfFichaInput input = new CentroMedicoPdfControllerSupport.CapturePdfFichaInput();
-        input.source = source;
-        input.log = logger;
-        input.ficha = source.getFicha();
-        input.empleadoSel = source.getEmpleadoSel();
-        input.personaAux = source.getPersonaAux();
-        input.permitirIngresoManual = source.isPermitirIngresoManual();
-        input.asegurarPersonaAuxPersistida = asegurarPersonaAuxPersistida;
-        input.centroMedicoPdfFacade = centroMedicoPdfFacade;
-        input.pdfResourceResolver = pdfResourceResolver;
-        input.syncCamposDesdeObjetos = syncCamposDesdeObjetos;
-        input.tipoEval = source.getTipoEval();
-        input.tipoEvaluacion = source.getTipoEvaluacion();
-        input.recalcularIMC = recalcularIMC;
-        input.apDiscapacidad = source.isApDiscapacidad();
-        input.apCatastrofica = source.isApCatastrofica();
-        input.apEmbarazada = source.isApEmbarazada();
-        input.apLactancia = source.isApLactancia();
-        input.apAdultoMayor = source.isApAdultoMayor();
-        input.hRows = hRows;
-        input.actLabCentroTrabajo = source.getActLabCentroTrabajo();
-        input.actLabActividad = source.getActLabActividad();
-        input.actLabTiempo = source.getActLabTiempo();
-        input.actLabTrabajoAnterior = source.getActLabTrabajoAnterior();
-        input.actLabTrabajoActual = source.getActLabTrabajoActual();
-        input.actLabIncidenteChk = source.getActLabIncidenteChk();
-        input.actLabAccidenteChk = source.getActLabAccidenteChk();
-        input.actLabEnfermedadChk = source.getActLabEnfermedadChk();
-        input.iessSi = source.getIessSi();
-        input.iessNo = source.getIessNo();
-        input.iessFecha = source.getIessFecha();
-        input.iessEspecificar = source.getIessEspecificar();
-        input.actLabObservaciones = source.getActLabObservaciones();
+        populateFichaInputCore(input, source, logger, asegurarPersonaAuxPersistida, syncCamposDesdeObjetos, recalcularIMC);
+        populateFichaInputFlags(input, source, centroMedicoPdfFacade, pdfResourceResolver, hRows);
+        populateActividadLaboralInput(input, source);
         return input;
     }
 
@@ -65,6 +36,58 @@ public class PdfFichaInputAssembler {
         input.empleadoSel = source.getEmpleadoSel();
         input.personaAux = source.getPersonaAux();
         input.fechaNacimiento = source.getFechaNacimiento();
+        populateSyncCommonSetters(input, source);
+        populateSyncPatientSetters(input, source);
+        return input;
+    }
+
+    private void populateFichaInputCore(CentroMedicoPdfControllerSupport.CapturePdfFichaInput input, CentroMedicoCtrl source,
+            Logger logger, Runnable asegurarPersonaAuxPersistida, Runnable syncCamposDesdeObjetos,
+            Runnable recalcularIMC) {
+        input.source = source;
+        input.log = logger;
+        input.ficha = source.getFicha();
+        input.empleadoSel = source.getEmpleadoSel();
+        input.personaAux = source.getPersonaAux();
+        input.permitirIngresoManual = source.isPermitirIngresoManual();
+        input.asegurarPersonaAuxPersistida = asegurarPersonaAuxPersistida;
+        input.syncCamposDesdeObjetos = syncCamposDesdeObjetos;
+        input.tipoEval = source.getTipoEval();
+        input.tipoEvaluacion = source.getTipoEvaluacion();
+        input.recalcularIMC = recalcularIMC;
+    }
+
+    private void populateFichaInputFlags(CentroMedicoPdfControllerSupport.CapturePdfFichaInput input, CentroMedicoCtrl source,
+            CentroMedicoPdfFacade centroMedicoPdfFacade, PdfResourceResolver pdfResourceResolver, int hRows) {
+        input.centroMedicoPdfFacade = centroMedicoPdfFacade;
+        input.pdfResourceResolver = pdfResourceResolver;
+        input.apDiscapacidad = source.isApDiscapacidad();
+        input.apCatastrofica = source.isApCatastrofica();
+        input.apEmbarazada = source.isApEmbarazada();
+        input.apLactancia = source.isApLactancia();
+        input.apAdultoMayor = source.isApAdultoMayor();
+        input.hRows = hRows;
+    }
+
+    private void populateActividadLaboralInput(CentroMedicoPdfControllerSupport.CapturePdfFichaInput input,
+            CentroMedicoCtrl source) {
+        input.actLabCentroTrabajo = source.getActLabCentroTrabajo();
+        input.actLabActividad = source.getActLabActividad();
+        input.actLabTiempo = source.getActLabTiempo();
+        input.actLabTrabajoAnterior = source.getActLabTrabajoAnterior();
+        input.actLabTrabajoActual = source.getActLabTrabajoActual();
+        input.actLabIncidenteChk = source.getActLabIncidenteChk();
+        input.actLabAccidenteChk = source.getActLabAccidenteChk();
+        input.actLabEnfermedadChk = source.getActLabEnfermedadChk();
+        input.iessSi = source.getIessSi();
+        input.iessNo = source.getIessNo();
+        input.iessFecha = source.getIessFecha();
+        input.iessEspecificar = source.getIessEspecificar();
+        input.actLabObservaciones = source.getActLabObservaciones();
+    }
+
+    private void populateSyncCommonSetters(CentroMedicoPdfControllerSupport.SyncCamposDesdeObjetosInput input,
+            CentroMedicoCtrl source) {
         input.institucionSetter = source::setInstitucion;
         input.rucSetter = source::setRuc;
         input.centroTrabajoSetter = source::setCentroTrabajo;
@@ -79,6 +102,10 @@ public class PdfFichaInputAssembler {
         input.ginecoResultado2Setter = source::setGinecoResultado2;
         input.ginecoObservacionSetter = source::setGinecoObservacion;
         input.enfermedadActualSetter = source::setEnfermedadActual;
+    }
+
+    private void populateSyncPatientSetters(CentroMedicoPdfControllerSupport.SyncCamposDesdeObjetosInput input,
+            CentroMedicoCtrl source) {
         input.apellido1Setter = source::setApellido1;
         input.apellido2Setter = source::setApellido2;
         input.nombre1Setter = source::setNombre1;
@@ -88,7 +115,5 @@ public class PdfFichaInputAssembler {
         input.fechaNacimientoSetter = source::setFechaNacimiento;
         input.edadSetter = source::setEdad;
         input.personaAuxSetter = source::setPersonaAux;
-        return input;
     }
-
 }

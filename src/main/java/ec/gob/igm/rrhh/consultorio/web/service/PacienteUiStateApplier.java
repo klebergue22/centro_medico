@@ -10,7 +10,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 
 @ApplicationScoped
 /**
- * Class PacienteUiStateApplier: orquesta la lógica de presentación y flujo web.
+ * Class PacienteUiStateApplier: orquesta la logica de presentacion y flujo web.
  */
 public class PacienteUiStateApplier implements Serializable {
 
@@ -22,59 +22,9 @@ public class PacienteUiStateApplier implements Serializable {
         }
 
         PacienteViewState pacienteViewState = target.getPacienteViewState();
-
-        if (patch.appliesFicha()) {
-            target.setFicha(patch.getFicha());
-        }
-        if (patch.appliesEmpleadoSel()) {
-            target.setEmpleadoSel(patch.getEmpleadoSel());
-            pacienteViewState.setEmpleadoSel(patch.getEmpleadoSel());
-        }
-        if (patch.appliesNoPersonaSel()) {
-            target.setNoPersonaSel(patch.getNoPersonaSel());
-            pacienteViewState.setNoPersonaSel(patch.getNoPersonaSel());
-        }
-        if (patch.appliesPersonaAux()) {
-            target.setPersonaAux(patch.getPersonaAux());
-            pacienteViewState.setPersonaAux(patch.getPersonaAux());
-        }
-        if (patch.appliesPermitirIngresoManual()) {
-            target.setPermitirIngresoManual(Boolean.TRUE.equals(patch.getPermitirIngresoManual()));
-            pacienteViewState.setPermitirIngresoManual(Boolean.TRUE.equals(patch.getPermitirIngresoManual()));
-        }
-        if (patch.appliesCedulaBusqueda()) {
-            target.setCedulaBusqueda(patch.getCedulaBusqueda());
-        }
-        if (patch.appliesApellido1()) {
-            target.setApellido1(patch.getApellido1());
-        }
-        if (patch.appliesApellido2()) {
-            target.setApellido2(patch.getApellido2());
-        }
-        if (patch.appliesNombre1()) {
-            target.setNombre1(patch.getNombre1());
-        }
-        if (patch.appliesNombre2()) {
-            target.setNombre2(patch.getNombre2());
-        }
-        if (patch.appliesSexo()) {
-            target.setSexo(patch.getSexo());
-        }
-        if (patch.appliesFechaNacimiento()) {
-            target.setFechaNacimiento(patch.getFechaNacimiento());
-        }
-        if (patch.appliesEdad()) {
-            target.setEdad(patch.getEdad());
-        }
-        if (patch.appliesNoHistoria()) {
-            target.setNoHistoria(patch.getNoHistoria());
-        }
-        if (patch.appliesMostrarDlgCedula()) {
-            target.setMostrarDlgCedula(Boolean.TRUE.equals(patch.getMostrarDlgCedula()));
-        }
-        if (patch.appliesMostrarDialogoAux()) {
-            target.setMostrarDialogoAux(Boolean.TRUE.equals(patch.getMostrarDialogoAux()));
-        }
+        applyPatientSelectionState(patch, target, pacienteViewState);
+        applyPatientIdentityState(patch, target);
+        applyDialogState(patch, target);
     }
 
     public interface PacienteUiStateTarget {
@@ -111,5 +61,48 @@ public class PacienteUiStateApplier implements Serializable {
         void setMostrarDlgCedula(boolean mostrarDlgCedula);
 
         void setMostrarDialogoAux(boolean mostrarDialogoAux);
+    }
+
+    private void applyPatientSelectionState(PacienteViewBinder.PacienteUiPatch patch, PacienteUiStateTarget target,
+            PacienteViewState pacienteViewState) {
+        if (patch.appliesFicha()) target.setFicha(patch.getFicha());
+        if (patch.appliesEmpleadoSel()) {
+            target.setEmpleadoSel(patch.getEmpleadoSel());
+            pacienteViewState.setEmpleadoSel(patch.getEmpleadoSel());
+        }
+        if (patch.appliesNoPersonaSel()) {
+            target.setNoPersonaSel(patch.getNoPersonaSel());
+            pacienteViewState.setNoPersonaSel(patch.getNoPersonaSel());
+        }
+        if (patch.appliesPersonaAux()) {
+            target.setPersonaAux(patch.getPersonaAux());
+            pacienteViewState.setPersonaAux(patch.getPersonaAux());
+        }
+        if (patch.appliesPermitirIngresoManual()) {
+            boolean permitirIngresoManual = Boolean.TRUE.equals(patch.getPermitirIngresoManual());
+            target.setPermitirIngresoManual(permitirIngresoManual);
+            pacienteViewState.setPermitirIngresoManual(permitirIngresoManual);
+        }
+        if (patch.appliesCedulaBusqueda()) target.setCedulaBusqueda(patch.getCedulaBusqueda());
+    }
+
+    private void applyPatientIdentityState(PacienteViewBinder.PacienteUiPatch patch, PacienteUiStateTarget target) {
+        if (patch.appliesApellido1()) target.setApellido1(patch.getApellido1());
+        if (patch.appliesApellido2()) target.setApellido2(patch.getApellido2());
+        if (patch.appliesNombre1()) target.setNombre1(patch.getNombre1());
+        if (patch.appliesNombre2()) target.setNombre2(patch.getNombre2());
+        if (patch.appliesSexo()) target.setSexo(patch.getSexo());
+        if (patch.appliesFechaNacimiento()) target.setFechaNacimiento(patch.getFechaNacimiento());
+        if (patch.appliesEdad()) target.setEdad(patch.getEdad());
+        if (patch.appliesNoHistoria()) target.setNoHistoria(patch.getNoHistoria());
+    }
+
+    private void applyDialogState(PacienteViewBinder.PacienteUiPatch patch, PacienteUiStateTarget target) {
+        if (patch.appliesMostrarDlgCedula()) {
+            target.setMostrarDlgCedula(Boolean.TRUE.equals(patch.getMostrarDlgCedula()));
+        }
+        if (patch.appliesMostrarDialogoAux()) {
+            target.setMostrarDialogoAux(Boolean.TRUE.equals(patch.getMostrarDialogoAux()));
+        }
     }
 }

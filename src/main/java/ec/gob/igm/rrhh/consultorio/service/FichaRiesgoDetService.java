@@ -7,7 +7,6 @@ import jakarta.ejb.TransactionAttributeType;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -61,34 +60,18 @@ public class FichaRiesgoDetService {
             return null;
         }
 
-        final String usr = (usuario == null || usuario.trim().isEmpty()) ? "SYSTEM" : usuario.trim();
+        final String usr = resolveUsuario(usuario);
         final Date ahora = new Date();
-
-        // defaults coherentes con DDL
-        if (d.getMarcado() == null || d.getMarcado().trim().isEmpty()) {
-            d.setMarcado("N");
-        }
+        applyMarcadoDefault(d);
 
         if (d.getIdFichaRiesgoDet() == null) {
-            // Actualizado: getFCreacion / setFCreacion
-            if (d.getFCreacion() == null) {
-                d.setFCreacion(ahora);
-            }
-            if (d.getUsrCreacion() == null) {
-                d.setUsrCreacion(usr);
-            }
-
+            applyInsertAudit(d, usr, ahora);
             em.persist(d);
             return d;
-        } else {
-            // Actualizado: setFActualizacion
-            d.setFActualizacion(ahora);
-            if (d.getUsrActualizacion() == null) {
-                d.setUsrActualizacion(usr);
-            }
-
-            return em.merge(d);
         }
+
+        applyUpdateAudit(d, usr, ahora);
+        return em.merge(d);
     }
 
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
@@ -106,7 +89,6 @@ public class FichaRiesgoDetService {
         }
 
         final Long idFicha = nuevo.getFicha().getIdFicha();
-
         FichaRiesgoDet existente = findByNaturalKey(
                 idFicha, nuevo.getGrupo(), nuevo.getItem(), nuevo.getActividadNro()
         );
@@ -115,11 +97,9 @@ public class FichaRiesgoDetService {
             return guardar(nuevo, usuario);
         }
 
-        // update mínimo
         existente.setMarcado((nuevo.getMarcado() == null || nuevo.getMarcado().trim().isEmpty()) ? "N" : nuevo.getMarcado());
         existente.setOrden(nuevo.getOrden());
         existente.setFichaRiesgo(nuevo.getFichaRiesgo());
-
         return guardar(existente, usuario);
     }
 
@@ -153,5 +133,31 @@ public class FichaRiesgoDetService {
                 FichaRiesgoDet.class
         ).setParameter("idFicha", idFicha)
                 .getResultList();
+    }
+
+    private String resolveUsuario(String usuario) {
+        return (usuario == null || usuario.trim().isEmpty()) ? "SYSTEM" : usuario.trim();
+    }
+
+    private void applyMarcadoDefault(FichaRiesgoDet d) {
+        if (d.getMarcado() == null || d.getMarcado().trim().isEmpty()) {
+            d.setMarcado("N");
+        }
+    }
+
+    private void applyInsertAudit(FichaRiesgoDet d, String usr, Date ahora) {
+        if (d.getFCreacion() == null) {
+            d.setFCreacion(ahora);
+        }
+        if (d.getUsrCreacion() == null) {
+            d.setUsrCreacion(usr);
+        }
+    }
+
+    private void applyUpdateAudit(FichaRiesgoDet d, String usr, Date ahora) {
+        d.setFActualizacion(ahora);
+        if (d.getUsrActualizacion() == null) {
+            d.setUsrActualizacion(usr);
+        }
     }
 }

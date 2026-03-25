@@ -1,9 +1,5 @@
 package ec.gob.igm.rrhh.consultorio.service;
 
-
-
-
-
 import ec.gob.igm.rrhh.consultorio.domain.model.AuditoriaConsultorio;
 import jakarta.ejb.Stateless;
 import jakarta.persistence.EntityManager;
@@ -17,8 +13,7 @@ import java.util.Date;
  */
 public class AuditoriaConsultorioService {
 
-    // Asegúrate que este unitName exista en tu persistence.xml
-  @PersistenceContext(unitName = "consultorioPU")
+    @PersistenceContext(unitName = "consultorioPU")
     private EntityManager em;
 
     public AuditoriaConsultorio registrar(
@@ -29,51 +24,50 @@ public class AuditoriaConsultorioService {
             String campoAfecta,
             String observaciones
     ) {
-        // Diagnóstico rápido: si esto falla, tu PU/inyector está mal configurado
-        if (em == null) {
-            throw new IllegalStateException("EntityManager no inyectado. Revisa persistence.xml y unitName='consultorioPU'.");
-        }
-
-        AuditoriaConsultorio a = new AuditoriaConsultorio();
-        a.setModulo(nvl(modulo, "MOD_APP"));
-        a.setUsuario(nvl(usuario, "USR_APP"));
-        a.setFecha(new Date());
-        a.setAccion(nvl(accion, "ACCION"));
-        a.setTablaAfecta(tablaAfecta);
-        a.setCampoAfecta(campoAfecta);
-        a.setObservaciones(observaciones);
+        assertEntityManager();
+        AuditoriaConsultorio auditoria = buildAuditoria(modulo, usuario, accion, tablaAfecta, campoAfecta, observaciones);
 
         try {
-            em.persist(a);
-
-            // Útil en debug para que cualquier error de BD salga aquí (constraints, null, secuencias)
-            // em.flush();
-
-            return a;
+            em.persist(auditoria);
+            return auditoria;
         } catch (PersistenceException e) {
-            // Aquí puedes loguear con slf4j si ya lo usas
-            throw e; // No ocultes el error: mejor que reviente para ver la causa real.
+            throw e;
         }
     }
 
     public AuditoriaConsultorio guardar(AuditoriaConsultorio auditoria) {
-        if (em == null) {
-            throw new IllegalStateException("EntityManager no inyectado. Revisa persistence.xml y unitName='consultorioPU'.");
-        }
+        assertEntityManager();
         if (auditoria == null) {
-            throw new IllegalArgumentException("La auditoría no puede ser null");
+            throw new IllegalArgumentException("La auditorÃ­a no puede ser null");
         }
 
         if (auditoria.getId() == null) {
             em.persist(auditoria);
-            // em.flush(); // opcional
             return auditoria;
         }
         return em.merge(auditoria);
+    }
+
+    private void assertEntityManager() {
+        if (em == null) {
+            throw new IllegalStateException("EntityManager no inyectado. Revisa persistence.xml y unitName='consultorioPU'.");
+        }
+    }
+
+    private AuditoriaConsultorio buildAuditoria(String modulo, String usuario, String accion, String tablaAfecta,
+            String campoAfecta, String observaciones) {
+        AuditoriaConsultorio auditoria = new AuditoriaConsultorio();
+        auditoria.setModulo(nvl(modulo, "MOD_APP"));
+        auditoria.setUsuario(nvl(usuario, "USR_APP"));
+        auditoria.setFecha(new Date());
+        auditoria.setAccion(nvl(accion, "ACCION"));
+        auditoria.setTablaAfecta(tablaAfecta);
+        auditoria.setCampoAfecta(campoAfecta);
+        auditoria.setObservaciones(observaciones);
+        return auditoria;
     }
 
     private static String nvl(String v, String def) {
         return (v == null || v.trim().isEmpty()) ? def : v.trim();
     }
 }
-

@@ -622,7 +622,70 @@ public class FichaOcupacional implements Serializable {
     @Override
     public String toString() {
         return "FichaOcupacional{"
-                + "idFicha=" + idFicha
+                + toStringCabecera()
+                + toStringAntecedentes()
+                + toStringConsumos()
+                + toStringFormulario()
+                + toStringCierre()
+                + '}';
+    }
+
+    private static boolean snToBool(String v) {
+        return "S".equalsIgnoreCase(v);
+    }
+
+    private static String boolToSn(Boolean b) {
+        return (b != null && b) ? "S" : "N";
+    }
+
+    public Boolean getApEmbarazadaBool() {
+        return snToBool(apEmbarazada);
+    }
+
+    public void setApEmbarazadaBool(Boolean v) {
+        this.apEmbarazada = boolToSn(v);
+    }
+
+    @PrePersist
+    public void prePersist() {
+        final Date ahora = new Date();
+
+        applyCreationDefaults(ahora);
+
+        applyAtencionPrioritariaDefaults();
+
+        applyConsumoDefaults();
+
+        applyExamenFisicoCabezaDefaults();
+
+        applyExamenFisicoOroNarizDefaults();
+
+        applyExamenFisicoTorsoDefaults();
+
+        applyExamenFisicoPelvisExtDefaults();
+
+        applyRetiroDefaults();
+        clearFechaEmisionIfBorrador();
+    }
+
+    @PreUpdate
+    public void preUpdate() {
+        fechaActualizacion = new Date();
+        // Seguridad: si vuelve a BORRADOR, limpia emisión
+        if ("BORRADOR".equalsIgnoreCase(estado)) {
+            fechaEmision = null;
+        }
+    }
+
+    private static String defaultN(String v) {
+        if (v == null || v.trim().isEmpty()) {
+            return "N";
+        }
+        return v;
+    }
+
+    private String toStringCabecera() {
+        return "idFicha=" + idFicha
                 + ", fechaEvaluacion=" + fechaEvaluacion
                 + ", tipoEvaluacion='" + tipoEvaluacion + '\''
                 + ", observacion='" + observacion + '\''
@@ -630,8 +693,11 @@ public class FichaOcupacional implements Serializable {
                 + ", apDiscapacidad='" + apDiscapacidad + '\''
                 + ", apCatastrofica='" + apCatastrofica + '\''
                 + ", apLactancia='" + apLactancia + '\''
-                + ", apAdultoMayor='" + apAdultoMayor + '\''
-                + ", antClinicoQuir='" + antClinicoQuir + '\''
+                + ", apAdultoMayor='" + apAdultoMayor + '\'';
+    }
+
+    private String toStringAntecedentes() {
+        return ", antClinicoQuir='" + antClinicoQuir + '\''
                 + ", antFamiliares='" + antFamiliares + '\''
                 + ", condicionEspecial='" + condicionEspecial + '\''
                 + ", autorizaTransfusion='" + autorizaTransfusion + '\''
@@ -645,8 +711,11 @@ public class FichaOcupacional implements Serializable {
                 + ", cesareas=" + cesareas
                 + ", abortos=" + abortos
                 + ", planificacion='" + planificacion + '\''
-                + ", planificacionCual='" + planificacionCual + '\''
-                + ", tabConsMeses=" + tabConsMeses
+                + ", planificacionCual='" + planificacionCual + '\'';
+    }
+
+    private String toStringConsumos() {
+        return ", tabConsMeses=" + tabConsMeses
                 + ", tabExCons='" + tabExCons + '\''
                 + ", tabAbsMeses=" + tabAbsMeses
                 + ", tabNoCons='" + tabNoCons + '\''
@@ -671,8 +740,11 @@ public class FichaOcupacional implements Serializable {
                 + ", medCant2=" + medCant2
                 + ", medCual3='" + medCual3 + '\''
                 + ", medCant3=" + medCant3
-                + ", obsConsumoVidaCond='" + obsConsumoVidaCond + '\''
-                + ", instSistema='" + instSistema + '\''
+                + ", obsConsumoVidaCond='" + obsConsumoVidaCond + '\'';
+    }
+
+    private String toStringFormulario() {
+        return ", instSistema='" + instSistema + '\''
                 + ", rucEstablecimiento='" + rucEstablecimiento + '\''
                 + ", ciiu='" + ciiu + '\''
                 + ", establecimientoCt='" + establecimientoCt + '\''
@@ -684,8 +756,11 @@ public class FichaOcupacional implements Serializable {
                 + ", extraLabFecha=" + extraLabFecha
                 + ", enfermedadProbActual='" + enfermedadProbActual + '\''
                 + ", obsExamenFisicoRegional='" + obsExamenFisicoRegional + '\''
-                + ", obsExamenFisicoReg='" + obsExamenFisicoReg + '\''
-                + ", aptitudSel='" + aptitudSel + '\''
+                + ", obsExamenFisicoReg='" + obsExamenFisicoReg + '\'';
+    }
+
+    private String toStringCierre() {
+        return ", aptitudSel='" + aptitudSel + '\''
                 + ", detalleObs='" + detalleObs + '\''
                 + ", recomendaciones='" + recomendaciones + '\''
                 + ", fechaEmision=" + fechaEmision
@@ -695,52 +770,37 @@ public class FichaOcupacional implements Serializable {
                 + ", fechaCreacion=" + fechaCreacion
                 + ", usrCreacion='" + usrCreacion + '\''
                 + ", fechaActualizacion=" + fechaActualizacion
-                + ", usrActualizacion='" + usrActualizacion + '\''
-                + '}';
+                + ", usrActualizacion='" + usrActualizacion + '\'';
     }
 
-    private static boolean snToBool(String v) {
-        return "S".equalsIgnoreCase(v);
-    }
-
-    private static String boolToSn(Boolean b) {
-        return (b != null && b) ? "S" : "N";
-    }
-
-    public Boolean getApEmbarazadaBool() {
-        return snToBool(apEmbarazada);
-    }
-
-    public void setApEmbarazadaBool(Boolean v) {
-        this.apEmbarazada = boolToSn(v);
-    }
-
-    @PrePersist
-    public void prePersist() {
-        final Date ahora = new Date();
-
+    private void applyCreationDefaults(Date ahora) {
         if (fechaCreacion == null) {
             fechaCreacion = ahora;
         }
-
         if (estado == null || estado.trim().isEmpty()) {
             estado = "BORRADOR";
         }
+    }
 
+    private void applyAtencionPrioritariaDefaults() {
         apEmbarazada = defaultN(apEmbarazada);
         apDiscapacidad = defaultN(apDiscapacidad);
         apCatastrofica = defaultN(apCatastrofica);
         apLactancia = defaultN(apLactancia);
         apAdultoMayor = defaultN(apAdultoMayor);
         catCalificada = defaultN(catCalificada);
+    }
 
+    private void applyConsumoDefaults() {
         tabExCons = defaultN(tabExCons);
         tabNoCons = defaultN(tabNoCons);
         alcExCons = defaultN(alcExCons);
         alcNoCons = defaultN(alcNoCons);
         otrExCons = defaultN(otrExCons);
         otrNoCons = defaultN(otrNoCons);
+    }
 
+    private void applyExamenFisicoCabezaDefaults() {
         exfPielCicatrices = defaultN(exfPielCicatrices);
         exfOjosParpados = defaultN(exfOjosParpados);
         exfOjosConjuntivas = defaultN(exfOjosConjuntivas);
@@ -750,68 +810,55 @@ public class FichaOcupacional implements Serializable {
         exfOidoConducto = defaultN(exfOidoConducto);
         exfOidoPabellon = defaultN(exfOidoPabellon);
         exfOidoTimpanos = defaultN(exfOidoTimpanos);
+    }
 
+    private void applyExamenFisicoOroNarizDefaults() {
         exfOroLabios = defaultN(exfOroLabios);
         exfOroLengua = defaultN(exfOroLengua);
         exfOroFaringe = defaultN(exfOroFaringe);
         exfOroAmigdalas = defaultN(exfOroAmigdalas);
         exfOroDentadura = defaultN(exfOroDentadura);
-
         exfNarizTabique = defaultN(exfNarizTabique);
         exfNarizCornetes = defaultN(exfNarizCornetes);
         exfNarizMucosas = defaultN(exfNarizMucosas);
         exfNarizSenosParanasa = defaultN(exfNarizSenosParanasa);
-
         exfCuelloTiroidesMasas = defaultN(exfCuelloTiroidesMasas);
         exfCuelloMovilidad = defaultN(exfCuelloMovilidad);
+    }
 
+    private void applyExamenFisicoTorsoDefaults() {
         exfToraxMamas = defaultN(exfToraxMamas);
         exfToraxPulmones = defaultN(exfToraxPulmones);
         exfToraxCorazon = defaultN(exfToraxCorazon);
         exfToraxParrillaCostal = defaultN(exfToraxParrillaCostal);
-
         exfAbdVisceras = defaultN(exfAbdVisceras);
         exfAbdParedAbdominal = defaultN(exfAbdParedAbdominal);
-
         exfColFlexibilidad = defaultN(exfColFlexibilidad);
         exfColDesviacion = defaultN(exfColDesviacion);
         exfColDolor = defaultN(exfColDolor);
+    }
 
+    private void applyExamenFisicoPelvisExtDefaults() {
         exfPelvisPelvis = defaultN(exfPelvisPelvis);
         exfPelvisGenitales = defaultN(exfPelvisGenitales);
-
         exfExtVascular = defaultN(exfExtVascular);
         exfExtMiembrosSup = defaultN(exfExtMiembrosSup);
         exfExtMiembrosInf = defaultN(exfExtMiembrosInf);
-
         exfNeuroFuerza = defaultN(exfNeuroFuerza);
         exfNeuroSensibilidad = defaultN(exfNeuroSensibilidad);
         exfNeuroMarcha = defaultN(exfNeuroMarcha);
         exfNeuroReflejos = defaultN(exfNeuroReflejos);
+    }
 
+    private void applyRetiroDefaults() {
         nRetEval = defaultN(nRetEval);
         nRetRelTrab = defaultN(nRetRelTrab);
+    }
 
-        // Protección BORRADOR
+    private void clearFechaEmisionIfBorrador() {
         if ("BORRADOR".equalsIgnoreCase(estado)) {
             fechaEmision = null;
         }
-    }
-
-    @PreUpdate
-    public void preUpdate() {
-        fechaActualizacion = new Date();
-        // Seguridad: si vuelve a BORRADOR, limpia emisión
-        if ("BORRADOR".equalsIgnoreCase(estado)) {
-            fechaEmision = null;
-        }
-    }
-
-    private static String defaultN(String v) {
-        if (v == null || v.trim().isEmpty()) {
-            return "N";
-        }
-        return v;
     }
 
     public Long getIdFicha() {

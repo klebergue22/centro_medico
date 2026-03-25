@@ -73,8 +73,16 @@ public class PacienteUiFlowCoordinator implements Serializable {
     public UiFlowResult buscarCedula(String cedulaBusqueda, FichaOcupacional fichaActual, PersonaAux personaAuxActual,
             boolean permitirIngresoManualActual) {
         CedulaSearchService.CedulaSearchResult searchResult = cedulaSearchService.search(cedulaBusqueda, fichaActual, personaAuxActual);
+        UiFlowResult.Builder builder = buildSearchResult(searchResult);
+        if (!searchResult.isFound()) {
+            return builder.permitirIngresoManual(searchResult.isShowManual()).build();
+        }
+        applyFoundSearchResult(builder, searchResult);
+        return builder.build();
+    }
 
-        UiFlowResult.Builder builder = UiFlowResult.builder()
+    private UiFlowResult.Builder buildSearchResult(CedulaSearchService.CedulaSearchResult searchResult) {
+        return UiFlowResult.builder()
                 .cedulaBusqueda(searchResult.getCedula())
                 .ficha(searchResult.getFicha())
                 .personaAux(searchResult.getPersonaAux())
@@ -90,29 +98,18 @@ public class PacienteUiFlowCoordinator implements Serializable {
                 .fechaNacimiento(searchResult.getFechaNacimiento())
                 .edad(searchResult.getEdad())
                 .mostrarDlgCedula(!(searchResult.isFound() || searchResult.isShowManual()));
+    }
 
-        if (searchResult.isFound()) {
-            builder.permitirIngresoManual(false)
-                    .personaAux(null)
-                    .ficha(clearPersonaAux(searchResult.getFicha()));
+    private void applyFoundSearchResult(UiFlowResult.Builder builder,
+            CedulaSearchService.CedulaSearchResult searchResult) {
+        builder.permitirIngresoManual(false).personaAux(null).ficha(clearPersonaAux(searchResult.getFicha()));
+        PacienteFichaStateService.PatientState state = pacienteFichaStateService.ensureEmpleadoSelEnViewScope(
+                false, searchResult.getEmpleadoSel(), searchResult.getNoPersonaSel(), searchResult.getFicha(), null);
+        builder.fromPatientState(state);
 
-            PacienteFichaStateService.PatientState state = pacienteFichaStateService.ensureEmpleadoSelEnViewScope(
-                    false,
-                    searchResult.getEmpleadoSel(),
-                    searchResult.getNoPersonaSel(),
-                    searchResult.getFicha(),
-                    null);
-            builder.fromPatientState(state);
-
-            CedulaSearchService.CargoLookupResult cargo = cedulaSearchService.lookupCargo(searchResult.getCedula());
-            String cargoDescripcion = resolveCargoDescripcion(cargo, state.getFicha());
-            builder.cargoDescripcion(cargoDescripcion)
-                    .cargoNoEncontrado(!cargo.isEmptyCedula() && !cargo.isFound());
-        } else {
-            builder.permitirIngresoManual(searchResult.isShowManual());
-        }
-
-        return builder.build();
+        CedulaSearchService.CargoLookupResult cargo = cedulaSearchService.lookupCargo(searchResult.getCedula());
+        String cargoDescripcion = resolveCargoDescripcion(cargo, state.getFicha());
+        builder.cargoDescripcion(cargoDescripcion).cargoNoEncontrado(!cargo.isEmptyCedula() && !cargo.isFound());
     }
 
     public UiFlowResult syncPatientStateAfterStep1(boolean permitirIngresoManual, DatEmpleado empleadoSel,

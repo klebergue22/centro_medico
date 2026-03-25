@@ -3,7 +3,6 @@ package ec.gob.igm.rrhh.consultorio.web.service;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 
 import jakarta.enterprise.context.ApplicationScoped;
@@ -13,7 +12,7 @@ import ec.gob.igm.rrhh.consultorio.web.ctrl.CentroMedicoCtrl;
 
 @ApplicationScoped
 /**
- * Class CentroMedicoFormStateService: orquesta la lógica de presentación y flujo web.
+ * Class CentroMedicoFormStateService: orquesta la logica de presentacion y flujo web.
  */
 public class CentroMedicoFormStateService implements Serializable {
 
@@ -108,50 +107,9 @@ public class CentroMedicoFormStateService implements Serializable {
     }
 
     private void initActivityLabListsIfNull(CentroMedicoCtrl ctrl) {
-        if (ctrl.getActLabRows() == null) {
-            ctrl.setActLabRows(new ArrayList<>());
-        }
-        if (ctrl.getActLabCentroTrabajo() == null) {
-            ctrl.setActLabCentroTrabajo(new ArrayList<>());
-        }
-        if (ctrl.getActLabActividad() == null) {
-            ctrl.setActLabActividad(new ArrayList<>());
-        }
-        if (ctrl.getActLabTiempo() == null) {
-            ctrl.setActLabTiempo(new ArrayList<>());
-        }
-        if (ctrl.getActLabObservaciones() == null) {
-            ctrl.setActLabObservaciones(new ArrayList<>());
-        }
-
-        if (ctrl.getActLabTrabajoAnterior() == null) {
-            ctrl.setActLabTrabajoAnterior(new ArrayList<>());
-        }
-        if (ctrl.getActLabTrabajoActual() == null) {
-            ctrl.setActLabTrabajoActual(new ArrayList<>());
-        }
-        if (ctrl.getActLabIncidenteChk() == null) {
-            ctrl.setActLabIncidenteChk(new ArrayList<>());
-        }
-        if (ctrl.getActLabAccidenteChk() == null) {
-            ctrl.setActLabAccidenteChk(new ArrayList<>());
-        }
-        if (ctrl.getActLabEnfermedadChk() == null) {
-            ctrl.setActLabEnfermedadChk(new ArrayList<>());
-        }
-
-        if (ctrl.getIessSi() == null) {
-            ctrl.setIessSi(new ArrayList<>());
-        }
-        if (ctrl.getIessNo() == null) {
-            ctrl.setIessNo(new ArrayList<>());
-        }
-        if (ctrl.getIessFecha() == null) {
-            ctrl.setIessFecha(new ArrayList<>());
-        }
-        if (ctrl.getIessEspecificar() == null) {
-            ctrl.setIessEspecificar(new ArrayList<>());
-        }
+        initActivityLabTextLists(ctrl);
+        initActivityLabFlagLists(ctrl);
+        initIessLists(ctrl);
     }
 
     private <T> void ensureListSize(List<T> list, int size, T defaultValue) {
@@ -161,5 +119,28 @@ public class CentroMedicoFormStateService implements Serializable {
         if (list.size() > size) {
             list.subList(size, list.size()).clear();
         }
+    }
+
+    private void initActivityLabTextLists(CentroMedicoCtrl ctrl) {
+        if (ctrl.getActLabRows() == null) ctrl.setActLabRows(new ArrayList<>());
+        if (ctrl.getActLabCentroTrabajo() == null) ctrl.setActLabCentroTrabajo(new ArrayList<>());
+        if (ctrl.getActLabActividad() == null) ctrl.setActLabActividad(new ArrayList<>());
+        if (ctrl.getActLabTiempo() == null) ctrl.setActLabTiempo(new ArrayList<>());
+        if (ctrl.getActLabObservaciones() == null) ctrl.setActLabObservaciones(new ArrayList<>());
+        if (ctrl.getIessEspecificar() == null) ctrl.setIessEspecificar(new ArrayList<>());
+    }
+
+    private void initActivityLabFlagLists(CentroMedicoCtrl ctrl) {
+        if (ctrl.getActLabTrabajoAnterior() == null) ctrl.setActLabTrabajoAnterior(new ArrayList<>());
+        if (ctrl.getActLabTrabajoActual() == null) ctrl.setActLabTrabajoActual(new ArrayList<>());
+        if (ctrl.getActLabIncidenteChk() == null) ctrl.setActLabIncidenteChk(new ArrayList<>());
+        if (ctrl.getActLabAccidenteChk() == null) ctrl.setActLabAccidenteChk(new ArrayList<>());
+        if (ctrl.getActLabEnfermedadChk() == null) ctrl.setActLabEnfermedadChk(new ArrayList<>());
+    }
+
+    private void initIessLists(CentroMedicoCtrl ctrl) {
+        if (ctrl.getIessSi() == null) ctrl.setIessSi(new ArrayList<>());
+        if (ctrl.getIessNo() == null) ctrl.setIessNo(new ArrayList<>());
+        if (ctrl.getIessFecha() == null) ctrl.setIessFecha(new ArrayList<>());
     }
 }

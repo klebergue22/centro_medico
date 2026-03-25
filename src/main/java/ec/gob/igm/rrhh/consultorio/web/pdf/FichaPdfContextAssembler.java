@@ -65,44 +65,12 @@ public class FichaPdfContextAssembler implements Serializable {
     }
 
     private void enrichExamenFisicoRegion(FichaPdfViewModelContext ctx) {
-        ctx.exfPielCicatrices = PdfTextUtil.preferCurrent(ctx.ficha != null ? ctx.ficha.getExfPielCicatrices() : null, ctx.exfPielCicatrices);
-        ctx.exfOjosParpados = PdfTextUtil.preferCurrent(ctx.ficha != null ? ctx.ficha.getExfOjosParpados() : null, ctx.exfOjosParpados);
-        ctx.exfOjosConjuntivas = PdfTextUtil.preferCurrent(ctx.ficha != null ? ctx.ficha.getExfOjosConjuntivas() : null, ctx.exfOjosConjuntivas);
-        ctx.exfOjosPupilas = PdfTextUtil.preferCurrent(ctx.ficha != null ? ctx.ficha.getExfOjosPupilas() : null, ctx.exfOjosPupilas);
-        ctx.exfOjosCornea = PdfTextUtil.preferCurrent(ctx.ficha != null ? ctx.ficha.getExfOjosCornea() : null, ctx.exfOjosCornea);
-        ctx.exfOjosMotilidad = PdfTextUtil.preferCurrent(ctx.ficha != null ? ctx.ficha.getExfOjosMotilidad() : null, ctx.exfOjosMotilidad);
-        ctx.exfOidoConducto = PdfTextUtil.preferCurrent(ctx.ficha != null ? ctx.ficha.getExfOidoConducto() : null, ctx.exfOidoConducto);
-        ctx.exfOidoPabellon = PdfTextUtil.preferCurrent(ctx.ficha != null ? ctx.ficha.getExfOidoPabellon() : null, ctx.exfOidoPabellon);
-        ctx.exfOidoTimpanos = PdfTextUtil.preferCurrent(ctx.ficha != null ? ctx.ficha.getExfOidoTimpanos() : null, ctx.exfOidoTimpanos);
-        ctx.exfOroLabios = PdfTextUtil.preferCurrent(ctx.ficha != null ? ctx.ficha.getExfOroLabios() : null, ctx.exfOroLabios);
-        ctx.exfOroLengua = PdfTextUtil.preferCurrent(ctx.ficha != null ? ctx.ficha.getExfOroLengua() : null, ctx.exfOroLengua);
-        ctx.exfOroFaringe = PdfTextUtil.preferCurrent(ctx.ficha != null ? ctx.ficha.getExfOroFaringe() : null, ctx.exfOroFaringe);
-        ctx.exfOroAmigdalas = PdfTextUtil.preferCurrent(ctx.ficha != null ? ctx.ficha.getExfOroAmigdalas() : null, ctx.exfOroAmigdalas);
-        ctx.exfOroDentadura = PdfTextUtil.preferCurrent(ctx.ficha != null ? ctx.ficha.getExfOroDentadura() : null, ctx.exfOroDentadura);
-        ctx.exfNarizTabique = PdfTextUtil.preferCurrent(ctx.ficha != null ? ctx.ficha.getExfNarizTabique() : null, ctx.exfNarizTabique);
-        ctx.exfNarizCornetes = PdfTextUtil.preferCurrent(ctx.ficha != null ? ctx.ficha.getExfNarizCornetes() : null, ctx.exfNarizCornetes);
-        ctx.exfNarizMucosas = PdfTextUtil.preferCurrent(ctx.ficha != null ? ctx.ficha.getExfNarizMucosas() : null, ctx.exfNarizMucosas);
-        ctx.exfNarizSenos = PdfTextUtil.preferCurrent(ctx.ficha != null ? ctx.ficha.getExfNarizSenosParanasa() : null, ctx.exfNarizSenos);
-        ctx.exfCuelloTiroides = PdfTextUtil.preferCurrent(ctx.ficha != null ? ctx.ficha.getExfCuelloTiroidesMasas() : null, ctx.exfCuelloTiroides);
-        ctx.exfCuelloMovilidad = PdfTextUtil.preferCurrent(ctx.ficha != null ? ctx.ficha.getExfCuelloMovilidad() : null, ctx.exfCuelloMovilidad);
-        ctx.exfToraxMamas = PdfTextUtil.preferCurrent(ctx.ficha != null ? ctx.ficha.getExfToraxMamas() : null, ctx.exfToraxMamas);
-        ctx.exfToraxPulmones = PdfTextUtil.preferCurrent(ctx.ficha != null ? ctx.ficha.getExfToraxPulmones() : null, ctx.exfToraxPulmones);
-        ctx.exfToraxCorazon = PdfTextUtil.preferCurrent(ctx.ficha != null ? ctx.ficha.getExfToraxCorazon() : null, ctx.exfToraxCorazon);
-        ctx.exfToraxParrilla = PdfTextUtil.preferCurrent(ctx.ficha != null ? ctx.ficha.getExfToraxParrillaCostal() : null, ctx.exfToraxParrilla);
-        ctx.exfAbdomenVisceras = PdfTextUtil.preferCurrent(ctx.ficha != null ? ctx.ficha.getExfAbdVisceras() : null, ctx.exfAbdomenVisceras);
-        ctx.exfAbdomenPared = PdfTextUtil.preferCurrent(ctx.ficha != null ? ctx.ficha.getExfAbdParedAbdominal() : null, ctx.exfAbdomenPared);
-        ctx.exfColumnaFlexibilidad = PdfTextUtil.preferCurrent(ctx.ficha != null ? ctx.ficha.getExfColFlexibilidad() : null, ctx.exfColumnaFlexibilidad);
-        ctx.exfColumnaDesviacion = PdfTextUtil.preferCurrent(ctx.ficha != null ? ctx.ficha.getExfColDesviacion() : null, ctx.exfColumnaDesviacion);
-        ctx.exfColumnaDolor = PdfTextUtil.preferCurrent(ctx.ficha != null ? ctx.ficha.getExfColDolor() : null, ctx.exfColumnaDolor);
-        ctx.exfPelvisPelvis = PdfTextUtil.preferCurrent(ctx.ficha != null ? ctx.ficha.getExfPelvisPelvis() : null, ctx.exfPelvisPelvis);
-        ctx.exfPelvisGenitales = PdfTextUtil.preferCurrent(ctx.ficha != null ? ctx.ficha.getExfPelvisGenitales() : null, ctx.exfPelvisGenitales);
-        ctx.exfExtVascular = PdfTextUtil.preferCurrent(ctx.ficha != null ? ctx.ficha.getExfExtVascular() : null, ctx.exfExtVascular);
-        ctx.exfExtSup = PdfTextUtil.preferCurrent(ctx.ficha != null ? ctx.ficha.getExfExtMiembrosSup() : null, ctx.exfExtSup);
-        ctx.exfExtInf = PdfTextUtil.preferCurrent(ctx.ficha != null ? ctx.ficha.getExfExtMiembrosInf() : null, ctx.exfExtInf);
-        ctx.exfNeuroFuerza = PdfTextUtil.preferCurrent(ctx.ficha != null ? ctx.ficha.getExfNeuroFuerza() : null, ctx.exfNeuroFuerza);
-        ctx.exfNeuroSensibilidad = PdfTextUtil.preferCurrent(ctx.ficha != null ? ctx.ficha.getExfNeuroSensibilidad() : null, ctx.exfNeuroSensibilidad);
-        ctx.exfNeuroMarcha = PdfTextUtil.preferCurrent(ctx.ficha != null ? ctx.ficha.getExfNeuroMarcha() : null, ctx.exfNeuroMarcha);
-        ctx.exfNeuroReflejos = PdfTextUtil.preferCurrent(ctx.ficha != null ? ctx.ficha.getExfNeuroReflejos() : null, ctx.exfNeuroReflejos);
+        FichaOcupacional ficha = ctx.ficha;
+        enrichPielYOjos(ctx, ficha);
+        enrichOidoYOrofaringe(ctx, ficha);
+        enrichNarizYCuello(ctx, ficha);
+        enrichTorsoYColumna(ctx, ficha);
+        enrichPelvisExtremidadesYNeuro(ctx, ficha);
     }
 
     private void copyMatchingFields(Object source, Object target) {
@@ -190,5 +158,62 @@ public class FichaPdfContextAssembler implements Serializable {
                 || (targetType == byte.class && sourceType == Byte.class)
                 || (targetType == short.class && sourceType == Short.class)
                 || (targetType == char.class && sourceType == Character.class);
+    }
+
+    private void enrichPielYOjos(FichaPdfViewModelContext ctx, FichaOcupacional ficha) {
+        ctx.exfPielCicatrices = preferCurrent(ficha != null ? ficha.getExfPielCicatrices() : null, ctx.exfPielCicatrices);
+        ctx.exfOjosParpados = preferCurrent(ficha != null ? ficha.getExfOjosParpados() : null, ctx.exfOjosParpados);
+        ctx.exfOjosConjuntivas = preferCurrent(ficha != null ? ficha.getExfOjosConjuntivas() : null, ctx.exfOjosConjuntivas);
+        ctx.exfOjosPupilas = preferCurrent(ficha != null ? ficha.getExfOjosPupilas() : null, ctx.exfOjosPupilas);
+        ctx.exfOjosCornea = preferCurrent(ficha != null ? ficha.getExfOjosCornea() : null, ctx.exfOjosCornea);
+        ctx.exfOjosMotilidad = preferCurrent(ficha != null ? ficha.getExfOjosMotilidad() : null, ctx.exfOjosMotilidad);
+    }
+
+    private void enrichOidoYOrofaringe(FichaPdfViewModelContext ctx, FichaOcupacional ficha) {
+        ctx.exfOidoConducto = preferCurrent(ficha != null ? ficha.getExfOidoConducto() : null, ctx.exfOidoConducto);
+        ctx.exfOidoPabellon = preferCurrent(ficha != null ? ficha.getExfOidoPabellon() : null, ctx.exfOidoPabellon);
+        ctx.exfOidoTimpanos = preferCurrent(ficha != null ? ficha.getExfOidoTimpanos() : null, ctx.exfOidoTimpanos);
+        ctx.exfOroLabios = preferCurrent(ficha != null ? ficha.getExfOroLabios() : null, ctx.exfOroLabios);
+        ctx.exfOroLengua = preferCurrent(ficha != null ? ficha.getExfOroLengua() : null, ctx.exfOroLengua);
+        ctx.exfOroFaringe = preferCurrent(ficha != null ? ficha.getExfOroFaringe() : null, ctx.exfOroFaringe);
+        ctx.exfOroAmigdalas = preferCurrent(ficha != null ? ficha.getExfOroAmigdalas() : null, ctx.exfOroAmigdalas);
+        ctx.exfOroDentadura = preferCurrent(ficha != null ? ficha.getExfOroDentadura() : null, ctx.exfOroDentadura);
+    }
+
+    private void enrichNarizYCuello(FichaPdfViewModelContext ctx, FichaOcupacional ficha) {
+        ctx.exfNarizTabique = preferCurrent(ficha != null ? ficha.getExfNarizTabique() : null, ctx.exfNarizTabique);
+        ctx.exfNarizCornetes = preferCurrent(ficha != null ? ficha.getExfNarizCornetes() : null, ctx.exfNarizCornetes);
+        ctx.exfNarizMucosas = preferCurrent(ficha != null ? ficha.getExfNarizMucosas() : null, ctx.exfNarizMucosas);
+        ctx.exfNarizSenos = preferCurrent(ficha != null ? ficha.getExfNarizSenosParanasa() : null, ctx.exfNarizSenos);
+        ctx.exfCuelloTiroides = preferCurrent(ficha != null ? ficha.getExfCuelloTiroidesMasas() : null, ctx.exfCuelloTiroides);
+        ctx.exfCuelloMovilidad = preferCurrent(ficha != null ? ficha.getExfCuelloMovilidad() : null, ctx.exfCuelloMovilidad);
+    }
+
+    private void enrichTorsoYColumna(FichaPdfViewModelContext ctx, FichaOcupacional ficha) {
+        ctx.exfToraxMamas = preferCurrent(ficha != null ? ficha.getExfToraxMamas() : null, ctx.exfToraxMamas);
+        ctx.exfToraxPulmones = preferCurrent(ficha != null ? ficha.getExfToraxPulmones() : null, ctx.exfToraxPulmones);
+        ctx.exfToraxCorazon = preferCurrent(ficha != null ? ficha.getExfToraxCorazon() : null, ctx.exfToraxCorazon);
+        ctx.exfToraxParrilla = preferCurrent(ficha != null ? ficha.getExfToraxParrillaCostal() : null, ctx.exfToraxParrilla);
+        ctx.exfAbdomenVisceras = preferCurrent(ficha != null ? ficha.getExfAbdVisceras() : null, ctx.exfAbdomenVisceras);
+        ctx.exfAbdomenPared = preferCurrent(ficha != null ? ficha.getExfAbdParedAbdominal() : null, ctx.exfAbdomenPared);
+        ctx.exfColumnaFlexibilidad = preferCurrent(ficha != null ? ficha.getExfColFlexibilidad() : null, ctx.exfColumnaFlexibilidad);
+        ctx.exfColumnaDesviacion = preferCurrent(ficha != null ? ficha.getExfColDesviacion() : null, ctx.exfColumnaDesviacion);
+        ctx.exfColumnaDolor = preferCurrent(ficha != null ? ficha.getExfColDolor() : null, ctx.exfColumnaDolor);
+    }
+
+    private void enrichPelvisExtremidadesYNeuro(FichaPdfViewModelContext ctx, FichaOcupacional ficha) {
+        ctx.exfPelvisPelvis = preferCurrent(ficha != null ? ficha.getExfPelvisPelvis() : null, ctx.exfPelvisPelvis);
+        ctx.exfPelvisGenitales = preferCurrent(ficha != null ? ficha.getExfPelvisGenitales() : null, ctx.exfPelvisGenitales);
+        ctx.exfExtVascular = preferCurrent(ficha != null ? ficha.getExfExtVascular() : null, ctx.exfExtVascular);
+        ctx.exfExtSup = preferCurrent(ficha != null ? ficha.getExfExtMiembrosSup() : null, ctx.exfExtSup);
+        ctx.exfExtInf = preferCurrent(ficha != null ? ficha.getExfExtMiembrosInf() : null, ctx.exfExtInf);
+        ctx.exfNeuroFuerza = preferCurrent(ficha != null ? ficha.getExfNeuroFuerza() : null, ctx.exfNeuroFuerza);
+        ctx.exfNeuroSensibilidad = preferCurrent(ficha != null ? ficha.getExfNeuroSensibilidad() : null, ctx.exfNeuroSensibilidad);
+        ctx.exfNeuroMarcha = preferCurrent(ficha != null ? ficha.getExfNeuroMarcha() : null, ctx.exfNeuroMarcha);
+        ctx.exfNeuroReflejos = preferCurrent(ficha != null ? ficha.getExfNeuroReflejos() : null, ctx.exfNeuroReflejos);
+    }
+
+    private String preferCurrent(String current, String fallback) {
+        return PdfTextUtil.preferCurrent(current, fallback);
     }
 }

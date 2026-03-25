@@ -8,47 +8,19 @@ import jakarta.enterprise.context.ApplicationScoped;
 
 @ApplicationScoped
 /**
- * Class CertificadoPdfTemplateService: gestiona la construcción y renderización de documentos PDF.
+ * Class CertificadoPdfTemplateService: gestiona la construccion y renderizacion de documentos PDF.
  */
 public class CertificadoPdfTemplateService {
 
     public String construirHtmlDesdePlantilla(CertificadoTemplateData data) {
         String template = PdfTextUtil.normalizarXhtmlPdf(data.template);
         Map<String, String> rep = new LinkedHashMap<>();
-
         Date fecha = data.fechaEmision != null ? data.fechaEmision : new Date();
-        rep.put("fecha_yyyy", data.yyyy(fecha));
-        rep.put("fecha_MM", data.MM(fecha));
-        rep.put("fecha_dd", data.dd(fecha));
 
-        rep.put("chk_apto", data.apto);
-        rep.put("chk_obs", data.obs);
-        rep.put("chk_lim", data.lim);
-        rep.put("chk_noapto", data.noApto);
-
-        rep.put("chk_ingreso", data.chkIngreso);
-        rep.put("chk_periodico", data.chkPeriodico);
-        rep.put("chk_reintegro", data.chkReintegro);
-        rep.put("chk_retiro", data.chkRetiro);
-
-        rep.put("LOGO_IGM_DATAURI", data.logoIgm);
-        rep.put("LOGO_MIDENA_DATAURI", data.logoMidena);
-
-        rep.put("institucion", data.institucion);
-        rep.put("ruc", data.ruc);
-        rep.put("num_formulario", data.noHistoria);
-        rep.put("num_archivo", data.noArchivo);
-        rep.put("centroTrabajo", data.centroTrabajo);
-        rep.put("ciiu", data.ciiu);
-        rep.put("apellido1", data.apellido1);
-        rep.put("apellido2", data.apellido2);
-        rep.put("nombre1", data.nombre1);
-        rep.put("nombre2", data.nombre2);
-        rep.put("sexo", data.sexo);
-        rep.put("detalleObservaciones", data.detalleObservaciones);
-        rep.put("recomendaciones", data.recomendaciones);
-        rep.put("medicoNombre", data.medicoNombre);
-        rep.put("medicoCodigo", data.medicoCodigo);
+        putFecha(rep, data, fecha);
+        putAptitud(rep, data);
+        putTipoEvaluacion(rep, data);
+        putDatosGenerales(rep, data);
 
         return data.templateEngine.render(template, rep);
     }
@@ -86,5 +58,45 @@ public class CertificadoPdfTemplateService {
         private String yyyy(Date f) { return new java.text.SimpleDateFormat("yyyy").format(f); }
         private String MM(Date f) { return new java.text.SimpleDateFormat("MM").format(f); }
         private String dd(Date f) { return new java.text.SimpleDateFormat("dd").format(f); }
+    }
+
+    private void putFecha(Map<String, String> rep, CertificadoTemplateData data, Date fecha) {
+        rep.put("fecha_yyyy", data.yyyy(fecha));
+        rep.put("fecha_MM", data.MM(fecha));
+        rep.put("fecha_dd", data.dd(fecha));
+    }
+
+    private void putAptitud(Map<String, String> rep, CertificadoTemplateData data) {
+        rep.put("chk_apto", data.apto);
+        rep.put("chk_obs", data.obs);
+        rep.put("chk_lim", data.lim);
+        rep.put("chk_noapto", data.noApto);
+    }
+
+    private void putTipoEvaluacion(Map<String, String> rep, CertificadoTemplateData data) {
+        rep.put("chk_ingreso", data.chkIngreso);
+        rep.put("chk_periodico", data.chkPeriodico);
+        rep.put("chk_reintegro", data.chkReintegro);
+        rep.put("chk_retiro", data.chkRetiro);
+    }
+
+    private void putDatosGenerales(Map<String, String> rep, CertificadoTemplateData data) {
+        rep.put("LOGO_IGM_DATAURI", data.logoIgm);
+        rep.put("LOGO_MIDENA_DATAURI", data.logoMidena);
+        rep.put("institucion", data.institucion);
+        rep.put("ruc", data.ruc);
+        rep.put("num_formulario", data.noHistoria);
+        rep.put("num_archivo", data.noArchivo);
+        rep.put("centroTrabajo", data.centroTrabajo);
+        rep.put("ciiu", data.ciiu);
+        rep.put("apellido1", data.apellido1);
+        rep.put("apellido2", data.apellido2);
+        rep.put("nombre1", data.nombre1);
+        rep.put("nombre2", data.nombre2);
+        rep.put("sexo", data.sexo);
+        rep.put("detalleObservaciones", data.detalleObservaciones);
+        rep.put("recomendaciones", data.recomendaciones);
+        rep.put("medicoNombre", data.medicoNombre);
+        rep.put("medicoCodigo", data.medicoCodigo);
     }
 }

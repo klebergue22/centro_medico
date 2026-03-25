@@ -1,6 +1,5 @@
 package ec.gob.igm.rrhh.consultorio.service;
 
-
 import ec.gob.igm.rrhh.consultorio.domain.model.PersonaAux;
 import jakarta.ejb.Stateless;
 import jakarta.persistence.EntityManager;
@@ -26,44 +25,21 @@ public class PersonaAuxService {
         }
     }
 
-    // BÁSICOS
-
     public PersonaAux guardar(PersonaAux p) {
         assertEm();
-
         if (p == null) {
             return null;
         }
 
         Date ahora = new Date();
-
         if (p.getIdPersonaAux() == null) {
-            // INSERT
-            if (p.getEstado() == null || p.getEstado().trim().isEmpty()) {
-                p.setEstado("PENDIENTE");
-            }
-            if (p.getFechaCreacion() == null) {
-                p.setFechaCreacion(ahora);
-            }
-            if (p.getUsrCreacion() == null || p.getUsrCreacion().trim().isEmpty()) {
-                p.setUsrCreacion("USR_APP"); // luego reemplazas por usuario real
-            }
-
+            applyInsertDefaults(p, ahora);
             em.persist(p);
-            // em.flush(); // útil en debug
             return p;
-
-        } else {
-            // UPDATE
-            p.setFechaActualizacion(ahora);
-            if (p.getUsrActualizacion() == null || p.getUsrActualizacion().trim().isEmpty()) {
-                p.setUsrActualizacion("USR_APP"); // luego reemplazas por usuario real
-            }
-
-            PersonaAux merged = em.merge(p);
-            // em.flush(); // útil en debug
-            return merged;
         }
+
+        applyUpdateDefaults(p, ahora);
+        return em.merge(p);
     }
 
     public PersonaAux find(Long id) {
@@ -71,8 +47,6 @@ public class PersonaAuxService {
         if (id == null) return null;
         return em.find(PersonaAux.class, id);
     }
-
-    // CONSULTAS
 
     public List<PersonaAux> listarTodos() {
         assertEm();
@@ -108,8 +82,6 @@ public class PersonaAuxService {
                  .getResultList();
     }
 
-    // UTILITARIO
-
     public PersonaAux crearDesdePantalla(String cedula,
                                          String nombres,
                                          String apellidos,
@@ -121,8 +93,25 @@ public class PersonaAuxService {
         p.setApellidos(apellidos);
         p.setSexo(sexo);
         p.setFechaNac(fechaNac);
-
-        // estado/fechas/usr se setean en guardar(...)
         return guardar(p);
+    }
+
+    private void applyInsertDefaults(PersonaAux p, Date ahora) {
+        if (p.getEstado() == null || p.getEstado().trim().isEmpty()) {
+            p.setEstado("PENDIENTE");
+        }
+        if (p.getFechaCreacion() == null) {
+            p.setFechaCreacion(ahora);
+        }
+        if (p.getUsrCreacion() == null || p.getUsrCreacion().trim().isEmpty()) {
+            p.setUsrCreacion("USR_APP");
+        }
+    }
+
+    private void applyUpdateDefaults(PersonaAux p, Date ahora) {
+        p.setFechaActualizacion(ahora);
+        if (p.getUsrActualizacion() == null || p.getUsrActualizacion().trim().isEmpty()) {
+            p.setUsrActualizacion("USR_APP");
+        }
     }
 }

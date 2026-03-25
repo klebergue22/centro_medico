@@ -21,76 +21,88 @@ public class Step1Validator {
             DatEmpleado empleadoSel, Integer noPersonaSel, PersonaAux personaAux) {
 
         ValidationResult result = new ValidationResult();
+        PersistedVitalSigns persistedVitalSigns = resolvePersistedVitalSigns(signos);
 
+        validateBasicFields(result, apellido1, apellido2, nombre1, nombre2, fechaAtencion, sexo, tipoEval);
+        validateVitalSigns(result, paStr, fc, peso, tallaCm, persistedVitalSigns);
+        validatePuestoTrabajo(result, puestoTrabajoCiuo, fichaRiesgo);
+        validatePatientSelection(result, empleadoSel, noPersonaSel, personaAux);
+        return result;
+    }
+
+    private void validateBasicFields(ValidationResult result, String apellido1, String apellido2, String nombre1,
+            String nombre2, Date fechaAtencion, String sexo, String tipoEval) {
         if (fechaAtencion == null) {
-            result.addError("Debe ingresar la fecha de atención.");
+            result.addError("Debe ingresar la fecha de atenciÃ³n.");
         }
-
         if (isBlank(apellido1) && isBlank(apellido2)) {
             result.addError("Debe ingresar al menos un apellido.");
         }
-
         if (isBlank(nombre1) && isBlank(nombre2)) {
             result.addError("Debe ingresar al menos un nombre.");
         }
-
         if (isBlank(sexo)) {
             result.addError("Debe seleccionar el sexo del paciente.");
         }
-
         if (isBlank(tipoEval)) {
-            result.addError("Debe seleccionar el tipo de evaluación (Ingreso, Periódica, etc.).");
+            result.addError("Debe seleccionar el tipo de evaluaciÃ³n (Ingreso, PeriÃ³dica, etc.).");
         }
+    }
 
-        boolean tienePaPersistida = signos != null
-                && signos.getPaSistolica() != null
-                && signos.getPaDiastolica() != null;
-        boolean tieneFcPersistida = signos != null && signos.getFrecuenciaCard() != null;
-        boolean tienePesoPersistido = signos != null && signos.getPesoKg() != null;
-        boolean tieneTallaPersistida = signos != null && signos.getTallaM() != null;
+    private PersistedVitalSigns resolvePersistedVitalSigns(SignosVitales signos) {
+        return new PersistedVitalSigns(
+                signos != null && signos.getPaSistolica() != null && signos.getPaDiastolica() != null,
+                signos != null && signos.getFrecuenciaCard() != null,
+                signos != null && signos.getPesoKg() != null,
+                signos != null && signos.getTallaM() != null);
+    }
 
-        if (isBlank(paStr) && !tienePaPersistida) {
-            result.addError("Debe ingresar la presión arterial completa (PA sistólica y diastólica).");
+    private void validateVitalSigns(ValidationResult result, String paStr, Integer fc, Double peso, Double tallaCm,
+            PersistedVitalSigns persistedVitalSigns) {
+        if (isBlank(paStr) && !persistedVitalSigns.tienePaPersistida()) {
+            result.addError("Debe ingresar la presiÃ³n arterial completa (PA sistÃ³lica y diastÃ³lica).");
         }
-
-        if (fc == null && !tieneFcPersistida) {
-            result.addError("Debe ingresar la frecuencia cardíaca (FC).");
+        if (fc == null && !persistedVitalSigns.tieneFcPersistida()) {
+            result.addError("Debe ingresar la frecuencia cardÃ­aca (FC).");
         }
-
-        if (peso == null && !tienePesoPersistido) {
+        if (peso == null && !persistedVitalSigns.tienePesoPersistido()) {
             result.addError("Debe ingresar el peso (kg).");
         }
-
-        if (tallaCm == null && !tieneTallaPersistida) {
+        if (tallaCm == null && !persistedVitalSigns.tieneTallaPersistida()) {
             result.addError("Debe ingresar la talla (en metros o convertir desde cm).");
         }
+    }
 
+    private void validatePuestoTrabajo(ValidationResult result, String puestoTrabajoCiuo, FichaRiesgo fichaRiesgo) {
         boolean tienePuestoTrabajo = !isBlank(puestoTrabajoCiuo)
                 || (fichaRiesgo != null && !isBlank(fichaRiesgo.getPuestoTrabajo()));
-
         if (!tienePuestoTrabajo) {
             result.addError("Debe ingresar el puesto de trabajo.");
         }
+    }
 
-        boolean tieneEmpleadoSeleccionado = empleadoSel != null || noPersonaSel != null;
-        if (!tieneEmpleadoSeleccionado) {
-            if (personaAux == null || isBlank(personaAux.getCedula())) {
-                result.addError("Debe seleccionar un empleado de RRHH o registrar una persona auxiliar (cédula obligatoria).");
-            }
-
-            boolean faltanDatosPersonaAux = personaAux == null
-                    || isBlank(personaAux.getApellido1())
-                    || isBlank(personaAux.getNombre1())
-                    || isBlank(personaAux.getSexo());
-            if (faltanDatosPersonaAux) {
-                result.addError("En Persona Auxiliar: primer apellido, primer nombre y sexo son obligatorios.");
-            }
+    private void validatePatientSelection(ValidationResult result, DatEmpleado empleadoSel, Integer noPersonaSel,
+            PersonaAux personaAux) {
+        if (empleadoSel != null || noPersonaSel != null) {
+            return;
         }
-
-        return result;
+        if (personaAux == null || isBlank(personaAux.getCedula())) {
+            result.addError("Debe seleccionar un empleado de RRHH o registrar una persona auxiliar (cÃ©dula obligatoria).");
+        }
+        boolean faltanDatosPersonaAux = personaAux == null
+                || isBlank(personaAux.getApellido1())
+                || isBlank(personaAux.getNombre1())
+                || isBlank(personaAux.getSexo());
+        if (faltanDatosPersonaAux) {
+            result.addError("En Persona Auxiliar: primer apellido, primer nombre y sexo son obligatorios.");
+        }
     }
 
     private boolean isBlank(String value) {
         return value == null || value.trim().isEmpty();
+    }
+
+    private record PersistedVitalSigns(boolean tienePaPersistida, boolean tieneFcPersistida,
+            boolean tienePesoPersistido, boolean tieneTallaPersistida) {
     }
 }

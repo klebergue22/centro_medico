@@ -17,7 +17,7 @@ import org.slf4j.Logger;
 
 @ApplicationScoped
 /**
- * Class PacienteControllerSupport: orquesta la lógica de presentación y flujo web.
+ * Class PacienteControllerSupport: orquesta la logica de presentacion y flujo web.
  */
 public class PacienteControllerSupport implements Serializable {
 
@@ -50,32 +50,7 @@ public class PacienteControllerSupport implements Serializable {
                     input.getPersonaAux(),
                     input.isPermitirIngresoManual());
             input.getApplyUiResult().accept(uiResult);
-
-            PacienteUiFlowCoordinator.UiFlowResult flowResult = uiResult.getFlowResult();
-            if (flowResult != null && flowResult.isFound()) {
-                cedulaDialogUiCoordinator.onFound(CedulaSearchService.CedulaSearchResult.found(
-                        flowResult.getCedulaBusqueda(),
-                        flowResult.getFicha(),
-                        flowResult.getPersonaAux(),
-                        flowResult.getEmpleadoSel(),
-                        flowResult.getNoPersonaSel(),
-                        flowResult.getApellido1(),
-                        flowResult.getApellido2(),
-                        flowResult.getNombre1(),
-                        flowResult.getNombre2(),
-                        flowResult.getSexo(),
-                        flowResult.getFechaNacimiento(),
-                        flowResult.getEdad()));
-                if (flowResult.isCargoNoEncontrado()) {
-                    cedulaDialogUiCoordinator.showCargoMissing();
-                }
-            } else if (flowResult != null && flowResult.isShowManual()) {
-                cedulaDialogUiCoordinator.onManualEnabled(CedulaSearchService.CedulaSearchResult.manual(
-                        flowResult.getCedulaBusqueda(),
-                        flowResult.getFicha(),
-                        flowResult.getPersonaAux()));
-            }
-
+            handleCedulaFlowResult(uiResult.getFlowResult());
             cedulaDialogUiCoordinator.refreshMainViews();
         } catch (CedulaSearchService.CedulaValidationException ex) {
             cedulaDialogUiCoordinator.onValidationWarning(ex.getMessage());
@@ -92,7 +67,7 @@ public class PacienteControllerSupport implements Serializable {
         try {
             applyUiResult.accept(pacienteRegistrationFacade.habilitarIngresoManual(cedulaBusqueda, personaAux));
         } catch (PersonaAuxFlowService.PersonaAuxValidationException ex) {
-            ctx.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN, "Cédula requerida", ex.getMessage()));
+            ctx.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN, "Cedula requerida", ex.getMessage()));
         }
     }
 
@@ -114,8 +89,7 @@ public class PacienteControllerSupport implements Serializable {
             DatEmpleado empleadoSel, Integer noPersonaSel,
             Consumer<PacienteRegistrationFacade.UiResult> applyUiResult,
             Logger logger) {
-        logger.info(String.valueOf("INGRESA AL METODO DE GUARDAR "));
-        logger.info(String.valueOf("PERSONA AUXILIAR ANTES VALIDAR: " + personaAux));
+        logPersonaAuxBeforeSave(logger, personaAux);
 
         try {
             PacienteRegistrationFacade.UiResult uiResult = pacienteRegistrationFacade.guardarPersonaAux(
@@ -125,23 +99,28 @@ public class PacienteControllerSupport implements Serializable {
                     noPersonaSel);
 
             applyUiResult.accept(uiResult);
-
-            personaAuxDialogUiCoordinator.onGuardarSuccess(uiResult.getFlowResult());
-
-            logger.info("PersonaAux guardada manualmente: {} {} / {} {} (cedula={})",
-                    personaAux.getApellido1(),
-                    personaAux.getApellido2(),
-                    personaAux.getNombre1(),
-                    personaAux.getNombre2(),
-                    personaAux.getCedula());
+            handlePersonaAuxSaveSuccess(uiResult, logger, personaAux);
 
         } catch (PersonaAuxFlowService.PersonaAuxValidationException e) {
-            logger.warn("Validación PersonaAux en flujo manual: {}", e.getMessage());
+            logger.warn("Validacion PersonaAux en flujo manual: {}", e.getMessage());
             personaAuxDialogUiCoordinator.onValidationFailure(e.getMessage());
         } catch (RuntimeException e) {
             logger.error("Error guardando datos manuales", e);
             personaAuxDialogUiCoordinator.onTechnicalFailure();
         }
+    }
+
+    private void logPersonaAuxBeforeSave(Logger logger, PersonaAux personaAux) {
+        logger.info(String.valueOf("INGRESA AL METODO DE GUARDAR "));
+        logger.info(String.valueOf("PERSONA AUXILIAR ANTES VALIDAR: " + personaAux));
+    }
+
+    private void handlePersonaAuxSaveSuccess(PacienteRegistrationFacade.UiResult uiResult, Logger logger,
+            PersonaAux personaAux) {
+        personaAuxDialogUiCoordinator.onGuardarSuccess(uiResult.getFlowResult());
+        logger.info("PersonaAux guardada manualmente: {} {} / {} {} (cedula={})",
+                personaAux.getApellido1(), personaAux.getApellido2(),
+                personaAux.getNombre1(), personaAux.getNombre2(), personaAux.getCedula());
     }
 
     public static final class BuscarCedulaInput {
@@ -198,6 +177,41 @@ public class PacienteControllerSupport implements Serializable {
             public Builder applyUiResult(Consumer<PacienteRegistrationFacade.UiResult> applyUiResult) { this.applyUiResult = applyUiResult; return this; }
 
             public BuscarCedulaInput build() { return new BuscarCedulaInput(this); }
+        }
+    }
+
+    private void handleCedulaFlowResult(PacienteUiFlowCoordinator.UiFlowResult flowResult) {
+        if (flowResult == null) {
+            return;
+        }
+        if (flowResult.isFound()) {
+            handleFoundFlowResult(flowResult);
+            return;
+        }
+        if (flowResult.isShowManual()) {
+            cedulaDialogUiCoordinator.onManualEnabled(CedulaSearchService.CedulaSearchResult.manual(
+                    flowResult.getCedulaBusqueda(),
+                    flowResult.getFicha(),
+                    flowResult.getPersonaAux()));
+        }
+    }
+
+    private void handleFoundFlowResult(PacienteUiFlowCoordinator.UiFlowResult flowResult) {
+        cedulaDialogUiCoordinator.onFound(CedulaSearchService.CedulaSearchResult.found(
+                flowResult.getCedulaBusqueda(),
+                flowResult.getFicha(),
+                flowResult.getPersonaAux(),
+                flowResult.getEmpleadoSel(),
+                flowResult.getNoPersonaSel(),
+                flowResult.getApellido1(),
+                flowResult.getApellido2(),
+                flowResult.getNombre1(),
+                flowResult.getNombre2(),
+                flowResult.getSexo(),
+                flowResult.getFechaNacimiento(),
+                flowResult.getEdad()));
+        if (flowResult.isCargoNoEncontrado()) {
+            cedulaDialogUiCoordinator.showCargoMissing();
         }
     }
 }

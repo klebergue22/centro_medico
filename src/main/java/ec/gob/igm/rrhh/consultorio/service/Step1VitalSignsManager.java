@@ -28,17 +28,24 @@ public class Step1VitalSignsManager {
                                           Double perimetroAbd,
                                           Date now,
                                           String user) {
-        final int[] pa = parseBloodPressureOrThrow(paStr);
+        SignosVitales sv = loadExistingOrCreate(current);
+        applyMeasurements(sv, parseBloodPressureOrThrow(paStr), temp, fc, fr, satO2, peso, tallaCm, perimetroAbd);
+        stampAuditFields(sv, now, user);
+        return signosService.guardar(sv);
+    }
 
-        SignosVitales sv = null;
+    private SignosVitales loadExistingOrCreate(SignosVitales current) {
         if (current != null && current.getIdSignos() != null) {
-            sv = signosService.buscarPorId(current.getIdSignos());
+            SignosVitales persisted = signosService.buscarPorId(current.getIdSignos());
+            if (persisted != null) {
+                return persisted;
+            }
         }
+        return new SignosVitales();
+    }
 
-        if (sv == null) {
-            sv = new SignosVitales();
-        }
-
+    private void applyMeasurements(SignosVitales sv, int[] pa, Double temp, Integer fc, Integer fr, Integer satO2,
+            Double peso, Double tallaCm, Double perimetroAbd) {
         sv.setTemperaturaC(bd(temp, 1));
         sv.setPaSistolica(pa[0]);
         sv.setPaDiastolica(pa[1]);
@@ -46,17 +53,15 @@ public class Step1VitalSignsManager {
         sv.setFrecuenciaResp(fr);
         sv.setSatO2(satO2);
         sv.setPesoKg(bd(peso, 2));
-
-        BigDecimal tallaM = (tallaCm == null)
-                ? null
-                : bd(tallaCm, 2).divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
-
-        sv.setTallaM(tallaM);
+        sv.setTallaM(toMeters(tallaCm));
         sv.setPerimetroAbdCm(bd(perimetroAbd, 1));
+    }
 
-        stampAuditFields(sv, now, user);
-
-        return signosService.guardar(sv);
+    private BigDecimal toMeters(Double tallaCm) {
+        if (tallaCm == null) {
+            return null;
+        }
+        return bd(tallaCm, 2).divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
     }
 
     private static BigDecimal bd(Double v, int scale) {
@@ -76,7 +81,7 @@ public class Step1VitalSignsManager {
             Integer dias = Integer.valueOf(parts[1].trim());
             return new int[]{sis, dias};
         } catch (RuntimeException ex) {
-            throw new IllegalArgumentException("El formato de PA debe ser 120/80 (números enteros separados por '/').");
+            throw new IllegalArgumentException("El formato de PA debe ser 120/80 (nÃºmeros enteros separados por '/').");
         }
     }
 

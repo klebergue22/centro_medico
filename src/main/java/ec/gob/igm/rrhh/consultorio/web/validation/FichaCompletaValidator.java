@@ -25,7 +25,7 @@ public class FichaCompletaValidator {
         ValidationResult result = new ValidationResult();
 
         if (ficha == null || ficha.getIdFicha() == null) {
-            result.addError("La ficha ocupacional aún no se ha guardado (Steps 1 y 3).");
+            result.addError("La ficha ocupacional aÃºn no se ha guardado (Steps 1 y 3).");
             return result;
         }
 
@@ -33,63 +33,85 @@ public class FichaCompletaValidator {
         boolean tienePersonaAux = hasPersonaAux(personaAux, ficha.getPersonaAux());
         boolean modoAux = !tieneEmpleado && (permitirIngresoManual || tienePersonaAux);
 
+        syncPatientReference(ficha, modoAux, personaAux, empleadoSel);
+        applyMissingCertificateData(ficha, aptitudSel, fechaEmision);
+        validatePatientSelection(result, tieneEmpleado, tienePersonaAux, modoAux);
+        validateRequiredData(result, ficha);
+        ensurePrincipalCie10(ficha, cie10InferidoSupplier);
+        validateCertificateReadiness(result, ficha);
+        return result;
+    }
+
+    private void syncPatientReference(FichaOcupacional ficha, boolean modoAux, PersonaAux personaAux,
+            DatEmpleado empleadoSel) {
         if (modoAux) {
             if (hasPersonaAuxReference(personaAux)) {
                 ficha.setPersonaAux(personaAux);
             }
             ficha.setEmpleado(null);
-        } else if (empleadoSel != null) {
+            return;
+        }
+        if (empleadoSel != null) {
             ficha.setEmpleado(empleadoSel);
         }
+    }
 
+    private void applyMissingCertificateData(FichaOcupacional ficha, String aptitudSel, Date fechaEmision) {
         if (isBlank(ficha.getAptitudSel()) && !isBlank(aptitudSel)) {
             ficha.setAptitudSel(aptitudSel);
         }
-
         if (ficha.getFechaEmision() == null) {
             ficha.setFechaEmision(fechaEmision != null ? fechaEmision : new Date());
         }
+    }
 
+    private void validatePatientSelection(ValidationResult result, boolean tieneEmpleado, boolean tienePersonaAux,
+            boolean modoAux) {
         if (!tieneEmpleado && !tienePersonaAux) {
             result.addError("Debe seleccionar un empleado o registrar una persona auxiliar.");
-        } else if (modoAux && !tieneEmpleado && !tienePersonaAux) {
+            return;
+        }
+        if (modoAux && !tieneEmpleado) {
             result.addError("En modo ingreso manual: falta registrar la persona auxiliar.");
-        } else if (!modoAux && !tieneEmpleado) {
+            return;
+        }
+        if (!modoAux && !tieneEmpleado) {
             result.addError("Falta seleccionar el empleado.");
         }
+    }
 
+    private void validateRequiredData(ValidationResult result, FichaOcupacional ficha) {
         if (ficha.getFechaEvaluacion() == null) {
-            result.addError("Falta la fecha de evaluación.");
+            result.addError("Falta la fecha de evaluaciÃ³n.");
         }
-
         if (isBlank(ficha.getTipoEvaluacion())) {
-            result.addError("Falta el tipo de evaluación (INGRESO/PERÍODICA/etc.).");
+            result.addError("Falta el tipo de evaluaciÃ³n (INGRESO/PERÃODICA/etc.).");
         }
-
         if (isBlank(ficha.getAptitudSel())) {
-            result.addError("Debe seleccionar la aptitud médica.");
+            result.addError("Debe seleccionar la aptitud mÃ©dica.");
         }
-
-        if (ficha.getCie10Principal() == null || isBlank(ficha.getCie10Principal().getCodigo())) {
-            Cie10 inferido = cie10InferidoSupplier.get();
-            if (inferido != null && !isBlank(inferido.getCodigo())) {
-                ficha.setCie10Principal(inferido);
-            }
-        }
-
-        if (ficha.getCie10Principal() == null || isBlank(ficha.getCie10Principal().getCodigo())) {
-            result.addError("Debe registrar un diagnóstico CIE10 principal.");
-        }
-
         if (ficha.getSignos() == null) {
             result.addError("Debe registrar signos vitales (peso/talla) en Step 3.");
         }
-
         if (ficha.getFechaEmision() == null) {
-            result.addError("Falta la fecha de emisión del certificado.");
+            result.addError("Falta la fecha de emisiÃ³n del certificado.");
         }
+    }
 
-        return result;
+    private void ensurePrincipalCie10(FichaOcupacional ficha, Supplier<Cie10> cie10InferidoSupplier) {
+        if (ficha.getCie10Principal() != null && !isBlank(ficha.getCie10Principal().getCodigo())) {
+            return;
+        }
+        Cie10 inferido = cie10InferidoSupplier.get();
+        if (inferido != null && !isBlank(inferido.getCodigo())) {
+            ficha.setCie10Principal(inferido);
+        }
+    }
+
+    private void validateCertificateReadiness(ValidationResult result, FichaOcupacional ficha) {
+        if (ficha.getCie10Principal() == null || isBlank(ficha.getCie10Principal().getCodigo())) {
+            result.addError("Debe registrar un diagnÃ³stico CIE10 principal.");
+        }
     }
 
     private boolean hasPersonaAux(PersonaAux personaAuxCtrl, PersonaAux personaAuxFicha) {

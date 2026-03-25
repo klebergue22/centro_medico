@@ -205,47 +205,9 @@ public class CentroMedicoPdfControllerSupport implements Serializable {
                 input.empleadoSel,
                 input.personaAux,
                 input.fechaNacimiento);
-        input.institucionSetter.accept(data.institucion);
-        input.rucSetter.accept(data.ruc);
-        input.centroTrabajoSetter.accept(data.centroTrabajo);
-        input.ciiuSetter.accept(data.ciiu);
-        input.noHistoriaSetter.accept(data.noHistoria);
-        input.noArchivoSetter.accept(data.noArchivo);
-        input.ginecoExamen1Setter.accept(data.ginecoExamen1);
-        input.ginecoTiempo1Setter.accept(data.ginecoTiempo1);
-        input.ginecoResultado1Setter.accept(data.ginecoResultado1);
-        input.ginecoExamen2Setter.accept(data.ginecoExamen2);
-        input.ginecoTiempo2Setter.accept(data.ginecoTiempo2);
-        input.ginecoResultado2Setter.accept(data.ginecoResultado2);
-        input.ginecoObservacionSetter.accept(data.ginecoObservacion);
-        input.enfermedadActualSetter.accept(data.enfermedadActual);
-        if (data.apellido1 != null) {
-            input.apellido1Setter.accept(data.apellido1);
-        }
-        if (data.apellido2 != null) {
-            input.apellido2Setter.accept(data.apellido2);
-        }
-        if (data.nombre1 != null) {
-            input.nombre1Setter.accept(data.nombre1);
-        }
-        if (data.nombre2 != null) {
-            input.nombre2Setter.accept(data.nombre2);
-        }
-        if (data.sexo != null) {
-            input.sexoSetter.accept(data.sexo);
-        }
-        if (data.grupoSanguineo != null) {
-            input.grupoSanguineoSetter.accept(data.grupoSanguineo);
-        }
-        if (data.fechaNacimiento != null) {
-            input.fechaNacimientoSetter.accept(data.fechaNacimiento);
-        }
-        if (data.edad != null) {
-            input.edadSetter.accept(data.edad);
-        }
-        if (data.personaAux != null && input.personaAuxSetter != null) {
-            input.personaAuxSetter.accept(data.personaAux);
-        }
+        applyPdfMappedCommonFields(input, data);
+        applyPdfMappedPersonFields(input, data);
+        applyPdfMappedPersonaAux(input, data);
     }
 
     public void showValidationMessage(FacesContext ctx, String summary, List<String> errors) {
@@ -268,50 +230,11 @@ public class CentroMedicoPdfControllerSupport implements Serializable {
             boolean apAdultoMayor,
             Map<String, String> rep,
             Logger log) {
-        rep.put("apCatastrofica_sn", apCatastrofica ? "SI" : "NO");
-        rep.put("apDiscapacidad_sn", apDiscapacidad ? "SI" : "NO");
-        rep.put("apEmbarazada_sn", apEmbarazada ? "SI" : "NO");
-        rep.put("apLactancia_sn", apLactancia ? "SI" : "NO");
-        rep.put("apAdultoMayor_sn", apAdultoMayor ? "SI" : "NO");
-
-        boolean aplicaDis;
-        boolean aplicaCat;
-
-        if (ficha != null) {
-            aplicaDis = "S".equalsIgnoreCase(safe(ficha.getApDiscapacidad()));
-            aplicaCat = "S".equalsIgnoreCase(safe(ficha.getApCatastrofica()));
-        } else {
-            aplicaDis = apDiscapacidad;
-            aplicaCat = apCatastrofica;
-        }
-
-        rep.put("apDiscapacidad_style", aplicaDis ? "" : "display:none;");
-        rep.put("apCatastrofica_style", aplicaCat ? "" : "display:none;");
-
-        rep.put("disTipo", safe(ficha != null ? ficha.getDisTipo() : null));
-        rep.put("disDescripcion", safe(ficha != null ? ficha.getDisDescripcion() : null));
-
-        Integer porc = (ficha != null ? ficha.getDisPorcentaje() : null);
-        rep.put("disPorcentaje", porc == null ? "" : String.valueOf(porc));
-
-        rep.put("catDiagnostico", safe(ficha != null ? ficha.getCatDiagnostico() : null));
-
-        String catCal = safe(ficha != null ? ficha.getCatCalificada() : null);
-        if ("S".equalsIgnoreCase(catCal) || "TRUE".equalsIgnoreCase(catCal)) {
-            rep.put("catCalificada", "SI");
-        } else if ("N".equalsIgnoreCase(catCal) || "FALSE".equalsIgnoreCase(catCal)) {
-            rep.put("catCalificada", "NO");
-        } else {
-            rep.put("catCalificada", catCal);
-        }
-        log.info("[PDF] disTipo={} disDescripcion={} disPorcentaje={} catDiagnostico={} catCalificada={} styleDis={} styleCat={}",
-                rep.get("disTipo"),
-                rep.get("disDescripcion"),
-                rep.get("disPorcentaje"),
-                rep.get("catDiagnostico"),
-                rep.get("catCalificada"),
-                rep.get("apDiscapacidad_style"),
-                rep.get("apCatastrofica_style"));
+        putAtencionFlags(rep, apDiscapacidad, apCatastrofica, apEmbarazada, apLactancia, apAdultoMayor);
+        applyAtencionStyles(rep, ficha, apDiscapacidad, apCatastrofica);
+        putDiscapacidadData(rep, ficha);
+        putCatastroficaData(rep, ficha);
+        logAtencionPrioritaria(rep, log);
     }
 
     public void cargarActividadLaboralArrays(int hRows,
@@ -330,21 +253,86 @@ public class CentroMedicoPdfControllerSupport implements Serializable {
             List<String> actLabObservaciones,
             Map<String, String> rep) {
         for (int i = 0; i < hRows; i++) {
-            int idx = i + 1;
-            rep.put("h_centro_" + idx, safe(getSafe(actLabCentroTrabajo, i)));
-            rep.put("h_actividad_" + idx, safe(getSafe(actLabActividad, i)));
-            rep.put("h_tiempo_" + idx, safe(getSafe(actLabTiempo, i)));
-            rep.put("h_anterior_" + idx, isTrue(getSafe(actLabTrabajoAnterior, i)) ? "X" : "");
-            rep.put("h_actual_" + idx, isTrue(getSafe(actLabTrabajoActual, i)) ? "X" : "");
-            rep.put("h_incidente_" + idx, isTrue(getSafe(actLabIncidenteChk, i)) ? "X" : "");
-            rep.put("h_accidente_" + idx, isTrue(getSafe(actLabAccidenteChk, i)) ? "X" : "");
-            rep.put("h_enfermedad_" + idx, isTrue(getSafe(actLabEnfermedadChk, i)) ? "X" : "");
-            rep.put("h_iess_si_" + idx, isTrue(getSafe(iessSi, i)) ? "X" : "");
-            rep.put("h_iess_no_" + idx, isTrue(getSafe(iessNo, i)) ? "X" : "");
-            rep.put("h_iess_fecha_" + idx, fmtDate(toDate(getSafe(iessFecha, i))));
-            rep.put("h_iess_especificar_" + idx, safe(getSafe(iessEspecificar, i)));
-            rep.put("h_obs_" + idx, safe(getSafe(actLabObservaciones, i)));
+            populateActividadLaboralRow(rep, i + 1, i, actLabCentroTrabajo, actLabActividad, actLabTiempo,
+                    actLabTrabajoAnterior, actLabTrabajoActual, actLabIncidenteChk, actLabAccidenteChk,
+                    actLabEnfermedadChk, iessSi, iessNo, iessFecha, iessEspecificar, actLabObservaciones);
         }
+    }
+
+    private void putAtencionFlags(Map<String, String> rep, boolean apDiscapacidad, boolean apCatastrofica,
+            boolean apEmbarazada, boolean apLactancia, boolean apAdultoMayor) {
+        rep.put("apCatastrofica_sn", apCatastrofica ? "SI" : "NO");
+        rep.put("apDiscapacidad_sn", apDiscapacidad ? "SI" : "NO");
+        rep.put("apEmbarazada_sn", apEmbarazada ? "SI" : "NO");
+        rep.put("apLactancia_sn", apLactancia ? "SI" : "NO");
+        rep.put("apAdultoMayor_sn", apAdultoMayor ? "SI" : "NO");
+    }
+
+    private void applyAtencionStyles(Map<String, String> rep, FichaOcupacional ficha, boolean apDiscapacidad,
+            boolean apCatastrofica) {
+        boolean aplicaDis = ficha != null
+                ? "S".equalsIgnoreCase(safe(ficha.getApDiscapacidad()))
+                : apDiscapacidad;
+        boolean aplicaCat = ficha != null
+                ? "S".equalsIgnoreCase(safe(ficha.getApCatastrofica()))
+                : apCatastrofica;
+        rep.put("apDiscapacidad_style", aplicaDis ? "" : "display:none;");
+        rep.put("apCatastrofica_style", aplicaCat ? "" : "display:none;");
+    }
+
+    private void putDiscapacidadData(Map<String, String> rep, FichaOcupacional ficha) {
+        rep.put("disTipo", safe(ficha != null ? ficha.getDisTipo() : null));
+        rep.put("disDescripcion", safe(ficha != null ? ficha.getDisDescripcion() : null));
+        Integer porcentaje = ficha != null ? ficha.getDisPorcentaje() : null;
+        rep.put("disPorcentaje", porcentaje == null ? "" : String.valueOf(porcentaje));
+    }
+
+    private void putCatastroficaData(Map<String, String> rep, FichaOcupacional ficha) {
+        rep.put("catDiagnostico", safe(ficha != null ? ficha.getCatDiagnostico() : null));
+        rep.put("catCalificada", resolveCatCalificada(ficha));
+    }
+
+    private String resolveCatCalificada(FichaOcupacional ficha) {
+        String catCal = safe(ficha != null ? ficha.getCatCalificada() : null);
+        if ("S".equalsIgnoreCase(catCal) || "TRUE".equalsIgnoreCase(catCal)) {
+            return "SI";
+        }
+        if ("N".equalsIgnoreCase(catCal) || "FALSE".equalsIgnoreCase(catCal)) {
+            return "NO";
+        }
+        return catCal;
+    }
+
+    private void logAtencionPrioritaria(Map<String, String> rep, Logger log) {
+        log.info("[PDF] disTipo={} disDescripcion={} disPorcentaje={} catDiagnostico={} catCalificada={} styleDis={} styleCat={}",
+                rep.get("disTipo"), rep.get("disDescripcion"), rep.get("disPorcentaje"),
+                rep.get("catDiagnostico"), rep.get("catCalificada"),
+                rep.get("apDiscapacidad_style"), rep.get("apCatastrofica_style"));
+    }
+
+    private void populateActividadLaboralRow(Map<String, String> rep, int idx, int position,
+            List<String> actLabCentroTrabajo, List<String> actLabActividad, List<String> actLabTiempo,
+            List<Boolean> actLabTrabajoAnterior, List<Boolean> actLabTrabajoActual, List<Boolean> actLabIncidenteChk,
+            List<Boolean> actLabAccidenteChk, List<Boolean> actLabEnfermedadChk, List<Boolean> iessSi,
+            List<Boolean> iessNo, List<?> iessFecha, List<String> iessEspecificar,
+            List<String> actLabObservaciones) {
+        rep.put("h_centro_" + idx, safe(getSafe(actLabCentroTrabajo, position)));
+        rep.put("h_actividad_" + idx, safe(getSafe(actLabActividad, position)));
+        rep.put("h_tiempo_" + idx, safe(getSafe(actLabTiempo, position)));
+        rep.put("h_anterior_" + idx, checked(getSafe(actLabTrabajoAnterior, position)));
+        rep.put("h_actual_" + idx, checked(getSafe(actLabTrabajoActual, position)));
+        rep.put("h_incidente_" + idx, checked(getSafe(actLabIncidenteChk, position)));
+        rep.put("h_accidente_" + idx, checked(getSafe(actLabAccidenteChk, position)));
+        rep.put("h_enfermedad_" + idx, checked(getSafe(actLabEnfermedadChk, position)));
+        rep.put("h_iess_si_" + idx, checked(getSafe(iessSi, position)));
+        rep.put("h_iess_no_" + idx, checked(getSafe(iessNo, position)));
+        rep.put("h_iess_fecha_" + idx, fmtDate(toDate(getSafe(iessFecha, position))));
+        rep.put("h_iess_especificar_" + idx, safe(getSafe(iessEspecificar, position)));
+        rep.put("h_obs_" + idx, safe(getSafe(actLabObservaciones, position)));
+    }
+
+    private String checked(Boolean value) {
+        return isTrue(value) ? "X" : "";
     }
 
     public static final class CapturePdfFichaInput {
@@ -441,5 +429,39 @@ public class CentroMedicoPdfControllerSupport implements Serializable {
         public Consumer<java.util.Date> fechaNacimientoSetter;
         public Consumer<Integer> edadSetter;
         public Consumer<PersonaAux> personaAuxSetter;
+    }
+
+    private void applyPdfMappedCommonFields(SyncCamposDesdeObjetosInput input, FichaPdfMappedData data) {
+        input.institucionSetter.accept(data.institucion);
+        input.rucSetter.accept(data.ruc);
+        input.centroTrabajoSetter.accept(data.centroTrabajo);
+        input.ciiuSetter.accept(data.ciiu);
+        input.noHistoriaSetter.accept(data.noHistoria);
+        input.noArchivoSetter.accept(data.noArchivo);
+        input.ginecoExamen1Setter.accept(data.ginecoExamen1);
+        input.ginecoTiempo1Setter.accept(data.ginecoTiempo1);
+        input.ginecoResultado1Setter.accept(data.ginecoResultado1);
+        input.ginecoExamen2Setter.accept(data.ginecoExamen2);
+        input.ginecoTiempo2Setter.accept(data.ginecoTiempo2);
+        input.ginecoResultado2Setter.accept(data.ginecoResultado2);
+        input.ginecoObservacionSetter.accept(data.ginecoObservacion);
+        input.enfermedadActualSetter.accept(data.enfermedadActual);
+    }
+
+    private void applyPdfMappedPersonFields(SyncCamposDesdeObjetosInput input, FichaPdfMappedData data) {
+        if (data.apellido1 != null) input.apellido1Setter.accept(data.apellido1);
+        if (data.apellido2 != null) input.apellido2Setter.accept(data.apellido2);
+        if (data.nombre1 != null) input.nombre1Setter.accept(data.nombre1);
+        if (data.nombre2 != null) input.nombre2Setter.accept(data.nombre2);
+        if (data.sexo != null) input.sexoSetter.accept(data.sexo);
+        if (data.grupoSanguineo != null) input.grupoSanguineoSetter.accept(data.grupoSanguineo);
+        if (data.fechaNacimiento != null) input.fechaNacimientoSetter.accept(data.fechaNacimiento);
+        if (data.edad != null) input.edadSetter.accept(data.edad);
+    }
+
+    private void applyPdfMappedPersonaAux(SyncCamposDesdeObjetosInput input, FichaPdfMappedData data) {
+        if (data.personaAux != null && input.personaAuxSetter != null) {
+            input.personaAuxSetter.accept(data.personaAux);
+        }
     }
 }

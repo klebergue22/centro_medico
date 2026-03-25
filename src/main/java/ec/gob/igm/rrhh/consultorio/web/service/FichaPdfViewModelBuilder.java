@@ -33,6 +33,13 @@ public class FichaPdfViewModelBuilder implements Serializable {
     }
 
     private void cargarExamenFisicoRegional(Map<String, String> rep, FichaPdfViewModelContext ctx) {
+        cargarExamenFisicoCabezaCuello(rep, ctx);
+        cargarExamenFisicoTorso(rep, ctx);
+        cargarExamenFisicoExtremidades(rep, ctx);
+        rep.put("obs_examen_fisico", safe(resolveObsExamenFisico(ctx)));
+    }
+
+    private void cargarExamenFisicoCabezaCuello(Map<String, String> rep, FichaPdfViewModelContext ctx) {
         rep.put("exf_piel_cicatrices", markX(ctx.exfPielCicatrices));
         rep.put("exf_ojos_parpados", markX(ctx.exfOjosParpados));
         rep.put("exf_ojos_conjuntivas", markX(ctx.exfOjosConjuntivas));
@@ -53,6 +60,9 @@ public class FichaPdfViewModelBuilder implements Serializable {
         rep.put("exf_nariz_senos", markX(ctx.exfNarizSenos));
         rep.put("exf_cuello_tiroides", markX(ctx.exfCuelloTiroides));
         rep.put("exf_cuello_movilidad", markX(ctx.exfCuelloMovilidad));
+    }
+
+    private void cargarExamenFisicoTorso(Map<String, String> rep, FichaPdfViewModelContext ctx) {
         rep.put("exf_torax_mamas", markX(ctx.exfToraxMamas));
         rep.put("exf_torax_pulmones", markX(ctx.exfToraxPulmones));
         rep.put("exf_torax_corazon", markX(ctx.exfToraxCorazon));
@@ -64,6 +74,9 @@ public class FichaPdfViewModelBuilder implements Serializable {
         rep.put("exf_columna_dolor", markX(ctx.exfColumnaDolor));
         rep.put("exf_pelvis_pelvis", markX(ctx.exfPelvisPelvis));
         rep.put("exf_pelvis_genitales", markX(ctx.exfPelvisGenitales));
+    }
+
+    private void cargarExamenFisicoExtremidades(Map<String, String> rep, FichaPdfViewModelContext ctx) {
         rep.put("exf_ext_vascular", markX(ctx.exfExtVascular));
         rep.put("exf_ext_sup", markX(ctx.exfExtSup));
         rep.put("exf_ext_inf", markX(ctx.exfExtInf));
@@ -71,9 +84,14 @@ public class FichaPdfViewModelBuilder implements Serializable {
         rep.put("exf_neuro_sensibilidad", markX(ctx.exfNeuroSensibilidad));
         rep.put("exf_neuro_marcha", markX(ctx.exfNeuroMarcha));
         rep.put("exf_neuro_reflejos", markX(ctx.exfNeuroReflejos));
-        rep.put("obs_examen_fisico", safe(trimToNull(ctx.obsExamenFisico) != null
-                ? trimToNull(ctx.obsExamenFisico)
-                : (ctx.ficha != null ? trimToNull(ctx.ficha.getObsExamenFisicoReg()) : null)));
+    }
+
+    private String resolveObsExamenFisico(FichaPdfViewModelContext ctx) {
+        String observacion = trimToNull(ctx.obsExamenFisico);
+        if (observacion != null) {
+            return observacion;
+        }
+        return ctx.ficha != null ? trimToNull(ctx.ficha.getObsExamenFisicoReg()) : null;
     }
 
     private void cargarDatosCabecera(Map<String, String> rep, FichaPdfViewModelContext ctx) {
@@ -119,6 +137,13 @@ public class FichaPdfViewModelBuilder implements Serializable {
     }
 
     private void cargarCamposDirectosFaltantes(Map<String, String> rep, FichaPdfViewModelContext ctx) {
+        cargarFechasYContexto(rep, ctx);
+        cargarSaludReproductiva(rep, ctx);
+        cargarSignosVitales(rep, ctx);
+        cargarDatosPuestoYTipoEvaluacion(rep, ctx);
+    }
+
+    private void cargarFechasYContexto(Map<String, String> rep, FichaPdfViewModelContext ctx) {
         rep.put("recomendaciones", safe(ctx.recomendaciones));
         rep.put("fechaAtencion", fmtDate(ctx.fechaAtencion));
         rep.put("fecIngreso", fmtDate(ctx.fecIngreso));
@@ -129,6 +154,9 @@ public class FichaPdfViewModelBuilder implements Serializable {
         rep.put("autorizaTransfusion", safe(ctx.autorizaTransfusion));
         rep.put("tratamientoHormonal", safe(ctx.tratamientoHormonal));
         rep.put("tratamientoHormonalCual", safe(ctx.tratamientoHormonalCual));
+    }
+
+    private void cargarSaludReproductiva(Map<String, String> rep, FichaPdfViewModelContext ctx) {
         rep.put("examenReproMasculino", safe(ctx.examenReproMasculino));
         rep.put("tiempoReproMasculino", ctx.tiempoReproMasculino == null ? "" : String.valueOf(ctx.tiempoReproMasculino));
         rep.put("fum", fmtDate(ctx.fum));
@@ -138,6 +166,16 @@ public class FichaPdfViewModelBuilder implements Serializable {
         rep.put("abortos", ctx.abortos == null ? "" : String.valueOf(ctx.abortos));
         rep.put("planificacion", safe(ctx.planificacion));
         rep.put("planificacionCual", safe(ctx.planificacionCual));
+        rep.put("gineco_examen1", safe(ctx.ginecoExamen1));
+        rep.put("gineco_tiempo1", safe(ctx.ginecoTiempo1));
+        rep.put("gineco_resultado1", safe(ctx.ginecoResultado1));
+        rep.put("gineco_examen2", safe(ctx.ginecoExamen2));
+        rep.put("gineco_tiempo2", safe(ctx.ginecoTiempo2));
+        rep.put("gineco_resultado2", safe(ctx.ginecoResultado2));
+        rep.put("gineco_observacion", safe(ctx.ginecoObservacion));
+    }
+
+    private void cargarSignosVitales(Map<String, String> rep, FichaPdfViewModelContext ctx) {
         rep.put("temp", ctx.temp == null ? "" : String.valueOf(ctx.temp));
         rep.put("paStr", safe(ctx.paStr));
         rep.put("fc", ctx.fc == null ? "" : String.valueOf(ctx.fc));
@@ -147,13 +185,9 @@ public class FichaPdfViewModelBuilder implements Serializable {
         rep.put("tallaCm", ctx.tallaCm == null ? "" : String.valueOf(ctx.tallaCm));
         rep.put("imc", ctx.imc == null ? "" : String.valueOf(ctx.imc));
         rep.put("perimetroAbd", ctx.perimetroAbd == null ? "" : String.valueOf(ctx.perimetroAbd));
-        rep.put("gineco_examen1", safe(ctx.ginecoExamen1));
-        rep.put("gineco_tiempo1", safe(ctx.ginecoTiempo1));
-        rep.put("gineco_resultado1", safe(ctx.ginecoResultado1));
-        rep.put("gineco_examen2", safe(ctx.ginecoExamen2));
-        rep.put("gineco_tiempo2", safe(ctx.ginecoTiempo2));
-        rep.put("gineco_resultado2", safe(ctx.ginecoResultado2));
-        rep.put("gineco_observacion", safe(ctx.ginecoObservacion));
+    }
+
+    private void cargarDatosPuestoYTipoEvaluacion(Map<String, String> rep, FichaPdfViewModelContext ctx) {
         if (ctx.fichaRiesgo != null) {
             rep.put("puestoTrabajo", safe(ctx.fichaRiesgo.getPuestoTrabajo()));
         } else {

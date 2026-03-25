@@ -45,80 +45,110 @@ public class CentroMedicoFormInitializer implements Serializable {
 
     public void initDomainDefaults(CentroMedicoCtrl ctrl) {
         FichaOcupacional ficha = new FichaOcupacional();
-        ficha.setNoHistoriaClinica(null);
-        ficha.setInstSistema(ctrl.getStep1().getInstitucion());
-
-        SignosVitales signos = new SignosVitales();
         ConsultaMedica consulta = new ConsultaMedica();
-
-        FichaRiesgo fichaRiesgo = new FichaRiesgo();
-        fichaRiesgo.setFicha(ficha);
-        fichaRiesgo.setEstado("BORRADOR");
-
         ctrl.setFicha(ficha);
-        ctrl.setSignos(signos);
+        ctrl.setSignos(new SignosVitales());
         ctrl.setConsulta(consulta);
-        ctrl.getStep2().setFichaRiesgo(fichaRiesgo);
+        ctrl.getStep2().setFichaRiesgo(buildFichaRiesgo(ficha));
         ctrl.setPersonaAux(new PersonaAux());
-
-        if (ctrl.getStep2().getMedidasPreventivas() == null) {
-            ctrl.getStep2().setMedidasPreventivas(new ArrayList<>());
-        }
-
-        if (ctrl.getEmpleadoSel() != null) {
-            ficha.setEmpleado(ctrl.getEmpleadoSel());
-            consulta.setEmpleado(ctrl.getEmpleadoSel());
-        }
-
-        if (ficha.getRucEstablecimiento() == null || ficha.getRucEstablecimiento().isBlank()) {
-            ficha.setRucEstablecimiento(ctrl.getStep1().getRuc());
-        }
-
-        ficha.setFechaEvaluacion(ctrl.getStep1().getFechaAtencion());
-        ficha.setTipoEvaluacion(ctrl.getStep1().getTipoEval());
-
+        ensureMedidasPreventivas(ctrl);
+        assignEmpleadoIfPresent(ctrl, ficha, consulta);
+        applyFichaDefaultsFromStep1(ctrl, ficha);
         ctrl.setListaDiag(initDefaultDiagnosisRows(6));
     }
 
     public void initStep2Defaults(CentroMedicoCtrl ctrl, List<String> staticRiskCols) {
-        if (ctrl.getFicha() == null) {
-            ctrl.setFicha(new FichaOcupacional());
-        }
-
-        if (ctrl.getStep2().getFichaRiesgo() == null) {
-            FichaRiesgo fichaRiesgo = new FichaRiesgo();
-            fichaRiesgo.setFicha(ctrl.getFicha());
-            fichaRiesgo.setEstado("BORRADOR");
-            ctrl.getStep2().setFichaRiesgo(fichaRiesgo);
-        }
-
+        ensureFichaInitialized(ctrl);
+        ensureFichaRiesgoInitialized(ctrl);
         ctrl.getStep2().getFichaRiesgo().setPuestoTrabajo(ctrl.getFicha().getCiiu());
+        ensureStep2Lists(ctrl);
+        ensureStep2RiskMaps(ctrl);
+        ctrl.getStep2().setRiskCols(staticRiskCols);
+    }
 
-        if (ctrl.getStep2().getActividadesLab() == null) {
-            ctrl.getStep2().setActividadesLab(new ArrayList<>());
-        }
-        while (ctrl.getStep2().getActividadesLab().size() < 7) {
-            ctrl.getStep2().getActividadesLab().add(null);
-        }
+    public void initStep3Defaults(CentroMedicoCtrl ctrl, int hRows, int diagRows) {
+        resetGinecoFields(ctrl);
+        resetExamenFisicoFields(ctrl);
+        initExamenes(ctrl, 5);
+        ensureObsJInitialized(ctrl);
+        initHistoriaLaboralArrays(ctrl, hRows);
+        initConsumoSection(ctrl);
+        initActividadesExtra(ctrl, 3);
+        initActLab(ctrl, hRows);
+        ensureDiagSize(ctrl, diagRows);
+        ensureStep3PersonaAuxState(ctrl);
+    }
 
+    private FichaRiesgo buildFichaRiesgo(FichaOcupacional ficha) {
+        FichaRiesgo fichaRiesgo = new FichaRiesgo();
+        fichaRiesgo.setFicha(ficha);
+        fichaRiesgo.setEstado("BORRADOR");
+        return fichaRiesgo;
+    }
+
+    private void ensureMedidasPreventivas(CentroMedicoCtrl ctrl) {
         if (ctrl.getStep2().getMedidasPreventivas() == null) {
             ctrl.getStep2().setMedidasPreventivas(new ArrayList<>());
         }
-        while (ctrl.getStep2().getMedidasPreventivas().size() < 7) {
-            ctrl.getStep2().getMedidasPreventivas().add(null);
-        }
+    }
 
+    private void assignEmpleadoIfPresent(CentroMedicoCtrl ctrl, FichaOcupacional ficha, ConsultaMedica consulta) {
+        if (ctrl.getEmpleadoSel() == null) {
+            return;
+        }
+        ficha.setEmpleado(ctrl.getEmpleadoSel());
+        consulta.setEmpleado(ctrl.getEmpleadoSel());
+    }
+
+    private void applyFichaDefaultsFromStep1(CentroMedicoCtrl ctrl, FichaOcupacional ficha) {
+        ficha.setNoHistoriaClinica(null);
+        ficha.setInstSistema(ctrl.getStep1().getInstitucion());
+        if (ficha.getRucEstablecimiento() == null || ficha.getRucEstablecimiento().isBlank()) {
+            ficha.setRucEstablecimiento(ctrl.getStep1().getRuc());
+        }
+        ficha.setFechaEvaluacion(ctrl.getStep1().getFechaAtencion());
+        ficha.setTipoEvaluacion(ctrl.getStep1().getTipoEval());
+    }
+
+    private void ensureFichaInitialized(CentroMedicoCtrl ctrl) {
+        if (ctrl.getFicha() == null) {
+            ctrl.setFicha(new FichaOcupacional());
+        }
+    }
+
+    private void ensureFichaRiesgoInitialized(CentroMedicoCtrl ctrl) {
+        if (ctrl.getStep2().getFichaRiesgo() == null) {
+            ctrl.getStep2().setFichaRiesgo(buildFichaRiesgo(ctrl.getFicha()));
+        }
+    }
+
+    private void ensureStep2Lists(CentroMedicoCtrl ctrl) {
+        if (ctrl.getStep2().getActividadesLab() == null) {
+            ctrl.getStep2().setActividadesLab(new ArrayList<>());
+        }
+        if (ctrl.getStep2().getMedidasPreventivas() == null) {
+            ctrl.getStep2().setMedidasPreventivas(new ArrayList<>());
+        }
+        ensureListSize(ctrl.getStep2().getActividadesLab(), 7);
+        ensureListSize(ctrl.getStep2().getMedidasPreventivas(), 7);
+    }
+
+    private void ensureStep2RiskMaps(CentroMedicoCtrl ctrl) {
         if (ctrl.getStep2().getRiesgos() == null) {
             ctrl.getStep2().setRiesgos(new LinkedHashMap<>());
         }
         if (ctrl.getStep2().getOtrosRiesgos() == null) {
             ctrl.getStep2().setOtrosRiesgos(new LinkedHashMap<>());
         }
-
-        ctrl.getStep2().setRiskCols(staticRiskCols);
     }
 
-    public void initStep3Defaults(CentroMedicoCtrl ctrl, int hRows, int diagRows) {
+    private <T> void ensureListSize(List<T> values, int size) {
+        while (values.size() < size) {
+            values.add(null);
+        }
+    }
+
+    private void resetGinecoFields(CentroMedicoCtrl ctrl) {
         ctrl.setGinecoExamen1("");
         ctrl.setGinecoTiempo1("");
         ctrl.setGinecoResultado1("");
@@ -127,7 +157,16 @@ public class CentroMedicoFormInitializer implements Serializable {
         ctrl.setGinecoResultado2("");
         ctrl.setGinecoObservacion("");
         ctrl.setEnfermedadActual("");
+    }
 
+    private void resetExamenFisicoFields(CentroMedicoCtrl ctrl) {
+        resetExamenFisicoCabezaCuello(ctrl);
+        resetExamenFisicoTorso(ctrl);
+        resetExamenFisicoExtremidades(ctrl);
+        ctrl.setObsExamenFisico("");
+    }
+
+    private void resetExamenFisicoCabezaCuello(CentroMedicoCtrl ctrl) {
         ctrl.setExfPielCicatrices("");
         ctrl.setExfOjosParpados("");
         ctrl.setExfOjosConjuntivas("");
@@ -148,6 +187,9 @@ public class CentroMedicoFormInitializer implements Serializable {
         ctrl.setExfNarizSenos("");
         ctrl.setExfCuelloTiroides("");
         ctrl.setExfCuelloMovilidad("");
+    }
+
+    private void resetExamenFisicoTorso(CentroMedicoCtrl ctrl) {
         ctrl.setExfToraxMamas("");
         ctrl.setExfToraxPulmones("");
         ctrl.setExfToraxCorazon("");
@@ -159,6 +201,9 @@ public class CentroMedicoFormInitializer implements Serializable {
         ctrl.setExfColumnaDolor("");
         ctrl.setExfPelvisPelvis("");
         ctrl.setExfPelvisGenitales("");
+    }
+
+    private void resetExamenFisicoExtremidades(CentroMedicoCtrl ctrl) {
         ctrl.setExfExtVascular("");
         ctrl.setExfExtSup("");
         ctrl.setExfExtInf("");
@@ -166,14 +211,15 @@ public class CentroMedicoFormInitializer implements Serializable {
         ctrl.setExfNeuroSensibilidad("");
         ctrl.setExfNeuroMarcha("");
         ctrl.setExfNeuroReflejos("");
-        ctrl.setObsExamenFisico("");
+    }
 
-        initExamenes(ctrl, 5);
-
+    private void ensureObsJInitialized(CentroMedicoCtrl ctrl) {
         if (ctrl.getObsJ() == null) {
             ctrl.setObsJ("");
         }
+    }
 
+    private void initHistoriaLaboralArrays(CentroMedicoCtrl ctrl, int hRows) {
         ctrl.sethCentroTrabajo(new String[hRows]);
         ctrl.sethActividad(new String[hRows]);
         ctrl.sethIncidente(new Boolean[hRows]);
@@ -187,15 +233,15 @@ public class CentroMedicoFormInitializer implements Serializable {
         ctrl.sethFecha(new Date[hRows]);
         ctrl.sethEspecificacion(new String[hRows]);
         ctrl.sethObservacion(new String[hRows]);
+    }
 
+    private void initConsumoSection(CentroMedicoCtrl ctrl) {
         ctrl.setConsOtrasCual(null);
         ctrl.setConsumoVidaCondObs(null);
         initConsumoVidaCond(ctrl, 3);
+    }
 
-        initActividadesExtra(ctrl, 3);
-        initActLab(ctrl, hRows);
-        ensureDiagSize(ctrl, diagRows);
-
+    private void ensureStep3PersonaAuxState(CentroMedicoCtrl ctrl) {
         if (ctrl.getPersonaAux() == null) {
             ctrl.setPersonaAux(new PersonaAux());
         }

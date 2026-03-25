@@ -54,29 +54,13 @@ public class FichaExamenCompService {
         final String usr = (usuario == null || usuario.trim().isEmpty()) ? "SYSTEM" : usuario.trim();
         final Date ahora = new Date();
 
-        // NUEVO
         if (e.getIdFichaExamen() == null) {
-            // si quieres forzar auditoría aquí (aunque tengas @PrePersist)
-            if (e.getfCreacion() == null) {
-                e.setfCreacion(ahora);
-            }
-            if (e.getUsrCreacion() == null || e.getUsrCreacion().trim().isEmpty()) {
-                e.setUsrCreacion(usr);
-            }
-
-            // opcional: limpiar actualización en creación
-            e.setfActualizacion(null);
-            e.setUsrActualizacion(null);
-
+            applyInsertAudit(e, usr, ahora);
             em.persist(e);
-            // em.flush(); // opcional si necesitas el ID inmediato
             return e;
         }
 
-        // EXISTENTE
-        e.setfActualizacion(ahora);
-        e.setUsrActualizacion(usr);
-
+        applyUpdateAudit(e, usr, ahora);
         return em.merge(e);
     }
 
@@ -118,5 +102,21 @@ public class FichaExamenCompService {
         ).setParameter("idFicha", idFicha)
          .setParameter("nroFila", nroFila)
          .executeUpdate();
+    }
+
+    private void applyInsertAudit(FichaExamenComp e, String usr, Date ahora) {
+        if (e.getfCreacion() == null) {
+            e.setfCreacion(ahora);
+        }
+        if (e.getUsrCreacion() == null || e.getUsrCreacion().trim().isEmpty()) {
+            e.setUsrCreacion(usr);
+        }
+        e.setfActualizacion(null);
+        e.setUsrActualizacion(null);
+    }
+
+    private void applyUpdateAudit(FichaExamenComp e, String usr, Date ahora) {
+        e.setfActualizacion(ahora);
+        e.setUsrActualizacion(usr);
     }
 }

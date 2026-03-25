@@ -10,8 +10,8 @@ import ec.gob.igm.rrhh.consultorio.service.Step1FichaService;
 import ec.gob.igm.rrhh.consultorio.web.ctrl.BusinessValidationException;
 import ec.gob.igm.rrhh.consultorio.web.ctrl.CentroMedicoCtrl;
 import ec.gob.igm.rrhh.consultorio.web.mapper.Step1CommandAssembler;
-import ec.gob.igm.rrhh.consultorio.web.service.UserContextService;
 import ec.gob.igm.rrhh.consultorio.web.mapper.Step1ViewDataAssembler;
+import ec.gob.igm.rrhh.consultorio.web.service.UserContextService;
 import jakarta.ejb.EJB;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -43,25 +43,9 @@ public class Step1Facade implements Serializable {
                 cmd.ficha,
                 cmd.personaAux);
 
-        final String user = userContextService.resolveCurrentUser();
-        Step1FichaService.Step1Command command = step1CommandAssembler.toCommand(
-                step1ViewDataAssembler.capture(cmd.source, user));
-
         try {
-            Step1FichaService.Step1Result result = step1FichaService.guardar(command);
-            PacienteRegistrationFacade.UiResult postUiResult = pacienteRegistrationFacade.syncPatientStateAfterStep1(
-                    cmd.permitirIngresoManual,
-                    result.empleadoSel(),
-                    cmd.noPersonaSel,
-                    result.personaAux(),
-                    result.ficha());
-            return new SaveStep1Result(
-                    result.ficha(),
-                    result.empleadoSel(),
-                    result.personaAux(),
-                    result.signos(),
-                    preUiResult,
-                    postUiResult);
+            Step1FichaService.Step1Result result = step1FichaService.guardar(buildServiceCommand(cmd));
+            return buildSaveResult(cmd, preUiResult, result);
         } catch (Step1FichaService.Step1ValidationException ex) {
             throw new BusinessValidationException(ex.getMessage());
         }
@@ -112,5 +96,27 @@ public class Step1Facade implements Serializable {
             this.postUiResult = postUiResult;
         }
     }
-}
 
+    private Step1FichaService.Step1Command buildServiceCommand(SaveStep1Command cmd) {
+        final String user = userContextService.resolveCurrentUser();
+        return step1CommandAssembler.toCommand(step1ViewDataAssembler.capture(cmd.source, user));
+    }
+
+    private SaveStep1Result buildSaveResult(SaveStep1Command cmd,
+                                            PacienteRegistrationFacade.UiResult preUiResult,
+                                            Step1FichaService.Step1Result result) {
+        PacienteRegistrationFacade.UiResult postUiResult = pacienteRegistrationFacade.syncPatientStateAfterStep1(
+                cmd.permitirIngresoManual,
+                result.empleadoSel(),
+                cmd.noPersonaSel,
+                result.personaAux(),
+                result.ficha());
+        return new SaveStep1Result(
+                result.ficha(),
+                result.empleadoSel(),
+                result.personaAux(),
+                result.signos(),
+                preUiResult,
+                postUiResult);
+    }
+}

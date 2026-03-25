@@ -23,6 +23,15 @@ public class PdfCertificadoInputAssembler {
             PdfTemplateEngine pdfTemplateEngine,
             CertificadoPdfTemplateService certificadoPdfTemplateService) {
         CentroMedicoPdfControllerSupport.CapturePdfCertificadoInput input = new CentroMedicoPdfControllerSupport.CapturePdfCertificadoInput();
+        populateCertificadoCore(input, source, verificarFichaCompleta, fechaEmisionSetter, centroMedicoPdfFacade);
+        populatePacienteData(input, source.getStep1FormModel().getPaciente());
+        populateCertificadoTemplateData(input, source, pdfResourceResolver, pdfTemplateEngine, certificadoPdfTemplateService);
+        return input;
+    }
+
+    private void populateCertificadoCore(CentroMedicoPdfControllerSupport.CapturePdfCertificadoInput input,
+            CentroMedicoCtrl source, Supplier<Boolean> verificarFichaCompleta, Consumer<Date> fechaEmisionSetter,
+            CentroMedicoPdfFacade centroMedicoPdfFacade) {
         input.ficha = source.getFicha();
         input.verificarFichaCompleta = verificarFichaCompleta;
         input.fechaEmisionSetter = fechaEmisionSetter;
@@ -37,12 +46,20 @@ public class PdfCertificadoInputAssembler {
         input.noArchivo = source.getNoArchivo();
         input.centroTrabajo = source.getCentroTrabajo();
         input.ciiu = source.getCiiu();
-        PacienteFormData paciente = source.getStep1FormModel().getPaciente();
+    }
+
+    private void populatePacienteData(CentroMedicoPdfControllerSupport.CapturePdfCertificadoInput input,
+            PacienteFormData paciente) {
         input.apellido1 = paciente.getApellido1();
         input.apellido2 = paciente.getApellido2();
         input.nombre1 = paciente.getNombre1();
         input.nombre2 = paciente.getNombre2();
         input.sexo = paciente.getSexo();
+    }
+
+    private void populateCertificadoTemplateData(CentroMedicoPdfControllerSupport.CapturePdfCertificadoInput input,
+            CentroMedicoCtrl source, PdfResourceResolver pdfResourceResolver, PdfTemplateEngine pdfTemplateEngine,
+            CertificadoPdfTemplateService certificadoPdfTemplateService) {
         input.detalleObservaciones = source.getDetalleObservaciones();
         input.recomendaciones = source.getRecomendaciones();
         input.medicoNombre = source.getMedicoNombre();
@@ -50,6 +67,5 @@ public class PdfCertificadoInputAssembler {
         input.pdfResourceResolver = pdfResourceResolver;
         input.pdfTemplateEngine = pdfTemplateEngine;
         input.certificadoPdfTemplateService = certificadoPdfTemplateService;
-        return input;
     }
 }

@@ -9,7 +9,7 @@ import ec.gob.igm.rrhh.consultorio.service.Cie10Service;
 
 @Stateless
 /**
- * Class DiagnosticoDialogService: orquesta la lógica de presentación y flujo web.
+ * Class DiagnosticoDialogService: orquesta la logica de presentacion y flujo web.
  */
 public class DiagnosticoDialogService {
 
@@ -30,32 +30,18 @@ public class DiagnosticoDialogService {
 
         String codigo = trimToEmpty(codigoIngresado).toUpperCase();
         String descripcion = trimToEmpty(descripcionIngresada);
-
         if (codigo.isEmpty() && descripcion.isEmpty()) {
-            row.setCodigo(null);
-            row.setDescripcion(null);
-            row.setCie10(null);
+            clearSelection(row);
             return;
         }
 
-        Cie10 cie = null;
-        if (!codigo.isEmpty()) {
-            cie = cie10Service.buscarPorCodigo(codigo);
-        }
-        if (cie == null && !descripcion.isEmpty()) {
-            cie = cie10Service.buscarPrimeroPorDescripcion(descripcion);
-        }
-
+        Cie10 cie = resolveCie10(codigo, descripcion);
         if (cie != null) {
-            row.setCodigo(cie.getCodigo());
-            row.setDescripcion(cie.getDescripcion());
-            row.setCie10(cie);
+            applyResolvedSelection(row, cie);
             return;
         }
 
-        row.setCodigo(codigo.isEmpty() ? null : codigo);
-        row.setDescripcion(descripcion.isEmpty() ? null : descripcion);
-        row.setCie10(null);
+        applyManualSelection(row, codigo, descripcion);
     }
 
     private String trimToEmpty(String value) {
@@ -63,5 +49,34 @@ public class DiagnosticoDialogService {
     }
 
     public record DiagnosticoDialogState(Integer idx, String codigo, String descripcion) {
+    }
+
+    private void clearSelection(ConsultaDiagnostico row) {
+        row.setCodigo(null);
+        row.setDescripcion(null);
+        row.setCie10(null);
+    }
+
+    private Cie10 resolveCie10(String codigo, String descripcion) {
+        Cie10 cie = null;
+        if (!codigo.isEmpty()) {
+            cie = cie10Service.buscarPorCodigo(codigo);
+        }
+        if (cie == null && !descripcion.isEmpty()) {
+            cie = cie10Service.buscarPrimeroPorDescripcion(descripcion);
+        }
+        return cie;
+    }
+
+    private void applyResolvedSelection(ConsultaDiagnostico row, Cie10 cie) {
+        row.setCodigo(cie.getCodigo());
+        row.setDescripcion(cie.getDescripcion());
+        row.setCie10(cie);
+    }
+
+    private void applyManualSelection(ConsultaDiagnostico row, String codigo, String descripcion) {
+        row.setCodigo(codigo.isEmpty() ? null : codigo);
+        row.setDescripcion(descripcion.isEmpty() ? null : descripcion);
+        row.setCie10(null);
     }
 }

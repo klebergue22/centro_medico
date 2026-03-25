@@ -50,16 +50,6 @@ public class FichaDiagnosticoService {
             return null;
         }
 
-        // Ejemplo si tu PK es Long idFichaDiag:
-        // if (d.getIdFichaDiag() == null) { em.persist(d); return d; }
-        //
-        // Ejemplo si tu PK es Long id:
-        // if (d.getId() == null) { em.persist(d); return d; }
-        //
-        // Ejemplo si tu PK es @EmbeddedId:
-        // if (d.getId() == null) { em.persist(d); return d; }
-        // Como fallback seguro (no ideal): si NO sabes el ID, usa merge siempre
-        // (esto evita error de compilación, pero lo óptimo es ajustar el ID real).
         return em.merge(d);
     }
 
@@ -90,57 +80,60 @@ public class FichaDiagnosticoService {
             throw new IllegalArgumentException("idFicha no puede ser null");
         }
 
-        // 1) Eliminar actuales
         eliminarPorFicha(idFicha);
-
         if (diagnosticos == null || diagnosticos.isEmpty()) {
             return;
         }
 
-        final String usr = (usuario == null || usuario.trim().isEmpty()) ? "SYSTEM" : usuario.trim();
-        final Date now = (fecha != null) ? fecha : new Date();
+        persistDiagnosticos(idFicha, diagnosticos, resolveFecha(fecha), resolveUsuario(usuario));
+        em.flush();
+    }
 
-        // 2) Referencia a la ficha (sin cargar todo)
+    private void persistDiagnosticos(Long idFicha, List<ConsultaDiagnostico> diagnosticos, Date fecha, String usuario) {
         FichaOcupacional fichaRef = em.getReference(FichaOcupacional.class, idFicha);
-
-        // 3) Evitar violación de unique(ID_FICHA, COD_CIE10)
         Set<String> codigosInsertados = new HashSet<>();
         int orden = 1;
 
         for (ConsultaDiagnostico cd : diagnosticos) {
-            if (cd == null) {
+            FichaDiagnostico diagnostico = buildDiagnostico(fichaRef, cd, codigosInsertados, fecha, usuario, orden);
+            if (diagnostico == null) {
                 continue;
             }
+            em.persist(diagnostico);
+            orden++;
+        }
+    }
 
-            // ✅ CORRECTO: el código viene de la relación CIE10, no de cd.getCodigo()
-            String cod = extraerCodigoCie10(cd);
-            if (cod == null) {
-                continue;
-            }
-
-            if (!codigosInsertados.add(cod)) {
-                continue; // repetido
-            }
-
-            FichaDiagnostico fd = new FichaDiagnostico();
-            fd.setFicha(fichaRef);
-
-            // Ajusta según tu entidad:
-            fd.setCodCie10(cod);
-            fd.setDescripcion(extraerDescripcionCie10(cd)); // si tu Cie10 tiene otra propiedad, ajusta aquí
-            fd.setTipoDiag(normalizarTipo(cd.getTipoDiag())); // 'P' / 'S'
-            fd.setOrden(orden++);
-            fd.setEstado("A");
-
-            fd.setFechaCreacion(now);
-            fd.setUsrCreacion(usr);
-            fd.setFechaActualizacion(null);
-            fd.setUsrActualizacion(null);
-
-            em.persist(fd);
+    private FichaDiagnostico buildDiagnostico(FichaOcupacional fichaRef, ConsultaDiagnostico cd,
+            Set<String> codigosInsertados, Date fecha, String usuario, int orden) {
+        if (cd == null) {
+            return null;
+        }
+        String cod = extraerCodigoCie10(cd);
+        if (cod == null || !codigosInsertados.add(cod)) {
+            return null;
         }
 
-        em.flush();
+        FichaDiagnostico fd = new FichaDiagnostico();
+        fd.setFicha(fichaRef);
+        fd.setCodCie10(cod);
+        fd.setDescripcion(extraerDescripcionCie10(cd));
+        fd.setTipoDiag(normalizarTipo(cd.getTipoDiag()));
+        fd.setOrden(orden);
+        fd.setEstado("A");
+        fd.setFechaCreacion(fecha);
+        fd.setUsrCreacion(usuario);
+        fd.setFechaActualizacion(null);
+        fd.setUsrActualizacion(null);
+        return fd;
+    }
+
+    private Date resolveFecha(Date fecha) {
+        return fecha != null ? fecha : new Date();
+    }
+
+    private String resolveUsuario(String usuario) {
+        return (usuario == null || usuario.trim().isEmpty()) ? "SYSTEM" : usuario.trim();
     }
 
     private String extraerCodigoCie10(ConsultaDiagnostico cd) {
@@ -148,10 +141,7 @@ public class FichaDiagnosticoService {
             return null;
         }
 
-        // ✅ Lo más común: Cie10 tiene getCodigo() o getCodCie10()
-        // Cambia SOLO esta línea si tu entidad Cie10 se llama distinto.
         String cod = cd.getCie10().getCodigo();
-
         return safe(cod);
     }
 
@@ -160,10 +150,7 @@ public class FichaDiagnosticoService {
             return null;
         }
 
-        // ✅ Lo más común: Cie10 tiene getDescripcion()
-        // Si tu entidad usa getNombre()/getDetalle(), ajusta aquí.
         String desc = cd.getCie10().getDescripcion();
-
         return safe(desc);
     }
 

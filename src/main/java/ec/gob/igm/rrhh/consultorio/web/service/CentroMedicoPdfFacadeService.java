@@ -35,7 +35,7 @@ import ec.gob.igm.rrhh.consultorio.web.session.PdfSessionStore;
 
 @Stateless
 /**
- * Class CentroMedicoPdfFacadeService: orquesta la lógica de presentación y flujo web.
+ * Class CentroMedicoPdfFacadeService: orquesta la lÃ³gica de presentaciÃ³n y flujo web.
  */
 public class CentroMedicoPdfFacadeService implements Serializable {
 
@@ -87,74 +87,115 @@ public class CentroMedicoPdfFacadeService implements Serializable {
 
     public String construirHtmlDesdePlantilla(CertificadoTemplateCommand cmd) throws IOException {
         String template = cmd.pdfResourceResolver.readPdfTemplate("plantilla_certificado.html");
+        CertificadoPdfTemplateService.CertificadoTemplateData data = buildCertificadoTemplateData(
+                cmd,
+                template,
+                resolveFechaEmision(cmd),
+                buildAptitudChecks(cmd.aptitudSel),
+                buildTipoEvaluacionChecks(resolveTipoEvaluacion(cmd)));
+        return cmd.certificadoPdfTemplateService.construirHtmlDesdePlantilla(data);
+    }
 
-        Date f = (cmd.ficha != null && cmd.ficha.getFechaEmision() != null)
-                ? cmd.ficha.getFechaEmision()
-                : ((cmd.fechaEmision != null) ? cmd.fechaEmision : new Date());
-
-        String aApto = "", aObs = "", aLim = "", aNo = "";
-        if (cmd.aptitudSel != null) {
-            switch (cmd.aptitudSel) {
-                case "APTO":
-                    aApto = "X";
-                    break;
-                case "APTO_EN_OBS":
-                    aObs = "X";
-                    break;
-                case "APTO_LIMIT":
-                    aLim = "X";
-                    break;
-                case "NO_APTO":
-                    aNo = "X";
-                    break;
-                default:
-                    break;
-            }
+    private Date resolveFechaEmision(CertificadoTemplateCommand cmd) {
+        if (cmd.ficha != null && cmd.ficha.getFechaEmision() != null) {
+            return cmd.ficha.getFechaEmision();
         }
+        return cmd.fechaEmision != null ? cmd.fechaEmision : new Date();
+    }
 
+    private String resolveTipoEvaluacion(CertificadoTemplateCommand cmd) {
         String tipoEvaluacion = cmd.tipoEvaluacion;
         if (cmd.tipoEval != null && (tipoEvaluacion == null || tipoEvaluacion.isEmpty())) {
-            tipoEvaluacion = cmd.tipoEval;
+            return cmd.tipoEval;
         }
+        return tipoEvaluacion;
+    }
 
-        String chkIngreso = "", chkPeriodico = "", chkReintegro = "", chkRetiro = "";
-        if (tipoEvaluacion != null) {
-            switch (tipoEvaluacion.toUpperCase()) {
-                case "INGRESO":
-                    chkIngreso = "X";
-                    break;
-                case "PERIODICO":
-                case "PERIÓDICO":
-                    chkPeriodico = "X";
-                    break;
-                case "REINTEGRO":
-                    chkReintegro = "X";
-                    break;
-                case "RETIRO":
-                    chkRetiro = "X";
-                    break;
-                default:
-                    break;
-            }
+    private AptitudChecks buildAptitudChecks(String aptitudSel) {
+        if (aptitudSel == null) {
+            return new AptitudChecks("", "", "", "");
         }
+        switch (aptitudSel) {
+            case "APTO":
+                return new AptitudChecks("X", "", "", "");
+            case "APTO_EN_OBS":
+                return new AptitudChecks("", "X", "", "");
+            case "APTO_LIMIT":
+                return new AptitudChecks("", "", "X", "");
+            case "NO_APTO":
+                return new AptitudChecks("", "", "", "X");
+            default:
+                return new AptitudChecks("", "", "", "");
+        }
+    }
 
+    private TipoEvaluacionChecks buildTipoEvaluacionChecks(String tipoEvaluacion) {
+        if (tipoEvaluacion == null) {
+            return new TipoEvaluacionChecks("", "", "", "");
+        }
+        switch (tipoEvaluacion.toUpperCase()) {
+            case "INGRESO":
+                return new TipoEvaluacionChecks("X", "", "", "");
+            case "PERIODICO":
+            case "PERIÃ“DICO":
+                return new TipoEvaluacionChecks("", "X", "", "");
+            case "REINTEGRO":
+                return new TipoEvaluacionChecks("", "", "X", "");
+            case "RETIRO":
+                return new TipoEvaluacionChecks("", "", "", "X");
+            default:
+                return new TipoEvaluacionChecks("", "", "", "");
+        }
+    }
+
+    private CertificadoPdfTemplateService.CertificadoTemplateData buildCertificadoTemplateData(
+            CertificadoTemplateCommand cmd,
+            String template,
+            Date fechaEmision,
+            AptitudChecks aptitudChecks,
+            TipoEvaluacionChecks tipoEvaluacionChecks) {
         CertificadoPdfTemplateService.CertificadoTemplateData data = new CertificadoPdfTemplateService.CertificadoTemplateData();
         data.template = template;
-        data.fechaEmision = f;
-        data.apto = aApto;
-        data.obs = aObs;
-        data.lim = aLim;
-        data.noApto = aNo;
-        data.chkIngreso = chkIngreso;
-        data.chkPeriodico = chkPeriodico;
-        data.chkReintegro = chkReintegro;
-        data.chkRetiro = chkRetiro;
+        data.fechaEmision = fechaEmision;
+        applyAptitudChecks(data, aptitudChecks);
+        applyTipoEvaluacionChecks(data, tipoEvaluacionChecks);
+        applyBrandingData(cmd, data);
+        applyPacienteData(cmd, data);
+        applyProfesionalData(cmd, data);
+        data.templateEngine = cmd.pdfTemplateEngine;
+        return data;
+    }
+
+    private void applyAptitudChecks(CertificadoPdfTemplateService.CertificadoTemplateData data, AptitudChecks checks) {
+        data.apto = checks.apto;
+        data.obs = checks.obs;
+        data.lim = checks.lim;
+        data.noApto = checks.noApto;
+    }
+
+    private void applyTipoEvaluacionChecks(
+            CertificadoPdfTemplateService.CertificadoTemplateData data,
+            TipoEvaluacionChecks checks) {
+        data.chkIngreso = checks.ingreso;
+        data.chkPeriodico = checks.periodico;
+        data.chkReintegro = checks.reintegro;
+        data.chkRetiro = checks.retiro;
+    }
+
+    private void applyBrandingData(
+            CertificadoTemplateCommand cmd,
+            CertificadoPdfTemplateService.CertificadoTemplateData data) {
         data.logoIgm = cmd.pdfResourceResolver.resolveImageUrl("LOGO_IGM_FULL_COLOR.png");
         data.logoMidena = cmd.pdfResourceResolver.resolveImageUrl("LOGO_MIDENA.png");
         data.institucion = safe(cmd.institucion);
         data.ruc = safe(cmd.ruc);
         data.noHistoria = safe(cmd.noHistoria);
         data.noArchivo = safe(cmd.noArchivo);
+    }
+
+    private void applyPacienteData(
+            CertificadoTemplateCommand cmd,
+            CertificadoPdfTemplateService.CertificadoTemplateData data) {
         data.centroTrabajo = safe(firstNotBlank(
                 cmd.centroTrabajo,
                 cmd.ficha != null ? cmd.ficha.getEstablecimientoCt() : null));
@@ -170,10 +211,13 @@ public class CentroMedicoPdfFacadeService implements Serializable {
         data.sexo = safe(cmd.sexo);
         data.detalleObservaciones = safe(cmd.detalleObservaciones);
         data.recomendaciones = safe(cmd.recomendaciones);
+    }
+
+    private void applyProfesionalData(
+            CertificadoTemplateCommand cmd,
+            CertificadoPdfTemplateService.CertificadoTemplateData data) {
         data.medicoNombre = safe(cmd.medicoNombre);
         data.medicoCodigo = safe(cmd.medicoCodigo);
-        data.templateEngine = cmd.pdfTemplateEngine;
-        return cmd.certificadoPdfTemplateService.construirHtmlDesdePlantilla(data);
     }
 
     private String firstNotBlank(String... values) {
@@ -294,6 +338,34 @@ public class CentroMedicoPdfFacadeService implements Serializable {
         public PdfResourceResolver pdfResourceResolver;
         public PdfTemplateEngine pdfTemplateEngine;
         public CertificadoPdfTemplateService certificadoPdfTemplateService;
+    }
+
+    private static final class AptitudChecks {
+        private final String apto;
+        private final String obs;
+        private final String lim;
+        private final String noApto;
+
+        private AptitudChecks(String apto, String obs, String lim, String noApto) {
+            this.apto = apto;
+            this.obs = obs;
+            this.lim = lim;
+            this.noApto = noApto;
+        }
+    }
+
+    private static final class TipoEvaluacionChecks {
+        private final String ingreso;
+        private final String periodico;
+        private final String reintegro;
+        private final String retiro;
+
+        private TipoEvaluacionChecks(String ingreso, String periodico, String reintegro, String retiro) {
+            this.ingreso = ingreso;
+            this.periodico = periodico;
+            this.reintegro = reintegro;
+            this.retiro = retiro;
+        }
     }
 
     public static class PdfPreviewState {

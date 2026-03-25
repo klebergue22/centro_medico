@@ -153,11 +153,13 @@ public class PdfSectionFacade implements Serializable {
         centroMedicoPdfControllerSupport.showValidationMessage(ctx, summary, errors);
     }
 
-    public CentroMedicoPdfUiCoordinator.PdfUiState cleanupPdfPreviewState(FacesContext ctx, PdfSessionStore pdfSessionStore, String currentToken) {
+    public CentroMedicoPdfUiCoordinator.PdfUiState cleanupPdfPreviewState(FacesContext ctx,
+            PdfSessionStore pdfSessionStore, String currentToken) {
         return centroMedicoPdfUiCoordinator.cleanupPdfPreview(ctx, pdfSessionStore, currentToken);
     }
 
-    public void syncCamposDesdeObjetosInternal(ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoPdfControllerSupport.SyncCamposDesdeObjetosInput input) {
+    public void syncCamposDesdeObjetosInternal(
+            ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoPdfControllerSupport.SyncCamposDesdeObjetosInput input) {
         centroMedicoPdfControllerSupport.syncCamposDesdeObjetosInternal(input);
     }
 
@@ -196,21 +198,9 @@ public class PdfSectionFacade implements Serializable {
                                              List<String> actLabObservaciones,
                                              java.util.Map<String, String> rep) {
         centroMedicoPdfControllerSupport.cargarActividadLaboralArrays(
-                hRows,
-                actLabCentroTrabajo,
-                actLabActividad,
-                actLabTiempo,
-                actLabTrabajoAnterior,
-                actLabTrabajoActual,
-                actLabIncidenteChk,
-                actLabAccidenteChk,
-                actLabEnfermedadChk,
-                iessSi,
-                iessNo,
-                iessFecha,
-                iessEspecificar,
-                actLabObservaciones,
-                rep);
+                hRows, actLabCentroTrabajo, actLabActividad, actLabTiempo, actLabTrabajoAnterior, actLabTrabajoActual,
+                actLabIncidenteChk, actLabAccidenteChk, actLabEnfermedadChk, iessSi, iessNo, iessFecha,
+                iessEspecificar, actLabObservaciones, rep);
     }
 
 }
