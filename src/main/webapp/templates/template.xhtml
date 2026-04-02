@@ -62,6 +62,41 @@
                 onsuccess="try{PF('statusDialog').hide();}catch(e){}"
                 onerror="try{PF('statusDialog').hide();}catch(e){}"/>
 
+
+        <p:dialog id="dlgViewExpiredGlobal"
+                  widgetVar="dlgViewExpiredGlobal"
+                  header="Sesión expirada"
+                  modal="true"
+                  closable="true"
+                  resizable="false"
+                  draggable="false"
+                  appendTo="@(body)"
+                  width="520">
+            <h:panelGroup layout="block" style="display:flex; gap:12px; align-items:flex-start;">
+                <i class="pi pi-shield" style="font-size:2rem; color:#b71c1c; margin-top:.15rem;"></i>
+                <h:panelGroup layout="block">
+                    <h:outputText value="La sesión expiró por tiempo de inactividad." style="display:block; font-weight:700; margin-bottom:.35rem;"/>
+                    <h:outputText value="Por seguridad se abrió una vista nueva. Revise los datos y continúe." style="display:block;"/>
+                </h:panelGroup>
+            </h:panelGroup>
+            <f:facet name="footer">
+                <p:button value="Ir al inicio" icon="pi pi-home" outcome="/index.xhtml"/>
+            </f:facet>
+        </p:dialog>
+
+        <h:panelGroup rendered="#{not empty param.expiredView}">
+            <h:outputScript>
+                $(function(){
+                    if (PF('dlgCedula')) {
+                        PF('dlgCedula').hide();
+                    }
+                    if (PF('dlgViewExpiredGlobal')) {
+                        PF('dlgViewExpiredGlobal').show();
+                    }
+                });
+            </h:outputScript>
+        </h:panelGroup>
+
         <ui:insert name="dialogs"/>
 
         <ui:insert name="footer-scripts"/>
