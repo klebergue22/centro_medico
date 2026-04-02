@@ -268,6 +268,35 @@
             </h:form>
         </p:dialog>
 
+
+        <p:dialog id="dlgViewExpired"
+                  widgetVar="dlgViewExpired"
+                  header="Sesión expirada"
+                  modal="true"
+                  closable="true"
+                  resizable="false"
+                  draggable="false"
+                  appendTo="@(body)"
+                  width="520">
+            <h:panelGroup layout="block">
+                <p>La página expiró por tiempo de inactividad.</p>
+                <p>Recargue y continúe desde una vista actualizada.</p>
+            </h:panelGroup>
+            <f:facet name="footer">
+                <p:button value="Ir al inicio" icon="pi pi-home" outcome="/index.xhtml"/>
+            </f:facet>
+        </p:dialog>
+
+        <h:panelGroup rendered="#{not empty param.expiredView}">
+            <h:outputScript>
+                $(function(){
+                    if (PF('dlgViewExpired')) {
+                        PF('dlgViewExpired').show();
+                    }
+                });
+            </h:outputScript>
+        </h:panelGroup>
+
     </ui:define>
 
 </ui:composition>
