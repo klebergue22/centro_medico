@@ -31,4 +31,9 @@
     <welcome-file>index.jsf</welcome-file>
   </welcome-file-list>
 
+  <error-page>
+    <exception-type>jakarta.faces.application.ViewExpiredException</exception-type>
+    <location>/viewExpired.xhtml</location>
+  </error-page>
+
 </web-app>
