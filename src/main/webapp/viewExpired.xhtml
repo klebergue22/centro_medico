@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/templates/template.xhtml">
+
+    <ui:define name="title">Sesión expirada</ui:define>
+
+    <ui:define name="content">
+        <h:form>
+            <p:panel header="Sesión expirada" style="margin-top:10px; max-width:700px;">
+                <p>La vista que intentó usar ya no está disponible porque su sesión expiró o la página quedó desactualizada.</p>
+                <p>Por favor, regrese al inicio y vuelva a abrir el módulo.</p>
+                <p>Tiempo de expiración configurado: <strong>30 minutos de inactividad</strong>.</p>
+
+                <p:separator/>
+
+                <p:button value="Ir al inicio" icon="pi pi-home" outcome="/index.xhtml"/>
+            </p:panel>
+        </h:form>
+    </ui:define>
+
+</ui:composition>
