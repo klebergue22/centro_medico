@@ -35,9 +35,6 @@
     <session-timeout>30</session-timeout>
   </session-config>
 
-  <error-page>
-    <exception-type>jakarta.faces.application.ViewExpiredException</exception-type>
-    <location>/viewExpired.xhtml</location>
-  </error-page>
+
 
 </web-app>

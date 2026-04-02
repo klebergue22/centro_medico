@@ -12,4 +12,8 @@
         </locale-config>
     </application>
 
+    <factory>
+        <exception-handler-factory>ec.gob.igm.rrhh.consultorio.web.jsf.ViewExpiredExceptionHandlerFactory</exception-handler-factory>
+    </factory>
+
 </faces-config>
