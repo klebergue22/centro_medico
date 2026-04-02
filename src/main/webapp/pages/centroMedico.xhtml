@@ -16,7 +16,7 @@
 
 
         <p:remoteCommand name="rcAutoOpenCedulaDlg"
-                         autoRun="true"
+                         autoRun="#{empty param.expiredView}"
                          process="@this"
                          actionListener="#{centroMedicoCtrl.consumirAutoOpenCedulaDlg}"
                          oncomplete="if (args.openCedulaDlg === true) {
@@ -267,6 +267,9 @@
                                  }"/>
             </h:form>
         </p:dialog>
+
+
+
 
     </ui:define>
 
