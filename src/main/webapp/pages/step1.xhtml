@@ -28,7 +28,10 @@
                                  value="#{centroMedicoCtrl.ficha.ciiu}"
                                  rows="2"
                                  autoResize="false"
-                                 maxlength="250"/>
+                                 maxlength="250">
+                    <p:ajax event="keyup" process="@this" update="puestoTrabajoCiuoB"/>
+                    <p:ajax event="blur" process="@this" update="puestoTrabajoCiuoB"/>
+                </p:inputTextarea>
             </h:panelGroup>
 
             <h:outputLabel value="Centro de trabajo"/>
