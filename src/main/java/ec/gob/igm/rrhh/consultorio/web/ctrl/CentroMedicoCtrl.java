@@ -352,6 +352,7 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
 
         pacienteSectionFacade.applyPacienteUiResult(this, result.preUiResult);
         setFicha(result.ficha);
+        syncPuestoTrabajoRiesgoFromFicha(result.ficha);
         setEmpleadoSel(result.empleadoSel);
         setPersonaAux(result.personaAux);
         setSignos(result.signos);
@@ -370,6 +371,16 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
                 wizardViewState.getActiveStep(),
                 getNoPersonaSel(),
                 getCedulaBusqueda()));
+    }
+
+    private void syncPuestoTrabajoRiesgoFromFicha(FichaOcupacional fichaActualizada) {
+        if (step2FormModel.getFichaRiesgo() == null || fichaActualizada == null) {
+            return;
+        }
+        String ciiu = fichaActualizada.getCiiu();
+        if (ciiu != null && !ciiu.trim().isEmpty()) {
+            step2FormModel.getFichaRiesgo().setPuestoTrabajo(ciiu);
+        }
     }
 
     private void saveStep2() {
