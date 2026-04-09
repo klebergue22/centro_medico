@@ -12,6 +12,7 @@ import ec.gob.igm.rrhh.consultorio.domain.model.SignosVitales;
 import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoValidationCoordinator.FichaCompletaValidationInput;
 import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoValidationCoordinator.Step1ValidationInput;
 import jakarta.ejb.Stateless;
+import org.hibernate.Hibernate;
 
 @Stateless
 public class StepValidationInputAssembler {
@@ -77,10 +78,30 @@ public class StepValidationInputAssembler {
         input.peso = peso;
         input.tallaCm = tallaCm;
         input.signos = signos;
-        input.puestoTrabajoCiuo = fichaRiesgo != null && fichaRiesgo.getFicha() != null
-                ? fichaRiesgo.getFicha().getCiiu()
-                : null;
+        input.puestoTrabajoCiuo = resolvePuestoTrabajoCiuo(fichaRiesgo);
         input.fichaRiesgo = fichaRiesgo;
+    }
+
+    private String resolvePuestoTrabajoCiuo(FichaRiesgo fichaRiesgo) {
+        if (fichaRiesgo == null) {
+            return null;
+        }
+
+        String puestoTrabajo = fichaRiesgo.getPuestoTrabajo();
+        if (!isBlank(puestoTrabajo)) {
+            return puestoTrabajo;
+        }
+
+        FichaOcupacional ficha = fichaRiesgo.getFicha();
+        if (ficha == null || !Hibernate.isInitialized(ficha)) {
+            return null;
+        }
+
+        return ficha.getCiiu();
+    }
+
+    private boolean isBlank(String value) {
+        return value == null || value.trim().isEmpty();
     }
 
     private void populatePatientStep1Fields(Step1ValidationInput input, DatEmpleado empleadoSel, Integer noPersonaSel,
