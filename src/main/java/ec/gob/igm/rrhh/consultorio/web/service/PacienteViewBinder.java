@@ -59,7 +59,14 @@ public class PacienteViewBinder implements Serializable {
     }
 
     public PacienteUiPatch forGeneralFlow(PacienteUiFlowCoordinator.UiFlowResult result) {
-        return basePatch(result);
+        return basePatch(result)
+                .apellido1(result.getApellido1())
+                .apellido2(result.getApellido2())
+                .nombre1(result.getNombre1())
+                .nombre2(result.getNombre2())
+                .sexo(result.getSexo())
+                .fechaNacimiento(result.getFechaNacimiento())
+                .edad(result.getEdad());
     }
 
     private PacienteUiPatch basePatch(PacienteUiFlowCoordinator.UiFlowResult result) {
