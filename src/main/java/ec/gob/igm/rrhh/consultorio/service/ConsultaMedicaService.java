@@ -20,6 +20,18 @@ public class ConsultaMedicaService {
         Date ahora = new Date();
         String usr = (usuario == null || usuario.isBlank()) ? "SISTEMA" : usuario;
 
+        if (consulta.getIdConsulta() != null) {
+            ConsultaMedica actual = em.find(ConsultaMedica.class, consulta.getIdConsulta());
+            if (actual == null) {
+                // Cuando llega una entidad "detached" con id inválido, Hibernate puede lanzar
+                // OptimisticLockException en merge; tratamos el caso como un alta nueva.
+                consulta.setIdConsulta(null);
+            } else {
+                consulta.setFechaCreacion(actual.getFechaCreacion());
+                consulta.setUsrCreacion(actual.getUsrCreacion());
+            }
+        }
+
         if (consulta.getIdConsulta() == null) {
             consulta.setFechaCreacion(ahora);
             consulta.setUsrCreacion(usr);
