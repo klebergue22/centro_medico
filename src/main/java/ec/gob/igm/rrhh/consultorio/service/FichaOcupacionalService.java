@@ -119,7 +119,7 @@ public class FichaOcupacionalService {
         String jpql = """
             SELECT new ec.gob.igm.rrhh.consultorio.domain.dto.HistorialFichaCertificadoDTO(
                 f.idFicha,
-                COALESCE(e.noCedula, p.cedula),
+                COALESCE(e.noCedula, p.cedula, f.noHistoriaClinica, f.noArchivo),
                 CASE
                     WHEN e.noPersona IS NOT NULL THEN CONCAT(CONCAT(COALESCE(e.priApellido, ''), ' '), CONCAT(COALESCE(e.segApellido, ''), CONCAT(' ', COALESCE(e.nombres, ''))))
                     WHEN p.idPersonaAux IS NOT NULL THEN CONCAT(COALESCE(p.apellidos, ''), CONCAT(' ', COALESCE(p.nombres, '')))
@@ -133,9 +133,10 @@ public class FichaOcupacionalService {
             FROM FichaOcupacional f
             LEFT JOIN f.empleado e
             LEFT JOIN f.personaAux p
-            WHERE (e.noCedula = :cedula OR p.cedula = :cedula)
-              AND f.fechaEvaluacion IS NOT NULL
-              AND f.fechaEmision IS NOT NULL
+            WHERE e.noCedula = :cedula
+               OR p.cedula = :cedula
+               OR f.noHistoriaClinica = :cedula
+               OR f.noArchivo = :cedula
             ORDER BY COALESCE(f.fechaActualizacion, f.fechaCreacion, f.fechaEvaluacion) DESC, f.idFicha DESC
         """;
 
