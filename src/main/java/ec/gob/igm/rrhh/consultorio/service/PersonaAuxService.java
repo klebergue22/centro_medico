@@ -70,6 +70,30 @@ public class PersonaAuxService {
         return lst.isEmpty() ? null : lst.get(0);
     }
 
+    public PersonaAux findByCedulaConFichaYCertificado(String cedula) {
+        assertEm();
+
+        if (cedula == null) return null;
+
+        String c = cedula.trim();
+        if (c.isEmpty()) return null;
+
+        List<PersonaAux> lst = em.createQuery(
+                        "SELECT DISTINCT p " +
+                        "FROM PersonaAux p " +
+                        "JOIN FichaOcupacional f ON f.personaAux = p " +
+                        "WHERE p.cedula = :ced " +
+                        "  AND f.fechaEmision IS NOT NULL " +
+                        "  AND UPPER(COALESCE(f.estado, '')) <> 'BORRADOR' " +
+                        "ORDER BY COALESCE(f.fechaActualizacion, f.fechaCreacion, f.fechaEvaluacion) DESC, f.idFicha DESC",
+                        PersonaAux.class)
+                .setParameter("ced", c)
+                .setMaxResults(1)
+                .getResultList();
+
+        return lst.isEmpty() ? null : lst.get(0);
+    }
+
     public List<PersonaAux> listarPendientes() {
         assertEm();
         return em.createNamedQuery("PersonaAux.findPendientes", PersonaAux.class)

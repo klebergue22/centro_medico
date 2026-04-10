@@ -9,6 +9,7 @@ import ec.gob.igm.rrhh.consultorio.domain.model.FichaOcupacional;
 import ec.gob.igm.rrhh.consultorio.domain.model.PersonaAux;
 import ec.gob.igm.rrhh.consultorio.service.EmpleadoRhService;
 import ec.gob.igm.rrhh.consultorio.service.EmpleadoService;
+import ec.gob.igm.rrhh.consultorio.service.PersonaAuxService;
 import ec.gob.igm.rrhh.consultorio.web.util.SnUtils;
 import jakarta.ejb.EJB;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -27,6 +28,9 @@ public class CedulaSearchService implements Serializable {
     @EJB
     private EmpleadoRhService empleadoRhService;
 
+    @EJB
+    private PersonaAuxService personaAuxService;
+
     public CedulaSearchResult search(String cedulaBusqueda, FichaOcupacional ficha, PersonaAux personaAux) {
         final String cedula = normalizeCedulaOrThrow(cedulaBusqueda);
 
@@ -38,6 +42,11 @@ public class CedulaSearchService implements Serializable {
 
         if (emp != null) {
             return buildFoundResult(cedula, emp, fichaSafe, personaAuxSafe);
+        }
+
+        PersonaAux personaAuxEncontrada = personaAuxService.findByCedulaConFichaYCertificado(cedula);
+        if (personaAuxEncontrada != null) {
+            return buildFoundPersonaAuxResult(cedula, fichaSafe, personaAuxEncontrada);
         }
 
         return buildManualResult(cedula, fichaSafe, personaAuxSafe);
@@ -105,6 +114,28 @@ public class CedulaSearchService implements Serializable {
         ficha.setNoArchivo(cedula);
 
         return CedulaSearchResult.manual(cedula, ficha, personaAux);
+    }
+
+    private CedulaSearchResult buildFoundPersonaAuxResult(String cedula, FichaOcupacional ficha, PersonaAux personaAux) {
+        ficha.setNoHistoriaClinica(cedula);
+        ficha.setNoArchivo(cedula);
+        ficha.setEmpleado(null);
+        ficha.setPersonaAux(personaAux);
+
+        return CedulaSearchResult.found(
+                cedula,
+                ficha,
+                personaAux,
+                null,
+                null,
+                personaAux.getApellido1(),
+                personaAux.getApellido2(),
+                personaAux.getNombre1(),
+                personaAux.getNombre2(),
+                personaAux.getSexo(),
+                personaAux.getFechaNac(),
+                calcularEdad(personaAux.getFechaNac())
+        );
     }
 
     private int calcularEdad(Date fechaNac) {

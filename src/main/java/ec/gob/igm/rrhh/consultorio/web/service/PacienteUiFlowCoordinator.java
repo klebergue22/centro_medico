@@ -102,14 +102,31 @@ public class PacienteUiFlowCoordinator implements Serializable {
 
     private void applyFoundSearchResult(UiFlowResult.Builder builder,
             CedulaSearchService.CedulaSearchResult searchResult) {
-        builder.permitirIngresoManual(false).personaAux(null).ficha(clearPersonaAux(searchResult.getFicha()));
-        PacienteFichaStateService.PatientState state = pacienteFichaStateService.ensureEmpleadoSelEnViewScope(
-                false, searchResult.getEmpleadoSel(), searchResult.getNoPersonaSel(), searchResult.getFicha(), null);
-        builder.fromPatientState(state);
+        if (searchResult.getEmpleadoSel() != null) {
+            builder.permitirIngresoManual(false).personaAux(null).ficha(clearPersonaAux(searchResult.getFicha()));
+            PacienteFichaStateService.PatientState state = pacienteFichaStateService.ensureEmpleadoSelEnViewScope(
+                    false, searchResult.getEmpleadoSel(), searchResult.getNoPersonaSel(), searchResult.getFicha(), null);
+            builder.fromPatientState(state);
 
-        CedulaSearchService.CargoLookupResult cargo = cedulaSearchService.lookupCargo(searchResult.getCedula());
-        String cargoDescripcion = resolveCargoDescripcion(cargo, state.getFicha());
-        builder.cargoDescripcion(cargoDescripcion).cargoNoEncontrado(!cargo.isEmptyCedula() && !cargo.isFound());
+            CedulaSearchService.CargoLookupResult cargo = cedulaSearchService.lookupCargo(searchResult.getCedula());
+            String cargoDescripcion = resolveCargoDescripcion(cargo, state.getFicha());
+            builder.cargoDescripcion(cargoDescripcion).cargoNoEncontrado(!cargo.isEmptyCedula() && !cargo.isFound());
+            return;
+        }
+
+        FichaOcupacional ficha = searchResult.getFicha();
+        if (ficha != null) {
+            ficha.setEmpleado(null);
+            ficha.setPersonaAux(searchResult.getPersonaAux());
+            ficha.setCiiu(null);
+        }
+        builder.permitirIngresoManual(true)
+                .empleadoSel(null)
+                .noPersonaSel(null)
+                .personaAux(searchResult.getPersonaAux())
+                .ficha(ficha)
+                .cargoDescripcion(null)
+                .cargoNoEncontrado(false);
     }
 
     public UiFlowResult syncPatientStateAfterStep1(boolean permitirIngresoManual, DatEmpleado empleadoSel,
