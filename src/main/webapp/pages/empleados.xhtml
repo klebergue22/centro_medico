@@ -74,9 +74,14 @@
                 <p:rowToggler expandedIcon="pi pi-eye-slash" collapsedIcon="pi pi-eye"/>
             </p:column>
 
-            <p:column headerText="Acciones" style="width:220px" exportable="false" filterable="false">
+            <p:column headerText="Acciones" style="width:320px" exportable="false" filterable="false">
 
-                <p:commandButton value="Editar" icon="pi pi-pencil" styleClass="p-button-text"
+                <p:button value="Nueva atención" icon="pi pi-plus" styleClass="p-button-text"
+                          outcome="/pages/centroMedico">
+                    <f:param name="noPersona" value="#{e.noPersona}"/>
+                </p:button>
+
+                <p:commandButton value="Editar" icon="pi pi-pencil" styleClass="p-button-text p-ml-2"
                                  process="@this"
                                  update=":dialogZone"
                                  onstart="PF('statusDialog').show()"

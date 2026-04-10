@@ -30,6 +30,7 @@ import ec.gob.igm.rrhh.consultorio.domain.model.FichaOcupacional;
 import ec.gob.igm.rrhh.consultorio.domain.model.FichaRiesgo;
 import ec.gob.igm.rrhh.consultorio.domain.model.PersonaAux;
 import ec.gob.igm.rrhh.consultorio.domain.model.SignosVitales;
+import ec.gob.igm.rrhh.consultorio.service.EmpleadoService;
 import ec.gob.igm.rrhh.consultorio.web.facade.CentroMedicoPdfFacade;
 import ec.gob.igm.rrhh.consultorio.web.facade.CentroMedicoWizardCoordinator;
 import ec.gob.igm.rrhh.consultorio.web.jsf.CentroMedicoMessageService;
@@ -131,6 +132,9 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     private transient CentroMedicoReactiveUiService reactiveUiService;
 
     @Inject
+    private transient EmpleadoService empleadoService;
+
+    @Inject
     private transient Step3CommandAssembler step3CommandAssembler;
     @Inject
     private transient StepValidationInputAssembler stepValidationInputAssembler;
@@ -206,18 +210,20 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
         centroMedicoFormInitializer.initStep2Defaults(this, STATIC_RISK_COLS);
         centroMedicoFormInitializer.initStep3Defaults(this, H_ROWS, DIAG_ROWS);
         centroMedicoFormStateService.prepareStep3Collections(this, H_ROWS, DIAG_ROWS, 5);
-        inicializarModoEdicionDesdeParametro();
+        if (!inicializarModoEdicionDesdeParametro()) {
+            inicializarNuevaAtencionDesdeParametros();
+        }
     }
 
-    private void inicializarModoEdicionDesdeParametro() {
+    private boolean inicializarModoEdicionDesdeParametro() {
         FacesContext ctx = FacesContext.getCurrentInstance();
         if (ctx == null) {
-            return;
+            return false;
         }
 
         String idFichaRaw = ctx.getExternalContext().getRequestParameterMap().get("idFicha");
         if (idFichaRaw == null || idFichaRaw.trim().isEmpty()) {
-            return;
+            return false;
         }
 
         Long idFicha;
@@ -225,13 +231,13 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
             idFicha = Long.valueOf(idFichaRaw.trim());
         } catch (NumberFormatException ex) {
             messageService.warn("El parámetro idFicha no es válido.");
-            return;
+            return false;
         }
 
         FichaOcupacional fichaEdit = wizardSectionFacade.recargarFicha(idFicha);
         if (fichaEdit == null) {
             messageService.warn("No se encontró la ficha solicitada para edición.");
-            return;
+            return false;
         }
 
         setFicha(fichaEdit);
@@ -242,6 +248,42 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
         setMostrarDlgCedula(false);
         wizardViewState.setCedulaDlgAutoOpened(true);
         syncPatientStateFromFicha();
+        return true;
+    }
+
+    private void inicializarNuevaAtencionDesdeParametros() {
+        FacesContext ctx = FacesContext.getCurrentInstance();
+        if (ctx == null) {
+            return;
+        }
+
+        Map<String, String> params = ctx.getExternalContext().getRequestParameterMap();
+        Integer noPersona = parseInteger(params.get("noPersona"));
+        if (noPersona == null) {
+            return;
+        }
+
+        DatEmpleado empleado = empleadoService.buscarPorId(noPersona);
+        if (empleado == null) {
+            messageService.warn("No se encontró el empleado para iniciar la nueva atención.");
+            return;
+        }
+
+        setEmpleadoSel(empleado);
+        setNoPersonaSel(empleado.getNoPersona());
+        setCedulaBusqueda(empleado.getNoCedula());
+        syncPatientStateFromFicha();
+    }
+
+    private Integer parseInteger(String raw) {
+        if (raw == null || raw.trim().isEmpty()) {
+            return null;
+        }
+        try {
+            return Integer.valueOf(raw.trim());
+        } catch (NumberFormatException ex) {
+            return null;
+        }
     }
 
     private String resolveCedulaBusqueda(FichaOcupacional fichaEdit) {
