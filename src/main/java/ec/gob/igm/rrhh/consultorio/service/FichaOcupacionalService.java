@@ -122,7 +122,8 @@ public class FichaOcupacionalService {
                 COALESCE(e.noCedula, p.cedula),
                 CASE
                     WHEN e.noPersona IS NOT NULL THEN CONCAT(CONCAT(COALESCE(e.priApellido, ''), ' '), CONCAT(COALESCE(e.segApellido, ''), CONCAT(' ', COALESCE(e.nombres, ''))))
-                    ELSE CONCAT(COALESCE(p.apellidos, ''), CONCAT(' ', COALESCE(p.nombres, '')))
+                    WHEN p.idPersonaAux IS NOT NULL THEN CONCAT(COALESCE(p.apellidos, ''), CONCAT(' ', COALESCE(p.nombres, '')))
+                    ELSE 'SIN NOMBRE REGISTRADO'
                 END,
                 f.fechaEvaluacion,
                 f.fechaEmision,
@@ -132,7 +133,9 @@ public class FichaOcupacionalService {
             FROM FichaOcupacional f
             LEFT JOIN f.empleado e
             LEFT JOIN f.personaAux p
-            WHERE COALESCE(e.noCedula, p.cedula) = :cedula
+            WHERE (e.noCedula = :cedula OR p.cedula = :cedula)
+              AND f.fechaEvaluacion IS NOT NULL
+              AND f.fechaEmision IS NOT NULL
             ORDER BY COALESCE(f.fechaActualizacion, f.fechaCreacion, f.fechaEvaluacion) DESC, f.idFicha DESC
         """;
 
