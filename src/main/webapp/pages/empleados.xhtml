@@ -41,7 +41,7 @@
 
 
         <p:dataTable id="tbl" value="#{empleadosController.lista}" var="e"
-                     rowKey="#{e.noPersona}"
+                     rowKey="#{not empty e.noPersona ? e.noPersona : e.hashCode()}"
                      widgetVar="tblWV" paginator="true" rows="20"
                      rowsPerPageTemplate="10,20,50,100"
                      emptyMessage="Sin resultados" filterEvent="keyup" filterDelay="400">
