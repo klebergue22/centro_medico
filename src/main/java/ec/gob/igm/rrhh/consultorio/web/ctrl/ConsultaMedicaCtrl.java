@@ -3,6 +3,8 @@ package ec.gob.igm.rrhh.consultorio.web.ctrl;
 import ec.gob.igm.rrhh.consultorio.domain.model.ConsultaDiagnostico;
 import ec.gob.igm.rrhh.consultorio.domain.model.ConsultaMedica;
 import ec.gob.igm.rrhh.consultorio.domain.model.DatEmpleado;
+import ec.gob.igm.rrhh.consultorio.domain.model.RecetaItem;
+import ec.gob.igm.rrhh.consultorio.domain.model.RecetaMedica;
 import ec.gob.igm.rrhh.consultorio.domain.model.SignosVitales;
 import ec.gob.igm.rrhh.consultorio.service.Cie10Service;
 import ec.gob.igm.rrhh.consultorio.service.ConsultaMedicaService;
@@ -57,7 +59,7 @@ public class ConsultaMedicaCtrl implements Serializable {
     private DatEmpleado empleado;
     private ConsultaMedica consulta;
     private List<ConsultaDiagnostico> diagnosticos;
-    private List<RecetaItem> recetas;
+    private List<RecetaItemForm> recetas;
     private Date vigenciaReceta;
     private String recomendaciones;
     private String signosAlarma;
@@ -121,7 +123,7 @@ public class ConsultaMedicaCtrl implements Serializable {
     }
 
     public void agregarReceta() {
-        recetas.add(new RecetaItem());
+        recetas.add(new RecetaItemForm());
     }
 
     public void eliminarReceta(int index) {
@@ -148,6 +150,7 @@ public class ConsultaMedicaCtrl implements Serializable {
 
         normalizarTipoDiagnostico(limpios);
         consulta.setDiagnosticos(limpios);
+        consulta.setRecetas(construirRecetasParaPersistencia());
         persistirAlergiasEmpleado();
         persistirSignosVitales();
         consultaMedicaService.guardar(consulta, "WEB");
@@ -284,6 +287,56 @@ public class ConsultaMedicaCtrl implements Serializable {
         } catch (NumberFormatException ignored) {
             // se conserva el texto ingresado por el usuario en paStr
         }
+    }
+
+    private List<RecetaMedica> construirRecetasParaPersistencia() {
+        List<RecetaItem> items = new ArrayList<>();
+        for (RecetaItemForm fila : recetas) {
+            if (fila == null || isBlank(fila.getMedicamento())) {
+                continue;
+            }
+            RecetaItem item = new RecetaItem();
+            item.setMedicamento(fila.getMedicamento().trim());
+            item.setDosis(normalizarTexto(fila.getDosis()));
+            item.setFrecuencia(normalizarTexto(fila.getFrecuencia()));
+            item.setVia(normalizarTexto(fila.getVia()));
+            item.setDuracionDias(fila.getDuracionDias());
+            item.setIndicaciones(normalizarTexto(fila.getIndicaciones()));
+            item.setEstado("ACTIVO");
+            items.add(item);
+        }
+        if (items.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        RecetaMedica recetaMedica = new RecetaMedica();
+        recetaMedica.setConsulta(consulta);
+        recetaMedica.setFechaEmision(vigenciaReceta != null ? vigenciaReceta : consulta.getFechaConsulta());
+        recetaMedica.setIndicaciones(construirIndicacionesRecetaCabecera());
+        recetaMedica.setEstado("ACTIVA");
+
+        for (RecetaItem item : items) {
+            item.setReceta(recetaMedica);
+        }
+        recetaMedica.setItems(items);
+
+        List<RecetaMedica> resultado = new ArrayList<>();
+        resultado.add(recetaMedica);
+        return resultado;
+    }
+
+    private String construirIndicacionesRecetaCabecera() {
+        StringBuilder sb = new StringBuilder();
+        if (!isBlank(recomendaciones)) {
+            sb.append("Recomendaciones no farmacológicas: ").append(recomendaciones.trim());
+        }
+        if (!isBlank(signosAlarma)) {
+            if (sb.length() > 0) {
+                sb.append(" | ");
+            }
+            sb.append("Signos de alarma: ").append(signosAlarma.trim());
+        }
+        return sb.toString();
     }
 
     public List<String> completarDiagnosticoCodigo(String query) {
@@ -478,12 +531,16 @@ public class ConsultaMedicaCtrl implements Serializable {
     }
 
     private String construirColumnaReceta(String fecha, String nombrePaciente, String cedula, String edad, String fechaVigencia) {
+        String sexo = empleado != null && empleado.getSexo() != null ? empleado.getSexo().getDescripcion() : "";
         StringBuilder sb = new StringBuilder();
         sb.append("<div class='panel'>")
                 .append("<div class='row'>QUITO,").append(escape(fecha)).append("</div>")
                 .append("<div class='row'><b>Paciente:</b> ").append(escape(nombrePaciente)).append("</div>")
                 .append("<div class='row'><b>Cédula:</b> ").append(escape(cedula)).append("</div>")
+                .append("<div class='row'><b>Sexo:</b> ").append(escape(sexo)).append("</div>")
                 .append("<div class='row'><b>Edad:</b> ").append(escape(edad)).append("</div>")
+                .append("<div class='row'><b>Motivo consulta:</b> ").append(escape(consulta.getMotivoConsulta())).append("</div>")
+                .append("<div class='row'><b>Enfermedad actual:</b> ").append(escape(consulta.getEnfermedadActual())).append("</div>")
                 .append("<div class='titulo'>DIAGNÓSTICO</div>");
 
         int count = 1;
@@ -500,16 +557,18 @@ public class ConsultaMedicaCtrl implements Serializable {
         sb.append("<div class='titulo'>Antecedente de Alergias:</div>")
                 .append("<div class='row'>").append(escape(resolveAlergiasTexto())).append("</div>")
                 .append("<div class='titulo'>Vigencia del pedido hasta el : ").append(escape(fechaVigencia)).append("</div>")
-                .append("<table><thead><tr><th>Código RP.</th><th>Medicamento e indicaciones</th><th>Cantidad</th></tr></thead><tbody>");
+                .append("<table><thead><tr><th>Medicamento</th><th>Dosis</th><th>Frecuencia</th><th>Vía</th><th>Días</th><th>Indicaciones</th></tr></thead><tbody>");
 
-        for (RecetaItem item : recetas) {
-            if (item == null || isBlank(item.getNombreMedicamento())) {
+        for (RecetaItemForm item : recetas) {
+            if (item == null || isBlank(item.getMedicamento())) {
                 continue;
             }
-            sb.append("<tr><td>").append(escape(item.getCodigo())).append("</td><td>")
-                    .append(escape(item.getNombreMedicamento())).append("<br/><span class='small'>")
-                    .append(escape(item.getIndicaciones())).append("</span></td><td>")
-                    .append(escape(item.getCantidad())).append("</td></tr>");
+            sb.append("<tr><td>").append(escape(item.getMedicamento())).append("</td><td>")
+                    .append(escape(item.getDosis())).append("</td><td>")
+                    .append(escape(item.getFrecuencia())).append("</td><td>")
+                    .append(escape(item.getVia())).append("</td><td>")
+                    .append(item.getDuracionDias() == null ? "" : item.getDuracionDias()).append("</td><td>")
+                    .append(escape(item.getIndicaciones())).append("</td></tr>");
         }
 
         sb.append("</tbody></table>")
@@ -608,6 +667,14 @@ public class ConsultaMedicaCtrl implements Serializable {
         return value == null || value.trim().isEmpty();
     }
 
+    private String normalizarTexto(String value) {
+        if (value == null) {
+            return null;
+        }
+        String trimmed = value.trim();
+        return trimmed.isEmpty() ? null : trimmed;
+    }
+
     private String escape(String text) {
         if (text == null) {
             return "";
@@ -638,7 +705,7 @@ public class ConsultaMedicaCtrl implements Serializable {
     public DatEmpleado getEmpleado() { return empleado; }
     public ConsultaMedica getConsulta() { return consulta; }
     public List<ConsultaDiagnostico> getDiagnosticos() { return diagnosticos; }
-    public List<RecetaItem> getRecetas() { return recetas; }
+    public List<RecetaItemForm> getRecetas() { return recetas; }
     public Date getVigenciaReceta() { return vigenciaReceta; }
     public void setVigenciaReceta(Date vigenciaReceta) { this.vigenciaReceta = vigenciaReceta; }
     public String getRecomendaciones() { return recomendaciones; }
@@ -672,20 +739,26 @@ public class ConsultaMedicaCtrl implements Serializable {
         signosModel.setTallaM(tallaCm.divide(BigDecimal.valueOf(100), 2, java.math.RoundingMode.HALF_UP));
     }
 
-    public static class RecetaItem implements Serializable {
-        private String codigo;
-        private String nombreMedicamento;
+    public static class RecetaItemForm implements Serializable {
+        private String medicamento;
+        private String dosis;
+        private String frecuencia;
+        private String via;
+        private Integer duracionDias;
         private String indicaciones;
-        private String cantidad;
 
-        public String getCodigo() { return codigo; }
-        public void setCodigo(String codigo) { this.codigo = codigo; }
-        public String getNombreMedicamento() { return nombreMedicamento; }
-        public void setNombreMedicamento(String nombreMedicamento) { this.nombreMedicamento = nombreMedicamento; }
+        public String getMedicamento() { return medicamento; }
+        public void setMedicamento(String medicamento) { this.medicamento = medicamento; }
+        public String getDosis() { return dosis; }
+        public void setDosis(String dosis) { this.dosis = dosis; }
+        public String getFrecuencia() { return frecuencia; }
+        public void setFrecuencia(String frecuencia) { this.frecuencia = frecuencia; }
+        public String getVia() { return via; }
+        public void setVia(String via) { this.via = via; }
+        public Integer getDuracionDias() { return duracionDias; }
+        public void setDuracionDias(Integer duracionDias) { this.duracionDias = duracionDias; }
         public String getIndicaciones() { return indicaciones; }
         public void setIndicaciones(String indicaciones) { this.indicaciones = indicaciones; }
-        public String getCantidad() { return cantidad; }
-        public void setCantidad(String cantidad) { this.cantidad = cantidad; }
     }
 
     public boolean isGenerarCertificado() { return generarCertificado; }

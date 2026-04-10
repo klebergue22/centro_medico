@@ -27,10 +27,16 @@
                         <h:outputText value="#{consultaMedicaCtrl.empleado.nombreC}"/>
                         <h:outputText value="Fecha nacimiento:" style="font-weight:bold;"/>
                         <p:calendar value="#{consultaMedicaCtrl.fechaNacimientoPaciente}" pattern="dd/MM/yyyy" showOn="button"/>
+                        <h:outputText value="Sexo:" style="font-weight:bold;"/>
+                        <p:inputText value="#{consultaMedicaCtrl.empleado.sexo.descripcion}" readonly="true"/>
                         <h:outputText value="Edad:" style="font-weight:bold;"/>
                         <h:outputText value="#{consultaMedicaCtrl.edadPaciente}"/>
                         <h:outputText value="Fecha consulta:" style="font-weight:bold;"/>
                         <p:calendar value="#{consultaMedicaCtrl.consulta.fechaConsulta}" pattern="dd/MM/yyyy" showOn="button"/>
+                        <h:outputText value="Motivo de consulta:" style="font-weight:bold;"/>
+                        <p:inputTextarea value="#{consultaMedicaCtrl.consulta.motivoConsulta}" rows="2" autoResize="false" style="width:100%"/>
+                        <h:outputText value="Enfermedad actual:" style="font-weight:bold;"/>
+                        <p:inputTextarea value="#{consultaMedicaCtrl.consulta.enfermedadActual}" rows="3" autoResize="false" style="width:100%"/>
                         <h:outputText value="Médico:" style="font-weight:bold;"/>
                         <p:inputText value="#{consultaMedicaCtrl.consulta.medicoNombre}"/>
                         <h:outputText value="Código médico:" style="font-weight:bold;"/>
@@ -111,10 +117,12 @@
 
                 <p:commandButton value="Agregar medicina" icon="pi pi-plus" actionListener="#{consultaMedicaCtrl.agregarReceta}" update="recTbl"/>
                 <p:dataTable id="recTbl" var="rec" value="#{consultaMedicaCtrl.recetas}" rowIndexVar="idx" style="margin-top:8px;">
-                    <p:column headerText="Código (opcional)"><p:inputText value="#{rec.codigo}"/></p:column>
-                    <p:column headerText="Medicamento"><p:inputText value="#{rec.nombreMedicamento}" style="width:100%"/></p:column>
-                    <p:column headerText="Indicaciones"><p:inputTextarea value="#{rec.indicaciones}" autoResize="false" rows="2"/></p:column>
-                    <p:column headerText="Cantidad"><p:inputText value="#{rec.cantidad}"/></p:column>
+                    <p:column headerText="Medicamento"><p:inputText value="#{rec.medicamento}" style="width:100%"/></p:column>
+                    <p:column headerText="Dosis"><p:inputText value="#{rec.dosis}" style="width:100%"/></p:column>
+                    <p:column headerText="Frecuencia"><p:inputText value="#{rec.frecuencia}" style="width:100%"/></p:column>
+                    <p:column headerText="Vía"><p:inputText value="#{rec.via}" style="width:100%"/></p:column>
+                    <p:column headerText="Duración (días)"><p:inputNumber value="#{rec.duracionDias}" decimalPlaces="0"/></p:column>
+                    <p:column headerText="Indicaciones"><p:inputTextarea value="#{rec.indicaciones}" autoResize="false" rows="2" style="width:100%"/></p:column>
                     <p:column headerText="Acción" style="width:80px;">
                         <p:commandButton icon="pi pi-trash" actionListener="#{consultaMedicaCtrl.eliminarReceta(idx)}" update="recTbl" process="@this"/>
                     </p:column>
