@@ -6,6 +6,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.PersistenceException;
 import java.util.Date;
+import java.util.List;
 
 @Stateless
 /**
@@ -46,6 +47,38 @@ public class AuditoriaConsultorioService {
             return auditoria;
         }
         return em.merge(auditoria);
+    }
+
+
+
+    public List<AuditoriaConsultorio> listarPorFicha(Long idFicha) {
+        if (idFicha == null) {
+            return List.of();
+        }
+
+        return em.createQuery("""
+                SELECT a
+                FROM AuditoriaConsultorio a
+                WHERE a.pkValor = :pk
+                   OR a.observaciones LIKE :likePk
+                ORDER BY a.fecha DESC, a.id DESC
+                """, AuditoriaConsultorio.class)
+                .setParameter("pk", String.valueOf(idFicha))
+                .setParameter("likePk", "%ID_FICHA=" + idFicha + "%")
+                .getResultList();
+    }
+
+    public AuditoriaConsultorio registrarRegeneracionDocumento(String usuario, Long idFicha, String documento, String cedula) {
+        AuditoriaConsultorio auditoria = buildAuditoria(
+                "CENTRO_MEDICO",
+                nvl(usuario, "USR_APP"),
+                "REGENERAR_" + nvl(documento, "DOCUMENTO").toUpperCase(),
+                "FICHA_OCUPACIONAL",
+                "ID_FICHA",
+                "Regeneración de " + nvl(documento, "documento") + " para cédula " + nvl(cedula, "N/D")
+        );
+        auditoria.setPkValor(idFicha != null ? String.valueOf(idFicha) : null);
+        return guardar(auditoria);
     }
 
     private void assertEntityManager() {
