@@ -133,10 +133,10 @@ public class FichaOcupacionalService {
             FROM FichaOcupacional f
             LEFT JOIN f.empleado e
             LEFT JOIN f.personaAux p
-            WHERE e.noCedula = :cedula
+            WHERE (e.noCedula = :cedula
                OR p.cedula = :cedula
                OR f.noHistoriaClinica = :cedula
-               OR f.noArchivo = :cedula
+               OR f.noArchivo = :cedula)
             ORDER BY COALESCE(f.fechaActualizacion, f.fechaCreacion, f.fechaEvaluacion) DESC, f.idFicha DESC
         """;
 
