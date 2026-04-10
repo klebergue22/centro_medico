@@ -24,6 +24,7 @@ import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.Period;
+import java.time.format.TextStyle;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Date;
@@ -62,9 +63,18 @@ public class ConsultaMedicaCtrl implements Serializable {
     private String signosAlarma;
     private String alergias;
     private String tokenPdf;
+    private String tokenPdfCertificado;
     private Date fechaNacimientoPaciente;
     private SignosVitales signosModel;
     private String paStr;
+    private boolean generarCertificado;
+    private Date certFechaInicio;
+    private Date certFechaFin;
+    private String certFechaInicioLetras;
+    private String certFechaFinLetras;
+    private String certDomicilio;
+    private String certTelefono;
+    private String certTipoContingencia;
 
     @PostConstruct
     public void init() {
@@ -76,6 +86,7 @@ public class ConsultaMedicaCtrl implements Serializable {
         recetas = new ArrayList<>();
         vigenciaReceta = new Date();
         signosModel = new SignosVitales();
+        certTipoContingencia = "MEDICO";
         agregarDiagnostico();
         agregarReceta();
     }
@@ -393,12 +404,50 @@ public class ConsultaMedicaCtrl implements Serializable {
         addMessage(FacesMessage.SEVERITY_INFO, "PDF generado", "Ya puede visualizar o descargar la receta.");
     }
 
+    public void prepararDialogoCertificado() {
+        if (consulta.getEmpleado() == null) {
+            addMessage(FacesMessage.SEVERITY_WARN, "Paciente requerido", "Busque un paciente antes de generar certificado.");
+            return;
+        }
+        if (certFechaInicio == null) {
+            certFechaInicio = consulta.getFechaConsulta() != null ? consulta.getFechaConsulta() : new Date();
+        }
+        if (certFechaFin == null) {
+            certFechaFin = certFechaInicio;
+        }
+        if (isBlank(certFechaInicioLetras) && certFechaInicio != null) {
+            certFechaInicioLetras = fechaEnLetras(certFechaInicio);
+        }
+        if (isBlank(certFechaFinLetras) && certFechaFin != null) {
+            certFechaFinLetras = fechaEnLetras(certFechaFin);
+        }
+        if (isBlank(certTipoContingencia)) {
+            certTipoContingencia = "MEDICO";
+        }
+    }
+
+    public void generarPdfCertificado() {
+        if (consulta.getEmpleado() == null) {
+            addMessage(FacesMessage.SEVERITY_ERROR, "Paciente requerido", "Busque un paciente para generar el certificado.");
+            return;
+        }
+        if (certFechaInicio == null || certFechaFin == null) {
+            addMessage(FacesMessage.SEVERITY_ERROR, "Fechas requeridas", "Ingrese fecha inicio y fin para el certificado.");
+            return;
+        }
+        String html = construirHtmlCertificado();
+        tokenPdfCertificado = centroMedicoPdfFacade.generarDesdeHtml(html, "CERT_MED_");
+        addMessage(FacesMessage.SEVERITY_INFO, "Certificado generado", "Ya puede visualizar o descargar el certificado.");
+    }
+
     public String getPdfUrl() {
-        return tokenPdf == null ? null : FacesContext.getCurrentInstance().getExternalContext().getRequestContextPath() + "/pdf?token=" + tokenPdf;
+        String token = tokenPdfCertificado != null ? tokenPdfCertificado : tokenPdf;
+        return token == null ? null : FacesContext.getCurrentInstance().getExternalContext().getRequestContextPath() + "/pdf?token=" + token;
     }
 
     public String getPdfDownloadUrl() {
-        return tokenPdf == null ? null : FacesContext.getCurrentInstance().getExternalContext().getRequestContextPath() + "/pdf?download=1&amp;token=" + tokenPdf;
+        String token = tokenPdfCertificado != null ? tokenPdfCertificado : tokenPdf;
+        return token == null ? null : FacesContext.getCurrentInstance().getExternalContext().getRequestContextPath() + "/pdf?download=1&amp;token=" + token;
     }
 
     private String construirHtmlReceta() {
@@ -476,6 +525,40 @@ public class ConsultaMedicaCtrl implements Serializable {
         return sb.toString();
     }
 
+    private String construirHtmlCertificado() {
+        String nombrePaciente = empleado.getNombreC() == null ? "" : empleado.getNombreC();
+        String cedula = empleado.getNoCedula() == null ? "" : empleado.getNoCedula();
+        String fechaInicioNum = formatDate(certFechaInicio).replace("/", "-");
+        String fechaFinNum = formatDate(certFechaFin).replace("/", "-");
+        String fechaInicioTxt = isBlank(certFechaInicioLetras) ? fechaEnLetras(certFechaInicio) : certFechaInicioLetras;
+        String fechaFinTxt = isBlank(certFechaFinLetras) ? fechaEnLetras(certFechaFin) : certFechaFinLetras;
+
+        StringBuilder html = new StringBuilder();
+        html.append("<!DOCTYPE html><html><head><meta charset='UTF-8'/>")
+                .append("<style>")
+                .append("body{font-family:Arial,sans-serif;font-size:15px;line-height:1.35;margin:48px;color:#1f2937;}")
+                .append(".titulo{text-align:center;font-size:42px;font-weight:700;margin:20px 0 30px 0;}")
+                .append(".hl{background:#fff176;padding:0 3px;}")
+                .append(".lbl{font-weight:700;}")
+                .append("</style></head><body>")
+                .append("<div class='titulo'>CERTIFICADO MEDICO</div>")
+                .append("<p>EL MEDICO CERTIFICA:</p>")
+                .append("<p>El señor(a) <span class='hl'>").append(escape(nombrePaciente)).append("</span> con Cédula de Ciudadanía ")
+                .append("<span class='hl'>").append(escape(cedula)).append("</span>, presenta diagnóstico: ")
+                .append("<span class='hl'>").append(escape(getDiagnosticoPrincipal())).append("</span>; por lo que requiere reposo médico absoluto.</p>")
+                .append("<p>Desde ").append(escape(fechaInicioNum)).append(" (").append(escape(fechaInicioTxt)).append(").<br/>")
+                .append("Hasta ").append(escape(fechaFinNum)).append(" (").append(escape(fechaFinTxt)).append(").</p>")
+                .append("<p><span class='lbl'>Domicilio del paciente:</span> ").append(escape(certDomicilio)).append("<br/>")
+                .append("<span class='lbl'>Teléfono de contacto:</span> ").append(escape(certTelefono)).append("<br/>")
+                .append("<span class='lbl'>Tipo de contingencia:</span> ").append(escape(certTipoContingencia)).append("</p>")
+                .append("<p style='margin-top:40px;'>")
+                .append("Quito DM, ").append(escape(fechaEnLetras(consulta.getFechaConsulta() != null ? consulta.getFechaConsulta() : new Date()))).append(".</p>")
+                .append("<p style='margin-top:80px;'>").append(escape(consulta.getMedicoNombre())).append("<br/>")
+                .append(escape(consulta.getMedicoCodigo())).append("</p>")
+                .append("</body></html>");
+        return html.toString();
+    }
+
     private String formatDate(Date date) {
         if (date == null) {
             return "";
@@ -490,6 +573,35 @@ public class ConsultaMedicaCtrl implements Serializable {
         LocalDate fn = Instant.ofEpochMilli(nacimiento.getTime()).atZone(ZoneId.systemDefault()).toLocalDate();
         int years = Period.between(fn, LocalDate.now()).getYears();
         return years + " Años";
+    }
+
+    private String fechaEnLetras(Date date) {
+        if (date == null) {
+            return "";
+        }
+        LocalDate local = Instant.ofEpochMilli(date.getTime()).atZone(ZoneId.systemDefault()).toLocalDate();
+        String mes = local.getMonth().getDisplayName(TextStyle.FULL, new java.util.Locale("es", "EC"));
+        return local.getDayOfMonth() + " de " + mes + " de " + local.getYear();
+    }
+
+    public void onFechaInicioSelect() {
+        certFechaInicioLetras = fechaEnLetras(certFechaInicio);
+    }
+
+    public void onFechaFinSelect() {
+        certFechaFinLetras = fechaEnLetras(certFechaFin);
+    }
+
+    public String getDiagnosticoPrincipal() {
+        if (diagnosticos == null) {
+            return "";
+        }
+        for (ConsultaDiagnostico d : diagnosticos) {
+            if (d != null && (!isBlank(d.getCodigo()) || !isBlank(d.getDescripcion()))) {
+                return (d.getCodigo() == null ? "" : d.getCodigo() + " ") + (d.getDescripcion() == null ? "" : d.getDescripcion());
+            }
+        }
+        return "";
     }
 
     private boolean isBlank(String value) {
@@ -575,4 +687,21 @@ public class ConsultaMedicaCtrl implements Serializable {
         public String getCantidad() { return cantidad; }
         public void setCantidad(String cantidad) { this.cantidad = cantidad; }
     }
+
+    public boolean isGenerarCertificado() { return generarCertificado; }
+    public void setGenerarCertificado(boolean generarCertificado) { this.generarCertificado = generarCertificado; }
+    public Date getCertFechaInicio() { return certFechaInicio; }
+    public void setCertFechaInicio(Date certFechaInicio) { this.certFechaInicio = certFechaInicio; }
+    public Date getCertFechaFin() { return certFechaFin; }
+    public void setCertFechaFin(Date certFechaFin) { this.certFechaFin = certFechaFin; }
+    public String getCertFechaInicioLetras() { return certFechaInicioLetras; }
+    public void setCertFechaInicioLetras(String certFechaInicioLetras) { this.certFechaInicioLetras = certFechaInicioLetras; }
+    public String getCertFechaFinLetras() { return certFechaFinLetras; }
+    public void setCertFechaFinLetras(String certFechaFinLetras) { this.certFechaFinLetras = certFechaFinLetras; }
+    public String getCertDomicilio() { return certDomicilio; }
+    public void setCertDomicilio(String certDomicilio) { this.certDomicilio = certDomicilio; }
+    public String getCertTelefono() { return certTelefono; }
+    public void setCertTelefono(String certTelefono) { this.certTelefono = certTelefono; }
+    public String getCertTipoContingencia() { return certTipoContingencia; }
+    public void setCertTipoContingencia(String certTipoContingencia) { this.certTipoContingencia = certTipoContingencia; }
 }

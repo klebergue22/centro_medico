@@ -132,6 +132,14 @@
                 <p:toolbarGroup>
                     <p:commandButton value="Guardar consulta" icon="pi pi-save" actionListener="#{consultaMedicaCtrl.guardarConsulta}" update="growl"/>
                     <p:commandButton value="Generar PDF" icon="pi pi-file-pdf" actionListener="#{consultaMedicaCtrl.generarPdfReceta}" update="growl pdfPanel" styleClass="ui-button-warning"/>
+                    <p:selectBooleanCheckbox id="chkCert" value="#{consultaMedicaCtrl.generarCertificado}" itemLabel="Generar certificado médico opcional" style="margin-left:10px;"/>
+                    <p:commandButton value="Datos certificado"
+                                     icon="pi pi-id-card"
+                                     process="@this"
+                                     disabled="#{not consultaMedicaCtrl.generarCertificado}"
+                                     actionListener="#{consultaMedicaCtrl.prepararDialogoCertificado}"
+                                     update="certDialog growl"
+                                     oncomplete="PF('certDialogWv').show();"/>
                 </p:toolbarGroup>
             </p:toolbar>
 
@@ -139,8 +147,44 @@
                 <h:panelGroup layout="block" style="margin-bottom:8px;">
                     <h:outputLink value="#{consultaMedicaCtrl.pdfDownloadUrl}" target="_blank">Descargar PDF</h:outputLink>
                 </h:panelGroup>
-                <iframe src="#{consultaMedicaCtrl.pdfUrl}" style="width:100%;height:550px;border:1px solid #ccc;"></iframe>
+                <object data="#{consultaMedicaCtrl.pdfUrl}" type="application/pdf" style="width:100%;height:550px;border:1px solid #ccc;">
+                    <p>Su navegador no soporta vista previa embebida. Use el enlace de descarga.</p>
+                </object>
             </p:outputPanel>
+
+            <p:dialog id="certDialog" widgetVar="certDialogWv" header="Certificado médico" modal="true" width="760" appendTo="@(body)" resizable="false">
+                <h:panelGrid columns="2" styleClass="ui-fluid" columnClasses="col-12 md:col-4,col-12 md:col-8" cellpadding="6">
+                    <h:outputText value="Paciente"/>
+                    <p:inputText value="#{consultaMedicaCtrl.empleado.nombreC}" readonly="true"/>
+                    <h:outputText value="Diagnóstico"/>
+                    <p:inputText value="#{consultaMedicaCtrl.diagnosticoPrincipal}" readonly="true"/>
+                    <h:outputText value="Fecha inicio (números)"/>
+                    <p:calendar value="#{consultaMedicaCtrl.certFechaInicio}" pattern="dd/MM/yyyy" showOn="button">
+                        <p:ajax event="dateSelect" listener="#{consultaMedicaCtrl.onFechaInicioSelect}" update="certDialog"/>
+                    </p:calendar>
+                    <h:outputText value="Fecha inicio (letras)"/>
+                    <p:inputText value="#{consultaMedicaCtrl.certFechaInicioLetras}"/>
+                    <h:outputText value="Fecha fin (números)"/>
+                    <p:calendar value="#{consultaMedicaCtrl.certFechaFin}" pattern="dd/MM/yyyy" showOn="button">
+                        <p:ajax event="dateSelect" listener="#{consultaMedicaCtrl.onFechaFinSelect}" update="certDialog"/>
+                    </p:calendar>
+                    <h:outputText value="Fecha fin (letras)"/>
+                    <p:inputText value="#{consultaMedicaCtrl.certFechaFinLetras}"/>
+                    <h:outputText value="Domicilio"/>
+                    <p:inputTextarea value="#{consultaMedicaCtrl.certDomicilio}" rows="2" autoResize="false"/>
+                    <h:outputText value="Teléfono contacto"/>
+                    <p:inputText value="#{consultaMedicaCtrl.certTelefono}"/>
+                    <h:outputText value="Tipo de contingencia"/>
+                    <p:inputText value="#{consultaMedicaCtrl.certTipoContingencia}" placeholder="MEDICO"/>
+                </h:panelGrid>
+                <f:facet name="footer">
+                    <p:commandButton value="Generar certificado PDF"
+                                     icon="pi pi-file-pdf"
+                                     actionListener="#{consultaMedicaCtrl.generarPdfCertificado}"
+                                     update="pdfPanel growl"
+                                     oncomplete="PF('certDialogWv').hide();"/>
+                </f:facet>
+            </p:dialog>
 
         </h:form>
         <h:outputScript target="body">
