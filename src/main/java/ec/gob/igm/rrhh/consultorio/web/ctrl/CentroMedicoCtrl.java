@@ -7,6 +7,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 
 import jakarta.annotation.PostConstruct;
 import jakarta.faces.application.FacesMessage;
@@ -205,6 +206,55 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
         centroMedicoFormInitializer.initStep2Defaults(this, STATIC_RISK_COLS);
         centroMedicoFormInitializer.initStep3Defaults(this, H_ROWS, DIAG_ROWS);
         centroMedicoFormStateService.prepareStep3Collections(this, H_ROWS, DIAG_ROWS, 5);
+        inicializarModoEdicionDesdeParametro();
+    }
+
+    private void inicializarModoEdicionDesdeParametro() {
+        FacesContext ctx = FacesContext.getCurrentInstance();
+        if (ctx == null) {
+            return;
+        }
+
+        String idFichaRaw = ctx.getExternalContext().getRequestParameterMap().get("idFicha");
+        if (idFichaRaw == null || idFichaRaw.trim().isEmpty()) {
+            return;
+        }
+
+        Long idFicha;
+        try {
+            idFicha = Long.valueOf(idFichaRaw.trim());
+        } catch (NumberFormatException ex) {
+            messageService.warn("El parámetro idFicha no es válido.");
+            return;
+        }
+
+        FichaOcupacional fichaEdit = wizardSectionFacade.recargarFicha(idFicha);
+        if (fichaEdit == null) {
+            messageService.warn("No se encontró la ficha solicitada para edición.");
+            return;
+        }
+
+        setFicha(fichaEdit);
+        setEmpleadoSel(fichaEdit.getEmpleado());
+        setNoPersonaSel(fichaEdit.getEmpleado() != null ? fichaEdit.getEmpleado().getNoPersona() : null);
+        setPersonaAux(Objects.requireNonNullElseGet(fichaEdit.getPersonaAux(), PersonaAux::new));
+        setCedulaBusqueda(resolveCedulaBusqueda(fichaEdit));
+        setMostrarDlgCedula(false);
+        wizardViewState.setCedulaDlgAutoOpened(true);
+        syncPatientStateFromFicha();
+    }
+
+    private String resolveCedulaBusqueda(FichaOcupacional fichaEdit) {
+        if (fichaEdit == null) {
+            return null;
+        }
+        if (fichaEdit.getEmpleado() != null && fichaEdit.getEmpleado().getNoCedula() != null) {
+            return fichaEdit.getEmpleado().getNoCedula();
+        }
+        if (fichaEdit.getPersonaAux() != null) {
+            return fichaEdit.getPersonaAux().getCedula();
+        }
+        return null;
     }
 
     // =========================
