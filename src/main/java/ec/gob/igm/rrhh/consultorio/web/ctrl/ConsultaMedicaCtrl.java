@@ -58,6 +58,7 @@ public class ConsultaMedicaCtrl implements Serializable {
     private Date vigenciaReceta;
     private String recomendaciones;
     private String signosAlarma;
+    private String alergias;
     private String tokenPdf;
     private Date fechaNacimientoPaciente;
     private SignosVitales signosModel;
@@ -89,6 +90,7 @@ public class ConsultaMedicaCtrl implements Serializable {
         }
         consulta.setEmpleado(empleado);
         fechaNacimientoPaciente = empleado.getfNacimiento();
+        alergias = empleado.getAlergia();
         addMessage(FacesMessage.SEVERITY_INFO, "Paciente cargado", empleado.getNombreC());
     }
 
@@ -137,10 +139,45 @@ public class ConsultaMedicaCtrl implements Serializable {
             limpios.add(d);
         }
 
+        normalizarTipoDiagnostico(limpios);
         consulta.setDiagnosticos(limpios);
+        persistirAlergiasEmpleado();
         persistirSignosVitales();
         consultaMedicaService.guardar(consulta, "WEB");
         addMessage(FacesMessage.SEVERITY_INFO, "Consulta guardada", "Se registró la consulta médica.");
+    }
+
+    private void normalizarTipoDiagnostico(List<ConsultaDiagnostico> lista) {
+        if (lista == null || lista.isEmpty()) {
+            return;
+        }
+        boolean principalAsignado = false;
+        for (ConsultaDiagnostico d : lista) {
+            if (d == null) {
+                continue;
+            }
+            if (!principalAsignado) {
+                d.setTipoDiag("P");
+                principalAsignado = true;
+            } else {
+                d.setTipoDiag("S");
+            }
+        }
+    }
+
+    private void persistirAlergiasEmpleado() {
+        if (empleado == null) {
+            return;
+        }
+        String alergiasNormalizadas = alergias == null ? null : alergias.trim();
+        if (alergiasNormalizadas != null && alergiasNormalizadas.isEmpty()) {
+            alergiasNormalizadas = null;
+        }
+        if (java.util.Objects.equals(empleado.getAlergia(), alergiasNormalizadas)) {
+            return;
+        }
+        empleado.setAlergia(alergiasNormalizadas);
+        empleadoService.guardar(empleado);
     }
 
     private void persistirSignosVitales() {
@@ -357,7 +394,7 @@ public class ConsultaMedicaCtrl implements Serializable {
         }
 
         sb.append("<div class='titulo'>Antecedente de Alergias:</div>")
-                .append("<div class='row'>").append(escape(consulta.getEmpleado().getAlergia())).append("</div>")
+                .append("<div class='row'>").append(escape(resolveAlergiasTexto())).append("</div>")
                 .append("<div class='titulo'>Vigencia del pedido hasta el : ").append(escape(fechaVigencia)).append("</div>")
                 .append("<table><thead><tr><th>Código RP.</th><th>Medicamento e indicaciones</th><th>Cantidad</th></tr></thead><tbody>");
 
@@ -419,6 +456,16 @@ public class ConsultaMedicaCtrl implements Serializable {
         FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(severity, summary, detail));
     }
 
+    private String resolveAlergiasTexto() {
+        if (!isBlank(alergias)) {
+            return alergias;
+        }
+        if (consulta != null && consulta.getEmpleado() != null && !isBlank(consulta.getEmpleado().getAlergia())) {
+            return consulta.getEmpleado().getAlergia();
+        }
+        return "SIN REGISTRO";
+    }
+
     public String getCedulaBusqueda() { return cedulaBusqueda; }
     public void setCedulaBusqueda(String cedulaBusqueda) { this.cedulaBusqueda = cedulaBusqueda; }
     public DatEmpleado getEmpleado() { return empleado; }
@@ -431,6 +478,8 @@ public class ConsultaMedicaCtrl implements Serializable {
     public void setRecomendaciones(String recomendaciones) { this.recomendaciones = recomendaciones; }
     public String getSignosAlarma() { return signosAlarma; }
     public void setSignosAlarma(String signosAlarma) { this.signosAlarma = signosAlarma; }
+    public String getAlergias() { return alergias; }
+    public void setAlergias(String alergias) { this.alergias = alergias; }
     public Date getFechaNacimientoPaciente() { return fechaNacimientoPaciente; }
     public void setFechaNacimientoPaciente(Date fechaNacimientoPaciente) { this.fechaNacimientoPaciente = fechaNacimientoPaciente; }
     public String getEdadPaciente() { return calcularEdadTexto(fechaNacimientoPaciente); }

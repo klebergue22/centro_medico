@@ -35,6 +35,8 @@
                         <p:inputText value="#{consultaMedicaCtrl.consulta.medicoNombre}"/>
                         <h:outputText value="Código médico:" style="font-weight:bold;"/>
                         <p:inputText value="#{consultaMedicaCtrl.consulta.medicoCodigo}"/>
+                        <h:outputText value="Antecedente de alergias:" style="font-weight:bold;"/>
+                        <p:inputTextarea value="#{consultaMedicaCtrl.alergias}" rows="2" autoResize="false" style="width:100%"/>
                     </h:panelGrid>
                 </p:outputPanel>
             </p:panel>
