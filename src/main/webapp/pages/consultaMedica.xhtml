@@ -25,6 +25,10 @@
                     <h:panelGrid columns="2" cellpadding="4" rendered="#{not empty consultaMedicaCtrl.empleado}">
                         <h:outputText value="Paciente:" style="font-weight:bold;"/>
                         <h:outputText value="#{consultaMedicaCtrl.empleado.nombreC}"/>
+                        <h:outputText value="Fecha nacimiento:" style="font-weight:bold;"/>
+                        <p:calendar value="#{consultaMedicaCtrl.fechaNacimientoPaciente}" pattern="dd/MM/yyyy" showOn="button"/>
+                        <h:outputText value="Edad:" style="font-weight:bold;"/>
+                        <h:outputText value="#{consultaMedicaCtrl.edadPaciente}"/>
                         <h:outputText value="Fecha consulta:" style="font-weight:bold;"/>
                         <p:calendar value="#{consultaMedicaCtrl.consulta.fechaConsulta}" pattern="dd/MM/yyyy" showOn="button"/>
                         <h:outputText value="Médico:" style="font-weight:bold;"/>
@@ -39,12 +43,62 @@
                 <p:commandButton value="Agregar diagnóstico" icon="pi pi-plus" actionListener="#{consultaMedicaCtrl.agregarDiagnostico}" update="diagTbl"/>
                 <p:dataTable id="diagTbl" var="diag" value="#{consultaMedicaCtrl.diagnosticos}" rowIndexVar="idx" style="margin-top:8px;">
                     <p:column headerText="#" style="width:50px;">#{idx + 1}</p:column>
-                    <p:column headerText="Código CIE10"><p:inputText value="#{diag.codigo}"/></p:column>
-                    <p:column headerText="Descripción"><p:inputText value="#{diag.descripcion}" style="width:100%"/></p:column>
+                    <p:column headerText="Código CIE10">
+                        <p:autoComplete value="#{diag.codigo}"
+                                        completeMethod="#{consultaMedicaCtrl.completarDiagnosticoCodigo}"
+                                        dropdown="true"
+                                        minQueryLength="1"
+                                        queryDelay="200"
+                                        forceSelection="false"
+                                        cache="false"
+                                        appendTo="@(body)">
+                            <f:attribute name="idx" value="#{idx}"/>
+                            <p:ajax event="itemSelect" listener="#{consultaMedicaCtrl.onDiagnosticoCodigoSelect}" process="@this" update="diagTbl"/>
+                            <p:ajax event="blur" listener="#{consultaMedicaCtrl.onDiagnosticoCodigoBlur}" process="@this" update="diagTbl"/>
+                        </p:autoComplete>
+                    </p:column>
+                    <p:column headerText="Descripción">
+                        <p:autoComplete value="#{diag.descripcion}"
+                                        completeMethod="#{consultaMedicaCtrl.completarDiagnosticoDescripcion}"
+                                        dropdown="true"
+                                        minQueryLength="1"
+                                        queryDelay="200"
+                                        forceSelection="false"
+                                        cache="false"
+                                        appendTo="@(body)"
+                                        style="width:100%">
+                            <f:attribute name="idx" value="#{idx}"/>
+                            <p:ajax event="itemSelect" listener="#{consultaMedicaCtrl.onDiagnosticoDescripcionSelect}" process="@this" update="diagTbl"/>
+                            <p:ajax event="blur" listener="#{consultaMedicaCtrl.onDiagnosticoDescripcionBlur}" process="@this" update="diagTbl"/>
+                        </p:autoComplete>
+                    </p:column>
                     <p:column headerText="Acción" style="width:80px;">
                         <p:commandButton icon="pi pi-trash" actionListener="#{consultaMedicaCtrl.eliminarDiagnostico(idx)}" update="diagTbl" process="@this"/>
                     </p:column>
                 </p:dataTable>
+            </p:panel>
+
+            <p:panel header="Signos vitales" style="margin-top:10px;">
+                <h:panelGrid columns="10" styleClass="ui-fluid vit-grid">
+                    <h:outputText value="Temp (°C)"/>
+                    <p:inputNumber value="#{consultaMedicaCtrl.signosModel.temperaturaC}" decimalPlaces="1"/>
+                    <h:outputText value="PA (mmHg)"/>
+                    <p:inputText value="#{consultaMedicaCtrl.paStr}" placeholder="120&#47;80"/>
+                    <h:outputText value="FC"/>
+                    <p:inputNumber value="#{consultaMedicaCtrl.signosModel.frecuenciaCard}" decimalPlaces="0"/>
+                    <h:outputText value="FR"/>
+                    <p:inputNumber value="#{consultaMedicaCtrl.signosModel.frecuenciaResp}" decimalPlaces="0"/>
+                    <h:outputText value="Sat O&#8322; (&#37;)"/>
+                    <p:inputNumber value="#{consultaMedicaCtrl.signosModel.satO2}" decimalPlaces="0"/>
+                    <h:outputText value="Peso (kg)"/>
+                    <p:inputNumber id="peso" value="#{consultaMedicaCtrl.signosModel.pesoKg}" decimalPlaces="2" decimalSeparator="," thousandSeparator="" onkeyup="calcIMC()" onchange="calcIMC()" oninput="calcIMC()"/>
+                    <h:outputText value="Talla (cm)"/>
+                    <p:inputNumber id="talla" value="#{consultaMedicaCtrl.tallaCm}" decimalPlaces="2" decimalSeparator="," thousandSeparator="" onkeyup="calcIMC()" onchange="calcIMC()" oninput="calcIMC()"/>
+                    <h:outputText value="IMC"/>
+                    <p:inputNumber id="imc" value="#{consultaMedicaCtrl.signosModel.imc}" decimalPlaces="2" decimalSeparator="," thousandSeparator="" readonly="true"/>
+                    <h:outputText value="Perímetro abd (cm)"/>
+                    <p:inputNumber value="#{consultaMedicaCtrl.signosModel.perimetroAbdCm}" decimalPlaces="1"/>
+                </h:panelGrid>
             </p:panel>
 
             <p:panel header="Receta médica" style="margin-top:10px;">
@@ -87,5 +141,20 @@
             </p:outputPanel>
 
         </h:form>
+        <h:outputScript target="body">
+            function q(s){return document.querySelector("input[id$='"+s+"']");}
+            function n(v){return parseFloat(String(v).replace(',','.'));}
+            function calcIMC(){
+                var peso=q("peso_input"), talla=q("talla_input"), imc=q("imc_input");
+                if(!peso||!talla||!imc)return;
+                var p=n(peso.value), t=n(talla.value);
+                if(!isNaN(p)&amp;&amp;!isNaN(t)&amp;&amp;t>0){
+                    imc.value=(p/Math.pow(t/100,2)).toFixed(2);
+                }else{
+                    imc.value="";
+                }
+            }
+            document.addEventListener('DOMContentLoaded',calcIMC);
+        </h:outputScript>
     </ui:define>
 </ui:composition>

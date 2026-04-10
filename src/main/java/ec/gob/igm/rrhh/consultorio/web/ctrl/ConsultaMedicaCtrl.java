@@ -3,20 +3,33 @@ package ec.gob.igm.rrhh.consultorio.web.ctrl;
 import ec.gob.igm.rrhh.consultorio.domain.model.ConsultaDiagnostico;
 import ec.gob.igm.rrhh.consultorio.domain.model.ConsultaMedica;
 import ec.gob.igm.rrhh.consultorio.domain.model.DatEmpleado;
+import ec.gob.igm.rrhh.consultorio.domain.model.SignosVitales;
+import ec.gob.igm.rrhh.consultorio.service.Cie10Service;
 import ec.gob.igm.rrhh.consultorio.service.ConsultaMedicaService;
 import ec.gob.igm.rrhh.consultorio.service.EmpleadoService;
+import ec.gob.igm.rrhh.consultorio.service.SignosVitalesService;
 import ec.gob.igm.rrhh.consultorio.web.facade.CentroMedicoPdfFacade;
+import ec.gob.igm.rrhh.consultorio.web.service.Cie10LookupService;
 import jakarta.annotation.PostConstruct;
 import jakarta.faces.application.FacesMessage;
+import jakarta.faces.component.UIComponent;
 import jakarta.faces.context.FacesContext;
+import jakarta.faces.event.AjaxBehaviorEvent;
 import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.Period;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
+import org.primefaces.event.SelectEvent;
 
 @Named("consultaMedicaCtrl")
 @ViewScoped
@@ -30,6 +43,12 @@ public class ConsultaMedicaCtrl implements Serializable {
     private transient ConsultaMedicaService consultaMedicaService;
     @Inject
     private transient CentroMedicoPdfFacade centroMedicoPdfFacade;
+    @Inject
+    private transient Cie10LookupService cie10LookupService;
+    @Inject
+    private transient Cie10Service cie10Service;
+    @Inject
+    private transient SignosVitalesService signosVitalesService;
 
     private String cedulaBusqueda;
     private DatEmpleado empleado;
@@ -40,6 +59,9 @@ public class ConsultaMedicaCtrl implements Serializable {
     private String recomendaciones;
     private String signosAlarma;
     private String tokenPdf;
+    private Date fechaNacimientoPaciente;
+    private SignosVitales signosModel;
+    private String paStr;
 
     @PostConstruct
     public void init() {
@@ -50,6 +72,7 @@ public class ConsultaMedicaCtrl implements Serializable {
         diagnosticos = new ArrayList<>();
         recetas = new ArrayList<>();
         vigenciaReceta = new Date();
+        signosModel = new SignosVitales();
         agregarDiagnostico();
         agregarReceta();
     }
@@ -65,6 +88,7 @@ public class ConsultaMedicaCtrl implements Serializable {
             return;
         }
         consulta.setEmpleado(empleado);
+        fechaNacimientoPaciente = empleado.getfNacimiento();
         addMessage(FacesMessage.SEVERITY_INFO, "Paciente cargado", empleado.getNombreC());
     }
 
@@ -114,8 +138,157 @@ public class ConsultaMedicaCtrl implements Serializable {
         }
 
         consulta.setDiagnosticos(limpios);
+        persistirSignosVitales();
         consultaMedicaService.guardar(consulta, "WEB");
         addMessage(FacesMessage.SEVERITY_INFO, "Consulta guardada", "Se registró la consulta médica.");
+    }
+
+    private void persistirSignosVitales() {
+        if (!tieneSignosVitalesIngresados()) {
+            consulta.setSignos(null);
+            return;
+        }
+        parsearPresionArterial();
+        SignosVitales guardados = signosVitalesService.guardar(signosModel);
+        consulta.setSignos(guardados);
+    }
+
+    private boolean tieneSignosVitalesIngresados() {
+        return signosModel != null
+                && (signosModel.getTemperaturaC() != null
+                || !isBlank(paStr)
+                || signosModel.getFrecuenciaCard() != null
+                || signosModel.getFrecuenciaResp() != null
+                || signosModel.getSatO2() != null
+                || signosModel.getPesoKg() != null
+                || signosModel.getTallaM() != null
+                || signosModel.getPerimetroAbdCm() != null);
+    }
+
+    private void parsearPresionArterial() {
+        if (isBlank(paStr)) {
+            signosModel.setPaSistolica(null);
+            signosModel.setPaDiastolica(null);
+            return;
+        }
+        String[] partes = paStr.trim().split("/");
+        if (partes.length != 2) {
+            return;
+        }
+        try {
+            signosModel.setPaSistolica(Integer.valueOf(partes[0].trim()));
+            signosModel.setPaDiastolica(Integer.valueOf(partes[1].trim()));
+        } catch (NumberFormatException ignored) {
+            // se conserva el texto ingresado por el usuario en paStr
+        }
+    }
+
+    public List<String> completarDiagnosticoCodigo(String query) {
+        return cie10LookupService.completarFilaPorCodigo(query);
+    }
+
+    public List<String> completarDiagnosticoDescripcion(String query) {
+        return cie10LookupService.completarFilaPorDescripcion(query, 20);
+    }
+
+    public void onDiagnosticoCodigoSelect(SelectEvent<String> event) {
+        ConsultaDiagnostico diag = resolveDiagFromEvent(event != null ? event.getComponent() : null);
+        if (diag == null || event == null) {
+            return;
+        }
+        String codigo = cie10LookupService.extraerCodigoDeSugerencia(event.getObject());
+        diag.setCodigo(codigo);
+        var cie = cie10Service.buscarPorCodigo(codigo);
+        if (cie != null) {
+            diag.setDescripcion(cie.getDescripcion());
+            diag.setCie10(cie);
+        }
+    }
+
+    public void onDiagnosticoDescripcionSelect(SelectEvent<String> event) {
+        ConsultaDiagnostico diag = resolveDiagFromEvent(event != null ? event.getComponent() : null);
+        if (diag == null || event == null) {
+            return;
+        }
+        String descripcion = event.getObject();
+        diag.setDescripcion(descripcion);
+        var cie = cie10Service.buscarPrimeroPorDescripcion(descripcion);
+        if (cie != null) {
+            diag.setCodigo(cie.getCodigo());
+            diag.setCie10(cie);
+        }
+    }
+
+    public void onDiagnosticoCodigoBlur(AjaxBehaviorEvent event) {
+        ConsultaDiagnostico diag = resolveDiagFromEvent(event != null ? event.getComponent() : null);
+        if (diag == null) {
+            return;
+        }
+        String typed = getTypedAutoCompleteValue(event.getComponent());
+        String codigo = cie10LookupService.extraerCodigoDeSugerencia(typed);
+        if (isBlank(codigo)) {
+            return;
+        }
+        diag.setCodigo(codigo);
+        var cie = cie10Service.buscarPorCodigo(codigo);
+        if (cie != null) {
+            diag.setDescripcion(cie.getDescripcion());
+            diag.setCie10(cie);
+        }
+    }
+
+    public void onDiagnosticoDescripcionBlur(AjaxBehaviorEvent event) {
+        ConsultaDiagnostico diag = resolveDiagFromEvent(event != null ? event.getComponent() : null);
+        if (diag == null) {
+            return;
+        }
+        String descripcion = getTypedAutoCompleteValue(event.getComponent());
+        if (isBlank(descripcion)) {
+            return;
+        }
+        diag.setDescripcion(descripcion);
+        var cie = cie10Service.buscarPrimeroPorDescripcion(descripcion.trim());
+        if (cie != null) {
+            diag.setCodigo(cie.getCodigo());
+            diag.setCie10(cie);
+        }
+    }
+
+    private ConsultaDiagnostico resolveDiagFromEvent(UIComponent component) {
+        if (component == null) {
+            return null;
+        }
+        Object idxObj = component.getAttributes().get("idx");
+        if (idxObj == null) {
+            return null;
+        }
+        int idx;
+        try {
+            idx = Integer.parseInt(String.valueOf(idxObj));
+        } catch (NumberFormatException ex) {
+            return null;
+        }
+        if (idx < 0 || idx >= diagnosticos.size()) {
+            return null;
+        }
+        return diagnosticos.get(idx);
+    }
+
+    private String getTypedAutoCompleteValue(UIComponent component) {
+        if (component == null) {
+            return null;
+        }
+        FacesContext fc = FacesContext.getCurrentInstance();
+        if (fc == null) {
+            return null;
+        }
+        String base = component.getClientId(fc);
+        Map<String, String> params = fc.getExternalContext().getRequestParameterMap();
+        String value = params.get(base + "_input");
+        if (value == null) {
+            value = params.get(base);
+        }
+        return value;
     }
 
     public void generarPdfReceta() {
@@ -141,7 +314,7 @@ public class ConsultaMedicaCtrl implements Serializable {
         String fechaVigencia = formatDate(vigenciaReceta);
         String nombrePaciente = empleado.getNombreC() == null ? "" : empleado.getNombreC();
         String cedula = empleado.getNoCedula() == null ? "" : empleado.getNoCedula();
-        String edad = calcularEdadTexto(empleado.getfNacimiento());
+        String edad = calcularEdadTexto(fechaNacimientoPaciente);
 
         StringBuilder html = new StringBuilder();
         html.append("<!DOCTYPE html><html xmlns='http://www.w3.org/1999/xhtml'><head><meta charset='UTF-8'/>")
@@ -222,8 +395,8 @@ public class ConsultaMedicaCtrl implements Serializable {
         if (nacimiento == null) {
             return "";
         }
-        long diff = new Date().getTime() - nacimiento.getTime();
-        long years = diff / (1000L * 60 * 60 * 24 * 365);
+        LocalDate fn = Instant.ofEpochMilli(nacimiento.getTime()).atZone(ZoneId.systemDefault()).toLocalDate();
+        int years = Period.between(fn, LocalDate.now()).getYears();
         return years + " Años";
     }
 
@@ -258,6 +431,30 @@ public class ConsultaMedicaCtrl implements Serializable {
     public void setRecomendaciones(String recomendaciones) { this.recomendaciones = recomendaciones; }
     public String getSignosAlarma() { return signosAlarma; }
     public void setSignosAlarma(String signosAlarma) { this.signosAlarma = signosAlarma; }
+    public Date getFechaNacimientoPaciente() { return fechaNacimientoPaciente; }
+    public void setFechaNacimientoPaciente(Date fechaNacimientoPaciente) { this.fechaNacimientoPaciente = fechaNacimientoPaciente; }
+    public String getEdadPaciente() { return calcularEdadTexto(fechaNacimientoPaciente); }
+    public SignosVitales getSignosModel() { return signosModel; }
+    public String getPaStr() { return paStr; }
+    public void setPaStr(String paStr) { this.paStr = paStr; }
+
+    public BigDecimal getTallaCm() {
+        if (signosModel == null || signosModel.getTallaM() == null) {
+            return null;
+        }
+        return signosModel.getTallaM().multiply(BigDecimal.valueOf(100));
+    }
+
+    public void setTallaCm(BigDecimal tallaCm) {
+        if (signosModel == null) {
+            signosModel = new SignosVitales();
+        }
+        if (tallaCm == null) {
+            signosModel.setTallaM(null);
+            return;
+        }
+        signosModel.setTallaM(tallaCm.divide(BigDecimal.valueOf(100), 2, java.math.RoundingMode.HALF_UP));
+    }
 
     public static class RecetaItem implements Serializable {
         private String codigo;
