@@ -77,10 +77,14 @@ public class ConsultaMedica implements Serializable {
     @OneToMany(mappedBy = "consulta", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ConsultaDiagnostico> diagnosticos;
 
+    @OneToMany(mappedBy = "consulta", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<RecetaMedica> recetas;
+
 
     // Constructor vacío (requerido por JPA)
     public ConsultaMedica() {
         this.diagnosticos = new ArrayList<>();
+        this.recetas = new ArrayList<>();
     }
 
     // Constructor completo (Reemplaza @AllArgsConstructor)
@@ -104,6 +108,7 @@ public class ConsultaMedica implements Serializable {
         this.fechaActualizacion = fechaActualizacion;
         this.usrActualizacion = usrActualizacion;
         this.diagnosticos = diagnosticos;
+        this.recetas = new ArrayList<>();
         // Evitar NPE si la lista es nula
         if (this.diagnosticos == null) {
             this.diagnosticos = new ArrayList<>();
@@ -246,5 +251,13 @@ public class ConsultaMedica implements Serializable {
 
     public void setDiagnosticos(List<ConsultaDiagnostico> diagnosticos) {
         this.diagnosticos = diagnosticos;
+    }
+
+    public List<RecetaMedica> getRecetas() {
+        return recetas;
+    }
+
+    public void setRecetas(List<RecetaMedica> recetas) {
+        this.recetas = recetas;
     }
 }
