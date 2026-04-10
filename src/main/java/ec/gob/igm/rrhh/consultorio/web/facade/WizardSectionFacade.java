@@ -56,7 +56,7 @@ public class WizardSectionFacade implements Serializable {
     public Step1Facade.SaveStep1Result guardarStep1(Step1Facade.SaveStep1Command cmd) { return step1Facade.guardar(cmd); }
     public FichaRiesgo guardarStep2(Step2RiskCommand cmd) { return step2OrchestratorService.save(cmd); }
     public FichaOcupacional guardarStep3(Step3SaveCommand command) { return step3OrchestratorService.saveStep3(command); }
-    public FichaOcupacional recargarFicha(Long idFicha) { return fichaOcupacionalService.findById(idFicha); }
+    public FichaOcupacional recargarFicha(Long idFicha) { return fichaOcupacionalService.findByIdForEdit(idFicha); }
 
     public void registrarAuditoria(String accion, String entidad, String recurso, String detalle) {
         auditFacade.registrar(accion, entidad, recurso, detalle);
