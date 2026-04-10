@@ -9,7 +9,7 @@
         <f:viewAction action="#{empleadosController.preRenderView}" onPostback="false"/>
     </f:metadata>
 
-    <ui:define name="title">Empleados</ui:define>
+    <ui:define name="title">Consulta de certificados y fichas ocupacionales</ui:define>
 
     <ui:define name="content">
         <h:form id="empleadosForm" prependId="false">
@@ -22,13 +22,7 @@
 
 
 
-                <p:commandButton value="Nuevo" icon="pi pi-plus"
-                                 action="#{empleadosController.nuevo}"
-                                 process="@this"
-                                 update=":dialogZone"
-                                 resetValues="true"
-                                 onstart="PF('statusDialog').show()"
-                                 oncomplete="PF('statusDialog').hide(); PF('dlgEmp').show();"/>
+                <p:button value="Nuevo" icon="pi pi-file-plus" outcome="/pages/centroMedico"/>
 
 
             </p:toolbarGroup>
