@@ -310,7 +310,63 @@ public class PacienteUiFlowCoordinator implements Serializable {
                 this.noPersonaSel = state.getNoPersonaSel();
                 this.personaAux = state.getPersonaAux();
                 this.permitirIngresoManual = state.isPermitirIngresoManual();
+                applyIdentityFromState(state);
                 return this;
+            }
+
+            private void applyIdentityFromState(PacienteFichaStateService.PatientState state) {
+                DatEmpleado empleado = state.getEmpleadoSel();
+                if (empleado != null) {
+                    this.apellido1 = empleado.getPriApellido();
+                    this.apellido2 = empleado.getSegApellido();
+                    String[] nombresSeparados = splitNombreCompleto(empleado.getNombres());
+                    this.nombre1 = nombresSeparados[0];
+                    this.nombre2 = nombresSeparados[1];
+                    this.sexo = empleado.getSexo() != null ? empleado.getSexo().getCodigo() : null;
+                    this.fechaNacimiento = empleado.getfNacimiento();
+                    this.edad = calculateEdad(empleado.getfNacimiento());
+                    return;
+                }
+
+                PersonaAux personaAuxActual = state.getPersonaAux();
+                if (personaAuxActual != null) {
+                    this.apellido1 = personaAuxActual.getApellido1();
+                    this.apellido2 = personaAuxActual.getApellido2();
+                    this.nombre1 = personaAuxActual.getNombre1();
+                    this.nombre2 = personaAuxActual.getNombre2();
+                    this.sexo = personaAuxActual.getSexo();
+                    this.fechaNacimiento = personaAuxActual.getFechaNac();
+                    this.edad = calculateEdad(personaAuxActual.getFechaNac());
+                }
+            }
+
+            private String[] splitNombreCompleto(String nombresCompletos) {
+                String nombreNormalizado = ec.gob.igm.rrhh.consultorio.web.util.SnUtils.trimToNull(nombresCompletos);
+                if (nombreNormalizado == null) {
+                    return new String[] { null, null };
+                }
+                String[] partes = nombreNormalizado.split("\\s+", 2);
+                String nombreA = partes.length > 0 ? partes[0] : null;
+                String nombreB = partes.length > 1 ? partes[1] : null;
+                return new String[] { nombreA, nombreB };
+            }
+
+            private Integer calculateEdad(java.util.Date fechaNac) {
+                if (fechaNac == null) {
+                    return null;
+                }
+
+                java.util.Calendar nacimiento = java.util.Calendar.getInstance();
+                nacimiento.setTime(fechaNac);
+
+                java.util.Calendar hoy = java.util.Calendar.getInstance();
+                int years = hoy.get(java.util.Calendar.YEAR) - nacimiento.get(java.util.Calendar.YEAR);
+
+                if (hoy.get(java.util.Calendar.DAY_OF_YEAR) < nacimiento.get(java.util.Calendar.DAY_OF_YEAR)) {
+                    years--;
+                }
+
+                return Math.max(years, 0);
             }
 
             public Builder ficha(FichaOcupacional ficha) { this.ficha = ficha; return this; }
