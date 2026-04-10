@@ -14,6 +14,8 @@
     <ui:define name="content">
         <h:form id="empleadosForm" prependId="false">
 
+            <h2 style="margin:0 0 1rem 0;">Consulta de certificados y fichas ocupacionales</h2>
+
             <p:messages id="msgsEmpl" globalOnly="true" showIcon="true" closable="true"/>
 
 
@@ -68,8 +70,8 @@
                 <h:outputText value="#{e.emailInstitucional}"/>
             </p:column>
 
-            <p:column style="width:3rem" exportable="false" filterable="false">
-                <p:rowToggler/>
+            <p:column headerText="Ver fichas" style="width:7rem" exportable="false" filterable="false">
+                <p:rowToggler expandedIcon="pi pi-eye-slash" collapsedIcon="pi pi-eye"/>
             </p:column>
 
             <p:column headerText="Acciones" style="width:220px" exportable="false" filterable="false">
