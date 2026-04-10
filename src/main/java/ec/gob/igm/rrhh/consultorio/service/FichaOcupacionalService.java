@@ -1,10 +1,12 @@
 package ec.gob.igm.rrhh.consultorio.service;
 
+import ec.gob.igm.rrhh.consultorio.domain.dto.HistorialFichaCertificadoDTO;
 import ec.gob.igm.rrhh.consultorio.domain.model.FichaOcupacional;
 import jakarta.ejb.Stateless;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.TypedQuery;
+import java.util.List;
 
 @Stateless
 
@@ -105,6 +107,38 @@ public class FichaOcupacionalService {
         TypedQuery<FichaOcupacional> q = em.createQuery(jpql, FichaOcupacional.class);
         q.setParameter("id", idFicha);
         return q.getResultStream().findFirst().orElse(null);
+    }
+
+
+    public List<HistorialFichaCertificadoDTO> listarHistorialPorCedula(String cedula) {
+        if (cedula == null || cedula.trim().isEmpty()) {
+            return List.of();
+        }
+
+        String cedulaNorm = cedula.trim();
+        String jpql = """
+            SELECT new ec.gob.igm.rrhh.consultorio.domain.dto.HistorialFichaCertificadoDTO(
+                f.idFicha,
+                COALESCE(e.noCedula, p.cedula),
+                CASE
+                    WHEN e.noPersona IS NOT NULL THEN CONCAT(CONCAT(COALESCE(e.priApellido, ''), ' '), CONCAT(COALESCE(e.segApellido, ''), CONCAT(' ', COALESCE(e.nombres, ''))))
+                    ELSE CONCAT(COALESCE(p.apellidos, ''), CONCAT(' ', COALESCE(p.nombres, '')))
+                END,
+                f.fechaEvaluacion,
+                f.fechaEmision,
+                f.estado,
+                COALESCE(f.usrActualizacion, f.usrCreacion)
+            )
+            FROM FichaOcupacional f
+            LEFT JOIN f.empleado e
+            LEFT JOIN f.personaAux p
+            WHERE COALESCE(e.noCedula, p.cedula) = :cedula
+            ORDER BY COALESCE(f.fechaActualizacion, f.fechaCreacion, f.fechaEvaluacion) DESC, f.idFicha DESC
+        """;
+
+        return em.createQuery(jpql, HistorialFichaCertificadoDTO.class)
+                .setParameter("cedula", cedulaNorm)
+                .getResultList();
     }
 
     private void normalizarPielYOjos(FichaOcupacional f) {

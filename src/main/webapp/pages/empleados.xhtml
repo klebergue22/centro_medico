@@ -73,6 +73,10 @@
                 <h:outputText value="#{e.emailInstitucional}"/>
             </p:column>
 
+            <p:column style="width:3rem" exportable="false" filterable="false">
+                <p:rowToggler/>
+            </p:column>
+
             <p:column headerText="Acciones" style="width:220px" exportable="false" filterable="false">
 
                 <p:commandButton value="Editar" icon="pi pi-pencil" styleClass="p-button-text"
@@ -90,6 +94,58 @@
                                  update=":tbl :msgsEmpl"
                                  onclick="return confirm('¿Eliminar registro seleccionado?');"/>
             </p:column>
+
+            <p:rowExpansion>
+                <p:panel header="Historial de fichas y certificados por cédula">
+                    <p:dataTable value="#{empleadoController.obtenerHistorialPorCedula(e.noCedula)}" var="h"
+                                 emptyMessage="No existen fichas/certificados para la cédula seleccionada"
+                                 rows="5" paginator="true" rowsPerPageTemplate="5,10,20">
+
+                        <p:column headerText="ID Ficha" sortBy="#{h.idFicha}">
+                            <h:outputText value="#{h.idFicha}"/>
+                        </p:column>
+
+                        <p:column headerText="Cédula" sortBy="#{h.cedula}">
+                            <h:outputText value="#{h.cedula}"/>
+                        </p:column>
+
+                        <p:column headerText="Paciente" sortBy="#{h.nombrePaciente}">
+                            <h:outputText value="#{h.nombrePaciente}"/>
+                        </p:column>
+
+                        <p:column headerText="Fecha evaluación" sortBy="#{h.fechaEvaluacion}">
+                            <h:outputText value="#{h.fechaEvaluacion}">
+                                <f:convertDateTime pattern="dd/MM/yyyy"/>
+                            </h:outputText>
+                        </p:column>
+
+                        <p:column headerText="Última acción" sortBy="#{h.fechaUltimaAccion}">
+                            <h:outputText value="#{h.ultimaAccion}"/>
+                            <br/>
+                            <h:outputText value="#{h.fechaUltimaAccion}">
+                                <f:convertDateTime pattern="dd/MM/yyyy HH:mm"/>
+                            </h:outputText>
+                        </p:column>
+
+                        <p:column headerText="Acciones" style="width:360px" exportable="false" filterable="false">
+                            <p:commandButton value="Visualizar Ficha" icon="pi pi-file-pdf" styleClass="p-button-text"
+                                             process="@this"
+                                             actionListener="#{empleadoController.visualizarFicha(h)}"
+                                             update=":msgsEmpl"/>
+
+                            <p:commandButton value="Visualizar Certificado" icon="pi pi-file" styleClass="p-button-text"
+                                             process="@this"
+                                             actionListener="#{empleadoController.visualizarCertificado(h)}"
+                                             update=":msgsEmpl"/>
+
+                            <p:commandButton value="Editar / Regenerar" icon="pi pi-pencil" styleClass="p-button-text"
+                                             process="@this"
+                                             actionListener="#{empleadoController.editarYRegenerar(h)}"
+                                             update=":msgsEmpl"/>
+                        </p:column>
+                    </p:dataTable>
+                </p:panel>
+            </p:rowExpansion>
         </p:dataTable>
 
 
