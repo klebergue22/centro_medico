@@ -151,7 +151,6 @@ public class ConsultaMedicaCtrl implements Serializable {
         normalizarTipoDiagnostico(limpios);
         consulta.setDiagnosticos(limpios);
         consulta.setRecetas(construirRecetasParaPersistencia());
-        persistirAlergiasEmpleado();
         persistirSignosVitales();
         consultaMedicaService.guardar(consulta, "WEB");
         addMessage(FacesMessage.SEVERITY_INFO, "Consulta guardada", "Se registró la consulta médica.");
@@ -232,21 +231,6 @@ public class ConsultaMedicaCtrl implements Serializable {
             return null;
         }
         return codigo.trim().toUpperCase();
-    }
-
-    private void persistirAlergiasEmpleado() {
-        if (empleado == null) {
-            return;
-        }
-        String alergiasNormalizadas = alergias == null ? null : alergias.trim();
-        if (alergiasNormalizadas != null && alergiasNormalizadas.isEmpty()) {
-            alergiasNormalizadas = null;
-        }
-        if (java.util.Objects.equals(empleado.getAlergia(), alergiasNormalizadas)) {
-            return;
-        }
-        empleado.setAlergia(alergiasNormalizadas);
-        empleadoService.guardar(empleado);
     }
 
     private void persistirSignosVitales() {
