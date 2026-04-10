@@ -140,8 +140,10 @@
                 <p:toolbarGroup>
                     <p:commandButton value="Guardar consulta" icon="pi pi-save" actionListener="#{consultaMedicaCtrl.guardarConsulta}" update="growl"/>
                     <p:commandButton value="Generar PDF" icon="pi pi-file-pdf" actionListener="#{consultaMedicaCtrl.generarPdfReceta}" update="growl pdfPanel" styleClass="ui-button-warning"/>
-                    <p:selectBooleanCheckbox id="chkCert" value="#{consultaMedicaCtrl.generarCertificado}" itemLabel="Generar certificado médico opcional" style="margin-left:10px;"/>
-                    <p:commandButton value="Datos certificado"
+                    <p:selectBooleanCheckbox id="chkCert" value="#{consultaMedicaCtrl.generarCertificado}" itemLabel="Generar certificado médico opcional" style="margin-left:10px;">
+                        <p:ajax process="@this" update="btnDatosCert"/>
+                    </p:selectBooleanCheckbox>
+                    <p:commandButton id="btnDatosCert" value="Datos certificado"
                                      icon="pi pi-id-card"
                                      process="@this"
                                      disabled="#{not consultaMedicaCtrl.generarCertificado}"
