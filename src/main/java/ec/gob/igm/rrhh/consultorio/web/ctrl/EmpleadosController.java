@@ -24,9 +24,9 @@ import java.util.List;
 import java.util.Objects;
 import org.primefaces.PrimeFaces;
 
-@Named("empleadoController")
+@Named("empleadosController")
 @ViewScoped
-public class EmpleadoController implements Serializable {
+public class EmpleadosController implements Serializable {
 
     private static final long serialVersionUID = 1L;
 

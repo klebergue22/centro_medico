@@ -6,7 +6,7 @@
                 xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
 
     <f:metadata>
-        <f:viewAction action="#{empleadoController.preRenderView}" onPostback="false"/>
+        <f:viewAction action="#{empleadosController.preRenderView}" onPostback="false"/>
     </f:metadata>
 
     <ui:define name="title">Empleados</ui:define>
@@ -23,7 +23,7 @@
 
 
                 <p:commandButton value="Nuevo" icon="pi pi-plus"
-                                 action="#{empleadoController.nuevo}"
+                                 action="#{empleadosController.nuevo}"
                                  process="@this"
                                  update=":dialogZone"
                                  resetValues="true"
@@ -40,7 +40,8 @@
         </p:toolbar>
 
 
-        <p:dataTable id="tbl" value="#{empleadoController.lista}" var="e"
+        <p:dataTable id="tbl" value="#{empleadosController.lista}" var="e"
+                     rowKey="#{e.noPersona}"
                      widgetVar="tblWV" paginator="true" rows="20"
                      rowsPerPageTemplate="10,20,50,100"
                      emptyMessage="Sin resultados" filterEvent="keyup" filterDelay="400">
@@ -84,20 +85,20 @@
                                  update=":dialogZone"
                                  onstart="PF('statusDialog').show()"
                                  oncomplete="PF('statusDialog').hide(); PF('dlgEmp').show();">
-                    <f:setPropertyActionListener target="#{empleadoController.seleccionado}" value="#{e}"/>
+                    <f:setPropertyActionListener target="#{empleadosController.seleccionado}" value="#{e}"/>
                 </p:commandButton>
 
 
                 <p:commandButton value="Eliminar" icon="pi pi-trash" styleClass="p-button-text p-ml-2"
                                  process="@this"
-                                 actionListener="#{empleadoController.eliminar(e.noPersona)}"
+                                 actionListener="#{empleadosController.eliminar(e.noPersona)}"
                                  update=":tbl :msgsEmpl"
                                  onclick="return confirm('¿Eliminar registro seleccionado?');"/>
             </p:column>
 
             <p:rowExpansion>
                 <p:panel header="Historial de fichas y certificados por cédula">
-                    <p:dataTable value="#{empleadoController.obtenerHistorialPorCedula(e.noCedula)}" var="h"
+                    <p:dataTable value="#{empleadosController.obtenerHistorialPorCedula(e.noCedula)}" var="h"
                                  emptyMessage="No existen fichas/certificados para la cédula seleccionada"
                                  rows="5" paginator="true" rowsPerPageTemplate="5,10,20">
 
@@ -130,17 +131,17 @@
                         <p:column headerText="Acciones" style="width:360px" exportable="false" filterable="false">
                             <p:commandButton value="Visualizar Ficha" icon="pi pi-file-pdf" styleClass="p-button-text"
                                              process="@this"
-                                             actionListener="#{empleadoController.visualizarFicha(h)}"
+                                             actionListener="#{empleadosController.visualizarFicha(h)}"
                                              update=":msgsEmpl"/>
 
                             <p:commandButton value="Visualizar Certificado" icon="pi pi-file" styleClass="p-button-text"
                                              process="@this"
-                                             actionListener="#{empleadoController.visualizarCertificado(h)}"
+                                             actionListener="#{empleadosController.visualizarCertificado(h)}"
                                              update=":msgsEmpl"/>
 
                             <p:commandButton value="Editar / Regenerar" icon="pi pi-pencil" styleClass="p-button-text"
                                              process="@this"
-                                             actionListener="#{empleadoController.editarYRegenerar(h)}"
+                                             actionListener="#{empleadosController.editarYRegenerar(h)}"
                                              update=":msgsEmpl"/>
                         </p:column>
                     </p:dataTable>
@@ -170,7 +171,7 @@
                         <p:row>
                             <p:column styleClass="lab"><p:outputLabel for="cedula" value="Cédula *"/></p:column>
                             <p:column styleClass="fld">
-                                <p:inputText id="cedula" value="#{empleadoController.seleccionado.noCedula}"
+                                <p:inputText id="cedula" value="#{empleadosController.seleccionado.noCedula}"
                                              maxlength="10" required="true" requiredMessage="La cédula es obligatoria">
                                     <p:keyFilter mask="num"/>
                                     <f:validateRegex pattern="\d{10}"/>
@@ -181,13 +182,13 @@
                             <p:column styleClass="lab"><p:outputLabel for="fNac" value="Fecha de Nacimiento *"/></p:column>
                             <p:column styleClass="fld">
                                 <p:calendar id="fNac"
-                                            value="#{empleadoController.seleccionado.FNacimiento}"
+                                            value="#{empleadosController.seleccionado.FNacimiento}"
                                             pattern="dd/MM/yyyy"
                                             showOn="button"
                                             navigator="true"
                                             yearRange="1900:2100"
-                                            maxdate="#{empleadoController.fechaMaxNacimiento}"
-                                            validator="#{empleadoController.validarMayorDeEdad}"/>
+                                            maxdate="#{empleadosController.fechaMaxNacimiento}"
+                                            validator="#{empleadosController.validarMayorDeEdad}"/>
                             </p:column>
                             <p:column styleClass="msg"><p:message for="fNac" display="icon"/></p:column>
                         </p:row>
@@ -196,14 +197,14 @@
                         <p:row>
                             <p:column styleClass="lab"><p:outputLabel for="priApellido" value="Primer Apellido *"/></p:column>
                             <p:column styleClass="fld">
-                                <p:inputText id="priApellido" value="#{empleadoController.seleccionado.priApellido}"
+                                <p:inputText id="priApellido" value="#{empleadosController.seleccionado.priApellido}"
                                              maxlength="20" required="true"/>
                             </p:column>
                             <p:column styleClass="msg"><p:message for="priApellido" display="icon"/></p:column>
 
                             <p:column styleClass="lab"><p:outputLabel for="segApellido" value="Segundo Apellido *"/></p:column>
                             <p:column styleClass="fld">
-                                <p:inputText id="segApellido" value="#{empleadoController.seleccionado.segApellido}"
+                                <p:inputText id="segApellido" value="#{empleadosController.seleccionado.segApellido}"
                                              maxlength="20" required="true"/>
                             </p:column>
                             <p:column styleClass="msg"><p:message for="segApellido" display="icon"/></p:column>
@@ -213,14 +214,14 @@
                         <p:row>
                             <p:column styleClass="lab"><p:outputLabel for="nombre" value="Nombres *"/></p:column>
                             <p:column styleClass="fld">
-                                <p:inputText id="nombre" value="#{empleadoController.seleccionado.nombres}"
+                                <p:inputText id="nombre" value="#{empleadosController.seleccionado.nombres}"
                                              maxlength="30" required="true"/>
                             </p:column>
                             <p:column styleClass="msg"><p:message for="nombre" display="icon"/></p:column>
 
                             <p:column styleClass="lab"><p:outputLabel for="codigo" value="Código Institucional"/></p:column>
                             <p:column styleClass="fld">
-                                <p:inputText id="codigo" value="#{empleadoController.seleccionado.codigo}">
+                                <p:inputText id="codigo" value="#{empleadosController.seleccionado.codigo}">
                                     <p:keyFilter mask="num"/>
 
                                     <f:validateRegex pattern="\d{1,10}"/>
@@ -234,10 +235,10 @@
                             <p:column styleClass="lab"><p:outputLabel for="gSangre" value="Grupo sanguíneo *"/></p:column>
                             <p:column styleClass="fld">
                                 <p:selectOneMenu id="gSangre"
-                                                 value="#{empleadoController.seleccionado.grupoSangre}"
+                                                 value="#{empleadosController.seleccionado.grupoSangre}"
                                                  required="true" requiredMessage="Seleccione el grupo sanguíneo">
                                     <f:selectItem itemLabel="-- Seleccione --" itemValue="#{null}" noSelectionOption="true"/>
-                                    <f:selectItems value="#{empleadoController.gruposSangre}" var="gs"
+                                    <f:selectItems value="#{empleadosController.gruposSangre}" var="gs"
                                                    itemLabel="#{gs.descripcion}" itemValue="#{gs}"/>
                                 </p:selectOneMenu>
                             </p:column>
@@ -246,10 +247,10 @@
                             <p:column styleClass="lab"><p:outputLabel for="sexo" value="Sexo *"/></p:column>
                             <p:column styleClass="fld">
                                 <p:selectOneMenu id="sexo"
-                                                 value="#{empleadoController.seleccionado.sexo}"
+                                                 value="#{empleadosController.seleccionado.sexo}"
                                                  required="true" requiredMessage="Seleccione el sexo">
                                     <f:selectItem itemLabel="-- Seleccione --" itemValue="#{null}" noSelectionOption="true"/>
-                                    <f:selectItems value="#{empleadoController.sexos}" var="s"
+                                    <f:selectItems value="#{empleadosController.sexos}" var="s"
                                                    itemLabel="#{s.descripcion}" itemValue="#{s}"/>
                                 </p:selectOneMenu>
                             </p:column>
@@ -261,10 +262,10 @@
                             <p:column styleClass="lab"><p:outputLabel for="estCivil" value="Estado civil *"/></p:column>
                             <p:column styleClass="fld">
                                 <p:selectOneMenu id="estCivil"
-                                                 value="#{empleadoController.seleccionado.estCivil}"
+                                                 value="#{empleadosController.seleccionado.estCivil}"
                                                  required="true" requiredMessage="Seleccione el estado civil">
                                     <f:selectItem itemLabel="-- Seleccione --" itemValue="#{null}" noSelectionOption="true"/>
-                                    <f:selectItems value="#{empleadoController.estadosCiviles}" var="ec"
+                                    <f:selectItems value="#{empleadosController.estadosCiviles}" var="ec"
                                                    itemLabel="#{ec.descripcion}" itemValue="#{ec}"/>
                                 </p:selectOneMenu>
                             </p:column>
@@ -272,7 +273,7 @@
 
                             <p:column styleClass="lab"><p:outputLabel for="email" value="Email"/></p:column>
                             <p:column styleClass="fld">
-                                <p:inputText id="email" value="#{empleadoController.seleccionado.email}"/>
+                                <p:inputText id="email" value="#{empleadosController.seleccionado.email}"/>
                             </p:column>
                             <p:column styleClass="msg"><p:message for="email" display="icon"/></p:column>
                         </p:row>
@@ -281,7 +282,7 @@
                         <p:row>
                             <p:column styleClass="lab"><p:outputLabel for="emailInst" value="Email Institucional"/></p:column>
                             <p:column styleClass="fld">
-                                <p:inputText id="emailInst" value="#{empleadoController.seleccionado.emailInstitucional}"/>
+                                <p:inputText id="emailInst" value="#{empleadosController.seleccionado.emailInstitucional}"/>
                             </p:column>
                             <p:column styleClass="msg"><p:message for="emailInst" display="icon"/></p:column>
 
@@ -295,7 +296,7 @@
                     <f:facet name="footer">
 
                         <p:commandButton value="Guardar (DEBUG)" icon="pi pi-bug"
-                                         actionListener="#{empleadoController.debugLog}"
+                                         actionListener="#{empleadosController.debugLog}"
                                          process="@this"
                                          update=":msgsEmpl"
                                          immediate="true"/>
@@ -303,7 +304,7 @@
                     </f:facet>
 
                     <p:commandButton value="Guardar" icon="pi pi-check"
-                                     action="#{empleadoController.guardar}"
+                                     action="#{empleadosController.guardar}"
                                      process="@form"
                                      update="@form :tbl :msgsEmpl"
                                      onstart="PF('statusDialog').show()"
