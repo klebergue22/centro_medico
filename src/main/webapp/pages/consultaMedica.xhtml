@@ -153,13 +153,28 @@
                 </p:toolbarGroup>
             </p:toolbar>
 
-            <p:outputPanel id="pdfPanel" style="margin-top:12px;" rendered="#{not empty consultaMedicaCtrl.pdfUrl}">
-                <h:panelGroup layout="block" style="margin-bottom:8px;">
-                    <h:outputLink value="#{consultaMedicaCtrl.pdfDownloadUrl}" target="_blank">Descargar PDF</h:outputLink>
+            <p:outputPanel id="pdfPanel" style="margin-top:12px;">
+                <h:panelGroup rendered="#{not empty consultaMedicaCtrl.recetaPdfUrl}" layout="block" style="margin-bottom:12px;">
+                    <h4 style="margin:0 0 8px 0;">Vista previa receta médica</h4>
+                    <h:outputLink value="#{consultaMedicaCtrl.recetaPdfDownloadUrl}" target="_blank">Descargar receta PDF</h:outputLink>
+                    <div style="border:1px solid #d7d7d7; border-radius:8px; overflow:hidden; margin-top:8px;">
+                        <object data="#{consultaMedicaCtrl.recetaPdfUrl}" type="application/pdf" style="width:100%; height:720px;">
+                            <h:outputText value="Tu navegador no soporta previsualización PDF. Usa el botón Descargar."
+                                          style="display:block; padding:10px;"/>
+                        </object>
+                    </div>
                 </h:panelGroup>
-                <object data="#{consultaMedicaCtrl.pdfUrl}" type="application/pdf" style="width:100%;height:550px;border:1px solid #ccc;">
-                    <p>Su navegador no soporta vista previa embebida. Use el enlace de descarga.</p>
-                </object>
+
+                <h:panelGroup rendered="#{not empty consultaMedicaCtrl.certificadoPdfUrl}" layout="block">
+                    <h4 style="margin:0 0 8px 0;">Vista previa certificado médico</h4>
+                    <h:outputLink value="#{consultaMedicaCtrl.certificadoPdfDownloadUrl}" target="_blank">Descargar certificado PDF</h:outputLink>
+                    <div style="border:1px solid #d7d7d7; border-radius:8px; overflow:hidden; margin-top:8px;">
+                        <object data="#{consultaMedicaCtrl.certificadoPdfUrl}" type="application/pdf" style="width:100%; height:720px;">
+                            <h:outputText value="Tu navegador no soporta previsualización PDF. Usa el botón Descargar."
+                                          style="display:block; padding:10px;"/>
+                        </object>
+                    </div>
+                </h:panelGroup>
             </p:outputPanel>
 
             <p:dialog id="certDialog" widgetVar="certDialogWv" header="Certificado médico" modal="true" width="760" appendTo="@(body)" resizable="false">
@@ -167,7 +182,7 @@
                     <h:outputText value="Paciente"/>
                     <p:inputText value="#{consultaMedicaCtrl.empleado.nombreC}" readonly="true"/>
                     <h:outputText value="Diagnóstico"/>
-                    <p:inputText value="#{consultaMedicaCtrl.diagnosticoPrincipal}" readonly="true"/>
+                    <p:inputTextarea value="#{consultaMedicaCtrl.diagnosticosTexto}" rows="3" autoResize="false" readonly="true"/>
                     <h:outputText value="Fecha inicio (números)"/>
                     <p:calendar value="#{consultaMedicaCtrl.certFechaInicio}" pattern="dd/MM/yyyy" showOn="button">
                         <p:ajax event="dateSelect" listener="#{consultaMedicaCtrl.onFechaInicioSelect}" update="certDialog"/>

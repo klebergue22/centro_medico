@@ -453,10 +453,10 @@ public class ConsultaMedicaCtrl implements Serializable {
             certFechaFin = certFechaInicio;
         }
         if (isBlank(certFechaInicioLetras) && certFechaInicio != null) {
-            certFechaInicioLetras = fechaEnLetras(certFechaInicio);
+            certFechaInicioLetras = fechaEnLetrasCompleta(certFechaInicio);
         }
         if (isBlank(certFechaFinLetras) && certFechaFin != null) {
-            certFechaFinLetras = fechaEnLetras(certFechaFin);
+            certFechaFinLetras = fechaEnLetrasCompleta(certFechaFin);
         }
         if (isBlank(certTipoContingencia)) {
             certTipoContingencia = "MEDICO";
@@ -487,8 +487,24 @@ public class ConsultaMedicaCtrl implements Serializable {
         return token == null ? null : FacesContext.getCurrentInstance().getExternalContext().getRequestContextPath() + "/pdf?download=1&amp;token=" + token;
     }
 
+    public String getRecetaPdfUrl() {
+        return tokenPdf == null ? null : FacesContext.getCurrentInstance().getExternalContext().getRequestContextPath() + "/pdf?token=" + tokenPdf;
+    }
+
+    public String getRecetaPdfDownloadUrl() {
+        return tokenPdf == null ? null : FacesContext.getCurrentInstance().getExternalContext().getRequestContextPath() + "/pdf?download=1&amp;token=" + tokenPdf;
+    }
+
+    public String getCertificadoPdfUrl() {
+        return tokenPdfCertificado == null ? null : FacesContext.getCurrentInstance().getExternalContext().getRequestContextPath() + "/pdf?token=" + tokenPdfCertificado;
+    }
+
+    public String getCertificadoPdfDownloadUrl() {
+        return tokenPdfCertificado == null ? null : FacesContext.getCurrentInstance().getExternalContext().getRequestContextPath() + "/pdf?download=1&amp;token=" + tokenPdfCertificado;
+    }
+
     private String construirHtmlReceta() {
-        String fecha = formatDate(consulta.getFechaConsulta());
+        String fecha = fechaEnLetrasCompleta(consulta.getFechaConsulta());
         String fechaVigencia = formatDate(vigenciaReceta);
         String nombrePaciente = empleado.getNombreC() == null ? "" : empleado.getNombreC();
         String cedula = empleado.getNoCedula() == null ? "" : empleado.getNoCedula();
@@ -573,8 +589,8 @@ public class ConsultaMedicaCtrl implements Serializable {
         String cedula = empleado.getNoCedula() == null ? "" : empleado.getNoCedula();
         String fechaInicioNum = formatDate(certFechaInicio).replace("/", "-");
         String fechaFinNum = formatDate(certFechaFin).replace("/", "-");
-        String fechaInicioTxt = isBlank(certFechaInicioLetras) ? fechaEnLetras(certFechaInicio) : certFechaInicioLetras;
-        String fechaFinTxt = isBlank(certFechaFinLetras) ? fechaEnLetras(certFechaFin) : certFechaFinLetras;
+        String fechaInicioTxt = isBlank(certFechaInicioLetras) ? fechaEnLetrasCompleta(certFechaInicio) : certFechaInicioLetras;
+        String fechaFinTxt = isBlank(certFechaFinLetras) ? fechaEnLetrasCompleta(certFechaFin) : certFechaFinLetras;
 
         StringBuilder html = new StringBuilder();
         html.append("<!DOCTYPE html><html><head><meta charset='UTF-8'/>")
@@ -588,14 +604,14 @@ public class ConsultaMedicaCtrl implements Serializable {
                 .append("<p>EL MEDICO CERTIFICA:</p>")
                 .append("<p>El señor(a) <span class='hl'>").append(escape(nombrePaciente)).append("</span> con Cédula de Ciudadanía ")
                 .append("<span class='hl'>").append(escape(cedula)).append("</span>, presenta diagnóstico: ")
-                .append("<span class='hl'>").append(escape(getDiagnosticoPrincipal())).append("</span>; por lo que requiere reposo médico absoluto.</p>")
+                .append("<span class='hl'>").append(escape(getDiagnosticosTexto())).append("</span>; por lo que requiere reposo médico absoluto.</p>")
                 .append("<p>Desde ").append(escape(fechaInicioNum)).append(" (").append(escape(fechaInicioTxt)).append(").<br/>")
                 .append("Hasta ").append(escape(fechaFinNum)).append(" (").append(escape(fechaFinTxt)).append(").</p>")
                 .append("<p><span class='lbl'>Domicilio del paciente:</span> ").append(escape(certDomicilio)).append("<br/>")
                 .append("<span class='lbl'>Teléfono de contacto:</span> ").append(escape(certTelefono)).append("<br/>")
                 .append("<span class='lbl'>Tipo de contingencia:</span> ").append(escape(certTipoContingencia)).append("</p>")
                 .append("<p style='margin-top:40px;'>")
-                .append("Quito DM, ").append(escape(fechaEnLetras(consulta.getFechaConsulta() != null ? consulta.getFechaConsulta() : new Date()))).append(".</p>")
+                .append("Quito DM, ").append(escape(fechaEnLetrasCompleta(consulta.getFechaConsulta() != null ? consulta.getFechaConsulta() : new Date()))).append(".</p>")
                 .append("<p style='margin-top:80px;'>").append(escape(consulta.getMedicoNombre())).append("<br/>")
                 .append(escape(consulta.getMedicoCodigo())).append("</p>")
                 .append("</body></html>");
@@ -627,12 +643,21 @@ public class ConsultaMedicaCtrl implements Serializable {
         return local.getDayOfMonth() + " de " + mes + " de " + local.getYear();
     }
 
+    private String fechaEnLetrasCompleta(Date date) {
+        if (date == null) {
+            return "";
+        }
+        LocalDate local = Instant.ofEpochMilli(date.getTime()).atZone(ZoneId.systemDefault()).toLocalDate();
+        String mes = local.getMonth().getDisplayName(TextStyle.FULL, new java.util.Locale("es", "EC"));
+        return numeroEnLetras(local.getDayOfMonth()) + " de " + mes + " de " + anioEnLetras(local.getYear());
+    }
+
     public void onFechaInicioSelect() {
-        certFechaInicioLetras = fechaEnLetras(certFechaInicio);
+        certFechaInicioLetras = fechaEnLetrasCompleta(certFechaInicio);
     }
 
     public void onFechaFinSelect() {
-        certFechaFinLetras = fechaEnLetras(certFechaFin);
+        certFechaFinLetras = fechaEnLetrasCompleta(certFechaFin);
     }
 
     public String getDiagnosticoPrincipal() {
@@ -645,6 +670,70 @@ public class ConsultaMedicaCtrl implements Serializable {
             }
         }
         return "";
+    }
+
+    public String getDiagnosticosTexto() {
+        if (diagnosticos == null) {
+            return "";
+        }
+        List<String> valores = new ArrayList<>();
+        for (ConsultaDiagnostico d : diagnosticos) {
+            if (d == null || (isBlank(d.getCodigo()) && isBlank(d.getDescripcion()))) {
+                continue;
+            }
+            String texto = ((d.getCodigo() == null ? "" : d.getCodigo().trim()) + " "
+                    + (d.getDescripcion() == null ? "" : d.getDescripcion().trim())).trim();
+            if (!texto.isEmpty()) {
+                valores.add(texto);
+            }
+        }
+        return String.join("; ", valores);
+    }
+
+    private String anioEnLetras(int anio) {
+        int miles = anio / 1000;
+        int resto = anio % 1000;
+        String milesTxt = (miles == 2) ? "dos mil" : (numeroEnLetras(miles) + " mil");
+        if (resto == 0) {
+            return milesTxt;
+        }
+        return milesTxt + " " + numeroEnLetras(resto);
+    }
+
+    private String numeroEnLetras(int numero) {
+        if (numero <= 0) {
+            return "cero";
+        }
+        if (numero < 30) {
+            String[] base = {"", "uno", "dos", "tres", "cuatro", "cinco", "seis", "siete", "ocho", "nueve",
+                    "diez", "once", "doce", "trece", "catorce", "quince", "dieciséis", "diecisiete", "dieciocho",
+                    "diecinueve", "veinte", "veintiuno", "veintidós", "veintitrés", "veinticuatro", "veinticinco",
+                    "veintiséis", "veintisiete", "veintiocho", "veintinueve"};
+            return base[numero];
+        }
+        if (numero < 100) {
+            String[] decenas = {"", "", "veinte", "treinta", "cuarenta", "cincuenta", "sesenta", "setenta", "ochenta", "noventa"};
+            int d = numero / 10;
+            int u = numero % 10;
+            if (u == 0) {
+                return decenas[d];
+            }
+            return decenas[d] + " y " + numeroEnLetras(u);
+        }
+        if (numero == 100) {
+            return "cien";
+        }
+        if (numero < 1000) {
+            String[] centenas = {"", "ciento", "doscientos", "trescientos", "cuatrocientos",
+                    "quinientos", "seiscientos", "setecientos", "ochocientos", "novecientos"};
+            int c = numero / 100;
+            int resto = numero % 100;
+            if (resto == 0) {
+                return centenas[c];
+            }
+            return centenas[c] + " " + numeroEnLetras(resto);
+        }
+        return Integer.toString(numero);
     }
 
     private boolean isBlank(String value) {
