@@ -1,0 +1,91 @@
+<ui:composition template="/templates/template.xhtml"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+
+    <ui:define name="title">Consulta Médica y Receta</ui:define>
+
+    <ui:define name="content">
+        <h:form id="consultaForm">
+            <p:growl id="growl" showDetail="true"/>
+
+            <p:panel header="Nueva consulta médica" style="margin-top:10px;">
+                <h:panelGrid columns="4" cellpadding="6" styleClass="ui-fluid" columnClasses="col-12 md:col-2,col-12 md:col-4,col-12 md:col-2,col-12 md:col-4">
+                    <h:outputText value="Cédula"/>
+                    <p:inputText value="#{consultaMedicaCtrl.cedulaBusqueda}"/>
+                    <p:commandButton value="Buscar" icon="pi pi-search"
+                                     actionListener="#{consultaMedicaCtrl.buscarPorCedula}"
+                                     update="pacientePanel growl"/>
+                    <h:outputText/>
+                </h:panelGrid>
+
+                <p:outputPanel id="pacientePanel" style="margin-top:10px;">
+                    <h:panelGrid columns="2" cellpadding="4" rendered="#{not empty consultaMedicaCtrl.empleado}">
+                        <h:outputText value="Paciente:" style="font-weight:bold;"/>
+                        <h:outputText value="#{consultaMedicaCtrl.empleado.nombreC}"/>
+                        <h:outputText value="Fecha consulta:" style="font-weight:bold;"/>
+                        <p:calendar value="#{consultaMedicaCtrl.consulta.fechaConsulta}" pattern="dd/MM/yyyy" showOn="button"/>
+                        <h:outputText value="Médico:" style="font-weight:bold;"/>
+                        <p:inputText value="#{consultaMedicaCtrl.consulta.medicoNombre}"/>
+                        <h:outputText value="Código médico:" style="font-weight:bold;"/>
+                        <p:inputText value="#{consultaMedicaCtrl.consulta.medicoCodigo}"/>
+                    </h:panelGrid>
+                </p:outputPanel>
+            </p:panel>
+
+            <p:panel header="Diagnósticos" style="margin-top:10px;">
+                <p:commandButton value="Agregar diagnóstico" icon="pi pi-plus" actionListener="#{consultaMedicaCtrl.agregarDiagnostico}" update="diagTbl"/>
+                <p:dataTable id="diagTbl" var="diag" value="#{consultaMedicaCtrl.diagnosticos}" rowIndexVar="idx" style="margin-top:8px;">
+                    <p:column headerText="#" style="width:50px;">#{idx + 1}</p:column>
+                    <p:column headerText="Código CIE10"><p:inputText value="#{diag.codigo}"/></p:column>
+                    <p:column headerText="Descripción"><p:inputText value="#{diag.descripcion}" style="width:100%"/></p:column>
+                    <p:column headerText="Acción" style="width:80px;">
+                        <p:commandButton icon="pi pi-trash" actionListener="#{consultaMedicaCtrl.eliminarDiagnostico(idx)}" update="diagTbl" process="@this"/>
+                    </p:column>
+                </p:dataTable>
+            </p:panel>
+
+            <p:panel header="Receta médica" style="margin-top:10px;">
+                <h:panelGrid columns="2" cellpadding="6">
+                    <h:outputText value="Vigencia hasta:"/>
+                    <p:calendar value="#{consultaMedicaCtrl.vigenciaReceta}" pattern="dd/MM/yyyy" showOn="button"/>
+                </h:panelGrid>
+
+                <p:commandButton value="Agregar medicina" icon="pi pi-plus" actionListener="#{consultaMedicaCtrl.agregarReceta}" update="recTbl"/>
+                <p:dataTable id="recTbl" var="rec" value="#{consultaMedicaCtrl.recetas}" rowIndexVar="idx" style="margin-top:8px;">
+                    <p:column headerText="Código (opcional)"><p:inputText value="#{rec.codigo}"/></p:column>
+                    <p:column headerText="Medicamento"><p:inputText value="#{rec.nombreMedicamento}" style="width:100%"/></p:column>
+                    <p:column headerText="Indicaciones"><p:inputTextarea value="#{rec.indicaciones}" autoResize="false" rows="2"/></p:column>
+                    <p:column headerText="Cantidad"><p:inputText value="#{rec.cantidad}"/></p:column>
+                    <p:column headerText="Acción" style="width:80px;">
+                        <p:commandButton icon="pi pi-trash" actionListener="#{consultaMedicaCtrl.eliminarReceta(idx)}" update="recTbl" process="@this"/>
+                    </p:column>
+                </p:dataTable>
+
+                <h:panelGrid columns="2" cellpadding="6" style="margin-top:8px; width:100%;">
+                    <h:outputText value="Recomendaciones no farmacológicas"/>
+                    <p:inputTextarea value="#{consultaMedicaCtrl.recomendaciones}" rows="3" autoResize="false" style="width:100%"/>
+                    <h:outputText value="Signos de alarma"/>
+                    <p:inputTextarea value="#{consultaMedicaCtrl.signosAlarma}" rows="3" autoResize="false" style="width:100%"/>
+                </h:panelGrid>
+            </p:panel>
+
+            <p:toolbar style="margin-top:10px;">
+                <p:toolbarGroup>
+                    <p:commandButton value="Guardar consulta" icon="pi pi-save" actionListener="#{consultaMedicaCtrl.guardarConsulta}" update="growl"/>
+                    <p:commandButton value="Generar PDF" icon="pi pi-file-pdf" actionListener="#{consultaMedicaCtrl.generarPdfReceta}" update="growl pdfPanel" styleClass="ui-button-warning"/>
+                </p:toolbarGroup>
+            </p:toolbar>
+
+            <p:outputPanel id="pdfPanel" style="margin-top:12px;" rendered="#{not empty consultaMedicaCtrl.pdfUrl}">
+                <h:panelGroup layout="block" style="margin-bottom:8px;">
+                    <h:outputLink value="#{consultaMedicaCtrl.pdfDownloadUrl}" target="_blank">Descargar PDF</h:outputLink>
+                </h:panelGroup>
+                <iframe src="#{consultaMedicaCtrl.pdfUrl}" style="width:100%;height:550px;border:1px solid #ccc;"></iframe>
+            </p:outputPanel>
+
+        </h:form>
+    </ui:define>
+</ui:composition>
