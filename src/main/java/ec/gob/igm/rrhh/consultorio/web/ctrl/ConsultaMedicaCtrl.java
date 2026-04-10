@@ -27,8 +27,10 @@ import java.time.Period;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.primefaces.event.SelectEvent;
 
 @Named("consultaMedicaCtrl")
@@ -126,17 +128,11 @@ public class ConsultaMedicaCtrl implements Serializable {
             return;
         }
 
-        List<ConsultaDiagnostico> limpios = new ArrayList<>();
-        for (ConsultaDiagnostico d : diagnosticos) {
-            if (d == null) {
-                continue;
-            }
-            if (isBlank(d.getCodigo()) && isBlank(d.getDescripcion())) {
-                continue;
-            }
-            d.setConsulta(consulta);
-            d.setEstado("ACTIVO");
-            limpios.add(d);
+        List<ConsultaDiagnostico> limpios = limpiarDiagnosticos();
+        if (limpios.isEmpty()) {
+            addMessage(FacesMessage.SEVERITY_ERROR, "Diagnóstico requerido",
+                    "Debe ingresar al menos un diagnóstico válido antes de guardar.");
+            return;
         }
 
         normalizarTipoDiagnostico(limpios);
@@ -147,22 +143,81 @@ public class ConsultaMedicaCtrl implements Serializable {
         addMessage(FacesMessage.SEVERITY_INFO, "Consulta guardada", "Se registró la consulta médica.");
     }
 
+    private List<ConsultaDiagnostico> limpiarDiagnosticos() {
+        List<ConsultaDiagnostico> limpios = new ArrayList<>();
+        Set<String> codigosUsados = new HashSet<>();
+        int duplicados = 0;
+
+        for (ConsultaDiagnostico d : diagnosticos) {
+            if (d == null) {
+                continue;
+            }
+            String codigo = normalizarCodigo(d.getCodigo());
+            if (codigo == null && isBlank(d.getDescripcion())) {
+                continue;
+            }
+            if (codigo != null && !codigosUsados.add(codigo)) {
+                duplicados++;
+                continue;
+            }
+
+            d.setCodigo(codigo);
+            d.setConsulta(consulta);
+            d.setEstado("ACTIVO");
+            limpios.add(d);
+        }
+
+        if (duplicados > 0) {
+            addMessage(FacesMessage.SEVERITY_WARN, "Diagnósticos duplicados omitidos",
+                    "Se omitieron " + duplicados + " diagnóstico(s) repetido(s) por código CIE10.");
+        }
+
+        return limpios;
+    }
+
     private void normalizarTipoDiagnostico(List<ConsultaDiagnostico> lista) {
         if (lista == null || lista.isEmpty()) {
             return;
         }
-        boolean principalAsignado = false;
+        int idxPrincipal = -1;
+        for (int i = 0; i < lista.size(); i++) {
+            ConsultaDiagnostico d = lista.get(i);
+            if (d == null) {
+                continue;
+            }
+            String tipo = normalizarTipo(d.getTipoDiag());
+            d.setTipoDiag(tipo);
+            if ("P".equals(tipo) && idxPrincipal < 0) {
+                idxPrincipal = i;
+            }
+        }
+
+        if (idxPrincipal < 0) {
+            idxPrincipal = 0;
+        }
+
         for (ConsultaDiagnostico d : lista) {
             if (d == null) {
                 continue;
             }
-            if (!principalAsignado) {
-                d.setTipoDiag("P");
-                principalAsignado = true;
-            } else {
-                d.setTipoDiag("S");
-            }
+            d.setTipoDiag("S");
         }
+        lista.get(idxPrincipal).setTipoDiag("P");
+    }
+
+    private String normalizarTipo(String tipo) {
+        if (isBlank(tipo)) {
+            return "S";
+        }
+        String value = tipo.trim().toUpperCase();
+        return ("P".equals(value) || "D".equals(value)) ? "P" : "S";
+    }
+
+    private String normalizarCodigo(String codigo) {
+        if (isBlank(codigo)) {
+            return null;
+        }
+        return codigo.trim().toUpperCase();
     }
 
     private void persistirAlergiasEmpleado() {
