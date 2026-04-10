@@ -77,6 +77,26 @@ public class FichaOcupacionalService {
         return em.find(FichaOcupacional.class, idFicha);
     }
 
+    public FichaOcupacional findByIdForEdit(Long idFicha) {
+        if (idFicha == null) {
+            return null;
+        }
+
+        final String jpql = """
+            SELECT f
+            FROM FichaOcupacional f
+            LEFT JOIN FETCH f.empleado
+            LEFT JOIN FETCH f.personaAux
+            WHERE f.idFicha = :id
+        """;
+
+        return em.createQuery(jpql, FichaOcupacional.class)
+                .setParameter("id", idFicha)
+                .getResultStream()
+                .findFirst()
+                .orElse(null);
+    }
+
     public FichaOcupacional reloadById(Long idFicha) {
         if (idFicha == null) {
             return null;
