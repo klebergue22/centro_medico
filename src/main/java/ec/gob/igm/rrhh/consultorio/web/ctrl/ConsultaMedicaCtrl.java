@@ -65,6 +65,7 @@ public class ConsultaMedicaCtrl implements Serializable {
     private String cedulaBusqueda;
     private DatEmpleado empleado;
     private ConsultaMedica consulta;
+    private List<ConsultaMedica> consultasAnteriores;
     private List<ConsultaDiagnostico> diagnosticos;
     private List<RecetaItemForm> recetas;
     private Date vigenciaReceta;
@@ -95,6 +96,7 @@ public class ConsultaMedicaCtrl implements Serializable {
         consulta.setEstado("ACTIVO");
         consulta.setDiagnosticos(new ArrayList<>());
         diagnosticos = new ArrayList<>();
+        consultasAnteriores = new ArrayList<>();
         recetas = new ArrayList<>();
         vigenciaReceta = new Date();
         signosModel = new SignosVitales();
@@ -116,6 +118,7 @@ public class ConsultaMedicaCtrl implements Serializable {
         consulta.setEmpleado(empleado);
         fechaNacimientoPaciente = empleado.getfNacimiento();
         alergias = empleado.getAlergia();
+        consultasAnteriores = consultaMedicaService.buscarPorEmpleado(empleado.getNoPersona());
         addMessage(FacesMessage.SEVERITY_INFO, "Paciente cargado", empleado.getNombreC());
     }
 
@@ -928,6 +931,7 @@ public class ConsultaMedicaCtrl implements Serializable {
     public void setCedulaBusqueda(String cedulaBusqueda) { this.cedulaBusqueda = cedulaBusqueda; }
     public DatEmpleado getEmpleado() { return empleado; }
     public ConsultaMedica getConsulta() { return consulta; }
+    public List<ConsultaMedica> getConsultasAnteriores() { return consultasAnteriores; }
     public List<ConsultaDiagnostico> getDiagnosticos() { return diagnosticos; }
     public List<RecetaItemForm> getRecetas() { return recetas; }
     public Date getVigenciaReceta() { return vigenciaReceta; }

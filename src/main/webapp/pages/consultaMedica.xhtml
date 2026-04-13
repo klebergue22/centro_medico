@@ -35,18 +35,26 @@
                         <h:outputText value="#{consultaMedicaCtrl.edadPaciente}"/>
                         <h:outputText value="Fecha consulta:" style="font-weight:bold;"/>
                         <p:calendar value="#{consultaMedicaCtrl.consulta.fechaConsulta}" pattern="dd/MM/yyyy" showOn="button"/>
-                        <h:outputText value="Motivo de consulta:" style="font-weight:bold;"/>
-                        <p:inputTextarea value="#{consultaMedicaCtrl.consulta.motivoConsulta}" rows="2" autoResize="false" style="width:100%"/>
-                        <h:outputText value="Enfermedad actual:" style="font-weight:bold;"/>
-                        <p:inputTextarea value="#{consultaMedicaCtrl.consulta.enfermedadActual}" rows="3" autoResize="false" style="width:100%"/>
-                        <h:outputText value="Médico:" style="font-weight:bold;"/>
-                        <p:inputText value="#{consultaMedicaCtrl.consulta.medicoNombre}"/>
-                        <h:outputText value="MSP (código médico):" style="font-weight:bold;"/>
-                        <p:inputText value="#{consultaMedicaCtrl.consulta.medicoCodigo}"/>
                         <h:outputText value="Antecedente de alergias:" style="font-weight:bold;"/>
                         <p:inputTextarea value="#{consultaMedicaCtrl.alergias}" rows="2" autoResize="false" style="width:100%"/>
                     </h:panelGrid>
                 </p:outputPanel>
+            </p:panel>
+
+            <p:panel header="Consultas anteriores" style="margin-top:10px;" rendered="#{not empty consultaMedicaCtrl.consultasAnteriores}">
+                <p:dataTable var="c" value="#{consultaMedicaCtrl.consultasAnteriores}" rows="5" paginator="true">
+                    <p:column headerText="Fecha">
+                        <h:outputText value="#{c.fechaConsulta}">
+                            <f:convertDateTime pattern="dd/MM/yyyy"/>
+                        </h:outputText>
+                    </p:column>
+                    <p:column headerText="Motivo">
+                        <h:outputText value="#{c.motivoConsulta}"/>
+                    </p:column>
+                    <p:column headerText="Médico">
+                        <h:outputText value="#{c.medicoNombre}"/>
+                    </p:column>
+                </p:dataTable>
             </p:panel>
 
             <p:panel header="Signos vitales" style="margin-top:10px;">
@@ -69,6 +77,19 @@
                     <p:inputNumber id="imc" value="#{consultaMedicaCtrl.signosModel.imc}" decimalPlaces="2" decimalSeparator="," thousandSeparator="" readonly="true"/>
                     <h:outputText value="Perímetro abd (cm)"/>
                     <p:inputNumber value="#{consultaMedicaCtrl.signosModel.perimetroAbdCm}" decimalPlaces="1"/>
+                </h:panelGrid>
+            </p:panel>
+
+            <p:panel header="Datos clínicos y certificado" style="margin-top:10px;">
+                <h:panelGrid columns="2" cellpadding="6" styleClass="ui-fluid">
+                    <h:outputText value="Motivo de consulta:"/>
+                    <p:inputTextarea value="#{consultaMedicaCtrl.consulta.motivoConsulta}" rows="2" autoResize="false" style="width:100%"/>
+                    <h:outputText value="Médico:"/>
+                    <p:inputText value="#{consultaMedicaCtrl.consulta.medicoNombre}"/>
+                    <h:outputText value="Síntomas:"/>
+                    <p:inputTextarea value="#{consultaMedicaCtrl.consulta.enfermedadActual}" rows="3" autoResize="false" style="width:100%"/>
+                    <h:outputText value="MSP (código médico):"/>
+                    <p:inputText value="#{consultaMedicaCtrl.consulta.medicoCodigo}"/>
                 </h:panelGrid>
             </p:panel>
 
