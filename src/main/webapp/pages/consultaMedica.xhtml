@@ -262,6 +262,8 @@
                     <p:commandButton value="Generar certificado PDF"
                                      icon="pi pi-file-pdf"
                                      actionListener="#{consultaMedicaCtrl.generarPdfCertificado}"
+                                     form="consultaForm"
+                                     process="certDialog"
                                      update="pdfPanel growl"
                                      oncomplete="PF('certDialogWv').hide();"/>
                 </f:facet>
