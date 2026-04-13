@@ -12,6 +12,7 @@ import ec.gob.igm.rrhh.consultorio.service.EmpleadoService;
 import ec.gob.igm.rrhh.consultorio.service.EmpleadoRhService;
 import ec.gob.igm.rrhh.consultorio.service.SignosVitalesService;
 import ec.gob.igm.rrhh.consultorio.web.facade.CentroMedicoPdfFacade;
+import ec.gob.igm.rrhh.consultorio.web.pdf.PdfResourceResolver;
 import ec.gob.igm.rrhh.consultorio.web.service.Cie10LookupService;
 import jakarta.annotation.PostConstruct;
 import jakarta.faces.application.FacesMessage;
@@ -52,6 +53,8 @@ public class ConsultaMedicaCtrl implements Serializable {
     private transient ConsultaMedicaService consultaMedicaService;
     @Inject
     private transient CentroMedicoPdfFacade centroMedicoPdfFacade;
+    @Inject
+    private transient PdfResourceResolver pdfResourceResolver;
     @Inject
     private transient Cie10LookupService cie10LookupService;
     @Inject
@@ -95,7 +98,7 @@ public class ConsultaMedicaCtrl implements Serializable {
         recetas = new ArrayList<>();
         vigenciaReceta = new Date();
         signosModel = new SignosVitales();
-        certTipoContingencia = "MEDICO";
+        certMedicoCargo = "MEDICO SALUD OCUPACIONAL";
         agregarDiagnostico();
         agregarReceta();
     }
@@ -465,8 +468,8 @@ public class ConsultaMedicaCtrl implements Serializable {
         if (isBlank(certFechaFinLetras) && certFechaFin != null) {
             certFechaFinLetras = fechaEnLetrasCompleta(certFechaFin);
         }
-        if (isBlank(certTipoContingencia)) {
-            certTipoContingencia = "MEDICO";
+        if (isBlank(certMedicoCargo)) {
+            certMedicoCargo = "MEDICO SALUD OCUPACIONAL";
         }
     }
 
@@ -525,6 +528,8 @@ public class ConsultaMedicaCtrl implements Serializable {
         String edad = calcularEdadTexto(fechaNacimientoPaciente);
         String medicoNombre = consulta.getMedicoNombre() == null ? "" : consulta.getMedicoNombre();
         String medicoMsp = consulta.getMedicoCodigo() == null ? "" : consulta.getMedicoCodigo();
+        String logoIgm = resolveLogo("LOGO_IGM_FULL_COLOR.png");
+        String logoMidena = resolveLogo("LOGO_MIDENA.png");
 
         StringBuilder html = new StringBuilder();
         html.append("<!DOCTYPE html><html xmlns='http://www.w3.org/1999/xhtml'><head><meta charset='UTF-8'/>")
@@ -533,31 +538,39 @@ public class ConsultaMedicaCtrl implements Serializable {
                 .append(".grid{display:grid;grid-template-columns:1fr 1fr;gap:30px;}")
                 .append(".panel{min-height:1000px;position:relative;border:1px solid #9ca3af;padding:14px 16px 150px 16px;}")
                 .append(".encabezado{border-bottom:2px solid #1f2937;margin-bottom:10px;padding-bottom:7px;}")
+                .append(".encabezado-grid{display:grid;grid-template-columns:90px 1fr 90px;align-items:center;gap:8px;}")
+                .append(".logo{max-height:52px;max-width:90px;}")
                 .append(".encabezado-titulo{text-align:center;font-size:22px;font-weight:700;letter-spacing:1px;margin:2px 0 0 0;}")
                 .append(".encabezado-sub{font-size:11px;color:#374151;text-align:center;margin:3px 0 0 0;}")
                 .append(".titulo{font-weight:bold;margin-top:15px;margin-bottom:6px;}")
                 .append(".row{margin-bottom:6px;}")
                 .append("table{width:100%;border-collapse:collapse;}th,td{padding:4px 2px;vertical-align:top;}")
-                .append(".firmante{margin-top:20px;text-align:center;}")
+                .append(".firmante{margin-top:42px;text-align:center;}")
                 .append(".firma-linea{border-top:1px solid #000;width:260px;margin:0 auto 8px auto;}")
                 .append(".small{font-size:10px;}")
                 .append("</style></head><body><div class='grid'>");
 
-        html.append(construirColumnaReceta(fecha, nombrePaciente, cedula, edad, fechaVigencia, medicoNombre, medicoMsp));
-        html.append(construirColumnaReceta(fecha, nombrePaciente, cedula, edad, fechaVigencia, medicoNombre, medicoMsp));
+        html.append(construirColumnaReceta(fecha, nombrePaciente, cedula, edad, fechaVigencia, medicoNombre, medicoMsp, logoIgm, logoMidena));
+        html.append(construirColumnaReceta(fecha, nombrePaciente, cedula, edad, fechaVigencia, medicoNombre, medicoMsp, logoIgm, logoMidena));
 
         html.append("</div></body></html>");
         return html.toString();
     }
 
     private String construirColumnaReceta(String fecha, String nombrePaciente, String cedula, String edad,
-            String fechaVigencia, String medicoNombre, String medicoMsp) {
+            String fechaVigencia, String medicoNombre, String medicoMsp, String logoIgm, String logoMidena) {
         String sexo = empleado != null && empleado.getSexo() != null ? empleado.getSexo().getDescripcion() : "";
         StringBuilder sb = new StringBuilder();
         sb.append("<div class='panel'>")
                 .append("<div class='encabezado'>")
+                .append("<div class='encabezado-grid'>")
+                .append("<img class='logo' alt='LOGO_IGM_FULL_COLOR' src='").append(escape(logoIgm)).append("'/>")
+                .append("<div>")
                 .append("<div class='encabezado-titulo'>RECETA</div>")
                 .append("<div class='encabezado-sub'>CONSULTORIO MÉDICO IGM</div>")
+                .append("</div>")
+                .append("<img class='logo' alt='LOGO_MIDENA' src='").append(escape(logoMidena)).append("'/>")
+                .append("</div>")
                 .append("</div>")
                 .append("<div class='row'>QUITO,").append(escape(fecha).toUpperCase()).append("</div>")
                 .append("<div class='row'><b>Paciente:</b> ").append(escape(nombrePaciente)).append("</div>")
@@ -621,16 +634,24 @@ public class ConsultaMedicaCtrl implements Serializable {
         long diasReposo = getCertDiasReposo();
         String diasReposoLetras = numeroEnLetras((int) diasReposo);
         String medicoMsp = consulta.getMedicoCodigo() == null ? "" : consulta.getMedicoCodigo();
+        String logoIgm = resolveLogo("LOGO_IGM_FULL_COLOR.png");
+        String logoMidena = resolveLogo("LOGO_MIDENA.png");
 
         StringBuilder html = new StringBuilder();
         html.append("<!DOCTYPE html><html><head><meta charset='UTF-8'/>")
                 .append("<style>")
                 .append("body{font-family:Arial,sans-serif;font-size:15px;line-height:1.35;margin:48px;color:#1f2937;}")
-                .append(".titulo{text-align:center;font-size:42px;font-weight:700;margin:20px 0 30px 0;}")
+                .append(".encabezado-grid{display:grid;grid-template-columns:120px 1fr 120px;align-items:center;gap:10px;border-bottom:2px solid #1f2937;padding-bottom:8px;margin-bottom:12px;}")
+                .append(".logo{max-height:70px;max-width:120px;}")
+                .append(".titulo{text-align:center;font-size:38px;font-weight:700;margin:0;}")
                 .append(".hl{background:#fff176;padding:0 3px;}")
                 .append(".lbl{font-weight:700;}")
                 .append("</style></head><body>")
-                .append("<div class='titulo'>CERTIFICADO MEDICO</div>")
+                .append("<div class='encabezado-grid'>")
+                .append("<img class='logo' alt='LOGO_IGM_FULL_COLOR' src='").append(escape(logoIgm)).append("'/>")
+                .append("<div class='titulo'>CERTIFICADO MÉDICO</div>")
+                .append("<img class='logo' alt='LOGO_MIDENA' src='").append(escape(logoMidena)).append("'/>")
+                .append("</div>")
                 .append("<p>EL MEDICO CERTIFICA:</p>")
                 .append("<p>El señor(a) <span class='hl'>").append(escape(nombrePaciente)).append("</span> con Cédula de Ciudadanía ")
                 .append("<span class='hl'>").append(escape(cedula)).append("</span>")
@@ -776,7 +797,7 @@ public class ConsultaMedicaCtrl implements Serializable {
         }
         LocalDate inicio = Instant.ofEpochMilli(certFechaInicio.getTime()).atZone(ZoneId.systemDefault()).toLocalDate();
         LocalDate fin = Instant.ofEpochMilli(certFechaFin.getTime()).atZone(ZoneId.systemDefault()).toLocalDate();
-        long dias = ChronoUnit.DAYS.between(inicio, fin);
+        long dias = ChronoUnit.DAYS.between(inicio, fin) + 1;
         return Math.max(0L, dias);
     }
 
@@ -899,6 +920,13 @@ public class ConsultaMedicaCtrl implements Serializable {
             return consulta.getEmpleado().getAlergia();
         }
         return "SIN REGISTRO";
+    }
+
+    private String resolveLogo(String fileName) {
+        if (pdfResourceResolver == null) {
+            return "";
+        }
+        return pdfResourceResolver.buildLogoDataUri(fileName);
     }
 
     public String getCedulaBusqueda() { return cedulaBusqueda; }
