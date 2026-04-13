@@ -188,19 +188,21 @@
                     <h:outputText value="Cargo del paciente"/>
                     <p:inputText value="#{consultaMedicaCtrl.certCargoPaciente}" readonly="true"/>
                     <h:outputText value="Fecha inicio (números)"/>
-                    <p:calendar value="#{consultaMedicaCtrl.certFechaInicio}" pattern="dd/MM/yyyy" showOn="button">
+                    <p:calendar id="certFechaInicioNum" value="#{consultaMedicaCtrl.certFechaInicio}" pattern="dd/MM/yyyy" showOn="button"
+                                maxdate="#{consultaMedicaCtrl.certFechaInicioMax}">
                         <p:ajax event="dateSelect" listener="#{consultaMedicaCtrl.onFechaInicioSelect}"
-                                update="certDialog certDiasReposoNum certDiasReposoTxt"/>
+                                update="certFechaFinNum certFechaInicioTxt certFechaFinTxt certDiasReposoNum certDiasReposoTxt growl"/>
                     </p:calendar>
                     <h:outputText value="Fecha inicio (letras)"/>
-                    <p:inputText value="#{consultaMedicaCtrl.certFechaInicioLetras}" readonly="true"/>
+                    <p:inputText id="certFechaInicioTxt" value="#{consultaMedicaCtrl.certFechaInicioLetras}" readonly="true"/>
                     <h:outputText value="Fecha fin (números)"/>
-                    <p:calendar value="#{consultaMedicaCtrl.certFechaFin}" pattern="dd/MM/yyyy" showOn="button">
+                    <p:calendar id="certFechaFinNum" value="#{consultaMedicaCtrl.certFechaFin}" pattern="dd/MM/yyyy" showOn="button"
+                                mindate="#{consultaMedicaCtrl.certFechaFinMin}">
                         <p:ajax event="dateSelect" listener="#{consultaMedicaCtrl.onFechaFinSelect}"
-                                update="certDialog certDiasReposoNum certDiasReposoTxt"/>
+                                update="certFechaInicioNum certFechaInicioTxt certFechaFinTxt certDiasReposoNum certDiasReposoTxt growl"/>
                     </p:calendar>
                     <h:outputText value="Fecha fin (letras)"/>
-                    <p:inputText value="#{consultaMedicaCtrl.certFechaFinLetras}" readonly="true"/>
+                    <p:inputText id="certFechaFinTxt" value="#{consultaMedicaCtrl.certFechaFinLetras}" readonly="true"/>
                     <h:outputText value="Días reposo (número)"/>
                     <p:inputText id="certDiasReposoNum" value="#{consultaMedicaCtrl.certDiasReposo}" readonly="true"/>
                     <h:outputText value="Días reposo (letras)"/>

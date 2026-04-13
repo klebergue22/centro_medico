@@ -538,7 +538,7 @@ public class ConsultaMedicaCtrl implements Serializable {
                 .append(".titulo{font-weight:bold;margin-top:15px;margin-bottom:6px;}")
                 .append(".row{margin-bottom:6px;}")
                 .append("table{width:100%;border-collapse:collapse;}th,td{padding:4px 2px;vertical-align:top;}")
-                .append(".firmante{position:absolute;left:16px;right:16px;bottom:24px;text-align:center;}")
+                .append(".firmante{margin-top:20px;text-align:center;}")
                 .append(".firma-linea{border-top:1px solid #000;width:260px;margin:0 auto 8px auto;}")
                 .append(".small{font-size:10px;}")
                 .append("</style></head><body><div class='grid'>");
@@ -691,11 +691,37 @@ public class ConsultaMedicaCtrl implements Serializable {
     }
 
     public void onFechaInicioSelect() {
+        if (certFechaInicio != null && certFechaFin != null && !certFechaFin.after(certFechaInicio)) {
+            certFechaFin = sumarDias(certFechaInicio, 1);
+        }
         certFechaInicioLetras = fechaEnLetrasCompleta(certFechaInicio);
+        certFechaFinLetras = fechaEnLetrasCompleta(certFechaFin);
     }
 
     public void onFechaFinSelect() {
+        if (certFechaInicio != null && certFechaFin != null && !certFechaFin.after(certFechaInicio)) {
+            certFechaFin = sumarDias(certFechaInicio, 1);
+            addMessage(FacesMessage.SEVERITY_WARN, "Fecha fin ajustada",
+                    "La fecha fin debe ser mayor a la fecha inicio.");
+        }
         certFechaFinLetras = fechaEnLetrasCompleta(certFechaFin);
+    }
+
+    public Date getCertFechaFinMin() {
+        return certFechaInicio == null ? null : sumarDias(certFechaInicio, 1);
+    }
+
+    public Date getCertFechaInicioMax() {
+        return certFechaFin == null ? null : sumarDias(certFechaFin, -1);
+    }
+
+    private Date sumarDias(Date base, int dias) {
+        if (base == null) {
+            return null;
+        }
+        LocalDate local = Instant.ofEpochMilli(base.getTime()).atZone(ZoneId.systemDefault()).toLocalDate();
+        LocalDate ajustada = local.plusDays(dias);
+        return Date.from(ajustada.atStartOfDay(ZoneId.systemDefault()).toInstant());
     }
 
     private boolean validarCamposObligatoriosCertificado() {
