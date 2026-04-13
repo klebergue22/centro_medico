@@ -36,7 +36,7 @@
                         <h:outputText value="Fecha consulta:" style="font-weight:bold;"/>
                         <p:calendar value="#{consultaMedicaCtrl.consulta.fechaConsulta}" pattern="dd/MM/yyyy" showOn="button"/>
                         <h:outputText value="Antecedente de alergias:" style="font-weight:bold;"/>
-                        <p:inputTextarea value="#{consultaMedicaCtrl.alergias}" rows="2" autoResize="false" style="width:100%"/>
+                        <p:inputTextarea value="#{consultaMedicaCtrl.alergias}" rows="2" autoResize="false" style="width:100%; overflow-y:auto; resize:vertical;"/>
                     </h:panelGrid>
                     <p:panel header="Consultas anteriores"
                              style="margin-top:10px;"
@@ -87,13 +87,9 @@
             <p:panel header="Datos clínicos y certificado" style="margin-top:10px;">
                 <h:panelGrid columns="2" cellpadding="6" styleClass="ui-fluid">
                     <h:outputText value="Motivo de consulta:"/>
-                    <p:inputTextarea value="#{consultaMedicaCtrl.consulta.motivoConsulta}" rows="2" autoResize="false" style="width:100%"/>
-                    <h:outputText value="Médico:"/>
-                    <p:inputText value="#{consultaMedicaCtrl.consulta.medicoNombre}"/>
+                    <p:inputTextarea value="#{consultaMedicaCtrl.consulta.motivoConsulta}" rows="2" autoResize="false" style="width:100%; overflow-y:auto; resize:vertical;"/>
                     <h:outputText value="Síntomas:"/>
-                    <p:inputTextarea value="#{consultaMedicaCtrl.consulta.enfermedadActual}" rows="3" autoResize="false" style="width:100%"/>
-                    <h:outputText value="MSP (código médico):"/>
-                    <p:inputText value="#{consultaMedicaCtrl.consulta.medicoCodigo}"/>
+                    <p:inputTextarea value="#{consultaMedicaCtrl.consulta.enfermedadActual}" rows="3" autoResize="false" style="width:100%; overflow-y:auto; resize:vertical;"/>
                 </h:panelGrid>
             </p:panel>
 
@@ -104,7 +100,7 @@
                     <p:column headerText="Diagnóstico"><p:inputText value="#{rec.diagnostico}" style="width:100%"/></p:column>
                     <p:column headerText="Vía"><p:inputText value="#{rec.via}" style="width:100%"/></p:column>
                     <p:column headerText="Duración (días)"><p:inputNumber value="#{rec.duracionDias}" decimalPlaces="0"/></p:column>
-                    <p:column headerText="Indicaciones"><p:inputTextarea value="#{rec.indicaciones}" autoResize="false" rows="2" style="width:100%"/></p:column>
+                    <p:column headerText="Indicaciones"><p:inputTextarea value="#{rec.indicaciones}" autoResize="false" rows="2" style="width:100%; overflow-y:auto; resize:vertical;"/></p:column>
                     <p:column headerText="Acción" style="width:80px;">
                         <p:commandButton icon="pi pi-trash" actionListener="#{consultaMedicaCtrl.eliminarReceta(idx)}" update="recTbl" process="@this"/>
                     </p:column>
@@ -112,9 +108,9 @@
 
                 <h:panelGrid columns="2" cellpadding="6" style="margin-top:8px; width:100%;">
                     <h:outputText value="Recomendaciones no farmacológicas"/>
-                    <p:inputTextarea value="#{consultaMedicaCtrl.recomendaciones}" rows="3" autoResize="false" style="width:100%"/>
+                    <p:inputTextarea value="#{consultaMedicaCtrl.recomendaciones}" rows="3" autoResize="false" style="width:100%; overflow-y:auto; resize:vertical;"/>
                     <h:outputText value="Signos de alarma"/>
-                    <p:inputTextarea value="#{consultaMedicaCtrl.signosAlarma}" rows="3" autoResize="false" style="width:100%"/>
+                    <p:inputTextarea value="#{consultaMedicaCtrl.signosAlarma}" rows="3" autoResize="false" style="width:100%; overflow-y:auto; resize:vertical;"/>
                 </h:panelGrid>
             </p:panel>
 
@@ -155,6 +151,15 @@
                         <p:commandButton icon="pi pi-trash" actionListener="#{consultaMedicaCtrl.eliminarDiagnostico(idx)}" update="diagTbl" process="@this"/>
                     </p:column>
                 </p:dataTable>
+            </p:panel>
+
+            <p:panel header="Datos del médico" style="margin-top:10px;">
+                <h:panelGrid columns="2" cellpadding="6" styleClass="ui-fluid">
+                    <h:outputText value="Médico:"/>
+                    <p:inputText value="#{consultaMedicaCtrl.consulta.medicoNombre}"/>
+                    <h:outputText value="MSP (código médico):"/>
+                    <p:inputText value="#{consultaMedicaCtrl.consulta.medicoCodigo}"/>
+                </h:panelGrid>
             </p:panel>
 
             <p:toolbar style="margin-top:10px;">
@@ -203,7 +208,7 @@
                     <h:outputText value="Paciente"/>
                     <p:inputText value="#{consultaMedicaCtrl.empleado.nombreC}" readonly="true"/>
                     <h:outputText value="Diagnóstico"/>
-                    <p:inputTextarea value="#{consultaMedicaCtrl.diagnosticosTexto}" rows="3" autoResize="false" readonly="true"/>
+                    <p:inputTextarea value="#{consultaMedicaCtrl.diagnosticosTexto}" rows="4" autoResize="false" readonly="true" style="width:100%; overflow-y:auto; resize:vertical;"/>
                     <h:outputText value="Cargo del paciente"/>
                     <p:inputText value="#{consultaMedicaCtrl.certCargoPaciente}" readonly="true"/>
                     <h:outputText value="Dirección del paciente"/>
@@ -229,7 +234,11 @@
                     <h:outputText value="Días reposo (letras)"/>
                     <p:inputText id="certDiasReposoTxt" value="#{consultaMedicaCtrl.certDiasReposoLetras}" readonly="true"/>
                     <h:outputText value="Domicilio"/>
-                    <p:inputTextarea value="#{consultaMedicaCtrl.certDomicilio}" rows="2" autoResize="false"/>
+                    <p:inputTextarea value="#{consultaMedicaCtrl.certDomicilio}" rows="3" autoResize="false" style="width:100%; overflow-y:auto; resize:vertical;"/>
+                    <h:outputText value="Nombre del médico"/>
+                    <p:inputText value="#{consultaMedicaCtrl.consulta.medicoNombre}" readonly="true"/>
+                    <h:outputText value="Código MSP del médico"/>
+                    <p:inputText value="#{consultaMedicaCtrl.consulta.medicoCodigo}" readonly="true"/>
                     <h:outputText value="Teléfono contacto"/>
                     <p:inputText value="#{consultaMedicaCtrl.certTelefono}"/>
                     <h:outputText value="Tipo de contingencia"/>
