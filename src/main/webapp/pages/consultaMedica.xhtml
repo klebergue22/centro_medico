@@ -185,28 +185,34 @@
                     <p:inputText value="#{consultaMedicaCtrl.empleado.nombreC}" readonly="true"/>
                     <h:outputText value="Diagnóstico"/>
                     <p:inputTextarea value="#{consultaMedicaCtrl.diagnosticosTexto}" rows="3" autoResize="false" readonly="true"/>
+                    <h:outputText value="Cargo del paciente"/>
+                    <p:inputText value="#{consultaMedicaCtrl.certCargoPaciente}" readonly="true"/>
                     <h:outputText value="Fecha inicio (números)"/>
-                    <p:calendar value="#{consultaMedicaCtrl.certFechaInicio}" pattern="dd/MM/yyyy" showOn="button">
-                        <p:ajax event="dateSelect" listener="#{consultaMedicaCtrl.onFechaInicioSelect}" update="certDialog"/>
+                    <p:calendar id="certFechaInicioNum" value="#{consultaMedicaCtrl.certFechaInicio}" pattern="dd/MM/yyyy" showOn="button"
+                                maxdate="#{consultaMedicaCtrl.certFechaInicioMax}">
+                        <p:ajax event="dateSelect" listener="#{consultaMedicaCtrl.onFechaInicioSelect}"
+                                update="certFechaFinNum certFechaInicioTxt certFechaFinTxt certDiasReposoNum certDiasReposoTxt growl"/>
                     </p:calendar>
                     <h:outputText value="Fecha inicio (letras)"/>
-                    <p:inputText value="#{consultaMedicaCtrl.certFechaInicioLetras}" readonly="true"/>
+                    <p:inputText id="certFechaInicioTxt" value="#{consultaMedicaCtrl.certFechaInicioLetras}" readonly="true"/>
                     <h:outputText value="Fecha fin (números)"/>
-                    <p:calendar value="#{consultaMedicaCtrl.certFechaFin}" pattern="dd/MM/yyyy" showOn="button">
-                        <p:ajax event="dateSelect" listener="#{consultaMedicaCtrl.onFechaFinSelect}" update="certDialog"/>
+                    <p:calendar id="certFechaFinNum" value="#{consultaMedicaCtrl.certFechaFin}" pattern="dd/MM/yyyy" showOn="button"
+                                mindate="#{consultaMedicaCtrl.certFechaFinMin}">
+                        <p:ajax event="dateSelect" listener="#{consultaMedicaCtrl.onFechaFinSelect}"
+                                update="certFechaInicioNum certFechaInicioTxt certFechaFinTxt certDiasReposoNum certDiasReposoTxt growl"/>
                     </p:calendar>
                     <h:outputText value="Fecha fin (letras)"/>
-                    <p:inputText value="#{consultaMedicaCtrl.certFechaFinLetras}" readonly="true"/>
+                    <p:inputText id="certFechaFinTxt" value="#{consultaMedicaCtrl.certFechaFinLetras}" readonly="true"/>
                     <h:outputText value="Días reposo (número)"/>
-                    <p:inputText value="#{consultaMedicaCtrl.certDiasReposo}" readonly="true"/>
+                    <p:inputText id="certDiasReposoNum" value="#{consultaMedicaCtrl.certDiasReposo}" readonly="true"/>
                     <h:outputText value="Días reposo (letras)"/>
-                    <p:inputText value="#{consultaMedicaCtrl.certDiasReposoLetras}" readonly="true"/>
+                    <p:inputText id="certDiasReposoTxt" value="#{consultaMedicaCtrl.certDiasReposoLetras}" readonly="true"/>
                     <h:outputText value="Domicilio"/>
                     <p:inputTextarea value="#{consultaMedicaCtrl.certDomicilio}" rows="2" autoResize="false"/>
                     <h:outputText value="Teléfono contacto"/>
                     <p:inputText value="#{consultaMedicaCtrl.certTelefono}"/>
                     <h:outputText value="Tipo de contingencia"/>
-                    <p:inputText value="#{consultaMedicaCtrl.certTipoContingencia}" placeholder="MEDICO"/>
+                    <p:inputText value="#{consultaMedicaCtrl.certTipoContingencia}" placeholder="Ingrese tipo de contingencia"/>
                     <h:outputText value="Cargo del médico"/>
                     <p:inputText value="#{consultaMedicaCtrl.certMedicoCargo}"/>
                     <h:outputText value="Teléfono del médico"/>
