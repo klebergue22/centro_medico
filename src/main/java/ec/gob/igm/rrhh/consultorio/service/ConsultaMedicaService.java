@@ -54,8 +54,8 @@ public class ConsultaMedicaService {
         }
         List<ConsultaMedica> consultas = em.createQuery("""
                 SELECT DISTINCT c FROM ConsultaMedica c
-                LEFT JOIN FETCH c.diagnosticos d
-                LEFT JOIN FETCH d.cie10
+                LEFT JOIN FETCH c.diagnosticos
+                LEFT JOIN FETCH c.diagnosticos.cie10
                 WHERE c.empleado.noPersona = :noPersona
                 ORDER BY c.fechaConsulta DESC
                 """, ConsultaMedica.class)
