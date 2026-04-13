@@ -833,9 +833,6 @@ public class ConsultaMedicaCtrl implements Serializable {
         if (isBlank(certDomicilio)) {
             faltantes.add("domicilio");
         }
-        if (isBlank(certTipoContingencia)) {
-            faltantes.add("tipo de contingencia");
-        }
         if (!faltantes.isEmpty()) {
             addMessage(FacesMessage.SEVERITY_ERROR,
                     "Campos requeridos",
@@ -867,7 +864,10 @@ public class ConsultaMedicaCtrl implements Serializable {
         LocalDate inicio = Instant.ofEpochMilli(certFechaInicio.getTime()).atZone(CERTIFICADO_ZONE).toLocalDate();
         LocalDate fin = Instant.ofEpochMilli(certFechaFin.getTime()).atZone(CERTIFICADO_ZONE).toLocalDate();
         long dias = ChronoUnit.DAYS.between(inicio, fin);
-        return Math.max(0L, dias);
+        if (dias < 0) {
+            return 0L;
+        }
+        return dias + 1L;
     }
 
     public String getCertDiasReposoLetras() {
