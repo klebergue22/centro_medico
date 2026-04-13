@@ -3,12 +3,16 @@ package ec.gob.igm.rrhh.consultorio.web.ctrl;
 import ec.gob.igm.rrhh.consultorio.domain.model.ConsultaDiagnostico;
 import ec.gob.igm.rrhh.consultorio.domain.model.ConsultaMedica;
 import ec.gob.igm.rrhh.consultorio.domain.model.DatEmpleado;
+import ec.gob.igm.rrhh.consultorio.domain.model.FichaOcupacional;
+import ec.gob.igm.rrhh.consultorio.domain.model.PersonaAux;
 import ec.gob.igm.rrhh.consultorio.domain.model.RecetaItem;
 import ec.gob.igm.rrhh.consultorio.domain.model.RecetaMedica;
 import ec.gob.igm.rrhh.consultorio.domain.model.SignosVitales;
 import ec.gob.igm.rrhh.consultorio.service.Cie10Service;
 import ec.gob.igm.rrhh.consultorio.service.ConsultaMedicaService;
 import ec.gob.igm.rrhh.consultorio.service.EmpleadoService;
+import ec.gob.igm.rrhh.consultorio.service.FichaOcupacionalService;
+import ec.gob.igm.rrhh.consultorio.service.PersonaAuxService;
 import ec.gob.igm.rrhh.consultorio.service.EmpleadoRhService;
 import ec.gob.igm.rrhh.consultorio.service.SignosVitalesService;
 import ec.gob.igm.rrhh.consultorio.web.facade.CentroMedicoPdfFacade;
@@ -49,6 +53,10 @@ public class ConsultaMedicaCtrl implements Serializable {
     @Inject
     private transient EmpleadoService empleadoService;
     @Inject
+    private transient PersonaAuxService personaAuxService;
+    @Inject
+    private transient FichaOcupacionalService fichaOcupacionalService;
+    @Inject
     private transient EmpleadoRhService empleadoRhService;
     @Inject
     private transient ConsultaMedicaService consultaMedicaService;
@@ -65,6 +73,8 @@ public class ConsultaMedicaCtrl implements Serializable {
 
     private String cedulaBusqueda;
     private DatEmpleado empleado;
+    private PersonaAux personaAux;
+    private FichaOcupacional fichaReferencia;
     private ConsultaMedica consulta;
     private List<ConsultaMedica> consultasAnteriores;
     private List<ConsultaDiagnostico> diagnosticos;
@@ -111,19 +121,33 @@ public class ConsultaMedicaCtrl implements Serializable {
             addMessage(FacesMessage.SEVERITY_WARN, "Cédula requerida", "Ingrese la cédula del paciente.");
             return;
         }
-        empleado = empleadoService.buscarPorCedula(cedulaBusqueda.trim());
+        String cedula = cedulaBusqueda.trim();
+        empleado = empleadoService.buscarPorCedula(cedula);
+        personaAux = null;
+        fichaReferencia = fichaOcupacionalService.buscarFichaActivaOUltimaPorCedula(cedula);
+
         if (empleado == null) {
-            addMessage(FacesMessage.SEVERITY_WARN, "Sin resultados", "No existe un empleado con esa cédula.");
+            personaAux = personaAuxService.findByCedulaConFichaYCertificado(cedula);
+            if (personaAux == null) {
+                personaAux = personaAuxService.findByCedula(cedula);
+            }
+        }
+
+        if (empleado == null && personaAux == null) {
+            addMessage(FacesMessage.SEVERITY_WARN, "Sin resultados", "No existe un paciente con esa cédula.");
             return;
         }
+
         consulta.setEmpleado(empleado);
-        fechaNacimientoPaciente = empleado.getfNacimiento();
-        alergias = empleado.getAlergia();
+        fechaNacimientoPaciente = (empleado != null) ? empleado.getfNacimiento() : personaAux.getFechaNac();
+        alergias = obtenerAntecedenteClinicoQuirurgico();
         if (isBlank(certDomicilio)) {
-            certDomicilio = empleado.getDireccion();
+            certDomicilio = resolveDireccionPaciente();
         }
-        consultasAnteriores = consultaMedicaService.buscarPorEmpleado(empleado.getNoPersona());
-        addMessage(FacesMessage.SEVERITY_INFO, "Paciente cargado", empleado.getNombreC());
+        consultasAnteriores = (empleado != null)
+                ? consultaMedicaService.buscarPorEmpleado(empleado.getNoPersona())
+                : new ArrayList<>();
+        addMessage(FacesMessage.SEVERITY_INFO, "Paciente cargado", getNombrePaciente());
     }
 
     public void agregarDiagnostico() {
@@ -449,7 +473,7 @@ public class ConsultaMedicaCtrl implements Serializable {
     }
 
     public void generarPdfReceta() {
-        if (consulta.getEmpleado() == null) {
+        if (!hasPacienteSeleccionado()) {
             addMessage(FacesMessage.SEVERITY_ERROR, "Paciente requerido", "Busque un paciente para generar el PDF.");
             return;
         }
@@ -459,7 +483,7 @@ public class ConsultaMedicaCtrl implements Serializable {
     }
 
     public void prepararDialogoCertificado() {
-        if (consulta.getEmpleado() == null) {
+        if (!hasPacienteSeleccionado()) {
             addMessage(FacesMessage.SEVERITY_WARN, "Paciente requerido", "Busque un paciente antes de generar certificado.");
             return;
         }
@@ -475,7 +499,7 @@ public class ConsultaMedicaCtrl implements Serializable {
     }
 
     public void generarPdfCertificado() {
-        if (consulta.getEmpleado() == null) {
+        if (!hasPacienteSeleccionado()) {
             addMessage(FacesMessage.SEVERITY_ERROR, "Paciente requerido", "Busque un paciente para generar el certificado.");
             return;
         }
@@ -528,8 +552,8 @@ public class ConsultaMedicaCtrl implements Serializable {
 
     private String construirHtmlReceta() {
         String fecha = fechaEnLetrasCompleta(consulta.getFechaConsulta());
-        String nombrePaciente = empleado.getNombreC() == null ? "" : empleado.getNombreC();
-        String cedula = empleado.getNoCedula() == null ? "" : empleado.getNoCedula();
+        String nombrePaciente = getNombrePaciente();
+        String cedula = getCedulaPaciente();
         String edad = calcularEdadTexto(fechaNacimientoPaciente);
         String medicoNombre = consulta.getMedicoNombre() == null ? "" : consulta.getMedicoNombre();
         String medicoMsp = consulta.getMedicoCodigo() == null ? "" : consulta.getMedicoCodigo();
@@ -564,7 +588,7 @@ public class ConsultaMedicaCtrl implements Serializable {
 
     private String construirColumnaReceta(String fecha, String nombrePaciente, String cedula, String edad,
             String medicoNombre, String medicoMsp, String logoIgm, String logoMidena) {
-        String sexo = empleado != null && empleado.getSexo() != null ? empleado.getSexo().getDescripcion() : "";
+        String sexo = getSexoPaciente();
         StringBuilder sb = new StringBuilder();
         sb.append("<div class='panel'>")
                 .append("<div class='encabezado'>")
@@ -626,8 +650,8 @@ public class ConsultaMedicaCtrl implements Serializable {
     }
 
     private String construirHtmlCertificado() {
-        String nombrePaciente = empleado.getNombreC() == null ? "" : empleado.getNombreC();
-        String cedula = empleado.getNoCedula() == null ? "" : empleado.getNoCedula();
+        String nombrePaciente = getNombrePaciente();
+        String cedula = getCedulaPaciente();
         String cargoPaciente = resolveCargoPaciente();
         String fechaInicioNum = formatDate(certFechaInicio).replace("/", "-");
         String fechaFinNum = formatDate(certFechaFin).replace("/", "-");
@@ -803,16 +827,17 @@ public class ConsultaMedicaCtrl implements Serializable {
     }
 
     private String resolveCargoPaciente() {
-        if (empleado == null) {
-            return "";
-        }
-        if (!isBlank(empleado.getCargoLossca())) {
+        if (empleado != null && !isBlank(empleado.getCargoLossca())) {
             return empleado.getCargoLossca();
         }
-        if (empleadoRhService == null || isBlank(empleado.getNoCedula())) {
+        if (fichaReferencia != null && !isBlank(fichaReferencia.getCiiu())) {
+            return fichaReferencia.getCiiu();
+        }
+        String cedula = getCedulaPaciente();
+        if (empleadoRhService == null || isBlank(cedula)) {
             return "";
         }
-        var cargoRh = empleadoRhService.buscarPorCedulaEnVista(empleado.getNoCedula());
+        var cargoRh = empleadoRhService.buscarPorCedulaEnVista(cedula);
         return cargoRh != null && !isBlank(cargoRh.getCargoDescrip()) ? cargoRh.getCargoDescrip() : "";
     }
 
@@ -835,7 +860,77 @@ public class ConsultaMedicaCtrl implements Serializable {
     }
 
     public String getDireccionPaciente() {
-        return empleado != null ? empleado.getDireccion() : null;
+        return resolveDireccionPaciente();
+    }
+
+    public String getNombrePaciente() {
+        if (empleado != null && !isBlank(empleado.getNombreC())) {
+            return empleado.getNombreC();
+        }
+        if (personaAux == null) {
+            return "";
+        }
+        StringBuilder nombre = new StringBuilder();
+        appendParte(nombre, personaAux.getApellido1());
+        appendParte(nombre, personaAux.getApellido2());
+        appendParte(nombre, personaAux.getNombre1());
+        appendParte(nombre, personaAux.getNombre2());
+        if (nombre.length() == 0) {
+            appendParte(nombre, personaAux.getApellidos());
+            appendParte(nombre, personaAux.getNombres());
+        }
+        return nombre.toString();
+    }
+
+    private void appendParte(StringBuilder sb, String valor) {
+        if (isBlank(valor)) {
+            return;
+        }
+        if (sb.length() > 0) {
+            sb.append(' ');
+        }
+        sb.append(valor.trim());
+    }
+
+    public String getSexoPaciente() {
+        if (empleado != null && empleado.getSexo() != null) {
+            return empleado.getSexo().getDescripcion();
+        }
+        if (personaAux == null || isBlank(personaAux.getSexo())) {
+            return "";
+        }
+        return "M".equalsIgnoreCase(personaAux.getSexo()) ? "MASCULINO" : "FEMENINO";
+    }
+
+    public String getCedulaPaciente() {
+        if (empleado != null && !isBlank(empleado.getNoCedula())) {
+            return empleado.getNoCedula();
+        }
+        return personaAux != null ? personaAux.getCedula() : "";
+    }
+
+    private String resolveDireccionPaciente() {
+        if (empleado != null && !isBlank(empleado.getDireccion())) {
+            return empleado.getDireccion();
+        }
+        if (fichaReferencia != null && !isBlank(fichaReferencia.getEstablecimientoCt())) {
+            return fichaReferencia.getEstablecimientoCt();
+        }
+        return certDomicilio;
+    }
+
+    private String obtenerAntecedenteClinicoQuirurgico() {
+        if (fichaReferencia != null && !isBlank(fichaReferencia.getAntClinicoQuir())) {
+            return fichaReferencia.getAntClinicoQuir();
+        }
+        if (empleado != null && !isBlank(empleado.getAlergia())) {
+            return empleado.getAlergia();
+        }
+        return null;
+    }
+
+    private boolean hasPacienteSeleccionado() {
+        return empleado != null || personaAux != null;
     }
 
     public String getDiagnosticoPrincipal() {
