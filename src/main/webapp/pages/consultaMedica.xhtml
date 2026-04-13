@@ -49,7 +49,7 @@
 
             <p:panel header="Diagnósticos" style="margin-top:10px;">
                 <p:commandButton value="Agregar diagnóstico" icon="pi pi-plus" actionListener="#{consultaMedicaCtrl.agregarDiagnostico}" update="diagTbl"/>
-                <p:dataTable id="diagTbl" var="diag" value="#{consultaMedicaCtrl.diagnosticos}" rowIndexVar="idx" style="margin-top:8px;">
+                <p:dataTable id="diagTbl" var="diag" value="#{consultaMedicaCtrl.diagnosticos}" lazy="false" rowIndexVar="idx" style="margin-top:8px;">
                     <p:column headerText="#" style="width:50px;">#{idx + 1}</p:column>
                     <p:column headerText="Código CIE10">
                         <p:autoComplete value="#{diag.codigo}"
@@ -116,7 +116,7 @@
                 </h:panelGrid>
 
                 <p:commandButton value="Agregar medicina" icon="pi pi-plus" actionListener="#{consultaMedicaCtrl.agregarReceta}" update="recTbl"/>
-                <p:dataTable id="recTbl" var="rec" value="#{consultaMedicaCtrl.recetas}" rowIndexVar="idx" style="margin-top:8px;">
+                <p:dataTable id="recTbl" var="rec" value="#{consultaMedicaCtrl.recetas}" lazy="false" rowIndexVar="idx" style="margin-top:8px;">
                     <p:column headerText="Medicamento"><p:inputText value="#{rec.medicamento}" style="width:100%"/></p:column>
                     <p:column headerText="Dosis"><p:inputText value="#{rec.dosis}" style="width:100%"/></p:column>
                     <p:column headerText="Frecuencia"><p:inputText value="#{rec.frecuencia}" style="width:100%"/></p:column>
