@@ -52,7 +52,7 @@ public class ConsultaMedicaService {
         if (noPersona == null) {
             return List.of();
         }
-        return em.createQuery("""
+        List<ConsultaMedica> consultas = em.createQuery("""
                 SELECT DISTINCT c FROM ConsultaMedica c
                 LEFT JOIN FETCH c.diagnosticos d
                 LEFT JOIN FETCH d.cie10
@@ -62,6 +62,7 @@ public class ConsultaMedicaService {
                 .setParameter("noPersona", noPersona)
                 .setMaxResults(10)
                 .getResultList();
+
         consultas.forEach(c -> {
             if (c.getDiagnosticos() != null) {
                 c.getDiagnosticos().size();
