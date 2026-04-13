@@ -165,6 +165,34 @@ public class FichaOcupacionalService {
                 .getResultList();
     }
 
+    public FichaOcupacional buscarFichaActivaOUltimaPorCedula(String cedula) {
+        if (cedula == null || cedula.trim().isEmpty()) {
+            return null;
+        }
+        String cedulaNorm = cedula.trim();
+        String jpql = """
+            SELECT f
+            FROM FichaOcupacional f
+            LEFT JOIN FETCH f.empleado e
+            LEFT JOIN FETCH f.personaAux p
+            WHERE (e.noCedula = :cedula
+               OR p.cedula = :cedula
+               OR f.noHistoriaClinica = :cedula
+               OR f.noArchivo = :cedula)
+            ORDER BY
+                CASE WHEN UPPER(COALESCE(f.estado, '')) = 'ACTIVO' THEN 0 ELSE 1 END,
+                COALESCE(f.fechaActualizacion, f.fechaCreacion, f.fechaEvaluacion) DESC,
+                f.idFicha DESC
+        """;
+
+        return em.createQuery(jpql, FichaOcupacional.class)
+                .setParameter("cedula", cedulaNorm)
+                .setMaxResults(1)
+                .getResultStream()
+                .findFirst()
+                .orElse(null);
+    }
+
     private void normalizarPielYOjos(FichaOcupacional f) {
         f.setExfPielCicatrices(snNoNull(f.getExfPielCicatrices()));
         f.setExfOjosParpados(snNoNull(f.getExfOjosParpados()));

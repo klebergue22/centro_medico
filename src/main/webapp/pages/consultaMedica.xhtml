@@ -22,15 +22,15 @@
                 </h:panelGrid>
 
                 <p:outputPanel id="pacientePanel" style="margin-top:10px;">
-                    <h:panelGrid columns="2" cellpadding="4" rendered="#{not empty consultaMedicaCtrl.empleado}">
+                    <h:panelGrid columns="2" cellpadding="4" rendered="#{not empty consultaMedicaCtrl.nombrePaciente}">
                         <h:outputText value="Paciente:" style="font-weight:bold;"/>
-                        <h:outputText value="#{consultaMedicaCtrl.empleado.nombreC}"/>
+                        <h:outputText value="#{consultaMedicaCtrl.nombrePaciente}"/>
                         <h:outputText value="Cargo:" style="font-weight:bold;"/>
                         <h:outputText value="#{consultaMedicaCtrl.certCargoPaciente}"/>
                         <h:outputText value="Fecha nacimiento:" style="font-weight:bold;"/>
                         <p:calendar value="#{consultaMedicaCtrl.fechaNacimientoPaciente}" pattern="dd/MM/yyyy" showOn="button"/>
                         <h:outputText value="Sexo:" style="font-weight:bold;"/>
-                        <p:inputText value="#{consultaMedicaCtrl.empleado.sexo.descripcion}" readonly="true"/>
+                        <p:inputText value="#{consultaMedicaCtrl.sexoPaciente}" readonly="true"/>
                         <h:outputText value="Edad:" style="font-weight:bold;"/>
                         <h:outputText value="#{consultaMedicaCtrl.edadPaciente}"/>
                         <h:outputText value="Fecha consulta:" style="font-weight:bold;"/>
@@ -208,7 +208,7 @@
             <p:dialog id="certDialog" widgetVar="certDialogWv" header="Certificado médico" modal="true" width="760" appendTo="@(body)" resizable="false">
                 <h:panelGrid columns="2" styleClass="ui-fluid" columnClasses="col-12 md:col-4,col-12 md:col-8" cellpadding="6">
                     <h:outputText value="Paciente"/>
-                    <p:inputText value="#{consultaMedicaCtrl.empleado.nombreC}" readonly="true"/>
+                    <p:inputText value="#{consultaMedicaCtrl.nombrePaciente}" readonly="true"/>
                     <h:outputText value="Diagnóstico"/>
                     <p:inputTextarea value="#{consultaMedicaCtrl.diagnosticosTexto}" rows="4" autoResize="false" readonly="true" style="width:100%; overflow-y:auto; resize:vertical;"/>
                     <h:outputText value="Cargo del paciente"/>
