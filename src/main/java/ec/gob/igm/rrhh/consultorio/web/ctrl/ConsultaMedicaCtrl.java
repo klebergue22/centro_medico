@@ -469,12 +469,7 @@ public class ConsultaMedicaCtrl implements Serializable {
         if (certFechaFin == null) {
             certFechaFin = certFechaInicio;
         }
-        if (isBlank(certFechaInicioLetras) && certFechaInicio != null) {
-            certFechaInicioLetras = fechaEnLetrasCompleta(certFechaInicio);
-        }
-        if (isBlank(certFechaFinLetras) && certFechaFin != null) {
-            certFechaFinLetras = fechaEnLetrasCompleta(certFechaFin);
-        }
+        sincronizarFechasCertificado();
         if (isBlank(certMedicoCargo)) {
             certMedicoCargo = "MEDICO SALUD OCUPACIONAL";
         }
@@ -747,8 +742,7 @@ public class ConsultaMedicaCtrl implements Serializable {
             addMessage(FacesMessage.SEVERITY_WARN, "Fecha fin ajustada",
                     "La fecha fin debe ser mayor a la fecha actual.");
         }
-        certFechaInicioLetras = fechaEnLetrasCompleta(certFechaInicio);
-        certFechaFinLetras = fechaEnLetrasCompleta(certFechaFin);
+        sincronizarFechasCertificado();
     }
 
     public void onFechaFinSelect() {
@@ -763,6 +757,11 @@ public class ConsultaMedicaCtrl implements Serializable {
             addMessage(FacesMessage.SEVERITY_WARN, "Fecha fin ajustada",
                     "La fecha fin no puede ser menor a la fecha inicio.");
         }
+        sincronizarFechasCertificado();
+    }
+
+    private void sincronizarFechasCertificado() {
+        certFechaInicioLetras = fechaEnLetrasCompleta(certFechaInicio);
         certFechaFinLetras = fechaEnLetrasCompleta(certFechaFin);
     }
 
@@ -1076,9 +1075,15 @@ public class ConsultaMedicaCtrl implements Serializable {
     public boolean isGenerarCertificado() { return generarCertificado; }
     public void setGenerarCertificado(boolean generarCertificado) { this.generarCertificado = generarCertificado; }
     public Date getCertFechaInicio() { return certFechaInicio; }
-    public void setCertFechaInicio(Date certFechaInicio) { this.certFechaInicio = certFechaInicio; }
+    public void setCertFechaInicio(Date certFechaInicio) {
+        this.certFechaInicio = certFechaInicio;
+        sincronizarFechasCertificado();
+    }
     public Date getCertFechaFin() { return certFechaFin; }
-    public void setCertFechaFin(Date certFechaFin) { this.certFechaFin = certFechaFin; }
+    public void setCertFechaFin(Date certFechaFin) {
+        this.certFechaFin = certFechaFin;
+        sincronizarFechasCertificado();
+    }
     public String getCertFechaInicioLetras() { return certFechaInicioLetras; }
     public void setCertFechaInicioLetras(String certFechaInicioLetras) { this.certFechaInicioLetras = certFechaInicioLetras; }
     public String getCertFechaFinLetras() { return certFechaFinLetras; }
