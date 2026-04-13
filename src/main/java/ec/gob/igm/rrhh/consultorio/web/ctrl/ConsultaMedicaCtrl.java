@@ -94,6 +94,7 @@ public class ConsultaMedicaCtrl implements Serializable {
     private String certFechaInicioLetras;
     private String certFechaFinLetras;
     private String certDomicilio;
+    private String certCargoPaciente;
     private String certTelefono;
     private String certTipoContingencia;
     private String certMedicoCargo;
@@ -143,6 +144,9 @@ public class ConsultaMedicaCtrl implements Serializable {
         alergias = obtenerAntecedenteClinicoQuirurgico();
         if (isBlank(certDomicilio)) {
             certDomicilio = resolveDireccionPaciente();
+        }
+        if (isBlank(certCargoPaciente)) {
+            certCargoPaciente = resolveCargoPaciente();
         }
         consultasAnteriores = (empleado != null)
                 ? consultaMedicaService.buscarPorEmpleado(empleado.getNoPersona())
@@ -496,6 +500,12 @@ public class ConsultaMedicaCtrl implements Serializable {
         if (isBlank(certMedicoCargo)) {
             certMedicoCargo = "MEDICO SALUD OCUPACIONAL";
         }
+        if (isBlank(certDomicilio)) {
+            certDomicilio = resolveDireccionPaciente();
+        }
+        if (isBlank(certCargoPaciente)) {
+            certCargoPaciente = resolveCargoPaciente();
+        }
     }
 
     public void generarPdfCertificado() {
@@ -652,63 +662,61 @@ public class ConsultaMedicaCtrl implements Serializable {
     private String construirHtmlCertificado() {
         String nombrePaciente = getNombrePaciente();
         String cedula = getCedulaPaciente();
-        String cargoPaciente = resolveCargoPaciente();
+        String cargoPaciente = isBlank(certCargoPaciente) ? resolveCargoPaciente() : certCargoPaciente;
+        String direccionPaciente = isBlank(certDomicilio) ? resolveDireccionPaciente() : certDomicilio;
+        String sintomasPaciente = isBlank(consulta.getMotivoConsulta()) ? getDiagnosticosTexto() : consulta.getMotivoConsulta();
         String fechaInicioNum = formatDate(certFechaInicio).replace("/", "-");
         String fechaFinNum = formatDate(certFechaFin).replace("/", "-");
         String fechaInicioTxt = fechaEnLetrasCompleta(certFechaInicio);
         String fechaFinTxt = fechaEnLetrasCompleta(certFechaFin);
         long diasReposo = getCertDiasReposo();
-        String diasReposoLetras = numeroEnLetras((int) diasReposo);
         String medicoMsp = consulta.getMedicoCodigo() == null ? "" : consulta.getMedicoCodigo();
         String logoIgm = resolveLogo("LOGO_IGM_FULL_COLOR.png");
         String logoMidena = resolveLogo("LOGO_MIDENA.png");
+        String membreteBottom = resolveLogo("membrete-bottom.png");
 
         StringBuilder html = new StringBuilder();
         html.append("<!DOCTYPE html><html><head><meta charset='UTF-8'/>")
                 .append("<style>")
-                .append("body{font-family:Arial,sans-serif;font-size:15px;line-height:1.35;margin:48px;color:#1f2937;}")
-                .append(".encabezado-grid{display:grid;grid-template-columns:90px 1fr 90px;align-items:center;gap:10px;border-bottom:2px solid #1f2937;padding-bottom:8px;margin-bottom:12px;}")
-                .append(".logo{max-height:50px;max-width:80px;}")
-                .append(".membrete-bottom{margin-top:24px;padding-top:10px;border-top:2px solid #1f2937;display:grid;grid-template-columns:90px 1fr 90px;align-items:center;gap:10px;}")
-                .append(".membrete-bottom .texto{text-align:center;font-size:11px;color:#374151;}")
-                .append(".titulo{text-align:center;font-size:13px;font-weight:700;margin:0;}")
-                .append(".titulo-sub{text-align:center;font-size:13px;font-weight:700;margin:4px 0 0 0;}")
-                .append(".hl{background:#fff176;padding:0 3px;}")
-                .append(".lbl{font-weight:700;}")
+                .append("body{font-family:Arial,sans-serif;font-size:15px;line-height:1.35;margin:42px 46px;color:#111827;}")
+                .append(".encabezado{display:grid;grid-template-columns:1fr 1fr;align-items:center;column-gap:18px;margin-bottom:18px;}")
+                .append(".logo-bloque{display:flex;align-items:center;gap:10px;}")
+                .append(".logo{max-height:56px;max-width:116px;}")
+                .append(".titulo{text-align:center;font-size:30px;font-weight:700;letter-spacing:.4px;margin:16px 0 22px 0;}")
+                .append(".texto{font-size:15px;}")
+                .append(".firma{text-align:center;margin-top:44px;}")
+                .append(".membrete-bottom{margin-top:24px;text-align:left;}")
+                .append(".membrete-bottom img{width:100%;max-height:170px;object-fit:contain;}")
                 .append("</style></head><body>")
-                .append("<div class='encabezado-grid'>")
-                .append("<img class='logo' alt='LOGO_IGM_FULL_COLOR' src='").append(escape(logoIgm)).append("'/>")
-                .append("<div><div class='titulo'>INSTITUTO GEOGRÁFICO MILITAR DISPENSARIO MÉDICO</div>")
-                .append("<div class='titulo-sub'>CERTIFICADO MÉDICO</div></div>")
-                .append("<img class='logo' alt='LOGO_MIDENA' src='").append(escape(logoMidena)).append("'/>")
+                .append("<div class='encabezado'>")
+                .append("<div class='logo-bloque'><img class='logo' alt='LOGO_MIDENA' src='").append(escape(logoMidena)).append("'/></div>")
+                .append("<div class='logo-bloque' style='justify-content:flex-end;'><img class='logo' alt='LOGO_IGM_FULL_COLOR' src='").append(escape(logoIgm)).append("'/></div>")
                 .append("</div>")
-                .append("<p>EL MEDICO CERTIFICA:</p>")
-                .append("<p>El señor(a) <span class='hl'>").append(escape(nombrePaciente)).append("</span> con Cédula de Ciudadanía ")
-                .append("<span class='hl'>").append(escape(cedula)).append("</span>")
-                .append(", cargo <span class='hl'>").append(escape(cargoPaciente)).append("</span>, presenta diagnóstico: ")
-                .append("<span class='hl'>").append(escape(getDiagnosticosTexto())).append("</span>; por lo que requiere reposo médico absoluto.</p>")
-                .append("<p><span class='lbl'>Número de historia clínica:</span> ").append(escape(cedula)).append("</p>")
-                .append("<p>Desde ").append(escape(fechaInicioNum)).append(" (").append(escape(fechaInicioTxt)).append(").<br/>")
+                .append("<div class='titulo'>CERTIFICADO MEDICO</div>")
+                .append("<p class='texto'>EL MEDICO CERTIFICA:</p>")
+                .append("<p class='texto'>El señor ").append(escape(nombrePaciente)).append(" con Cédula de Ciudadanía ")
+                .append(escape(cedula)).append(", presenta diagnóstico: ")
+                .append(escape(getDiagnosticosTexto())).append("; por lo que requiere reposo médico absoluto durante ")
+                .append(diasReposo).append(" (").append(escape(numeroEnLetras((int) diasReposo))).append(") día(s).</p>")
+                .append("<p class='texto'>Desde el ").append(escape(fechaInicioNum)).append(" (").append(escape(fechaInicioTxt)).append(").<br/>")
                 .append("Hasta ").append(escape(fechaFinNum)).append(" (").append(escape(fechaFinTxt)).append(").</p>")
-                .append("<p><span class='lbl'>Número de días de reposo:</span> ")
-                .append(diasReposo)
-                .append(" (").append(escape(diasReposoLetras)).append(").</p>")
-                .append("<p><span class='lbl'>Domicilio del paciente:</span> ").append(escape(certDomicilio)).append("<br/>")
-                .append("<span class='lbl'>Teléfono de contacto:</span> ").append(escape(certTelefono)).append("<br/>")
-                .append("<span class='lbl'>Tipo de contingencia:</span> ").append(escape(certTipoContingencia)).append("</p>")
-                .append("<p style='margin-top:40px;'>")
+                .append("<p class='texto'>Labora en el INSTITUTO GEOGRAFICO MILITAR (ubicado en ")
+                .append(escape(direccionPaciente)).append("),<br/>con el cargo de ")
+                .append(escape(cargoPaciente)).append(", en la DIRECCION ADMINISTRATIVA - LOGISTICA.</p>")
+                .append("<p class='texto'>Paciente sintomático quien presenta: ").append(escape(sintomasPaciente)).append(".</p>")
+                .append("<p class='texto'><b>Domicilio del paciente:</b> ").append(escape(direccionPaciente)).append("<br/>")
+                .append("<b>Teléfono de contacto:</b> ").append(escape(certTelefono)).append("<br/>")
+                .append("<b>Tipo de contingencia:</b> ").append(escape(certTipoContingencia)).append("</p>")
+                .append("<p class='texto' style='margin-top:30px;'>")
                 .append("Quito DM, ").append(escape(fechaEnLetrasCompleta(consulta.getFechaConsulta() != null ? consulta.getFechaConsulta() : new Date()))).append(".</p>")
-                .append("<p style='margin-top:80px;'>").append(escape(consulta.getMedicoNombre())).append("<br/>")
+                .append("<p class='firma'>Atentamente,</p>")
+                .append("<p class='firma'>").append(escape(consulta.getMedicoNombre())).append("<br/>")
                 .append(escape(certMedicoCargo)).append("<br/>")
                 .append("MSP: ").append(escape(medicoMsp)).append("<br/>")
                 .append("Teléfono: ").append(escape(certMedicoTelefono)).append("<br/>")
                 .append("Correo: ").append(escape(certMedicoCorreo)).append("</p>")
-                .append("<p style='margin-top:20px;'><span class='lbl'>Diagnóstico registrado:</span> ")
-                .append(escape(getDiagnosticosTexto())).append("</p>")
                 .append("<div class='membrete-bottom'>")
-                .append("<img class='logo' alt='LOGO_IGM_FULL_COLOR' src='").append(escape(logoIgm)).append("'/>")
-                .append("<div class='texto'>CONSULTORIO MÉDICO IGM</div>")
-                .append("<img class='logo' alt='LOGO_MIDENA' src='").append(escape(logoMidena)).append("'/>")
+                .append("<img alt='membrete-bottom' src='").append(escape(membreteBottom)).append("'/>")
                 .append("</div>")
                 .append("</body></html>");
         return html.toString();
@@ -875,7 +883,11 @@ public class ConsultaMedicaCtrl implements Serializable {
     }
 
     public String getCertCargoPaciente() {
-        return resolveCargoPaciente();
+        return certCargoPaciente;
+    }
+
+    public void setCertCargoPaciente(String certCargoPaciente) {
+        this.certCargoPaciente = certCargoPaciente;
     }
 
     public String getDireccionPaciente() {
