@@ -291,8 +291,8 @@ public class ConsultaMedicaCtrl implements Serializable {
             }
             RecetaItem item = new RecetaItem();
             item.setMedicamento(fila.getMedicamento().trim());
-            item.setDosis(normalizarTexto(fila.getDosis()));
-            item.setFrecuencia(normalizarTexto(fila.getFrecuencia()));
+            item.setDosis(null);
+            item.setFrecuencia(null);
             item.setVia(normalizarTexto(fila.getVia()));
             item.setDuracionDias(fila.getDuracionDias());
             item.setIndicaciones(normalizarTexto(fila.getIndicaciones()));
@@ -522,7 +522,6 @@ public class ConsultaMedicaCtrl implements Serializable {
 
     private String construirHtmlReceta() {
         String fecha = fechaEnLetrasCompleta(consulta.getFechaConsulta());
-        String fechaVigencia = formatDate(vigenciaReceta);
         String nombrePaciente = empleado.getNombreC() == null ? "" : empleado.getNombreC();
         String cedula = empleado.getNoCedula() == null ? "" : empleado.getNoCedula();
         String edad = calcularEdadTexto(fechaNacimientoPaciente);
@@ -550,15 +549,15 @@ public class ConsultaMedicaCtrl implements Serializable {
                 .append(".small{font-size:10px;}")
                 .append("</style></head><body><div class='grid'>");
 
-        html.append(construirColumnaReceta(fecha, nombrePaciente, cedula, edad, fechaVigencia, medicoNombre, medicoMsp, logoIgm, logoMidena));
-        html.append(construirColumnaReceta(fecha, nombrePaciente, cedula, edad, fechaVigencia, medicoNombre, medicoMsp, logoIgm, logoMidena));
+        html.append(construirColumnaReceta(fecha, nombrePaciente, cedula, edad, medicoNombre, medicoMsp, logoIgm, logoMidena));
+        html.append(construirColumnaReceta(fecha, nombrePaciente, cedula, edad, medicoNombre, medicoMsp, logoIgm, logoMidena));
 
         html.append("</div></body></html>");
         return html.toString();
     }
 
     private String construirColumnaReceta(String fecha, String nombrePaciente, String cedula, String edad,
-            String fechaVigencia, String medicoNombre, String medicoMsp, String logoIgm, String logoMidena) {
+            String medicoNombre, String medicoMsp, String logoIgm, String logoMidena) {
         String sexo = empleado != null && empleado.getSexo() != null ? empleado.getSexo().getDescripcion() : "";
         StringBuilder sb = new StringBuilder();
         sb.append("<div class='panel'>")
@@ -580,16 +579,14 @@ public class ConsultaMedicaCtrl implements Serializable {
 
         sb.append("<div class='titulo'>Antecedente de Alergias:</div>")
                 .append("<div class='row'>").append(escape(resolveAlergiasTexto())).append("</div>")
-                .append("<div class='titulo'>Vigencia del pedido hasta el : ").append(escape(fechaVigencia)).append("</div>")
-                .append("<table><thead><tr><th>Medicamento</th><th>Dosis</th><th>Frecuencia</th><th>Vía</th><th>Días</th><th>Indicaciones</th></tr></thead><tbody>");
+                .append("<table><thead><tr><th>Medicamento</th><th>Diagnóstico</th><th>Vía</th><th>Días</th><th>Indicaciones</th></tr></thead><tbody>");
 
         for (RecetaItemForm item : recetas) {
             if (item == null || isBlank(item.getMedicamento())) {
                 continue;
             }
             sb.append("<tr><td>").append(escape(item.getMedicamento())).append("</td><td>")
-                    .append(escape(item.getDosis())).append("</td><td>")
-                    .append(escape(item.getFrecuencia())).append("</td><td>")
+                    .append(escape(item.getDiagnostico())).append("</td><td>")
                     .append(escape(item.getVia())).append("</td><td>")
                     .append(item.getDuracionDias() == null ? "" : item.getDuracionDias()).append("</td><td>")
                     .append(escape(item.getIndicaciones())).append("</td></tr>");
@@ -614,9 +611,7 @@ public class ConsultaMedicaCtrl implements Serializable {
                 .append("<div class='titulo'>Signos de alarma:</div>")
                 .append("<div class='row'>").append(escape(signosAlarma)).append("</div>")
                 .append("<div class='firmante'>")
-                .append("<div class='firma-linea'></div>")
-                .append("<div><b>Firma:</b> ____________________________</div>")
-                .append("<div><b>Nombre:</b> ").append(escape(medicoNombre)).append("</div>")
+                .append("<div><b>Médico:</b> ").append(escape(medicoNombre)).append("</div>")
                 .append("<div><b>MSP:</b> ").append(escape(medicoMsp)).append("</div>")
                 .append("</div></div>");
 
@@ -970,18 +965,15 @@ public class ConsultaMedicaCtrl implements Serializable {
 
     public static class RecetaItemForm implements Serializable {
         private String medicamento;
-        private String dosis;
-        private String frecuencia;
+        private String diagnostico;
         private String via;
         private Integer duracionDias;
         private String indicaciones;
 
         public String getMedicamento() { return medicamento; }
         public void setMedicamento(String medicamento) { this.medicamento = medicamento; }
-        public String getDosis() { return dosis; }
-        public void setDosis(String dosis) { this.dosis = dosis; }
-        public String getFrecuencia() { return frecuencia; }
-        public void setFrecuencia(String frecuencia) { this.frecuencia = frecuencia; }
+        public String getDiagnostico() { return diagnostico; }
+        public void setDiagnostico(String diagnostico) { this.diagnostico = diagnostico; }
         public String getVia() { return via; }
         public void setVia(String via) { this.via = via; }
         public Integer getDuracionDias() { return duracionDias; }

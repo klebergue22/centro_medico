@@ -26,7 +26,7 @@
                         <h:outputText value="Paciente:" style="font-weight:bold;"/>
                         <h:outputText value="#{consultaMedicaCtrl.empleado.nombreC}"/>
                         <h:outputText value="Cargo:" style="font-weight:bold;"/>
-                        <h:outputText value="#{consultaMedicaCtrl.empleado.cargoLossca}"/>
+                        <h:outputText value="#{consultaMedicaCtrl.certCargoPaciente}"/>
                         <h:outputText value="Fecha nacimiento:" style="font-weight:bold;"/>
                         <p:calendar value="#{consultaMedicaCtrl.fechaNacimientoPaciente}" pattern="dd/MM/yyyy" showOn="button"/>
                         <h:outputText value="Sexo:" style="font-weight:bold;"/>
@@ -47,6 +47,50 @@
                         <p:inputTextarea value="#{consultaMedicaCtrl.alergias}" rows="2" autoResize="false" style="width:100%"/>
                     </h:panelGrid>
                 </p:outputPanel>
+            </p:panel>
+
+            <p:panel header="Signos vitales" style="margin-top:10px;">
+                <h:panelGrid columns="10" styleClass="ui-fluid vit-grid">
+                    <h:outputText value="Temp (°C)"/>
+                    <p:inputNumber value="#{consultaMedicaCtrl.signosModel.temperaturaC}" decimalPlaces="1"/>
+                    <h:outputText value="PA (mmHg)"/>
+                    <p:inputText value="#{consultaMedicaCtrl.paStr}" placeholder="120&#47;80"/>
+                    <h:outputText value="FC"/>
+                    <p:inputNumber value="#{consultaMedicaCtrl.signosModel.frecuenciaCard}" decimalPlaces="0"/>
+                    <h:outputText value="FR"/>
+                    <p:inputNumber value="#{consultaMedicaCtrl.signosModel.frecuenciaResp}" decimalPlaces="0"/>
+                    <h:outputText value="Sat O&#8322; (&#37;)"/>
+                    <p:inputNumber value="#{consultaMedicaCtrl.signosModel.satO2}" decimalPlaces="0"/>
+                    <h:outputText value="Peso (kg)"/>
+                    <p:inputNumber id="peso" value="#{consultaMedicaCtrl.signosModel.pesoKg}" decimalPlaces="2" decimalSeparator="," thousandSeparator="" onkeyup="calcIMC()" onchange="calcIMC()" oninput="calcIMC()"/>
+                    <h:outputText value="Talla (cm)"/>
+                    <p:inputNumber id="talla" value="#{consultaMedicaCtrl.tallaCm}" decimalPlaces="2" decimalSeparator="," thousandSeparator="" onkeyup="calcIMC()" onchange="calcIMC()" oninput="calcIMC()"/>
+                    <h:outputText value="IMC"/>
+                    <p:inputNumber id="imc" value="#{consultaMedicaCtrl.signosModel.imc}" decimalPlaces="2" decimalSeparator="," thousandSeparator="" readonly="true"/>
+                    <h:outputText value="Perímetro abd (cm)"/>
+                    <p:inputNumber value="#{consultaMedicaCtrl.signosModel.perimetroAbdCm}" decimalPlaces="1"/>
+                </h:panelGrid>
+            </p:panel>
+
+            <p:panel header="Receta médica" style="margin-top:10px;">
+                <p:commandButton value="Agregar medicina" icon="pi pi-plus" actionListener="#{consultaMedicaCtrl.agregarReceta}" update="recTbl"/>
+                <p:dataTable id="recTbl" var="rec" value="#{consultaMedicaCtrl.recetas}" lazy="false" rowIndexVar="idx" style="margin-top:8px;">
+                    <p:column headerText="Medicamento"><p:inputText value="#{rec.medicamento}" style="width:100%"/></p:column>
+                    <p:column headerText="Diagnóstico"><p:inputText value="#{rec.diagnostico}" style="width:100%"/></p:column>
+                    <p:column headerText="Vía"><p:inputText value="#{rec.via}" style="width:100%"/></p:column>
+                    <p:column headerText="Duración (días)"><p:inputNumber value="#{rec.duracionDias}" decimalPlaces="0"/></p:column>
+                    <p:column headerText="Indicaciones"><p:inputTextarea value="#{rec.indicaciones}" autoResize="false" rows="2" style="width:100%"/></p:column>
+                    <p:column headerText="Acción" style="width:80px;">
+                        <p:commandButton icon="pi pi-trash" actionListener="#{consultaMedicaCtrl.eliminarReceta(idx)}" update="recTbl" process="@this"/>
+                    </p:column>
+                </p:dataTable>
+
+                <h:panelGrid columns="2" cellpadding="6" style="margin-top:8px; width:100%;">
+                    <h:outputText value="Recomendaciones no farmacológicas"/>
+                    <p:inputTextarea value="#{consultaMedicaCtrl.recomendaciones}" rows="3" autoResize="false" style="width:100%"/>
+                    <h:outputText value="Signos de alarma"/>
+                    <p:inputTextarea value="#{consultaMedicaCtrl.signosAlarma}" rows="3" autoResize="false" style="width:100%"/>
+                </h:panelGrid>
             </p:panel>
 
             <p:panel header="Diagnósticos" style="margin-top:10px;">
@@ -86,56 +130,6 @@
                         <p:commandButton icon="pi pi-trash" actionListener="#{consultaMedicaCtrl.eliminarDiagnostico(idx)}" update="diagTbl" process="@this"/>
                     </p:column>
                 </p:dataTable>
-            </p:panel>
-
-            <p:panel header="Signos vitales" style="margin-top:10px;">
-                <h:panelGrid columns="10" styleClass="ui-fluid vit-grid">
-                    <h:outputText value="Temp (°C)"/>
-                    <p:inputNumber value="#{consultaMedicaCtrl.signosModel.temperaturaC}" decimalPlaces="1"/>
-                    <h:outputText value="PA (mmHg)"/>
-                    <p:inputText value="#{consultaMedicaCtrl.paStr}" placeholder="120&#47;80"/>
-                    <h:outputText value="FC"/>
-                    <p:inputNumber value="#{consultaMedicaCtrl.signosModel.frecuenciaCard}" decimalPlaces="0"/>
-                    <h:outputText value="FR"/>
-                    <p:inputNumber value="#{consultaMedicaCtrl.signosModel.frecuenciaResp}" decimalPlaces="0"/>
-                    <h:outputText value="Sat O&#8322; (&#37;)"/>
-                    <p:inputNumber value="#{consultaMedicaCtrl.signosModel.satO2}" decimalPlaces="0"/>
-                    <h:outputText value="Peso (kg)"/>
-                    <p:inputNumber id="peso" value="#{consultaMedicaCtrl.signosModel.pesoKg}" decimalPlaces="2" decimalSeparator="," thousandSeparator="" onkeyup="calcIMC()" onchange="calcIMC()" oninput="calcIMC()"/>
-                    <h:outputText value="Talla (cm)"/>
-                    <p:inputNumber id="talla" value="#{consultaMedicaCtrl.tallaCm}" decimalPlaces="2" decimalSeparator="," thousandSeparator="" onkeyup="calcIMC()" onchange="calcIMC()" oninput="calcIMC()"/>
-                    <h:outputText value="IMC"/>
-                    <p:inputNumber id="imc" value="#{consultaMedicaCtrl.signosModel.imc}" decimalPlaces="2" decimalSeparator="," thousandSeparator="" readonly="true"/>
-                    <h:outputText value="Perímetro abd (cm)"/>
-                    <p:inputNumber value="#{consultaMedicaCtrl.signosModel.perimetroAbdCm}" decimalPlaces="1"/>
-                </h:panelGrid>
-            </p:panel>
-
-            <p:panel header="Receta médica" style="margin-top:10px;">
-                <h:panelGrid columns="2" cellpadding="6">
-                    <h:outputText value="Vigencia hasta:"/>
-                    <p:calendar value="#{consultaMedicaCtrl.vigenciaReceta}" pattern="dd/MM/yyyy" showOn="button"/>
-                </h:panelGrid>
-
-                <p:commandButton value="Agregar medicina" icon="pi pi-plus" actionListener="#{consultaMedicaCtrl.agregarReceta}" update="recTbl"/>
-                <p:dataTable id="recTbl" var="rec" value="#{consultaMedicaCtrl.recetas}" lazy="false" rowIndexVar="idx" style="margin-top:8px;">
-                    <p:column headerText="Medicamento"><p:inputText value="#{rec.medicamento}" style="width:100%"/></p:column>
-                    <p:column headerText="Dosis"><p:inputText value="#{rec.dosis}" style="width:100%"/></p:column>
-                    <p:column headerText="Frecuencia"><p:inputText value="#{rec.frecuencia}" style="width:100%"/></p:column>
-                    <p:column headerText="Vía"><p:inputText value="#{rec.via}" style="width:100%"/></p:column>
-                    <p:column headerText="Duración (días)"><p:inputNumber value="#{rec.duracionDias}" decimalPlaces="0"/></p:column>
-                    <p:column headerText="Indicaciones"><p:inputTextarea value="#{rec.indicaciones}" autoResize="false" rows="2" style="width:100%"/></p:column>
-                    <p:column headerText="Acción" style="width:80px;">
-                        <p:commandButton icon="pi pi-trash" actionListener="#{consultaMedicaCtrl.eliminarReceta(idx)}" update="recTbl" process="@this"/>
-                    </p:column>
-                </p:dataTable>
-
-                <h:panelGrid columns="2" cellpadding="6" style="margin-top:8px; width:100%;">
-                    <h:outputText value="Recomendaciones no farmacológicas"/>
-                    <p:inputTextarea value="#{consultaMedicaCtrl.recomendaciones}" rows="3" autoResize="false" style="width:100%"/>
-                    <h:outputText value="Signos de alarma"/>
-                    <p:inputTextarea value="#{consultaMedicaCtrl.signosAlarma}" rows="3" autoResize="false" style="width:100%"/>
-                </h:panelGrid>
             </p:panel>
 
             <p:toolbar style="margin-top:10px;">
