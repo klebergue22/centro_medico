@@ -38,23 +38,27 @@
                         <h:outputText value="Antecedente de alergias:" style="font-weight:bold;"/>
                         <p:inputTextarea value="#{consultaMedicaCtrl.alergias}" rows="2" autoResize="false" style="width:100%"/>
                     </h:panelGrid>
+                    <p:panel header="Consultas anteriores"
+                             style="margin-top:10px;"
+                             rendered="#{not empty consultaMedicaCtrl.consultasAnteriores}">
+                        <p:dataTable var="c" value="#{consultaMedicaCtrl.consultasAnteriores}" rows="5" paginator="true">
+                            <p:column headerText="Fecha">
+                                <h:outputText value="#{c.fechaConsulta}">
+                                    <f:convertDateTime pattern="dd/MM/yyyy"/>
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="Diagnóstico">
+                                <h:outputText value="#{consultaMedicaCtrl.obtenerDiagnosticosConsulta(c)}"/>
+                            </p:column>
+                            <p:column headerText="Motivo">
+                                <h:outputText value="#{c.motivoConsulta}"/>
+                            </p:column>
+                            <p:column headerText="Receta">
+                                <h:outputText value="#{consultaMedicaCtrl.obtenerRecetaConsulta(c)}"/>
+                            </p:column>
+                        </p:dataTable>
+                    </p:panel>
                 </p:outputPanel>
-            </p:panel>
-
-            <p:panel header="Consultas anteriores" style="margin-top:10px;" rendered="#{not empty consultaMedicaCtrl.consultasAnteriores}">
-                <p:dataTable var="c" value="#{consultaMedicaCtrl.consultasAnteriores}" rows="5" paginator="true">
-                    <p:column headerText="Fecha">
-                        <h:outputText value="#{c.fechaConsulta}">
-                            <f:convertDateTime pattern="dd/MM/yyyy"/>
-                        </h:outputText>
-                    </p:column>
-                    <p:column headerText="Motivo">
-                        <h:outputText value="#{c.motivoConsulta}"/>
-                    </p:column>
-                    <p:column headerText="Médico">
-                        <h:outputText value="#{c.medicoNombre}"/>
-                    </p:column>
-                </p:dataTable>
             </p:panel>
 
             <p:panel header="Signos vitales" style="margin-top:10px;">
@@ -202,6 +206,8 @@
                     <p:inputTextarea value="#{consultaMedicaCtrl.diagnosticosTexto}" rows="3" autoResize="false" readonly="true"/>
                     <h:outputText value="Cargo del paciente"/>
                     <p:inputText value="#{consultaMedicaCtrl.certCargoPaciente}" readonly="true"/>
+                    <h:outputText value="Dirección del paciente"/>
+                    <p:inputText value="#{consultaMedicaCtrl.direccionPaciente}" readonly="true"/>
                     <h:outputText value="Fecha inicio (números)"/>
                     <p:calendar id="certFechaInicioNum" value="#{consultaMedicaCtrl.certFechaInicio}" pattern="dd/MM/yyyy" showOn="button"
                                 maxdate="#{consultaMedicaCtrl.certFechaInicioMax}">

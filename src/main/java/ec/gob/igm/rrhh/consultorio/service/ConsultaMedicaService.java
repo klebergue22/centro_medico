@@ -52,7 +52,7 @@ public class ConsultaMedicaService {
         if (noPersona == null) {
             return List.of();
         }
-        return em.createQuery("""
+        List<ConsultaMedica> consultas = em.createQuery("""
                 SELECT c FROM ConsultaMedica c
                 WHERE c.empleado.noPersona = :noPersona
                 ORDER BY c.fechaConsulta DESC
@@ -60,5 +60,18 @@ public class ConsultaMedicaService {
                 .setParameter("noPersona", noPersona)
                 .setMaxResults(10)
                 .getResultList();
+        consultas.forEach(c -> {
+            if (c.getDiagnosticos() != null) {
+                c.getDiagnosticos().size();
+            }
+            if (c.getRecetas() != null) {
+                c.getRecetas().forEach(r -> {
+                    if (r.getItems() != null) {
+                        r.getItems().size();
+                    }
+                });
+            }
+        });
+        return consultas;
     }
 }

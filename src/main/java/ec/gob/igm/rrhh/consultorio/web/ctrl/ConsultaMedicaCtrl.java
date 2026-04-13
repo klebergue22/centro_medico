@@ -118,6 +118,9 @@ public class ConsultaMedicaCtrl implements Serializable {
         consulta.setEmpleado(empleado);
         fechaNacimientoPaciente = empleado.getfNacimiento();
         alergias = empleado.getAlergia();
+        if (isBlank(certDomicilio)) {
+            certDomicilio = empleado.getDireccion();
+        }
         consultasAnteriores = consultaMedicaService.buscarPorEmpleado(empleado.getNoPersona());
         addMessage(FacesMessage.SEVERITY_INFO, "Paciente cargado", empleado.getNombreC());
     }
@@ -541,8 +544,8 @@ public class ConsultaMedicaCtrl implements Serializable {
                 .append(".panel{min-height:1000px;position:relative;border:1px solid #9ca3af;padding:14px 16px 150px 16px;}")
                 .append(".encabezado{border-bottom:2px solid #1f2937;margin-bottom:10px;padding-bottom:7px;}")
                 .append(".encabezado-grid{display:grid;grid-template-columns:90px 1fr 90px;align-items:center;gap:8px;}")
-                .append(".logo{max-height:52px;max-width:90px;}")
-                .append(".encabezado-titulo{text-align:center;font-size:22px;font-weight:700;letter-spacing:1px;margin:2px 0 0 0;}")
+                .append(".logo{max-height:50px;max-width:80px;}")
+                .append(".encabezado-titulo{text-align:center;font-size:14px;font-weight:700;letter-spacing:.5px;margin:2px 0 0 0;}")
                 .append(".encabezado-sub{font-size:11px;color:#374151;text-align:center;margin:3px 0 0 0;}")
                 .append(".titulo{font-weight:bold;margin-top:15px;margin-bottom:6px;}")
                 .append(".row{margin-bottom:6px;}")
@@ -568,8 +571,9 @@ public class ConsultaMedicaCtrl implements Serializable {
                 .append("<div class='encabezado-grid'>")
                 .append("<img class='logo' alt='LOGO_IGM_FULL_COLOR' src='").append(escape(logoIgm)).append("'/>")
                 .append("<div>")
-                .append("<div class='encabezado-titulo'>RECETA</div>")
-                .append("<div class='encabezado-sub'>CONSULTORIO MÉDICO IGM</div>")
+                .append("<div class='encabezado-titulo'>INSTITUTO GEOGRÁFICO MILITAR</div>")
+                .append("<div class='encabezado-sub'>DISPENSARIO MÉDICO</div>")
+                .append("<div class='encabezado-sub'><b>RECETA</b></div>")
                 .append("</div>")
                 .append("<img class='logo' alt='LOGO_MIDENA' src='").append(escape(logoMidena)).append("'/>")
                 .append("</div>")
@@ -639,17 +643,19 @@ public class ConsultaMedicaCtrl implements Serializable {
         html.append("<!DOCTYPE html><html><head><meta charset='UTF-8'/>")
                 .append("<style>")
                 .append("body{font-family:Arial,sans-serif;font-size:15px;line-height:1.35;margin:48px;color:#1f2937;}")
-                .append(".encabezado-grid{display:grid;grid-template-columns:120px 1fr 120px;align-items:center;gap:10px;border-bottom:2px solid #1f2937;padding-bottom:8px;margin-bottom:12px;}")
-                .append(".logo{max-height:70px;max-width:120px;}")
-                .append(".membrete-bottom{margin-top:24px;padding-top:10px;border-top:2px solid #1f2937;display:grid;grid-template-columns:120px 1fr 120px;align-items:center;gap:10px;}")
+                .append(".encabezado-grid{display:grid;grid-template-columns:90px 1fr 90px;align-items:center;gap:10px;border-bottom:2px solid #1f2937;padding-bottom:8px;margin-bottom:12px;}")
+                .append(".logo{max-height:50px;max-width:80px;}")
+                .append(".membrete-bottom{margin-top:24px;padding-top:10px;border-top:2px solid #1f2937;display:grid;grid-template-columns:90px 1fr 90px;align-items:center;gap:10px;}")
                 .append(".membrete-bottom .texto{text-align:center;font-size:11px;color:#374151;}")
-                .append(".titulo{text-align:center;font-size:38px;font-weight:700;margin:0;}")
+                .append(".titulo{text-align:center;font-size:13px;font-weight:700;margin:0;}")
+                .append(".titulo-sub{text-align:center;font-size:13px;font-weight:700;margin:4px 0 0 0;}")
                 .append(".hl{background:#fff176;padding:0 3px;}")
                 .append(".lbl{font-weight:700;}")
                 .append("</style></head><body>")
                 .append("<div class='encabezado-grid'>")
                 .append("<img class='logo' alt='LOGO_IGM_FULL_COLOR' src='").append(escape(logoIgm)).append("'/>")
-                .append("<div class='titulo'>CERTIFICADO MÉDICO</div>")
+                .append("<div><div class='titulo'>INSTITUTO GEOGRÁFICO MILITAR DISPENSARIO MÉDICO</div>")
+                .append("<div class='titulo-sub'>CERTIFICADO MÉDICO</div></div>")
                 .append("<img class='logo' alt='LOGO_MIDENA' src='").append(escape(logoMidena)).append("'/>")
                 .append("</div>")
                 .append("<p>EL MEDICO CERTIFICA:</p>")
@@ -717,28 +723,28 @@ public class ConsultaMedicaCtrl implements Serializable {
     }
 
     public void onFechaInicioSelect() {
-        if (certFechaInicio != null && certFechaFin != null && !certFechaFin.after(certFechaInicio)) {
-            certFechaFin = sumarDias(certFechaInicio, 1);
+        if (certFechaInicio != null && certFechaFin != null && certFechaFin.before(certFechaInicio)) {
+            certFechaFin = certFechaInicio;
         }
         certFechaInicioLetras = fechaEnLetrasCompleta(certFechaInicio);
         certFechaFinLetras = fechaEnLetrasCompleta(certFechaFin);
     }
 
     public void onFechaFinSelect() {
-        if (certFechaInicio != null && certFechaFin != null && !certFechaFin.after(certFechaInicio)) {
-            certFechaFin = sumarDias(certFechaInicio, 1);
+        if (certFechaInicio != null && certFechaFin != null && certFechaFin.before(certFechaInicio)) {
+            certFechaFin = certFechaInicio;
             addMessage(FacesMessage.SEVERITY_WARN, "Fecha fin ajustada",
-                    "La fecha fin debe ser mayor a la fecha inicio.");
+                    "La fecha fin no puede ser menor a la fecha inicio.");
         }
         certFechaFinLetras = fechaEnLetrasCompleta(certFechaFin);
     }
 
     public Date getCertFechaFinMin() {
-        return certFechaInicio == null ? null : sumarDias(certFechaInicio, 1);
+        return certFechaInicio;
     }
 
     public Date getCertFechaInicioMax() {
-        return certFechaFin == null ? null : sumarDias(certFechaFin, -1);
+        return certFechaFin;
     }
 
     private Date sumarDias(Date base, int dias) {
@@ -802,6 +808,10 @@ public class ConsultaMedicaCtrl implements Serializable {
         return resolveCargoPaciente();
     }
 
+    public String getDireccionPaciente() {
+        return empleado != null ? empleado.getDireccion() : null;
+    }
+
     public String getDiagnosticoPrincipal() {
         if (diagnosticos == null) {
             return "";
@@ -830,6 +840,53 @@ public class ConsultaMedicaCtrl implements Serializable {
             }
         }
         return String.join("; ", valores);
+    }
+
+    public String obtenerDiagnosticosConsulta(ConsultaMedica consultaHistorica) {
+        if (consultaHistorica == null || consultaHistorica.getDiagnosticos() == null) {
+            return "";
+        }
+        List<String> valores = new ArrayList<>();
+        for (ConsultaDiagnostico d : consultaHistorica.getDiagnosticos()) {
+            if (d == null || (isBlank(d.getCodigo()) && isBlank(d.getDescripcion()))) {
+                continue;
+            }
+            String texto = ((d.getCodigo() == null ? "" : d.getCodigo().trim()) + " "
+                    + (d.getDescripcion() == null ? "" : d.getDescripcion().trim())).trim();
+            if (!texto.isEmpty()) {
+                valores.add(texto);
+            }
+        }
+        return String.join("; ", valores);
+    }
+
+    public String obtenerRecetaConsulta(ConsultaMedica consultaHistorica) {
+        if (consultaHistorica == null || consultaHistorica.getRecetas() == null) {
+            return "";
+        }
+        List<String> valores = new ArrayList<>();
+        for (RecetaMedica recetaHistorica : consultaHistorica.getRecetas()) {
+            if (recetaHistorica == null || recetaHistorica.getItems() == null) {
+                continue;
+            }
+            for (RecetaItem item : recetaHistorica.getItems()) {
+                if (item == null || isBlank(item.getMedicamento())) {
+                    continue;
+                }
+                StringBuilder texto = new StringBuilder(item.getMedicamento().trim());
+                if (!isBlank(item.getVia())) {
+                    texto.append(" (").append(item.getVia().trim()).append(")");
+                }
+                if (item.getDuracionDias() != null) {
+                    texto.append(" ").append(item.getDuracionDias()).append(" día(s)");
+                }
+                if (!isBlank(item.getIndicaciones())) {
+                    texto.append(": ").append(item.getIndicaciones().trim());
+                }
+                valores.add(texto.toString());
+            }
+        }
+        return String.join(" | ", valores);
     }
 
     private String anioEnLetras(int anio) {
