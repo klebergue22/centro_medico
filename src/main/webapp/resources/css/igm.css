@@ -2280,3 +2280,15 @@ td.j-date  .ui-datepicker-trigger{
   background: #e6efe8 !important;
   border: 1px solid #0B3D1A !important;
 }
+
+/* Diálogo de certificado: iconos del calendario en tamaño consistente */
+.cert-dialog .ui-calendar .ui-button {
+  width: 36px !important;
+  min-width: 36px !important;
+  height: 36px !important;
+  padding: 0 !important;
+}
+
+.cert-dialog .ui-calendar .ui-button .ui-icon {
+  font-size: 14px !important;
+}
