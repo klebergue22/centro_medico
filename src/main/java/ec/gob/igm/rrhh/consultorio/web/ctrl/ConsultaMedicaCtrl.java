@@ -685,6 +685,8 @@ public class ConsultaMedicaCtrl implements Serializable {
                 .append("MSP: ").append(escape(medicoMsp)).append("<br/>")
                 .append("Teléfono: ").append(escape(certMedicoTelefono)).append("<br/>")
                 .append("Correo: ").append(escape(certMedicoCorreo)).append("</p>")
+                .append("<p style='margin-top:20px;'><span class='lbl'>Diagnóstico registrado:</span> ")
+                .append(escape(getDiagnosticosTexto())).append("</p>")
                 .append("<div class='membrete-bottom'>")
                 .append("<img class='logo' alt='LOGO_IGM_FULL_COLOR' src='").append(escape(logoIgm)).append("'/>")
                 .append("<div class='texto'>CONSULTORIO MÉDICO IGM</div>")
