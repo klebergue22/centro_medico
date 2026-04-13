@@ -492,6 +492,11 @@ public class ConsultaMedicaCtrl implements Serializable {
             addMessage(FacesMessage.SEVERITY_ERROR, "Rango inválido", "La fecha fin no puede ser menor a la fecha inicio.");
             return;
         }
+        Date hoy = truncateTime(new Date());
+        if (!truncateTime(certFechaFin).after(hoy)) {
+            addMessage(FacesMessage.SEVERITY_ERROR, "Rango inválido", "La fecha fin debe ser mayor a la fecha actual.");
+            return;
+        }
         if (!validarCamposObligatoriosCertificado()) {
             return;
         }
@@ -540,11 +545,12 @@ public class ConsultaMedicaCtrl implements Serializable {
         html.append("<!DOCTYPE html><html xmlns='http://www.w3.org/1999/xhtml'><head><meta charset='UTF-8'/>")
                 .append("<style>")
                 .append("body{font-family:Arial,sans-serif;font-size:12px;margin:22px;color:#000;}")
-                .append(".grid{display:grid;grid-template-columns:1fr 1fr;gap:30px;}")
-                .append(".panel{min-height:1000px;position:relative;border:1px solid #9ca3af;padding:14px 16px 150px 16px;}")
+                .append(".panel{position:relative;border:1px solid #9ca3af;padding:14px 16px 28px 16px;}")
                 .append(".encabezado{border-bottom:2px solid #1f2937;margin-bottom:10px;padding-bottom:7px;}")
-                .append(".encabezado-grid{display:grid;grid-template-columns:90px 1fr 90px;align-items:center;gap:8px;}")
-                .append(".logo{max-height:50px;max-width:80px;}")
+                .append(".encabezado-table{width:100%;border-collapse:collapse;}")
+                .append(".encabezado-table td{vertical-align:middle;}")
+                .append(".logo-cell{width:120px;text-align:center;}")
+                .append(".logo{width:85px;height:85px;display:block;margin:0 auto;object-fit:contain;}")
                 .append(".encabezado-titulo{text-align:center;font-size:14px;font-weight:700;letter-spacing:.5px;margin:2px 0 0 0;}")
                 .append(".encabezado-sub{font-size:11px;color:#374151;text-align:center;margin:3px 0 0 0;}")
                 .append(".titulo{font-weight:bold;margin-top:15px;margin-bottom:6px;}")
@@ -553,12 +559,11 @@ public class ConsultaMedicaCtrl implements Serializable {
                 .append(".firmante{margin-top:42px;text-align:center;}")
                 .append(".firma-linea{border-top:1px solid #000;width:260px;margin:0 auto 8px auto;}")
                 .append(".small{font-size:10px;}")
-                .append("</style></head><body><div class='grid'>");
+                .append("</style></head><body>");
 
         html.append(construirColumnaReceta(fecha, nombrePaciente, cedula, edad, medicoNombre, medicoMsp, logoIgm, logoMidena));
-        html.append(construirColumnaReceta(fecha, nombrePaciente, cedula, edad, medicoNombre, medicoMsp, logoIgm, logoMidena));
 
-        html.append("</div></body></html>");
+        html.append("</body></html>");
         return html.toString();
     }
 
@@ -568,15 +573,15 @@ public class ConsultaMedicaCtrl implements Serializable {
         StringBuilder sb = new StringBuilder();
         sb.append("<div class='panel'>")
                 .append("<div class='encabezado'>")
-                .append("<div class='encabezado-grid'>")
-                .append("<img class='logo' alt='LOGO_IGM_FULL_COLOR' src='").append(escape(logoIgm)).append("'/>")
-                .append("<div>")
+                .append("<table class='encabezado-table'><tr>")
+                .append("<td class='logo-cell'><img class='logo' alt='LOGO_IGM_FULL_COLOR' src='").append(escape(logoIgm)).append("'/></td>")
+                .append("<td>")
                 .append("<div class='encabezado-titulo'>INSTITUTO GEOGRÁFICO MILITAR</div>")
                 .append("<div class='encabezado-sub'>DISPENSARIO MÉDICO</div>")
                 .append("<div class='encabezado-sub'><b>RECETA</b></div>")
-                .append("</div>")
-                .append("<img class='logo' alt='LOGO_MIDENA' src='").append(escape(logoMidena)).append("'/>")
-                .append("</div>")
+                .append("</td>")
+                .append("<td class='logo-cell'><img class='logo' alt='LOGO_MIDENA' src='").append(escape(logoMidena)).append("'/></td>")
+                .append("</tr></table>")
                 .append("</div>")
                 .append("<div class='row'>QUITO,").append(escape(fecha).toUpperCase()).append("</div>")
                 .append("<div class='row'><b>Paciente:</b> ").append(escape(nombrePaciente)).append("</div>")
@@ -723,14 +728,33 @@ public class ConsultaMedicaCtrl implements Serializable {
     }
 
     public void onFechaInicioSelect() {
+        Date hoy = truncateTime(new Date());
+        Date minimoFin = sumarDias(hoy, 1);
         if (certFechaInicio != null && certFechaFin != null && certFechaFin.before(certFechaInicio)) {
             certFechaFin = certFechaInicio;
+        }
+        if (certFechaFin == null) {
+            certFechaFin = certFechaInicio != null ? certFechaInicio : minimoFin;
+        }
+        if (certFechaFin != null && !truncateTime(certFechaFin).after(hoy)) {
+            certFechaFin = minimoFin;
+            if (certFechaInicio != null && certFechaFin.before(certFechaInicio)) {
+                certFechaFin = certFechaInicio;
+            }
+            addMessage(FacesMessage.SEVERITY_WARN, "Fecha fin ajustada",
+                    "La fecha fin debe ser mayor a la fecha actual.");
         }
         certFechaInicioLetras = fechaEnLetrasCompleta(certFechaInicio);
         certFechaFinLetras = fechaEnLetrasCompleta(certFechaFin);
     }
 
     public void onFechaFinSelect() {
+        Date hoy = truncateTime(new Date());
+        if (certFechaFin != null && !truncateTime(certFechaFin).after(hoy)) {
+            certFechaFin = sumarDias(hoy, 1);
+            addMessage(FacesMessage.SEVERITY_WARN, "Fecha fin ajustada",
+                    "La fecha fin debe ser mayor a la fecha actual.");
+        }
         if (certFechaInicio != null && certFechaFin != null && certFechaFin.before(certFechaInicio)) {
             certFechaFin = certFechaInicio;
             addMessage(FacesMessage.SEVERITY_WARN, "Fecha fin ajustada",
@@ -754,6 +778,14 @@ public class ConsultaMedicaCtrl implements Serializable {
         LocalDate local = Instant.ofEpochMilli(base.getTime()).atZone(ZoneId.systemDefault()).toLocalDate();
         LocalDate ajustada = local.plusDays(dias);
         return Date.from(ajustada.atStartOfDay(ZoneId.systemDefault()).toInstant());
+    }
+
+    private Date truncateTime(Date fecha) {
+        if (fecha == null) {
+            return null;
+        }
+        LocalDate local = Instant.ofEpochMilli(fecha.getTime()).atZone(ZoneId.systemDefault()).toLocalDate();
+        return Date.from(local.atStartOfDay(ZoneId.systemDefault()).toInstant());
     }
 
     private boolean validarCamposObligatoriosCertificado() {
@@ -796,7 +828,7 @@ public class ConsultaMedicaCtrl implements Serializable {
         }
         LocalDate inicio = Instant.ofEpochMilli(certFechaInicio.getTime()).atZone(ZoneId.systemDefault()).toLocalDate();
         LocalDate fin = Instant.ofEpochMilli(certFechaFin.getTime()).atZone(ZoneId.systemDefault()).toLocalDate();
-        long dias = ChronoUnit.DAYS.between(inicio, fin) + 1;
+        long dias = ChronoUnit.DAYS.between(inicio, fin);
         return Math.max(0L, dias);
     }
 
