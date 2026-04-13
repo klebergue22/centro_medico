@@ -17,7 +17,7 @@ import jakarta.faces.application.FacesMessage;
 import jakarta.faces.component.UIComponent;
 import jakarta.faces.context.FacesContext;
 import jakarta.faces.event.AjaxBehaviorEvent;
-import jakarta.faces.view.ViewScoped;
+import jakarta.enterprise.context.SessionScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import java.io.Serializable;
@@ -37,7 +37,7 @@ import java.util.Set;
 import org.primefaces.event.SelectEvent;
 
 @Named("consultaMedicaCtrl")
-@ViewScoped
+@SessionScoped
 public class ConsultaMedicaCtrl implements Serializable {
 
     private static final long serialVersionUID = 1L;
