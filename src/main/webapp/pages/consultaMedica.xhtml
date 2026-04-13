@@ -88,12 +88,8 @@
                 <h:panelGrid columns="2" cellpadding="6" styleClass="ui-fluid">
                     <h:outputText value="Motivo de consulta:"/>
                     <p:inputTextarea value="#{consultaMedicaCtrl.consulta.motivoConsulta}" rows="2" autoResize="false" style="width:100%; overflow-y:auto; resize:vertical;"/>
-                    <h:outputText value="Médico:"/>
-                    <p:inputText value="#{consultaMedicaCtrl.consulta.medicoNombre}"/>
                     <h:outputText value="Síntomas:"/>
                     <p:inputTextarea value="#{consultaMedicaCtrl.consulta.enfermedadActual}" rows="3" autoResize="false" style="width:100%; overflow-y:auto; resize:vertical;"/>
-                    <h:outputText value="MSP (código médico):"/>
-                    <p:inputText value="#{consultaMedicaCtrl.consulta.medicoCodigo}"/>
                 </h:panelGrid>
             </p:panel>
 
@@ -155,6 +151,15 @@
                         <p:commandButton icon="pi pi-trash" actionListener="#{consultaMedicaCtrl.eliminarDiagnostico(idx)}" update="diagTbl" process="@this"/>
                     </p:column>
                 </p:dataTable>
+            </p:panel>
+
+            <p:panel header="Datos del médico" style="margin-top:10px;">
+                <h:panelGrid columns="2" cellpadding="6" styleClass="ui-fluid">
+                    <h:outputText value="Médico:"/>
+                    <p:inputText value="#{consultaMedicaCtrl.consulta.medicoNombre}"/>
+                    <h:outputText value="MSP (código médico):"/>
+                    <p:inputText value="#{consultaMedicaCtrl.consulta.medicoCodigo}"/>
+                </h:panelGrid>
             </p:panel>
 
             <p:toolbar style="margin-top:10px;">
