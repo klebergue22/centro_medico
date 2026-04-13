@@ -25,6 +25,8 @@
                     <h:panelGrid columns="2" cellpadding="4" rendered="#{not empty consultaMedicaCtrl.empleado}">
                         <h:outputText value="Paciente:" style="font-weight:bold;"/>
                         <h:outputText value="#{consultaMedicaCtrl.empleado.nombreC}"/>
+                        <h:outputText value="Cargo:" style="font-weight:bold;"/>
+                        <h:outputText value="#{consultaMedicaCtrl.empleado.cargoLossca}"/>
                         <h:outputText value="Fecha nacimiento:" style="font-weight:bold;"/>
                         <p:calendar value="#{consultaMedicaCtrl.fechaNacimientoPaciente}" pattern="dd/MM/yyyy" showOn="button"/>
                         <h:outputText value="Sexo:" style="font-weight:bold;"/>
@@ -39,7 +41,7 @@
                         <p:inputTextarea value="#{consultaMedicaCtrl.consulta.enfermedadActual}" rows="3" autoResize="false" style="width:100%"/>
                         <h:outputText value="Médico:" style="font-weight:bold;"/>
                         <p:inputText value="#{consultaMedicaCtrl.consulta.medicoNombre}"/>
-                        <h:outputText value="Código médico:" style="font-weight:bold;"/>
+                        <h:outputText value="MSP (código médico):" style="font-weight:bold;"/>
                         <p:inputText value="#{consultaMedicaCtrl.consulta.medicoCodigo}"/>
                         <h:outputText value="Antecedente de alergias:" style="font-weight:bold;"/>
                         <p:inputTextarea value="#{consultaMedicaCtrl.alergias}" rows="2" autoResize="false" style="width:100%"/>
@@ -188,19 +190,29 @@
                         <p:ajax event="dateSelect" listener="#{consultaMedicaCtrl.onFechaInicioSelect}" update="certDialog"/>
                     </p:calendar>
                     <h:outputText value="Fecha inicio (letras)"/>
-                    <p:inputText value="#{consultaMedicaCtrl.certFechaInicioLetras}"/>
+                    <p:inputText value="#{consultaMedicaCtrl.certFechaInicioLetras}" readonly="true"/>
                     <h:outputText value="Fecha fin (números)"/>
                     <p:calendar value="#{consultaMedicaCtrl.certFechaFin}" pattern="dd/MM/yyyy" showOn="button">
                         <p:ajax event="dateSelect" listener="#{consultaMedicaCtrl.onFechaFinSelect}" update="certDialog"/>
                     </p:calendar>
                     <h:outputText value="Fecha fin (letras)"/>
-                    <p:inputText value="#{consultaMedicaCtrl.certFechaFinLetras}"/>
+                    <p:inputText value="#{consultaMedicaCtrl.certFechaFinLetras}" readonly="true"/>
+                    <h:outputText value="Días reposo (número)"/>
+                    <p:inputText value="#{consultaMedicaCtrl.certDiasReposo}" readonly="true"/>
+                    <h:outputText value="Días reposo (letras)"/>
+                    <p:inputText value="#{consultaMedicaCtrl.certDiasReposoLetras}" readonly="true"/>
                     <h:outputText value="Domicilio"/>
                     <p:inputTextarea value="#{consultaMedicaCtrl.certDomicilio}" rows="2" autoResize="false"/>
                     <h:outputText value="Teléfono contacto"/>
                     <p:inputText value="#{consultaMedicaCtrl.certTelefono}"/>
                     <h:outputText value="Tipo de contingencia"/>
                     <p:inputText value="#{consultaMedicaCtrl.certTipoContingencia}" placeholder="MEDICO"/>
+                    <h:outputText value="Cargo del médico"/>
+                    <p:inputText value="#{consultaMedicaCtrl.certMedicoCargo}"/>
+                    <h:outputText value="Teléfono del médico"/>
+                    <p:inputText value="#{consultaMedicaCtrl.certMedicoTelefono}"/>
+                    <h:outputText value="Correo del médico"/>
+                    <p:inputText value="#{consultaMedicaCtrl.certMedicoCorreo}"/>
                 </h:panelGrid>
                 <f:facet name="footer">
                     <p:commandButton value="Generar certificado PDF"
