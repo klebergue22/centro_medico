@@ -469,7 +469,6 @@ public class ConsultaMedicaCtrl implements Serializable {
         if (certFechaFin == null) {
             certFechaFin = certFechaInicio;
         }
-        sincronizarFechasCertificado();
         if (isBlank(certMedicoCargo)) {
             certMedicoCargo = "MEDICO SALUD OCUPACIONAL";
         }
@@ -742,7 +741,6 @@ public class ConsultaMedicaCtrl implements Serializable {
             addMessage(FacesMessage.SEVERITY_WARN, "Fecha fin ajustada",
                     "La fecha fin debe ser mayor a la fecha actual.");
         }
-        sincronizarFechasCertificado();
     }
 
     public void onFechaFinSelect() {
@@ -757,12 +755,6 @@ public class ConsultaMedicaCtrl implements Serializable {
             addMessage(FacesMessage.SEVERITY_WARN, "Fecha fin ajustada",
                     "La fecha fin no puede ser menor a la fecha inicio.");
         }
-        sincronizarFechasCertificado();
-    }
-
-    private void sincronizarFechasCertificado() {
-        certFechaInicioLetras = fechaEnLetrasCompleta(certFechaInicio);
-        certFechaFinLetras = fechaEnLetrasCompleta(certFechaFin);
     }
 
     public Date getCertFechaFinMin() {
@@ -1080,13 +1072,10 @@ public class ConsultaMedicaCtrl implements Serializable {
         sincronizarFechasCertificado();
     }
     public Date getCertFechaFin() { return certFechaFin; }
-    public void setCertFechaFin(Date certFechaFin) {
-        this.certFechaFin = certFechaFin;
-        sincronizarFechasCertificado();
-    }
-    public String getCertFechaInicioLetras() { return certFechaInicioLetras; }
+    public void setCertFechaFin(Date certFechaFin) { this.certFechaFin = certFechaFin; }
+    public String getCertFechaInicioLetras() { return fechaEnLetrasCompleta(certFechaInicio); }
     public void setCertFechaInicioLetras(String certFechaInicioLetras) { this.certFechaInicioLetras = certFechaInicioLetras; }
-    public String getCertFechaFinLetras() { return certFechaFinLetras; }
+    public String getCertFechaFinLetras() { return fechaEnLetrasCompleta(certFechaFin); }
     public void setCertFechaFinLetras(String certFechaFinLetras) { this.certFechaFinLetras = certFechaFinLetras; }
     public String getCertDomicilio() { return certDomicilio; }
     public void setCertDomicilio(String certDomicilio) { this.certDomicilio = certDomicilio; }

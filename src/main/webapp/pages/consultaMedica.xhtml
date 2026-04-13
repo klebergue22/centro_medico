@@ -220,7 +220,7 @@
                                 maxdate="#{consultaMedicaCtrl.certFechaInicioMax}">
                         <p:ajax event="dateSelect" listener="#{consultaMedicaCtrl.onFechaInicioSelect}"
                                 update="certFechaFinNum certFechaInicioTxt certFechaFinTxt certDiasReposoNum certDiasReposoTxt growl"/>
-                        <p:ajax event="change" listener="#{consultaMedicaCtrl.onFechaInicioSelect}"
+                        <p:ajax event="change"
                                 process="@this"
                                 update="certFechaFinNum certFechaInicioTxt certFechaFinTxt certDiasReposoNum certDiasReposoTxt growl"/>
                     </p:calendar>
@@ -231,7 +231,7 @@
                                 mindate="#{consultaMedicaCtrl.certFechaFinMin}">
                         <p:ajax event="dateSelect" listener="#{consultaMedicaCtrl.onFechaFinSelect}"
                                 update="certFechaInicioNum certFechaInicioTxt certFechaFinTxt certDiasReposoNum certDiasReposoTxt growl"/>
-                        <p:ajax event="change" listener="#{consultaMedicaCtrl.onFechaFinSelect}"
+                        <p:ajax event="change"
                                 process="@this"
                                 update="certFechaInicioNum certFechaInicioTxt certFechaFinTxt certDiasReposoNum certDiasReposoTxt growl"/>
                     </p:calendar>
