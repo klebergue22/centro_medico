@@ -9,6 +9,7 @@ import ec.gob.igm.rrhh.consultorio.domain.model.SignosVitales;
 import ec.gob.igm.rrhh.consultorio.service.Cie10Service;
 import ec.gob.igm.rrhh.consultorio.service.ConsultaMedicaService;
 import ec.gob.igm.rrhh.consultorio.service.EmpleadoService;
+import ec.gob.igm.rrhh.consultorio.service.EmpleadoRhService;
 import ec.gob.igm.rrhh.consultorio.service.SignosVitalesService;
 import ec.gob.igm.rrhh.consultorio.web.facade.CentroMedicoPdfFacade;
 import ec.gob.igm.rrhh.consultorio.web.service.Cie10LookupService;
@@ -45,6 +46,8 @@ public class ConsultaMedicaCtrl implements Serializable {
 
     @Inject
     private transient EmpleadoService empleadoService;
+    @Inject
+    private transient EmpleadoRhService empleadoRhService;
     @Inject
     private transient ConsultaMedicaService consultaMedicaService;
     @Inject
@@ -480,6 +483,9 @@ public class ConsultaMedicaCtrl implements Serializable {
             addMessage(FacesMessage.SEVERITY_ERROR, "Rango inválido", "La fecha fin no puede ser menor a la fecha inicio.");
             return;
         }
+        if (!validarCamposObligatoriosCertificado()) {
+            return;
+        }
         String html = construirHtmlCertificado();
         tokenPdfCertificado = centroMedicoPdfFacade.generarDesdeHtml(html, "CERT_MED_");
         addMessage(FacesMessage.SEVERITY_INFO, "Certificado generado", "Ya puede visualizar o descargar el certificado.");
@@ -532,8 +538,8 @@ public class ConsultaMedicaCtrl implements Serializable {
                 .append(".titulo{font-weight:bold;margin-top:15px;margin-bottom:6px;}")
                 .append(".row{margin-bottom:6px;}")
                 .append("table{width:100%;border-collapse:collapse;}th,td{padding:4px 2px;vertical-align:top;}")
-                .append(".firmante{position:absolute;left:16px;right:16px;bottom:24px;}")
-                .append(".firma-linea{border-top:1px solid #000;width:260px;margin-bottom:8px;}")
+                .append(".firmante{position:absolute;left:16px;right:16px;bottom:24px;text-align:center;}")
+                .append(".firma-linea{border-top:1px solid #000;width:260px;margin:0 auto 8px auto;}")
                 .append(".small{font-size:10px;}")
                 .append("</style></head><body><div class='grid'>");
 
@@ -607,7 +613,7 @@ public class ConsultaMedicaCtrl implements Serializable {
     private String construirHtmlCertificado() {
         String nombrePaciente = empleado.getNombreC() == null ? "" : empleado.getNombreC();
         String cedula = empleado.getNoCedula() == null ? "" : empleado.getNoCedula();
-        String cargoPaciente = empleado.getCargoLossca() == null ? "" : empleado.getCargoLossca();
+        String cargoPaciente = resolveCargoPaciente();
         String fechaInicioNum = formatDate(certFechaInicio).replace("/", "-");
         String fechaFinNum = formatDate(certFechaFin).replace("/", "-");
         String fechaInicioTxt = fechaEnLetrasCompleta(certFechaInicio);
@@ -692,6 +698,52 @@ public class ConsultaMedicaCtrl implements Serializable {
         certFechaFinLetras = fechaEnLetrasCompleta(certFechaFin);
     }
 
+    private boolean validarCamposObligatoriosCertificado() {
+        List<String> faltantes = new ArrayList<>();
+        if (getCertDiasReposo() <= 0) {
+            faltantes.add("días de reposo");
+        }
+        if (isBlank(certDomicilio)) {
+            faltantes.add("domicilio");
+        }
+        if (isBlank(certTelefono)) {
+            faltantes.add("teléfono de contacto");
+        }
+        if (isBlank(certTipoContingencia)) {
+            faltantes.add("tipo de contingencia");
+        }
+        if (isBlank(certMedicoCargo)) {
+            faltantes.add("cargo del médico");
+        }
+        if (isBlank(certMedicoTelefono)) {
+            faltantes.add("teléfono del médico");
+        }
+        if (isBlank(certMedicoCorreo)) {
+            faltantes.add("correo del médico");
+        }
+        if (!faltantes.isEmpty()) {
+            addMessage(FacesMessage.SEVERITY_ERROR,
+                    "Campos requeridos",
+                    "Complete: " + String.join(", ", faltantes) + ".");
+            return false;
+        }
+        return true;
+    }
+
+    private String resolveCargoPaciente() {
+        if (empleado == null) {
+            return "";
+        }
+        if (!isBlank(empleado.getCargoLossca())) {
+            return empleado.getCargoLossca();
+        }
+        if (empleadoRhService == null || isBlank(empleado.getNoCedula())) {
+            return "";
+        }
+        var cargoRh = empleadoRhService.buscarPorCedulaEnVista(empleado.getNoCedula());
+        return cargoRh != null && !isBlank(cargoRh.getCargoDescrip()) ? cargoRh.getCargoDescrip() : "";
+    }
+
     public long getCertDiasReposo() {
         if (certFechaInicio == null || certFechaFin == null) {
             return 0L;
@@ -704,6 +756,10 @@ public class ConsultaMedicaCtrl implements Serializable {
 
     public String getCertDiasReposoLetras() {
         return numeroEnLetras((int) getCertDiasReposo());
+    }
+
+    public String getCertCargoPaciente() {
+        return resolveCargoPaciente();
     }
 
     public String getDiagnosticoPrincipal() {
