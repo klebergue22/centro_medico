@@ -748,6 +748,25 @@ public class ConsultaMedicaCtrl implements Serializable {
         return numeroEnLetras(local.getDayOfMonth()) + " de " + mes + " de " + anioEnLetras(local.getYear());
     }
 
+    private void sincronizarFechasCertificado() {
+        Date hoy = truncateTime(new Date());
+        Date minimoFin = sumarDias(hoy, 1);
+        if (certFechaInicio != null && certFechaFin != null && certFechaFin.before(certFechaInicio)) {
+            certFechaFin = certFechaInicio;
+            return;
+        }
+        if (certFechaFin == null) {
+            certFechaFin = certFechaInicio != null ? certFechaInicio : minimoFin;
+            return;
+        }
+        if (!truncateTime(certFechaFin).after(hoy)) {
+            certFechaFin = minimoFin;
+            if (certFechaInicio != null && certFechaFin.before(certFechaInicio)) {
+                certFechaFin = certFechaInicio;
+            }
+        }
+    }
+
     public void onFechaInicioSelect() {
         Date hoy = truncateTime(new Date());
         Date minimoFin = sumarDias(hoy, 1);
