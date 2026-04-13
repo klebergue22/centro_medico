@@ -173,8 +173,10 @@ public class FichaOcupacionalService {
         String jpql = """
             SELECT f
             FROM FichaOcupacional f
-            LEFT JOIN FETCH f.empleado e
-            LEFT JOIN FETCH f.personaAux p
+            LEFT JOIN FETCH f.empleado
+            LEFT JOIN FETCH f.personaAux
+            LEFT JOIN f.empleado e
+            LEFT JOIN f.personaAux p
             WHERE (e.noCedula = :cedula
                OR p.cedula = :cedula
                OR f.noHistoriaClinica = :cedula
