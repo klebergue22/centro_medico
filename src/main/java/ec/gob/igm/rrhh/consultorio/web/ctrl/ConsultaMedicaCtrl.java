@@ -534,25 +534,11 @@ public class ConsultaMedicaCtrl implements Serializable {
         String sexo = empleado != null && empleado.getSexo() != null ? empleado.getSexo().getDescripcion() : "";
         StringBuilder sb = new StringBuilder();
         sb.append("<div class='panel'>")
-                .append("<div class='row'>QUITO,").append(escape(fecha)).append("</div>")
+                .append("<div class='row'>QUITO,").append(escape(fecha).toUpperCase()).append("</div>")
                 .append("<div class='row'><b>Paciente:</b> ").append(escape(nombrePaciente)).append("</div>")
                 .append("<div class='row'><b>Cédula:</b> ").append(escape(cedula)).append("</div>")
                 .append("<div class='row'><b>Sexo:</b> ").append(escape(sexo)).append("</div>")
                 .append("<div class='row'><b>Edad:</b> ").append(escape(edad)).append("</div>")
-                .append("<div class='row'><b>Motivo consulta:</b> ").append(escape(consulta.getMotivoConsulta())).append("</div>")
-                .append("<div class='row'><b>Enfermedad actual:</b> ").append(escape(consulta.getEnfermedadActual())).append("</div>")
-                .append("<div class='titulo'>DIAGNÓSTICO</div>");
-
-        int count = 1;
-        for (ConsultaDiagnostico d : diagnosticos) {
-            if (d == null || (isBlank(d.getCodigo()) && isBlank(d.getDescripcion()))) {
-                continue;
-            }
-            sb.append("<div class='row'>").append(count++)
-                    .append(". ").append(escape(d.getCodigo()))
-                    .append(" ").append(escape(d.getDescripcion()))
-                    .append("</div>");
-        }
 
         sb.append("<div class='titulo'>Antecedente de Alergias:</div>")
                 .append("<div class='row'>").append(escape(resolveAlergiasTexto())).append("</div>")
@@ -569,6 +555,18 @@ public class ConsultaMedicaCtrl implements Serializable {
                     .append(escape(item.getVia())).append("</td><td>")
                     .append(item.getDuracionDias() == null ? "" : item.getDuracionDias()).append("</td><td>")
                     .append(escape(item.getIndicaciones())).append("</td></tr>");
+        }
+                .append("<div class='titulo'>DIAGNÓSTICO</div>");
+
+        int count = 1;
+        for (ConsultaDiagnostico d : diagnosticos) {
+            if (d == null || (isBlank(d.getCodigo()) && isBlank(d.getDescripcion()))) {
+                continue;
+            }
+            sb.append("<div class='row'>").append(count++)
+                    .append(". ").append(escape(d.getCodigo()))
+                    .append(" ").append(escape(d.getDescripcion()))
+                    .append("</div>");
         }
 
         sb.append("</tbody></table>")
