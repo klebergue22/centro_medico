@@ -53,7 +53,8 @@ public class ConsultaMedicaService {
             return List.of();
         }
         return em.createQuery("""
-                SELECT c FROM ConsultaMedica c
+                SELECT DISTINCT c FROM ConsultaMedica c
+                LEFT JOIN FETCH c.diagnosticos d
                 WHERE c.empleado.noPersona = :noPersona
                 ORDER BY c.fechaConsulta DESC
                 """, ConsultaMedica.class)
