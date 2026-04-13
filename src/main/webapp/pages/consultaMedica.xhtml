@@ -116,9 +116,9 @@
 
             <p:panel header="Diagnósticos" style="margin-top:10px;">
                 <p:commandButton value="Agregar diagnóstico" icon="pi pi-plus" actionListener="#{consultaMedicaCtrl.agregarDiagnostico}" update="diagTbl"/>
-                <p:dataTable id="diagTbl" var="diag" value="#{consultaMedicaCtrl.diagnosticos}" lazy="false" rowIndexVar="idx" style="margin-top:8px;">
+                    <p:dataTable id="diagTbl" var="diag" value="#{consultaMedicaCtrl.diagnosticos}" lazy="false" rowIndexVar="idx" style="margin-top:8px;" styleClass="diag-table">
                     <p:column headerText="#" style="width:50px;">#{idx + 1}</p:column>
-                    <p:column headerText="Código CIE10">
+                    <p:column headerText="Código CIE10" styleClass="diag-col-code">
                         <p:autoComplete value="#{diag.codigo}"
                                         completeMethod="#{consultaMedicaCtrl.completarDiagnosticoCodigo}"
                                         dropdown="true"
@@ -126,13 +126,14 @@
                                         queryDelay="200"
                                         forceSelection="false"
                                         cache="false"
-                                        appendTo="@(body)">
+                                        appendTo="@(body)"
+                                        styleClass="diag-ac">
                             <f:attribute name="idx" value="#{idx}"/>
                             <p:ajax event="itemSelect" listener="#{consultaMedicaCtrl.onDiagnosticoCodigoSelect}" process="@this" update="diagTbl"/>
                             <p:ajax event="blur" listener="#{consultaMedicaCtrl.onDiagnosticoCodigoBlur}" process="@this" update="diagTbl"/>
                         </p:autoComplete>
                     </p:column>
-                    <p:column headerText="Descripción">
+                    <p:column headerText="Descripción" styleClass="diag-col-desc">
                         <p:autoComplete value="#{diag.descripcion}"
                                         completeMethod="#{consultaMedicaCtrl.completarDiagnosticoDescripcion}"
                                         dropdown="true"
@@ -141,7 +142,8 @@
                                         forceSelection="false"
                                         cache="false"
                                         appendTo="@(body)"
-                                        style="width:100%">
+                                        style="width:100%"
+                                        styleClass="diag-ac">
                             <f:attribute name="idx" value="#{idx}"/>
                             <p:ajax event="itemSelect" listener="#{consultaMedicaCtrl.onDiagnosticoDescripcionSelect}" process="@this" update="diagTbl"/>
                             <p:ajax event="blur" listener="#{consultaMedicaCtrl.onDiagnosticoDescripcionBlur}" process="@this" update="diagTbl"/>
@@ -218,6 +220,9 @@
                                 maxdate="#{consultaMedicaCtrl.certFechaInicioMax}">
                         <p:ajax event="dateSelect" listener="#{consultaMedicaCtrl.onFechaInicioSelect}"
                                 update="certFechaFinNum certFechaInicioTxt certFechaFinTxt certDiasReposoNum certDiasReposoTxt growl"/>
+                        <p:ajax event="change"
+                                process="@this"
+                                update="certFechaFinNum certFechaInicioTxt certFechaFinTxt certDiasReposoNum certDiasReposoTxt growl"/>
                     </p:calendar>
                     <h:outputText value="Fecha inicio (letras)"/>
                     <p:inputText id="certFechaInicioTxt" value="#{consultaMedicaCtrl.certFechaInicioLetras}" readonly="true"/>
@@ -225,6 +230,9 @@
                     <p:calendar id="certFechaFinNum" value="#{consultaMedicaCtrl.certFechaFin}" pattern="dd/MM/yyyy" showOn="button"
                                 mindate="#{consultaMedicaCtrl.certFechaFinMin}">
                         <p:ajax event="dateSelect" listener="#{consultaMedicaCtrl.onFechaFinSelect}"
+                                update="certFechaInicioNum certFechaInicioTxt certFechaFinTxt certDiasReposoNum certDiasReposoTxt growl"/>
+                        <p:ajax event="change"
+                                process="@this"
                                 update="certFechaInicioNum certFechaInicioTxt certFechaFinTxt certDiasReposoNum certDiasReposoTxt growl"/>
                     </p:calendar>
                     <h:outputText value="Fecha fin (letras)"/>

@@ -2125,6 +2125,22 @@ td.j-date  .ui-datepicker-trigger{
   transform: none !important;
 }
 
+/* ===== Consulta médica: holgura para autocompletes de diagnóstico ===== */
+.diag-table .diag-col-code {
+  width: 260px;
+}
+
+.diag-table .diag-col-desc {
+  width: 420px;
+}
+
+.diag-table .diag-ac,
+.diag-table .diag-ac .ui-autocomplete-input {
+  width: 100% !important;
+  min-width: 240px;
+  box-sizing: border-box;
+}
+
 /* ================================
    PrimeFaces p:slider - IGM (olivo)
    ================================ */
