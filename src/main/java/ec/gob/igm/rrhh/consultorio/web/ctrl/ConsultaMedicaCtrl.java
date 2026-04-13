@@ -1067,7 +1067,10 @@ public class ConsultaMedicaCtrl implements Serializable {
     public boolean isGenerarCertificado() { return generarCertificado; }
     public void setGenerarCertificado(boolean generarCertificado) { this.generarCertificado = generarCertificado; }
     public Date getCertFechaInicio() { return certFechaInicio; }
-    public void setCertFechaInicio(Date certFechaInicio) { this.certFechaInicio = certFechaInicio; }
+    public void setCertFechaInicio(Date certFechaInicio) {
+        this.certFechaInicio = certFechaInicio;
+        sincronizarFechasCertificado();
+    }
     public Date getCertFechaFin() { return certFechaFin; }
     public void setCertFechaFin(Date certFechaFin) { this.certFechaFin = certFechaFin; }
     public String getCertFechaInicioLetras() { return fechaEnLetrasCompleta(certFechaInicio); }
