@@ -5,6 +5,7 @@ import jakarta.ejb.Stateless;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import java.util.Date;
+import java.util.List;
 
 @Stateless
 public class ConsultaMedicaService {
@@ -45,5 +46,19 @@ public class ConsultaMedicaService {
         consulta.setFechaActualizacion(ahora);
         consulta.setUsrActualizacion(usr);
         return em.merge(consulta);
+    }
+
+    public List<ConsultaMedica> buscarPorEmpleado(Integer noPersona) {
+        if (noPersona == null) {
+            return List.of();
+        }
+        return em.createQuery("""
+                SELECT c FROM ConsultaMedica c
+                WHERE c.empleado.noPersona = :noPersona
+                ORDER BY c.fechaConsulta DESC
+                """, ConsultaMedica.class)
+                .setParameter("noPersona", noPersona)
+                .setMaxResults(10)
+                .getResultList();
     }
 }
