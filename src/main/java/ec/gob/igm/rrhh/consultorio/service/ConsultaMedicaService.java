@@ -52,8 +52,10 @@ public class ConsultaMedicaService {
         if (noPersona == null) {
             return List.of();
         }
-        List<ConsultaMedica> consultas = em.createQuery("""
-                SELECT c FROM ConsultaMedica c
+        return em.createQuery("""
+                SELECT DISTINCT c FROM ConsultaMedica c
+                LEFT JOIN FETCH c.diagnosticos d
+                LEFT JOIN FETCH d.cie10
                 WHERE c.empleado.noPersona = :noPersona
                 ORDER BY c.fechaConsulta DESC
                 """, ConsultaMedica.class)
