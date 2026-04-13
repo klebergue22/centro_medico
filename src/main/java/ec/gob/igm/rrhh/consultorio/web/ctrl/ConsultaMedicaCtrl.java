@@ -641,6 +641,8 @@ public class ConsultaMedicaCtrl implements Serializable {
                 .append("body{font-family:Arial,sans-serif;font-size:15px;line-height:1.35;margin:48px;color:#1f2937;}")
                 .append(".encabezado-grid{display:grid;grid-template-columns:120px 1fr 120px;align-items:center;gap:10px;border-bottom:2px solid #1f2937;padding-bottom:8px;margin-bottom:12px;}")
                 .append(".logo{max-height:70px;max-width:120px;}")
+                .append(".membrete-bottom{margin-top:24px;padding-top:10px;border-top:2px solid #1f2937;display:grid;grid-template-columns:120px 1fr 120px;align-items:center;gap:10px;}")
+                .append(".membrete-bottom .texto{text-align:center;font-size:11px;color:#374151;}")
                 .append(".titulo{text-align:center;font-size:38px;font-weight:700;margin:0;}")
                 .append(".hl{background:#fff176;padding:0 3px;}")
                 .append(".lbl{font-weight:700;}")
@@ -671,6 +673,11 @@ public class ConsultaMedicaCtrl implements Serializable {
                 .append("MSP: ").append(escape(medicoMsp)).append("<br/>")
                 .append("Teléfono: ").append(escape(certMedicoTelefono)).append("<br/>")
                 .append("Correo: ").append(escape(certMedicoCorreo)).append("</p>")
+                .append("<div class='membrete-bottom'>")
+                .append("<img class='logo' alt='LOGO_IGM_FULL_COLOR' src='").append(escape(logoIgm)).append("'/>")
+                .append("<div class='texto'>CONSULTORIO MÉDICO IGM</div>")
+                .append("<img class='logo' alt='LOGO_MIDENA' src='").append(escape(logoMidena)).append("'/>")
+                .append("</div>")
                 .append("</body></html>");
         return html.toString();
     }
@@ -751,20 +758,8 @@ public class ConsultaMedicaCtrl implements Serializable {
         if (isBlank(certDomicilio)) {
             faltantes.add("domicilio");
         }
-        if (isBlank(certTelefono)) {
-            faltantes.add("teléfono de contacto");
-        }
         if (isBlank(certTipoContingencia)) {
             faltantes.add("tipo de contingencia");
-        }
-        if (isBlank(certMedicoCargo)) {
-            faltantes.add("cargo del médico");
-        }
-        if (isBlank(certMedicoTelefono)) {
-            faltantes.add("teléfono del médico");
-        }
-        if (isBlank(certMedicoCorreo)) {
-            faltantes.add("correo del médico");
         }
         if (!faltantes.isEmpty()) {
             addMessage(FacesMessage.SEVERITY_ERROR,
