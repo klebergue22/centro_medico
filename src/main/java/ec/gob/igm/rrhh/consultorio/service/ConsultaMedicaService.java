@@ -62,5 +62,18 @@ public class ConsultaMedicaService {
                 .setParameter("noPersona", noPersona)
                 .setMaxResults(10)
                 .getResultList();
+        consultas.forEach(c -> {
+            if (c.getDiagnosticos() != null) {
+                c.getDiagnosticos().size();
+            }
+            if (c.getRecetas() != null) {
+                c.getRecetas().forEach(r -> {
+                    if (r.getItems() != null) {
+                        r.getItems().size();
+                    }
+                });
+            }
+        });
+        return consultas;
     }
 }

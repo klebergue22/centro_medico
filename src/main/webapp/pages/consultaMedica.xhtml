@@ -53,6 +53,9 @@
                             <p:column headerText="Motivo">
                                 <h:outputText value="#{c.motivoConsulta}"/>
                             </p:column>
+                            <p:column headerText="Receta">
+                                <h:outputText value="#{consultaMedicaCtrl.obtenerRecetaConsulta(c)}"/>
+                            </p:column>
                         </p:dataTable>
                     </p:panel>
                 </p:outputPanel>

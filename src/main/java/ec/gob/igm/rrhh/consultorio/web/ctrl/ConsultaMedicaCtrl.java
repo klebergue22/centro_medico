@@ -892,6 +892,35 @@ public class ConsultaMedicaCtrl implements Serializable {
         return String.join("; ", valores);
     }
 
+    public String obtenerRecetaConsulta(ConsultaMedica consultaHistorica) {
+        if (consultaHistorica == null || consultaHistorica.getRecetas() == null) {
+            return "";
+        }
+        List<String> valores = new ArrayList<>();
+        for (RecetaMedica recetaHistorica : consultaHistorica.getRecetas()) {
+            if (recetaHistorica == null || recetaHistorica.getItems() == null) {
+                continue;
+            }
+            for (RecetaItem item : recetaHistorica.getItems()) {
+                if (item == null || isBlank(item.getMedicamento())) {
+                    continue;
+                }
+                StringBuilder texto = new StringBuilder(item.getMedicamento().trim());
+                if (!isBlank(item.getVia())) {
+                    texto.append(" (").append(item.getVia().trim()).append(")");
+                }
+                if (item.getDuracionDias() != null) {
+                    texto.append(" ").append(item.getDuracionDias()).append(" día(s)");
+                }
+                if (!isBlank(item.getIndicaciones())) {
+                    texto.append(": ").append(item.getIndicaciones().trim());
+                }
+                valores.add(texto.toString());
+            }
+        }
+        return String.join(" | ", valores);
+    }
+
     private String anioEnLetras(int anio) {
         int miles = anio / 1000;
         int resto = anio % 1000;
