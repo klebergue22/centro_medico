@@ -1,7 +1,6 @@
 package ec.gob.igm.rrhh.consultorio.web.ctrl;
 
 import ec.gob.igm.rrhh.consultorio.domain.dto.EmpleadoCargoDTO;
-import ec.gob.igm.rrhh.consultorio.domain.enums.Sexo;
 import ec.gob.igm.rrhh.consultorio.domain.model.ConsultaDiagnostico;
 import ec.gob.igm.rrhh.consultorio.domain.model.ConsultaMedica;
 import ec.gob.igm.rrhh.consultorio.domain.model.DatEmpleado;
@@ -201,7 +200,7 @@ public class ConsultaMedicaCtrl implements Serializable {
         DatEmpleado empleadoAsociado = resolveEmpleadoParaConsulta();
         if (empleadoAsociado == null) {
             addMessage(FacesMessage.SEVERITY_ERROR, "Paciente no vinculado",
-                    "La persona auxiliar seleccionada no está vinculada a un empleado para registrar la consulta.");
+                    "La persona auxiliar debe tener NO_PERSONA para registrar la consulta sin crear registros en DAT_EMPLEADO.");
             return;
         }
         consulta.setEmpleado(empleadoAsociado);
@@ -1089,68 +1088,17 @@ public class ConsultaMedicaCtrl implements Serializable {
                     empleado = encontrado;
                     return encontrado;
                 }
+                DatEmpleado referencia = new DatEmpleado();
+                referencia.setNoPersona(noPersonaAux.intValue());
+                empleado = referencia;
+                return referencia;
             }
         }
         if (fichaReferencia != null && fichaReferencia.getEmpleado() != null) {
             empleado = fichaReferencia.getEmpleado();
             return empleado;
         }
-        if (personaAux != null) {
-            DatEmpleado externo = crearEmpleadoExternoDesdePersonaAux(personaAux);
-            if (externo != null) {
-                empleado = externo;
-                return externo;
-            }
-        }
         return null;
-    }
-
-    private DatEmpleado crearEmpleadoExternoDesdePersonaAux(PersonaAux aux) {
-        if (aux == null || isBlank(aux.getCedula())) {
-            return null;
-        }
-
-        DatEmpleado existentePorCedula = empleadoService.buscarPorCedula(aux.getCedula().trim());
-        if (existentePorCedula != null) {
-            vincularPersonaAuxConEmpleado(aux, existentePorCedula);
-            return existentePorCedula;
-        }
-
-        DatEmpleado externo = new DatEmpleado();
-        externo.setNoPersona(empleadoService.obtenerSiguienteNoPersona());
-        externo.setNoCedula(aux.getCedula().trim());
-        externo.setPriApellido(firstNonBlank(aux.getApellido1(), aux.getApellidos()));
-        externo.setSegApellido(aux.getApellido2());
-        externo.setNombres(buildNombres(aux));
-        externo.setNombreC(buildNombreCompleto(aux));
-        externo.setfNacimiento(aux.getFechaNac());
-        externo.setSexo(mapSexo(aux.getSexo()));
-        externo.setTipo("E");
-        externo.setDireccion(certDomicilio);
-        externo.setTelefono(certTelefono);
-        DatEmpleado guardado = empleadoService.guardar(externo);
-        vincularPersonaAuxConEmpleado(aux, guardado);
-        return guardado;
-    }
-
-    private void vincularPersonaAuxConEmpleado(PersonaAux aux, DatEmpleado emp) {
-        if (aux == null || emp == null || emp.getNoPersona() == null) {
-            return;
-        }
-        Long noPersonaActual = aux.getNoPersona();
-        Long noPersonaEmp = emp.getNoPersona().longValue();
-        if (noPersonaActual != null && noPersonaActual.equals(noPersonaEmp)) {
-            return;
-        }
-        aux.setNoPersona(noPersonaEmp);
-        personaAuxService.guardar(aux);
-    }
-
-    private Sexo mapSexo(String sexoAux) {
-        if (isBlank(sexoAux)) {
-            return null;
-        }
-        return "M".equalsIgnoreCase(sexoAux) ? Sexo.MASCULINO : Sexo.FEMENINO;
     }
 
     private String buildNombreCompleto(PersonaAux aux) {
