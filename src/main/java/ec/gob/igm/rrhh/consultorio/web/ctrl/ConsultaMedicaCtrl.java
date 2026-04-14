@@ -1,6 +1,7 @@
 package ec.gob.igm.rrhh.consultorio.web.ctrl;
 
 import ec.gob.igm.rrhh.consultorio.domain.dto.EmpleadoCargoDTO;
+import ec.gob.igm.rrhh.consultorio.domain.enums.Sexo;
 import ec.gob.igm.rrhh.consultorio.domain.model.ConsultaDiagnostico;
 import ec.gob.igm.rrhh.consultorio.domain.model.ConsultaMedica;
 import ec.gob.igm.rrhh.consultorio.domain.model.DatEmpleado;
@@ -694,15 +695,17 @@ public class ConsultaMedicaCtrl implements Serializable {
         String areaTrabajo = getAreaTrabajoPaciente();
         String diagnosticoPaciente = isBlank(getDiagnosticosTexto()) ? "NO REGISTRA" : getDiagnosticosTexto();
         String sintomasPaciente = isBlank(consulta.getMotivoConsulta()) ? "NO REGISTRA" : consulta.getMotivoConsulta();
-        String fechaInicioNum = formatDate(certFechaInicio).replace("/", "-");
-        String fechaFinNum = formatDate(certFechaFin).replace("/", "-");
         String fechaInicioTexto = fechaEnLetras(certFechaInicio);
         String fechaFinTexto = fechaEnLetras(certFechaFin);
         long diasReposo = getCertDiasReposo();
-        String telefonoContacto = isBlank(certTelefono) ? "NO REGISTRA" : certTelefono;
+        String telefonoContacto = valueOrNoRegistra(certTelefono);
         String medicoMsp = consulta.getMedicoCodigo() == null ? "" : consulta.getMedicoCodigo();
-        String medicoTelefono = isBlank(certMedicoTelefono) ? "NO REGISTRA" : certMedicoTelefono;
+        String medicoTelefono = valueOrNoRegistra(certMedicoTelefono);
         String medicoCorreo = isBlank(certMedicoCorreo) ? "NO REGISTRA" : certMedicoCorreo;
+        String tipoContingencia = valueOrNoRegistra(certTipoContingencia);
+        String domicilioPaciente = valueOrNoRegistra(certDomicilio);
+        String fechaEmision = formatoFechaNumericoYLetras(
+                consulta.getFechaConsulta() != null ? consulta.getFechaConsulta() : new Date());
         String logoIgm = resolveLogo("LOGO_IGM_FULL_COLOR.png");
         String logoMidena = resolveLogo("LOGO_MIDENA.png");
         String membreteBottom = resolveLogo("membrete-bottom.png");
@@ -710,22 +713,22 @@ public class ConsultaMedicaCtrl implements Serializable {
         StringBuilder html = new StringBuilder();
         html.append("<!DOCTYPE html><html><head><meta charset='UTF-8'/>")
                 .append("<style>")
-                .append("@page{size:A4;margin:12mm 14mm 12mm 14mm;}")
-                .append("body{font-family:Arial,sans-serif;font-size:13px;line-height:1.35;margin:0;color:#000000;padding-bottom:82px;}")
-                .append(".encabezado{margin-bottom:10px;}")
+                .append("@page{size:A4;margin:10mm 12mm 4mm 12mm;}")
+                .append("body{font-family:Arial,sans-serif;font-size:12px;line-height:1.2;margin:0;color:#000000;padding-bottom:52px;}")
+                .append(".encabezado{margin-bottom:6px;}")
                 .append(".encabezado-table{width:100%;border-collapse:collapse;}")
                 .append(".encabezado-table td{vertical-align:middle;}")
                 .append(".logo-cell{width:180px;text-align:center;}")
-                .append(".logo{width:120px;height:58px;display:block;object-fit:contain;margin:0 auto;}")
-                .append(".titulo{text-align:center;font-size:22px;font-weight:700;letter-spacing:.2px;margin:6px 0 12px 0;}")
-                .append(".texto{font-size:13px;margin:0 0 10px 0;}")
-                .append(".firma{text-align:center;font-size:13px;margin:0 0 10px 0;}")
-                .append(".firma-espacio{height:70px;}")
+                .append(".logo{width:150px;height:68px;display:block;object-fit:contain;margin:0 auto;}")
+                .append(".titulo{text-align:center;font-size:20px;font-weight:700;letter-spacing:.2px;margin:4px 0 8px 0;}")
+                .append(".texto{font-size:12px;margin:0 0 6px 0;text-align:justify;}")
+                .append(".firma{text-align:center;font-size:12px;margin:0 0 6px 0;}")
+                .append(".firma-espacio{height:42px;}")
                 .append(".firma-bloque{text-align:center;}")
                 .append(".correo{color:#0000EE;text-decoration:underline;}")
-                .append(".pie{position:fixed;left:14mm;right:14mm;bottom:8mm;}")
-                .append(".membrete-bottom{margin-top:6px;text-align:left;}")
-                .append(".membrete-bottom img{width:100%;max-height:115px;object-fit:contain;}")
+                .append(".pie{position:fixed;left:12mm;right:12mm;bottom:0mm;text-align:left;}")
+                .append(".membrete-bottom{margin-top:4px;text-align:left;}")
+                .append(".membrete-bottom img{width:100%;max-height:88px;object-fit:contain;}")
                 .append("</style></head><body>")
                 .append("<div class='contenido'>")
                 .append("<div class='encabezado'>")
@@ -741,23 +744,20 @@ public class ConsultaMedicaCtrl implements Serializable {
                 .append(escape(cedula)).append(", presenta diagnóstico: ")
                 .append(escape(diagnosticoPaciente)).append("; por lo que requiere reposo médico absoluto durante ")
                 .append(diasReposo).append(" (").append(escape(numeroEnLetras((int) diasReposo))).append(") día(s).</p>")
-                .append("<p class='texto'><b>Número de historia:</b> ").append(escape(numeroHistoria)).append("</p>")
-                .append("<p class='texto'>Desde el ").append(escape(fechaInicioNum))
-                .append(" (").append(escape(fechaInicioTexto)).append(").<br/>")
-                .append("Hasta ").append(escape(fechaFinNum))
-                .append(" (").append(escape(fechaFinTexto)).append(").</p>")
-                .append("<p class='texto'>Labora en el <b>INSTITUTO GEOGRAFICO MILITAR (ubicado en<br/>")
-                .append("Seniergues E4-676 y Gral. Telmo Paz y Miño Sector El Dorado)</b>,<br/>")
+                .append("<p class='texto'><b>Historia clínica:</b> ").append(escape(numeroHistoria)).append("</p>")
+                .append("<p class='texto'><b>Desde:</b> ").append(escape(fechaInicioTexto)).append(".<br/>")
+                .append("<b>Hasta:</b> ").append(escape(fechaFinTexto)).append(".</p>")
+                .append("<p class='texto'>Labora en el <b>INSTITUTO GEOGRAFICO MILITAR (ubicado en Seniergues E4-676 y Gral. Telmo Paz y Miño Sector El Dorado)</b>, ")
                 .append("con el cargo de ").append(escape(cargoPaciente))
                 .append(", en el área de ").append(escape(areaTrabajo)).append(".</p>")
                 .append("<p class='texto'>Paciente sintomático quien presenta: ").append(escape(sintomasPaciente)).append(".</p>")
-                .append("<p class='texto'><b>Domicilio del paciente:</b> ").append(escape(certDomicilio)).append("<br/>")
+                .append("<p class='texto'><b>Domicilio del paciente:</b> ").append(escape(domicilioPaciente)).append("<br/>")
                 .append("<b>Teléfono de contacto:</b> ").append(escape(telefonoContacto)).append("<br/>")
-                .append("<b>Tipo de contingencia:</b> <b>").append(escape(certTipoContingencia)).append("</b></p>")
+                .append("<b>Tipo de contingencia:</b> <b>").append(escape(tipoContingencia)).append("</b></p>")
                 .append("</div>")
                 .append("<div class='pie'>")
                 .append("<p class='texto'>")
-                .append("Quito DM, ").append(escape(formatDate(consulta.getFechaConsulta() != null ? consulta.getFechaConsulta() : new Date()).replace("/", "-"))).append(".</p>")
+                .append("Quito DM, ").append(escape(fechaEmision)).append(".</p>")
                 .append("<p class='firma'>Atentamente,</p>")
                 .append("<div class='firma-espacio'></div>")
                 .append("<p class='firma firma-bloque'>").append(escape(consulta.getMedicoNombre())).append("<br/>")
@@ -771,6 +771,10 @@ public class ConsultaMedicaCtrl implements Serializable {
                 .append("</div>")
                 .append("</body></html>");
         return html.toString();
+    }
+
+    private String valueOrNoRegistra(String value) {
+        return isBlank(value) ? "NO REGISTRA" : value.trim();
     }
 
     private String formatDate(Date date) {
@@ -1091,7 +1095,95 @@ public class ConsultaMedicaCtrl implements Serializable {
             empleado = fichaReferencia.getEmpleado();
             return empleado;
         }
+        if (personaAux != null) {
+            DatEmpleado externo = crearEmpleadoExternoDesdePersonaAux(personaAux);
+            if (externo != null) {
+                empleado = externo;
+                return externo;
+            }
+        }
         return null;
+    }
+
+    private DatEmpleado crearEmpleadoExternoDesdePersonaAux(PersonaAux aux) {
+        if (aux == null || isBlank(aux.getCedula())) {
+            return null;
+        }
+
+        DatEmpleado existentePorCedula = empleadoService.buscarPorCedula(aux.getCedula().trim());
+        if (existentePorCedula != null) {
+            vincularPersonaAuxConEmpleado(aux, existentePorCedula);
+            return existentePorCedula;
+        }
+
+        DatEmpleado externo = new DatEmpleado();
+        externo.setNoPersona(empleadoService.obtenerSiguienteNoPersona());
+        externo.setNoCedula(aux.getCedula().trim());
+        externo.setPriApellido(firstNonBlank(aux.getApellido1(), aux.getApellidos()));
+        externo.setSegApellido(aux.getApellido2());
+        externo.setNombres(buildNombres(aux));
+        externo.setNombreC(buildNombreCompleto(aux));
+        externo.setfNacimiento(aux.getFechaNac());
+        externo.setSexo(mapSexo(aux.getSexo()));
+        externo.setTipo("E");
+        externo.setDireccion(certDomicilio);
+        externo.setTelefono(certTelefono);
+        DatEmpleado guardado = empleadoService.guardar(externo);
+        vincularPersonaAuxConEmpleado(aux, guardado);
+        return guardado;
+    }
+
+    private void vincularPersonaAuxConEmpleado(PersonaAux aux, DatEmpleado emp) {
+        if (aux == null || emp == null || emp.getNoPersona() == null) {
+            return;
+        }
+        Long noPersonaActual = aux.getNoPersona();
+        Long noPersonaEmp = emp.getNoPersona().longValue();
+        if (noPersonaActual != null && noPersonaActual.equals(noPersonaEmp)) {
+            return;
+        }
+        aux.setNoPersona(noPersonaEmp);
+        personaAuxService.guardar(aux);
+    }
+
+    private Sexo mapSexo(String sexoAux) {
+        if (isBlank(sexoAux)) {
+            return null;
+        }
+        return "M".equalsIgnoreCase(sexoAux) ? Sexo.M : Sexo.F;
+    }
+
+    private String buildNombreCompleto(PersonaAux aux) {
+        StringBuilder sb = new StringBuilder();
+        appendParte(sb, aux.getApellido1());
+        appendParte(sb, aux.getApellido2());
+        appendParte(sb, aux.getNombre1());
+        appendParte(sb, aux.getNombre2());
+        if (sb.length() == 0) {
+            appendParte(sb, aux.getApellidos());
+            appendParte(sb, aux.getNombres());
+        }
+        return sb.length() == 0 ? "EXTERNO" : sb.toString();
+    }
+
+    private String buildNombres(PersonaAux aux) {
+        StringBuilder sb = new StringBuilder();
+        appendParte(sb, aux.getNombre1());
+        appendParte(sb, aux.getNombre2());
+        if (sb.length() == 0) {
+            appendParte(sb, aux.getNombres());
+        }
+        return sb.length() == 0 ? "EXTERNO" : sb.toString();
+    }
+
+    private String firstNonBlank(String first, String second) {
+        if (!isBlank(first)) {
+            return first.trim();
+        }
+        if (!isBlank(second)) {
+            return second.trim();
+        }
+        return "EXTERNO";
     }
 
     public String getDiagnosticoPrincipal() {
