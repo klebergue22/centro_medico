@@ -24,6 +24,23 @@ public class EmpleadoRhService {
         FROM RH.VW_EMP_CONTRATO_VIGENTE
         WHERE NO_CEDULA = :cedula
         """;
+    private static final String SQL_DATOS_LABORALES_VIGENTES = """
+        SELECT
+            e.NO_PERSONA,
+            e.NO_CEDULA AS CEDULA,
+            e.NOMBRE_C AS NOMBRE,
+            tf.DESCRIP AS CARGO,
+            a.DESCRIP AS AREA
+        FROM RH.T_DAT_EMPLEADO e
+        INNER JOIN RH.T_CONTRATACIONES c
+            ON c.NO_PERSONA = e.NO_PERSONA
+           AND c.ESTADO = 'V'
+        INNER JOIN RH.T_FUNCION tf
+            ON tf.NO_FUNCION = c.NO_FUNCION
+        INNER JOIN RH.T_AREAS a
+            ON a.NO_CD = c.NO_CD
+        WHERE e.NO_CEDULA = :cedula
+        """;
 
     /**
      * Busca en la vista RH.VW_EMP_CONTRATO_VIGENTE por cedula.
@@ -70,6 +87,39 @@ public class EmpleadoRhService {
         }
     }
 
+    public EmpleadoCargoDTO buscarDatosLaboralesVigentesPorCedula(String cedula) {
+        final String ced = trimToNull(cedula);
+        if (ced == null) {
+            return null;
+        }
+
+        try {
+            Query q = em.createNativeQuery(SQL_DATOS_LABORALES_VIGENTES);
+            q.setParameter("cedula", ced);
+            q.setMaxResults(1);
+            @SuppressWarnings("unchecked")
+            List<Object> rows = q.getResultList();
+            if (rows == null || rows.isEmpty() || rows.get(0) == null) {
+                return null;
+            }
+            Object row = rows.get(0);
+            if (!(row instanceof Object[] data) || data.length < 5) {
+                return null;
+            }
+
+            EmpleadoCargoDTO dto = new EmpleadoCargoDTO();
+            dto.setNoPersona(toLong(data[0]));
+            dto.setNoCedula(toText(data[1]));
+            dto.setNombreC(toText(data[2]));
+            dto.setCargoDescrip(toText(data[3]));
+            dto.setAreaDescrip(toText(data[4]));
+            return dto;
+        } catch (Exception e) {
+            LOG.error("[RH] Error consultando datos laborales vigentes para cedula={}", ced, e);
+            return null;
+        }
+    }
+
     private List<Object> querySingleColumn(String cedula) {
         Query q = em.createNativeQuery(SQL_CARGO_VIGENTE);
         q.setParameter("cedula", cedula);
@@ -91,5 +141,23 @@ public class EmpleadoRhService {
             return null;
         }
         return value.trim();
+    }
+
+    private String toText(Object value) {
+        return value == null ? null : value.toString().trim();
+    }
+
+    private Long toLong(Object value) {
+        if (value == null) {
+            return null;
+        }
+        if (value instanceof Number n) {
+            return n.longValue();
+        }
+        try {
+            return Long.parseLong(value.toString().trim());
+        } catch (NumberFormatException e) {
+            return null;
+        }
     }
 }
