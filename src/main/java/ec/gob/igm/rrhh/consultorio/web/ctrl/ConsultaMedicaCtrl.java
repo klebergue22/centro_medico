@@ -134,6 +134,12 @@ public class ConsultaMedicaCtrl implements Serializable {
             if (personaAux == null) {
                 personaAux = personaAuxService.findByCedula(cedula);
             }
+            if (personaAux != null && personaAux.getNoPersona() != null) {
+                Long noPersonaAux = personaAux.getNoPersona();
+                if (noPersonaAux <= Integer.MAX_VALUE && noPersonaAux >= Integer.MIN_VALUE) {
+                    empleado = empleadoService.buscarPorId(noPersonaAux.intValue());
+                }
+            }
         }
 
         if (empleado == null && personaAux == null) {
