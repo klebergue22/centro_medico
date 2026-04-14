@@ -2281,6 +2281,36 @@ td.j-date  .ui-datepicker-trigger{
   border: 1px solid #0B3D1A !important;
 }
 
+
+/* Textareas uniformes para consulta y certificado */
+.consulta-textarea {
+  width: 100% !important;
+  min-height: 72px;
+  resize: vertical;
+  overflow-y: auto;
+  box-sizing: border-box;
+}
+
+/* Diálogo de certificado: scroll interno para mantener visible el botón de generar */
+.cert-dialog {
+  max-width: 96vw;
+}
+
+.cert-dialog .ui-dialog-content {
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+.cert-dialog .ui-dialog-footer {
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
+}
+
+.cert-dialog .cert-grid {
+  width: 100%;
+}
+
 /* Diálogo de certificado: iconos del calendario en tamaño consistente */
 .cert-dialog .ui-calendar .ui-button {
   width: 36px !important;
