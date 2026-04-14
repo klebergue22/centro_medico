@@ -665,7 +665,8 @@ public class ConsultaMedicaCtrl implements Serializable {
         String cedula = getCedulaPaciente();
         String cargoPaciente = isBlank(certCargoPaciente) ? resolveCargoPaciente() : certCargoPaciente;
         String direccionPaciente = isBlank(certDomicilio) ? resolveDireccionPaciente() : certDomicilio;
-        String sintomasPaciente = isBlank(consulta.getMotivoConsulta()) ? getDiagnosticosTexto() : consulta.getMotivoConsulta();
+        String direccionLaboral = resolveDireccionLaboral();
+        String sintomasPaciente = isBlank(consulta.getMotivoConsulta()) ? "NO REGISTRA" : consulta.getMotivoConsulta();
         String fechaInicioNum = formatDate(certFechaInicio).replace("/", "-");
         String fechaFinNum = formatDate(certFechaFin).replace("/", "-");
         String fechaInicioTxt = fechaEnLetrasCompleta(certFechaInicio);
@@ -682,7 +683,7 @@ public class ConsultaMedicaCtrl implements Serializable {
         html.append("<!DOCTYPE html><html><head><meta charset='UTF-8'/>")
                 .append("<style>")
                 .append("@page{size:A4;margin:14mm 14mm 12mm 14mm;}")
-                .append("body{font-family:Arial,sans-serif;font-size:13px;line-height:1.2;margin:0;color:#111827;}")
+                .append("body{font-family:Arial,sans-serif;font-size:13px;line-height:1.2;margin:0;color:#111827;min-height:271mm;display:flex;flex-direction:column;}")
                 .append(".encabezado{border-bottom:2px solid #1f2937;margin-bottom:10px;padding-bottom:7px;}")
                 .append(".encabezado-table{width:100%;border-collapse:collapse;}")
                 .append(".encabezado-table td{vertical-align:middle;}")
@@ -691,9 +692,12 @@ public class ConsultaMedicaCtrl implements Serializable {
                 .append(".titulo{text-align:center;font-size:22px;font-weight:700;letter-spacing:.2px;margin:8px 0 12px 0;}")
                 .append(".texto{font-size:13px;margin-bottom:8px;}")
                 .append(".firma{text-align:center;margin-top:10px;}")
+                .append(".contenido{flex:1 0 auto;}")
+                .append(".pie{margin-top:auto;}")
                 .append(".membrete-bottom{margin-top:4px;text-align:left;}")
                 .append(".membrete-bottom img{width:100%;max-height:55px;object-fit:contain;}")
                 .append("</style></head><body>")
+                .append("<div class='contenido'>")
                 .append("<div class='encabezado'>")
                 .append("<table class='encabezado-table'><tr>")
                 .append("<td class='logo-cell'><img class='logo' alt='LOGO_IGM_FULL_COLOR' src='").append(escape(logoIgm)).append("'/></td>")
@@ -710,8 +714,8 @@ public class ConsultaMedicaCtrl implements Serializable {
                 .append("<p class='texto'>Desde el ").append(escape(fechaInicioNum)).append(" (").append(escape(fechaInicioTxt)).append(").<br/>")
                 .append("Hasta ").append(escape(fechaFinNum)).append(" (").append(escape(fechaFinTxt)).append(").</p>")
                 .append("<p class='texto'>Labora en el INSTITUTO GEOGRAFICO MILITAR (ubicado en ")
-                .append(escape(direccionPaciente)).append("),<br/>con el cargo de ")
-                .append(escape(cargoPaciente)).append(", en la DIRECCION ADMINISTRATIVA - LOGISTICA.</p>")
+                .append(escape(direccionLaboral)).append("),<br/>con el cargo de ")
+                .append(escape(cargoPaciente)).append(", en la DIRECCION DE TECNOLOGIAS DE LA INFORMACION ADMINISTRATIVA - LOGISTICA.</p>")
                 .append("<p class='texto'>Paciente sintomático quien presenta: ").append(escape(sintomasPaciente)).append(".</p>")
                 .append("<p class='texto'><b>Domicilio del paciente:</b> ").append(escape(direccionPaciente)).append("<br/>")
                 .append("<b>Teléfono de contacto:</b> ").append(escape(certTelefono)).append("<br/>")
@@ -720,13 +724,16 @@ public class ConsultaMedicaCtrl implements Serializable {
                 .append("MSP: ").append(escape(medicoMsp)).append("<br/>")
                 .append("Teléfono: ").append(escape(medicoTelefono)).append("<br/>")
                 .append("Correo: ").append(escape(medicoCorreo)).append("</p>")
-                .append("<p class='texto' style='margin-top:30px;'>")
+                .append("</div>")
+                .append("<div class='pie'>")
+                .append("<p class='texto'>")
                 .append("Quito DM, ").append(escape(fechaEnLetrasCompleta(consulta.getFechaConsulta() != null ? consulta.getFechaConsulta() : new Date()))).append(".</p>")
                 .append("<p class='firma'>Atentamente,</p>")
                 .append("<p class='firma'>").append(escape(consulta.getMedicoNombre())).append("<br/>")
                 .append(escape(certMedicoCargo)).append("</p>")
                 .append("<div class='membrete-bottom'>")
                 .append("<img alt='membrete-bottom' src='").append(escape(membreteBottom)).append("'/>")
+                .append("</div>")
                 .append("</div>")
                 .append("</body></html>");
         return html.toString();
@@ -952,17 +959,25 @@ public class ConsultaMedicaCtrl implements Serializable {
     }
 
     private String resolveDireccionPaciente() {
+        if (empleado != null && !isBlank(empleado.getDireccion())) {
+            return empleado.getDireccion();
+        }
         var datosLaboralesRh = resolveDatosLaboralesRh();
         if (datosLaboralesRh != null && !isBlank(datosLaboralesRh.getAreaDescrip())) {
             return datosLaboralesRh.getAreaDescrip();
-        }
-        if (empleado != null && !isBlank(empleado.getDireccion())) {
-            return empleado.getDireccion();
         }
         if (fichaReferencia != null && !isBlank(fichaReferencia.getEstablecimientoCt())) {
             return fichaReferencia.getEstablecimientoCt();
         }
         return certDomicilio;
+    }
+
+    private String resolveDireccionLaboral() {
+        var datosLaboralesRh = resolveDatosLaboralesRh();
+        if (datosLaboralesRh != null && !isBlank(datosLaboralesRh.getAreaDescrip())) {
+            return datosLaboralesRh.getAreaDescrip();
+        }
+        return "Seniergues E4-676 y Gral. Telmo Paz y Miño Sector El Dorado";
     }
 
     private EmpleadoCargoDTO resolveDatosLaboralesRh() {
