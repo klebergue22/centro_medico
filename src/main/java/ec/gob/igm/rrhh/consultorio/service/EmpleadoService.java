@@ -108,5 +108,16 @@ public class EmpleadoService {
 
         return lista.isEmpty() ? null : lista.get(0);
     }
-}
 
+    public Integer obtenerSiguienteNoPersona() {
+        assertEm();
+        Integer maxNoPersona = em.createQuery(
+                "SELECT MAX(e.noPersona) FROM DatEmpleado e",
+                Integer.class
+        ).getSingleResult();
+        if (maxNoPersona == null) {
+            return 1;
+        }
+        return maxNoPersona + 1;
+    }
+}
