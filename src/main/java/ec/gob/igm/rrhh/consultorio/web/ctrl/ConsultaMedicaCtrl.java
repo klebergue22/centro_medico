@@ -96,6 +96,7 @@ public class ConsultaMedicaCtrl implements Serializable {
     private String certFechaFinLetras;
     private String certDomicilio;
     private String certCargoPaciente;
+    private String certAreaTrabajo;
     private String certTelefono;
     private String certTipoContingencia;
     private String certMedicoCargo;
@@ -148,6 +149,9 @@ public class ConsultaMedicaCtrl implements Serializable {
         }
         if (isBlank(certCargoPaciente)) {
             certCargoPaciente = resolveCargoPaciente();
+        }
+        if (isBlank(certAreaTrabajo)) {
+            certAreaTrabajo = getAreaTrabajoPaciente();
         }
         consultasAnteriores = (empleado != null)
                 ? consultaMedicaService.buscarPorEmpleado(empleado.getNoPersona())
@@ -507,6 +511,9 @@ public class ConsultaMedicaCtrl implements Serializable {
         if (isBlank(certCargoPaciente)) {
             certCargoPaciente = resolveCargoPaciente();
         }
+        if (isBlank(certAreaTrabajo)) {
+            certAreaTrabajo = getAreaTrabajoPaciente();
+        }
     }
 
     public void generarPdfCertificado() {
@@ -586,6 +593,8 @@ public class ConsultaMedicaCtrl implements Serializable {
                 .append(".titulo{font-weight:bold;margin-top:15px;margin-bottom:6px;}")
                 .append(".row{margin-bottom:6px;}")
                 .append("table{width:100%;border-collapse:collapse;}th,td{padding:4px 2px;vertical-align:top;}")
+                .append("table{table-layout:fixed;}")
+                .append("th,td{word-wrap:break-word;overflow-wrap:anywhere;}")
                 .append(".firmante{margin-top:42px;text-align:center;}")
                 .append(".firma-linea{border-top:1px solid #000;width:260px;margin:0 auto 8px auto;}")
                 .append(".small{font-size:10px;}")
@@ -664,8 +673,8 @@ public class ConsultaMedicaCtrl implements Serializable {
         String nombrePaciente = getNombrePaciente();
         String cedula = getCedulaPaciente();
         String cargoPaciente = isBlank(certCargoPaciente) ? resolveCargoPaciente() : certCargoPaciente;
+        String areaTrabajo = isBlank(certAreaTrabajo) ? getAreaTrabajoPaciente() : certAreaTrabajo;
         String direccionPaciente = isBlank(certDomicilio) ? resolveDireccionPaciente() : certDomicilio;
-        String direccionLaboral = resolveDireccionLaboral();
         String sintomasPaciente = isBlank(consulta.getMotivoConsulta()) ? "NO REGISTRA" : consulta.getMotivoConsulta();
         String fechaInicioNum = formatDate(certFechaInicio).replace("/", "-");
         String fechaFinNum = formatDate(certFechaFin).replace("/", "-");
@@ -683,7 +692,7 @@ public class ConsultaMedicaCtrl implements Serializable {
         html.append("<!DOCTYPE html><html><head><meta charset='UTF-8'/>")
                 .append("<style>")
                 .append("@page{size:A4;margin:14mm 14mm 12mm 14mm;}")
-                .append("body{font-family:Arial,sans-serif;font-size:13px;line-height:1.2;margin:0;color:#111827;min-height:271mm;display:flex;flex-direction:column;}")
+                .append("body{font-family:Arial,sans-serif;font-size:13px;line-height:1.2;margin:0;color:#111827;min-height:271mm;padding-bottom:70px;}")
                 .append(".encabezado{border-bottom:2px solid #1f2937;margin-bottom:10px;padding-bottom:7px;}")
                 .append(".encabezado-table{width:100%;border-collapse:collapse;}")
                 .append(".encabezado-table td{vertical-align:middle;}")
@@ -692,8 +701,8 @@ public class ConsultaMedicaCtrl implements Serializable {
                 .append(".titulo{text-align:center;font-size:22px;font-weight:700;letter-spacing:.2px;margin:8px 0 12px 0;}")
                 .append(".texto{font-size:13px;margin-bottom:8px;}")
                 .append(".firma{text-align:center;margin-top:10px;}")
-                .append(".contenido{flex:1 0 auto;}")
-                .append(".pie{margin-top:auto;}")
+                .append(".contenido{min-height:0;}")
+                .append(".pie{position:fixed;left:14mm;right:14mm;bottom:8mm;}")
                 .append(".membrete-bottom{margin-top:4px;text-align:left;}")
                 .append(".membrete-bottom img{width:100%;max-height:55px;object-fit:contain;}")
                 .append("</style></head><body>")
@@ -713,9 +722,10 @@ public class ConsultaMedicaCtrl implements Serializable {
                 .append(diasReposo).append(" (").append(escape(numeroEnLetras((int) diasReposo))).append(") día(s).</p>")
                 .append("<p class='texto'>Desde el ").append(escape(fechaInicioNum)).append(" (").append(escape(fechaInicioTxt)).append(").<br/>")
                 .append("Hasta ").append(escape(fechaFinNum)).append(" (").append(escape(fechaFinTxt)).append(").</p>")
-                .append("<p class='texto'>Labora en el INSTITUTO GEOGRAFICO MILITAR (ubicado en ")
-                .append(escape(direccionLaboral)).append("),<br/>con el cargo de ")
-                .append(escape(cargoPaciente)).append(", en la DIRECCION DE TECNOLOGIAS DE LA INFORMACION ADMINISTRATIVA - LOGISTICA.</p>")
+                .append("<p class='texto'>Labora en el INSTITUTO GEOGRAFICO MILITAR (ubicado en<br/>")
+                .append("Seniergues E4-676 y Gral. Telmo Paz y Miño Sector El Dorado),<br/>")
+                .append("con el cargo de ").append(escape(cargoPaciente))
+                .append(", en el área de ").append(escape(areaTrabajo)).append(".</p>")
                 .append("<p class='texto'>Paciente sintomático quien presenta: ").append(escape(sintomasPaciente)).append(".</p>")
                 .append("<p class='texto'><b>Domicilio del paciente:</b> ").append(escape(direccionPaciente)).append("<br/>")
                 .append("<b>Teléfono de contacto:</b> ").append(escape(certTelefono)).append("<br/>")
@@ -727,7 +737,7 @@ public class ConsultaMedicaCtrl implements Serializable {
                 .append("</div>")
                 .append("<div class='pie'>")
                 .append("<p class='texto'>")
-                .append("Quito DM, ").append(escape(fechaEnLetrasCompleta(consulta.getFechaConsulta() != null ? consulta.getFechaConsulta() : new Date()))).append(".</p>")
+                .append("Quito DM, ").append(escape(formatoFechaNumericoYLetras(consulta.getFechaConsulta() != null ? consulta.getFechaConsulta() : new Date()))).append(".</p>")
                 .append("<p class='firma'>Atentamente,</p>")
                 .append("<p class='firma'>").append(escape(consulta.getMedicoNombre())).append("<br/>")
                 .append(escape(certMedicoCargo)).append("</p>")
@@ -771,6 +781,16 @@ public class ConsultaMedicaCtrl implements Serializable {
         LocalDate local = Instant.ofEpochMilli(date.getTime()).atZone(CERTIFICADO_ZONE).toLocalDate();
         String mes = local.getMonth().getDisplayName(TextStyle.FULL, new java.util.Locale("es", "EC"));
         return numeroEnLetras(local.getDayOfMonth()) + " de " + mes + " de " + anioEnLetras(local.getYear());
+    }
+
+    private String formatoFechaNumericoYLetras(Date date) {
+        if (date == null) {
+            return "";
+        }
+        LocalDate local = Instant.ofEpochMilli(date.getTime()).atZone(CERTIFICADO_ZONE).toLocalDate();
+        String mes = local.getMonth().getDisplayName(TextStyle.FULL, new java.util.Locale("es", "EC"));
+        return local.getDayOfMonth() + " (" + numeroEnLetras(local.getDayOfMonth()) + ") de " + mes
+                + " de " + local.getYear() + " (" + anioEnLetras(local.getYear()) + ")";
     }
 
     private void sincronizarFechasCertificado() {
@@ -823,6 +843,7 @@ public class ConsultaMedicaCtrl implements Serializable {
             addMessage(FacesMessage.SEVERITY_WARN, "Fecha fin ajustada",
                     "La fecha fin no puede ser menor a la fecha inicio.");
         }
+        sincronizarFechasCertificado();
     }
 
     public Date getCertFechaFinMin() {
@@ -906,6 +927,14 @@ public class ConsultaMedicaCtrl implements Serializable {
 
     public void setCertCargoPaciente(String certCargoPaciente) {
         this.certCargoPaciente = certCargoPaciente;
+    }
+
+    public String getCertAreaTrabajo() {
+        return certAreaTrabajo;
+    }
+
+    public void setCertAreaTrabajo(String certAreaTrabajo) {
+        this.certAreaTrabajo = certAreaTrabajo;
     }
 
     public String getDireccionPaciente() {
@@ -1084,6 +1113,9 @@ public class ConsultaMedicaCtrl implements Serializable {
     }
 
     private String anioEnLetras(int anio) {
+        if (anio >= 2001 && anio <= 2099) {
+            return "dos mil " + decenasConConector(anio % 100);
+        }
         int miles = anio / 1000;
         int resto = anio % 1000;
         String milesTxt = (miles == 2) ? "dos mil" : (numeroEnLetras(miles) + " mil");
@@ -1091,6 +1123,22 @@ public class ConsultaMedicaCtrl implements Serializable {
             return milesTxt;
         }
         return milesTxt + " " + numeroEnLetras(resto);
+    }
+
+    private String decenasConConector(int numero) {
+        if (numero <= 0) {
+            return "";
+        }
+        if (numero < 30) {
+            return numeroEnLetras(numero);
+        }
+        int d = numero / 10;
+        int u = numero % 10;
+        String[] decenas = {"", "", "veinte", "treinta", "cuarenta", "cincuenta", "sesenta", "setenta", "ochenta", "noventa"};
+        if (u == 0) {
+            return decenas[d];
+        }
+        return decenas[d] + " y " + numeroEnLetras(u);
     }
 
     private String numeroEnLetras(int numero) {
@@ -1240,7 +1288,10 @@ public class ConsultaMedicaCtrl implements Serializable {
         sincronizarFechasCertificado();
     }
     public Date getCertFechaFin() { return certFechaFin; }
-    public void setCertFechaFin(Date certFechaFin) { this.certFechaFin = certFechaFin; }
+    public void setCertFechaFin(Date certFechaFin) {
+        this.certFechaFin = certFechaFin;
+        sincronizarFechasCertificado();
+    }
     public String getCertFechaInicioLetras() { return fechaEnLetrasCompleta(certFechaInicio); }
     public void setCertFechaInicioLetras(String certFechaInicioLetras) { this.certFechaInicioLetras = certFechaInicioLetras; }
     public String getCertFechaFinLetras() { return fechaEnLetrasCompleta(certFechaFin); }
