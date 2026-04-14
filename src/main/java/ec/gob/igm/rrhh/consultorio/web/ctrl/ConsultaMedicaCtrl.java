@@ -1150,7 +1150,7 @@ public class ConsultaMedicaCtrl implements Serializable {
         if (isBlank(sexoAux)) {
             return null;
         }
-        return "M".equalsIgnoreCase(sexoAux) ? Sexo.M : Sexo.F;
+        return "M".equalsIgnoreCase(sexoAux) ? Sexo.MASCULINO : Sexo.FEMENINO;
     }
 
     private String buildNombreCompleto(PersonaAux aux) {
