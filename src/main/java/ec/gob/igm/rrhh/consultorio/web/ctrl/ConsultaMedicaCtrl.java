@@ -912,6 +912,17 @@ public class ConsultaMedicaCtrl implements Serializable {
         return resolveDireccionPaciente();
     }
 
+    public String getAreaTrabajoPaciente() {
+        var datosLaboralesRh = resolveDatosLaboralesRh();
+        if (datosLaboralesRh != null && !isBlank(datosLaboralesRh.getAreaDescrip())) {
+            return datosLaboralesRh.getAreaDescrip();
+        }
+        if (fichaReferencia != null && !isBlank(fichaReferencia.getEstablecimientoCt())) {
+            return fichaReferencia.getEstablecimientoCt();
+        }
+        return "";
+    }
+
     public String getNombrePaciente() {
         if (empleado != null && !isBlank(empleado.getNombreC())) {
             return empleado.getNombreC();
@@ -961,13 +972,6 @@ public class ConsultaMedicaCtrl implements Serializable {
     private String resolveDireccionPaciente() {
         if (empleado != null && !isBlank(empleado.getDireccion())) {
             return empleado.getDireccion();
-        }
-        var datosLaboralesRh = resolveDatosLaboralesRh();
-        if (datosLaboralesRh != null && !isBlank(datosLaboralesRh.getAreaDescrip())) {
-            return datosLaboralesRh.getAreaDescrip();
-        }
-        if (fichaReferencia != null && !isBlank(fichaReferencia.getEstablecimientoCt())) {
-            return fichaReferencia.getEstablecimientoCt();
         }
         return certDomicilio;
     }
