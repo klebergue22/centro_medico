@@ -219,7 +219,8 @@
                     <h:outputText value=""/>
 
                     <h:outputText value="Diagnóstico"/>
-                    <p:inputTextarea value="#{consultaMedicaCtrl.diagnosticosTexto}" rows="3" autoResize="false" readonly="true" styleClass="consulta-textarea"/>
+                    <p:inputTextarea value="#{consultaMedicaCtrl.diagnosticosTexto}" rows="5" autoResize="false" readonly="true"
+                                     styleClass="consulta-textarea cert-diagnostico-textarea"/>
                     <h:outputText value="Domicilio"/>
                     <p:inputTextarea value="#{consultaMedicaCtrl.certDomicilio}" rows="3" autoResize="false" styleClass="consulta-textarea"/>
 
@@ -244,11 +245,11 @@
                     <p:calendar id="certFechaFinNum" value="#{consultaMedicaCtrl.certFechaFin}" pattern="dd/MM/yyyy" showOn="button" readonlyInput="true"
                                 mindate="#{consultaMedicaCtrl.certFechaFinMin}">
                         <p:ajax event="dateSelect" listener="#{consultaMedicaCtrl.onFechaFinSelect}"
-                                update="certFechaInicioNum certFechaInicioTxt certFechaFinTxt certDiasReposoNum certDiasReposoTxt growl"/>
+                                update="certFechaInicioNum certFechaFinNum certFechaInicioTxt certFechaFinTxt certDiasReposoNum certDiasReposoTxt growl"/>
                         <p:ajax event="change"
                                 listener="#{consultaMedicaCtrl.onFechaFinSelect}"
                                 process="@this"
-                                update="certFechaInicioNum certFechaInicioTxt certFechaFinTxt certDiasReposoNum certDiasReposoTxt growl"/>
+                                update="certFechaInicioNum certFechaFinNum certFechaInicioTxt certFechaFinTxt certDiasReposoNum certDiasReposoTxt growl"/>
                     </p:calendar>
 
                     <h:outputText value="Fecha inicio (letras)"/>
@@ -283,7 +284,7 @@
                                      icon="pi pi-file-pdf"
                                      actionListener="#{consultaMedicaCtrl.generarPdfCertificado}"
                                      form="consultaForm"
-                                     process="@this certDialog"
+                                     process="@form"
                                      update="certDialog pdfPanel growl"
                                      oncomplete="PF('certDialogWv').hide();"/>
                 </f:facet>
