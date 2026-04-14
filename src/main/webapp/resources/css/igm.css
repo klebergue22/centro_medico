@@ -2292,3 +2292,11 @@ td.j-date  .ui-datepicker-trigger{
 .cert-dialog .ui-calendar .ui-button .ui-icon {
   font-size: 14px !important;
 }
+
+/* Notificaciones: mantener icono de advertencia en tamaño normal */
+.ui-growl .ui-growl-image,
+.ui-growl .ui-messages .ui-messages-icon {
+  font-size: 1rem !important;
+  width: 1rem !important;
+  height: 1rem !important;
+}
