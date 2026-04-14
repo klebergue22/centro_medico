@@ -716,7 +716,7 @@ public class ConsultaMedicaCtrl implements Serializable {
                 .append(".encabezado-table{width:100%;border-collapse:collapse;}")
                 .append(".encabezado-table td{vertical-align:middle;}")
                 .append(".logo-cell{width:180px;text-align:center;}")
-                .append(".logo{width:150px;height:68px;display:block;object-fit:contain;margin:0 auto;}")
+                .append(".logo{width:120px;height:58px;display:block;object-fit:contain;margin:0 auto;}")
                 .append(".titulo{text-align:center;font-size:22px;font-weight:700;letter-spacing:.2px;margin:6px 0 12px 0;}")
                 .append(".texto{font-size:13px;margin:0 0 10px 0;}")
                 .append(".firma{text-align:center;font-size:13px;margin:0 0 10px 0;}")
