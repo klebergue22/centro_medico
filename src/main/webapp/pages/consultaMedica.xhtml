@@ -38,7 +38,7 @@
                         <h:outputText value="Fecha consulta:" style="font-weight:bold;"/>
                         <p:calendar value="#{consultaMedicaCtrl.consulta.fechaConsulta}" pattern="dd/MM/yyyy" showOn="button"/>
                         <h:outputText value="Antecedente de alergias:" style="font-weight:bold;"/>
-                        <p:inputTextarea value="#{consultaMedicaCtrl.alergias}" rows="2" autoResize="false" styleClass="consulta-textarea"/>
+                        <p:inputTextarea value="#{consultaMedicaCtrl.alergias}" rows="1" autoResize="true" styleClass="consulta-textarea"/>
                     </h:panelGrid>
                     <p:panel header="Consultas anteriores"
                              style="margin-top:10px;"
