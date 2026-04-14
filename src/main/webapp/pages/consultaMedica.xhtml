@@ -224,7 +224,9 @@
                     <p:inputTextarea value="#{consultaMedicaCtrl.certDomicilio}" rows="3" autoResize="false" styleClass="consulta-textarea"/>
 
                     <h:outputText value="Teléfono contacto"/>
-                    <p:inputText value="#{consultaMedicaCtrl.certTelefono}"/>
+                    <p:inputText value="#{consultaMedicaCtrl.certTelefono}" maxlength="10">
+                        <p:keyFilter regEx="/[0-9]/"/>
+                    </p:inputText>
                     <h:outputText value=""/>
                     <h:outputText value=""/>
 
@@ -270,7 +272,9 @@
                     <p:inputText value="#{consultaMedicaCtrl.certMedicoCargo}"/>
 
                     <h:outputText value="Teléfono del médico"/>
-                    <p:inputText value="#{consultaMedicaCtrl.certMedicoTelefono}"/>
+                    <p:inputText value="#{consultaMedicaCtrl.certMedicoTelefono}" maxlength="10">
+                        <p:keyFilter regEx="/[0-9]/"/>
+                    </p:inputText>
                     <h:outputText value="Correo del médico"/>
                     <p:inputText value="#{consultaMedicaCtrl.certMedicoCorreo}"/>
                 </h:panelGrid>
@@ -279,7 +283,7 @@
                                      icon="pi pi-file-pdf"
                                      actionListener="#{consultaMedicaCtrl.generarPdfCertificado}"
                                      form="consultaForm"
-                                     process="certDialog"
+                                     process="@form"
                                      update="pdfPanel growl"
                                      oncomplete="PF('certDialogWv').hide();"/>
                 </f:facet>
