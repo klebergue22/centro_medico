@@ -193,10 +193,17 @@ public class ConsultaMedicaCtrl implements Serializable {
     }
 
     public void guardarConsulta() {
-        if (consulta.getEmpleado() == null) {
+        if (!hasPacienteSeleccionado()) {
             addMessage(FacesMessage.SEVERITY_ERROR, "Paciente requerido", "Busque un paciente antes de guardar.");
             return;
         }
+        DatEmpleado empleadoAsociado = resolveEmpleadoParaConsulta();
+        if (empleadoAsociado == null) {
+            addMessage(FacesMessage.SEVERITY_ERROR, "Paciente no vinculado",
+                    "La persona auxiliar seleccionada no está vinculada a un empleado para registrar la consulta.");
+            return;
+        }
+        consulta.setEmpleado(empleadoAsociado);
 
         List<ConsultaDiagnostico> limpios = limpiarDiagnosticos();
         if (limpios.isEmpty()) {
@@ -682,12 +689,15 @@ public class ConsultaMedicaCtrl implements Serializable {
     private String construirHtmlCertificado() {
         String nombrePaciente = getNombrePaciente();
         String cedula = getCedulaPaciente();
+        String numeroHistoria = getCedulaPaciente();
         String cargoPaciente = isBlank(certCargoPaciente) ? resolveCargoPaciente() : certCargoPaciente;
         String areaTrabajo = getAreaTrabajoPaciente();
         String diagnosticoPaciente = isBlank(getDiagnosticosTexto()) ? "NO REGISTRA" : getDiagnosticosTexto();
         String sintomasPaciente = isBlank(consulta.getMotivoConsulta()) ? "NO REGISTRA" : consulta.getMotivoConsulta();
         String fechaInicioNum = formatDate(certFechaInicio).replace("/", "-");
         String fechaFinNum = formatDate(certFechaFin).replace("/", "-");
+        String fechaInicioTexto = fechaEnLetras(certFechaInicio);
+        String fechaFinTexto = fechaEnLetras(certFechaFin);
         long diasReposo = getCertDiasReposo();
         String telefonoContacto = isBlank(certTelefono) ? "NO REGISTRA" : certTelefono;
         String medicoMsp = consulta.getMedicoCodigo() == null ? "" : consulta.getMedicoCodigo();
@@ -730,15 +740,20 @@ public class ConsultaMedicaCtrl implements Serializable {
                 .append("<p class='texto'>El señor ").append(escape(nombrePaciente)).append(" con Cédula de Ciudadanía ")
                 .append(escape(cedula)).append(", presenta diagnóstico: ")
                 .append(escape(diagnosticoPaciente)).append("; por lo que requiere reposo médico absoluto durante ")
-                .append(diasReposo).append(" (").append(escape(numeroEnLetras((int) diasReposo))).append(") día(s) Historia clínica: .</p>")
-                .append("<p class='texto'>Desde el ").append(escape(fechaInicioNum)).append(".<br/>")
-                .append("Hasta ").append(escape(fechaFinNum)).append(".</p>")
-                .append("<p class='texto'>Labora en el INSTITUTO GEOGRAFICO MILITAR (ubicado en<br/>").append("Seniergues E4-676 y Gral. Telmo Paz y Miño Sector El Dorado),<br/>")
-                .append("con el cargo de ").append(escape(cargoPaciente)).append(", en el área de ").append(escape(areaTrabajo)).append(".</p>")
+                .append(diasReposo).append(" (").append(escape(numeroEnLetras((int) diasReposo))).append(") día(s).</p>")
+                .append("<p class='texto'><b>Número de historia:</b> ").append(escape(numeroHistoria)).append("</p>")
+                .append("<p class='texto'>Desde el ").append(escape(fechaInicioNum))
+                .append(" (").append(escape(fechaInicioTexto)).append(").<br/>")
+                .append("Hasta ").append(escape(fechaFinNum))
+                .append(" (").append(escape(fechaFinTexto)).append(").</p>")
+                .append("<p class='texto'>Labora en el <b>INSTITUTO GEOGRAFICO MILITAR (ubicado en<br/>")
+                .append("Seniergues E4-676 y Gral. Telmo Paz y Miño Sector El Dorado)</b>,<br/>")
+                .append("con el cargo de ").append(escape(cargoPaciente))
+                .append(", en el área de ").append(escape(areaTrabajo)).append(".</p>")
                 .append("<p class='texto'>Paciente sintomático quien presenta: ").append(escape(sintomasPaciente)).append(".</p>")
                 .append("<p class='texto'><b>Domicilio del paciente:</b> ").append(escape(certDomicilio)).append("<br/>")
-                .append("Teléfono de contacto: ").append(escape(telefonoContacto)).append("<br/>")
-                .append("Tipo de contingencia: ").append(escape(certTipoContingencia)).append("</p>")
+                .append("<b>Teléfono de contacto:</b> ").append(escape(telefonoContacto)).append("<br/>")
+                .append("<b>Tipo de contingencia:</b> <b>").append(escape(certTipoContingencia)).append("</b></p>")
                 .append("</div>")
                 .append("<div class='pie'>")
                 .append("<p class='texto'>")
@@ -1056,6 +1071,27 @@ public class ConsultaMedicaCtrl implements Serializable {
 
     private boolean hasPacienteSeleccionado() {
         return empleado != null || personaAux != null;
+    }
+
+    private DatEmpleado resolveEmpleadoParaConsulta() {
+        if (empleado != null) {
+            return empleado;
+        }
+        if (personaAux != null && personaAux.getNoPersona() != null) {
+            Long noPersonaAux = personaAux.getNoPersona();
+            if (noPersonaAux <= Integer.MAX_VALUE && noPersonaAux >= Integer.MIN_VALUE) {
+                DatEmpleado encontrado = empleadoService.buscarPorId(noPersonaAux.intValue());
+                if (encontrado != null) {
+                    empleado = encontrado;
+                    return encontrado;
+                }
+            }
+        }
+        if (fichaReferencia != null && fichaReferencia.getEmpleado() != null) {
+            empleado = fichaReferencia.getEmpleado();
+            return empleado;
+        }
+        return null;
     }
 
     public String getDiagnosticoPrincipal() {
