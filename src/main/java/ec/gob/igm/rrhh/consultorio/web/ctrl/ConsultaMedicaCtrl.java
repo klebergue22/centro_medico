@@ -41,6 +41,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Locale;
 import java.util.Set;
 import org.primefaces.event.SelectEvent;
 
@@ -537,6 +538,9 @@ public class ConsultaMedicaCtrl implements Serializable {
         if (!validarCamposObligatoriosCertificado()) {
             return;
         }
+        certTelefono = normalizePhone(certTelefono);
+        certMedicoTelefono = normalizePhone(certMedicoTelefono);
+        certMedicoCorreo = normalizeEmail(certMedicoCorreo);
         String html = construirHtmlCertificado();
         tokenPdfCertificado = centroMedicoPdfFacade.generarDesdeHtml(html, "CERT_MED_");
         addMessage(FacesMessage.SEVERITY_INFO, "Certificado generado", "Ya puede visualizar o descargar el certificado.");
@@ -678,9 +682,8 @@ public class ConsultaMedicaCtrl implements Serializable {
         String sintomasPaciente = isBlank(consulta.getMotivoConsulta()) ? "NO REGISTRA" : consulta.getMotivoConsulta();
         String fechaInicioNum = formatDate(certFechaInicio).replace("/", "-");
         String fechaFinNum = formatDate(certFechaFin).replace("/", "-");
-        String fechaInicioTxt = fechaEnLetrasCompleta(certFechaInicio);
-        String fechaFinTxt = fechaEnLetrasCompleta(certFechaFin);
         long diasReposo = getCertDiasReposo();
+        String telefonoContacto = isBlank(certTelefono) ? "NO REGISTRA" : certTelefono;
         String medicoMsp = consulta.getMedicoCodigo() == null ? "" : consulta.getMedicoCodigo();
         String medicoTelefono = isBlank(certMedicoTelefono) ? "NO REGISTRA" : certMedicoTelefono;
         String medicoCorreo = isBlank(certMedicoCorreo) ? "NO REGISTRA" : certMedicoCorreo;
@@ -692,15 +695,15 @@ public class ConsultaMedicaCtrl implements Serializable {
         html.append("<!DOCTYPE html><html><head><meta charset='UTF-8'/>")
                 .append("<style>")
                 .append("@page{size:A4;margin:12mm 14mm 12mm 14mm;}")
-                .append("body{font-family:Arial,sans-serif;font-size:33px;line-height:1.18;margin:0;color:#000000;padding-bottom:82px;}")
+                .append("body{font-family:Arial,sans-serif;font-size:13px;line-height:1.35;margin:0;color:#000000;padding-bottom:82px;}")
                 .append(".encabezado{margin-bottom:10px;}")
                 .append(".encabezado-table{width:100%;border-collapse:collapse;}")
                 .append(".encabezado-table td{vertical-align:middle;}")
                 .append(".logo-cell{width:180px;text-align:center;}")
                 .append(".logo{width:150px;height:68px;display:block;object-fit:contain;margin:0 auto;}")
-                .append(".titulo{text-align:center;font-size:39px;font-weight:700;letter-spacing:.2px;margin:6px 0 12px 0;}")
-                .append(".texto{font-size:33px;margin:0 0 10px 0;}")
-                .append(".firma{text-align:center;font-size:33px;margin:0 0 10px 0;}")
+                .append(".titulo{text-align:center;font-size:22px;font-weight:700;letter-spacing:.2px;margin:6px 0 12px 0;}")
+                .append(".texto{font-size:13px;margin:0 0 10px 0;}")
+                .append(".firma{text-align:center;font-size:13px;margin:0 0 10px 0;}")
                 .append(".firma-espacio{height:70px;}")
                 .append(".firma-bloque{text-align:center;}")
                 .append(".correo{color:#0000EE;text-decoration:underline;}")
@@ -722,20 +725,20 @@ public class ConsultaMedicaCtrl implements Serializable {
                 .append(escape(cedula)).append(", presenta diagnóstico: ")
                 .append(escape(diagnosticoPaciente)).append("; por lo que requiere reposo médico absoluto durante ")
                 .append(diasReposo).append(" (").append(escape(numeroEnLetras((int) diasReposo))).append(") día(s).</p>")
-                .append("<p class='texto'>Desde el ").append(escape(fechaInicioNum)).append(" (").append(escape(fechaInicioTxt)).append(").<br/>")
-                .append("Hasta ").append(escape(fechaFinNum)).append(" (").append(escape(fechaFinTxt)).append(").</p>")
+                .append("<p class='texto'>Desde el ").append(escape(fechaInicioNum)).append(".<br/>")
+                .append("Hasta ").append(escape(fechaFinNum)).append(".</p>")
                 .append("<p class='texto'>Labora en el INSTITUTO GEOGRAFICO MILITAR (ubicado en<br/>")
                 .append("Seniergues E4-676 y Gral. Telmo Paz y Miño Sector El Dorado),<br/>")
                 .append("con el cargo de ").append(escape(cargoPaciente))
                 .append(", en el área de ").append(escape(areaTrabajo)).append(".</p>")
                 .append("<p class='texto'>Paciente sintomático quien presenta: ").append(escape(sintomasPaciente)).append(".</p>")
                 .append("<p class='texto'><b>Domicilio del paciente:</b> ").append(escape(certDomicilio)).append("<br/>")
-                .append("Teléfono de contacto: ").append(escape(certTelefono)).append("<br/>")
+                .append("Teléfono de contacto: ").append(escape(telefonoContacto)).append("<br/>")
                 .append("Tipo de contingencia: ").append(escape(certTipoContingencia)).append("</p>")
                 .append("</div>")
                 .append("<div class='pie'>")
                 .append("<p class='texto'>")
-                .append("Quito DM, ").append(escape(formatoFechaNumericoYLetras(consulta.getFechaConsulta() != null ? consulta.getFechaConsulta() : new Date()))).append(".</p>")
+                .append("Quito DM, ").append(escape(formatDate(consulta.getFechaConsulta() != null ? consulta.getFechaConsulta() : new Date()).replace("/", "-"))).append(".</p>")
                 .append("<p class='firma'>Atentamente,</p>")
                 .append("<div class='firma-espacio'></div>")
                 .append("<p class='firma firma-bloque'>").append(escape(consulta.getMedicoNombre())).append("<br/>")
@@ -916,11 +919,25 @@ public class ConsultaMedicaCtrl implements Serializable {
         LocalDate inicio = Instant.ofEpochMilli(certFechaInicio.getTime()).atZone(CERTIFICADO_ZONE).toLocalDate();
         LocalDate fin = Instant.ofEpochMilli(certFechaFin.getTime()).atZone(CERTIFICADO_ZONE).toLocalDate();
         long dias = ChronoUnit.DAYS.between(inicio, fin);
-        return Math.max(dias, 0L);
+        return Math.max(dias, 0L) + 1L;
     }
 
     public String getCertDiasReposoLetras() {
         return numeroEnLetras((int) getCertDiasReposo());
+    }
+
+    private String normalizePhone(String value) {
+        if (value == null) {
+            return "";
+        }
+        return value.replaceAll("\\D", "");
+    }
+
+    private String normalizeEmail(String value) {
+        if (value == null) {
+            return "";
+        }
+        return value.trim().toLowerCase(Locale.ROOT);
     }
 
     public String getCertCargoPaciente() {
