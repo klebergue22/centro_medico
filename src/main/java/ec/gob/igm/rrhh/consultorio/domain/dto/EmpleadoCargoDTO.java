@@ -36,6 +36,7 @@ public class EmpleadoCargoDTO implements Serializable {
 
     private String cargoDescrip;
     private String cargoAbrev;
+    private String areaDescrip;
 
     public EmpleadoCargoDTO() {
     }
@@ -184,6 +185,14 @@ public class EmpleadoCargoDTO implements Serializable {
 
     public void setCargoAbrev(String cargoAbrev) {
         this.cargoAbrev = cargoAbrev;
+    }
+
+    public String getAreaDescrip() {
+        return areaDescrip;
+    }
+
+    public void setAreaDescrip(String areaDescrip) {
+        this.areaDescrip = areaDescrip;
     }
 
 

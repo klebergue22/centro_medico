@@ -24,18 +24,22 @@ public class EmpleadoRhService {
         FROM RH.VW_EMP_CONTRATO_VIGENTE
         WHERE NO_CEDULA = :cedula
         """;
-    private static final String SQL_DIRECCION_TRABAJO_VIGENTE = """
-        SELECT a.area_descrip
-          FROM RH.t_contrataciones c
-          JOIN RH.t_areas a ON a.no_area = c.no_area
-         WHERE c.no_persona = (
-                SELECT v.no_persona
-                  FROM RH.vw_emp_contrato_vigente v
-                 WHERE v.no_cedula = :cedula
-               )
-           AND c.estado = 'V'
-           AND c.f_salida IS NULL
-         ORDER BY c.f_contrato DESC
+    private static final String SQL_DATOS_LABORALES_VIGENTES = """
+        SELECT
+            e.NO_PERSONA,
+            e.NO_CEDULA AS CEDULA,
+            e.NOMBRE_C AS NOMBRE,
+            tf.DESCRIP AS CARGO,
+            a.DESCRIP AS AREA
+        FROM RH.T_DAT_EMPLEADO e
+        INNER JOIN RH.T_CONTRATACIONES c
+            ON c.NO_PERSONA = e.NO_PERSONA
+           AND c.ESTADO = 'V'
+        INNER JOIN RH.T_FUNCION tf
+            ON tf.NO_FUNCION = c.NO_FUNCION
+        INNER JOIN RH.T_AREAS a
+            ON a.NO_CD = c.NO_CD
+        WHERE e.NO_CEDULA = :cedula
         """;
 
     /**
@@ -83,24 +87,35 @@ public class EmpleadoRhService {
         }
     }
 
-    /**
-     * Consulta la dirección/área de trabajo vigente en RH usando T_CONTRATACIONES + T_AREAS.
-     */
-    public String buscarDireccionTrabajoVigentePorCedula(String cedula) {
+    public EmpleadoCargoDTO buscarDatosLaboralesVigentesPorCedula(String cedula) {
         final String ced = trimToNull(cedula);
         if (ced == null) {
             return null;
         }
 
         try {
-            Query q = em.createNativeQuery(SQL_DIRECCION_TRABAJO_VIGENTE);
+            Query q = em.createNativeQuery(SQL_DATOS_LABORALES_VIGENTES);
             q.setParameter("cedula", ced);
             q.setMaxResults(1);
             @SuppressWarnings("unchecked")
             List<Object> rows = q.getResultList();
-            return extractTrimmedValue(rows);
+            if (rows == null || rows.isEmpty() || rows.get(0) == null) {
+                return null;
+            }
+            Object row = rows.get(0);
+            if (!(row instanceof Object[] data) || data.length < 5) {
+                return null;
+            }
+
+            EmpleadoCargoDTO dto = new EmpleadoCargoDTO();
+            dto.setNoPersona(toLong(data[0]));
+            dto.setNoCedula(toText(data[1]));
+            dto.setNombreC(toText(data[2]));
+            dto.setCargoDescrip(toText(data[3]));
+            dto.setAreaDescrip(toText(data[4]));
+            return dto;
         } catch (Exception e) {
-            LOG.error("[RH] Error consultando direccion de trabajo vigente para cedula={}", ced, e);
+            LOG.error("[RH] Error consultando datos laborales vigentes para cedula={}", ced, e);
             return null;
         }
     }
@@ -126,5 +141,23 @@ public class EmpleadoRhService {
             return null;
         }
         return value.trim();
+    }
+
+    private String toText(Object value) {
+        return value == null ? null : value.toString().trim();
+    }
+
+    private Long toLong(Object value) {
+        if (value == null) {
+            return null;
+        }
+        if (value instanceof Number n) {
+            return n.longValue();
+        }
+        try {
+            return Long.parseLong(value.toString().trim());
+        } catch (NumberFormatException e) {
+            return null;
+        }
     }
 }
