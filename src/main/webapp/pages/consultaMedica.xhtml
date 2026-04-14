@@ -283,8 +283,8 @@
                                      icon="pi pi-file-pdf"
                                      actionListener="#{consultaMedicaCtrl.generarPdfCertificado}"
                                      form="consultaForm"
-                                     process="@form"
-                                     update="pdfPanel growl"
+                                     process="@this certDialog"
+                                     update="certDialog pdfPanel growl"
                                      oncomplete="PF('certDialogWv').hide();"/>
                 </f:facet>
             </p:dialog>
