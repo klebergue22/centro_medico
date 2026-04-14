@@ -886,10 +886,7 @@ public class ConsultaMedicaCtrl implements Serializable {
         LocalDate inicio = Instant.ofEpochMilli(certFechaInicio.getTime()).atZone(CERTIFICADO_ZONE).toLocalDate();
         LocalDate fin = Instant.ofEpochMilli(certFechaFin.getTime()).atZone(CERTIFICADO_ZONE).toLocalDate();
         long dias = ChronoUnit.DAYS.between(inicio, fin);
-        if (dias < 0) {
-            return 0L;
-        }
-        return dias + 1L;
+        return Math.max(dias, 0L);
     }
 
     public String getCertDiasReposoLetras() {
