@@ -713,21 +713,21 @@ public class ConsultaMedicaCtrl implements Serializable {
         html.append("<!DOCTYPE html><html><head><meta charset='UTF-8'/>")
                 .append("<style>")
                 .append("@page{size:A4;margin:10mm 12mm 4mm 12mm;}")
-                .append("body{font-family:Arial,sans-serif;font-size:12px;line-height:1.2;margin:0;color:#000000;padding-bottom:52px;}")
+                .append("body{font-family:Arial,sans-serif;font-size:13px;line-height:1.2;margin:0;color:#000000;}")
                 .append(".encabezado{margin-bottom:6px;}")
                 .append(".encabezado-table{width:100%;border-collapse:collapse;}")
                 .append(".encabezado-table td{vertical-align:middle;}")
-                .append(".logo-cell{width:180px;text-align:center;}")
-                .append(".logo{width:150px;height:68px;display:block;object-fit:contain;margin:0 auto;}")
+                .append(".logo-cell{width:120px;text-align:center;}")
+                .append(".logo{width:85px;height:85px;display:block;object-fit:contain;margin:0 auto;}")
                 .append(".titulo{text-align:center;font-size:20px;font-weight:700;letter-spacing:.2px;margin:4px 0 8px 0;}")
-                .append(".texto{font-size:12px;margin:0 0 6px 0;text-align:justify;}")
-                .append(".firma{text-align:center;font-size:12px;margin:0 0 6px 0;}")
-                .append(".firma-espacio{height:42px;}")
+                .append(".texto{font-size:13px;margin:0 0 6px 0;text-align:justify;}")
+                .append(".firma{text-align:center;font-size:13px;margin:0 0 6px 0;}")
+                .append(".firma-espacio{height:18px;}")
                 .append(".firma-bloque{text-align:center;}")
                 .append(".correo{color:#0000EE;text-decoration:underline;}")
-                .append(".pie{position:fixed;left:12mm;right:12mm;bottom:0mm;text-align:left;}")
-                .append(".membrete-bottom{margin-top:4px;text-align:left;}")
-                .append(".membrete-bottom img{width:100%;max-height:88px;object-fit:contain;}")
+                .append(".pie{position:relative;left:0mm;right:auto;margin-top:6px;width:100%;text-align:left;}")
+                .append(".membrete-bottom{margin-top:8px;text-align:left;}")
+                .append(".membrete-bottom img{width:42%;height:44px;object-fit:contain;object-position:left bottom;}")
                 .append("</style></head><body>")
                 .append("<div class='contenido'>")
                 .append("<div class='encabezado'>")
@@ -905,6 +905,18 @@ public class ConsultaMedicaCtrl implements Serializable {
         }
         if (isBlank(certDomicilio)) {
             faltantes.add("domicilio");
+        }
+        if (isBlank(certTelefono)) {
+            faltantes.add("teléfono de contacto");
+        }
+        if (isBlank(certTipoContingencia)) {
+            faltantes.add("tipo de contingencia");
+        }
+        if (isBlank(certMedicoTelefono)) {
+            faltantes.add("teléfono del médico");
+        }
+        if (isBlank(certMedicoCorreo)) {
+            faltantes.add("correo del médico");
         }
         if (!faltantes.isEmpty()) {
             addMessage(FacesMessage.SEVERITY_ERROR,

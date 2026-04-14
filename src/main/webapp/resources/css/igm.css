@@ -2334,16 +2334,26 @@ td.j-date  .ui-datepicker-trigger{
   width: 100%;
 }
 
-/* Diálogo de certificado: iconos del calendario en tamaño consistente */
-.cert-dialog .ui-calendar .ui-button {
-  width: 36px !important;
-  min-width: 36px !important;
-  height: 36px !important;
-  padding: 0 !important;
+.cert-dialog .cert-diagnostico-textarea {
+  min-height: 118px !important;
 }
 
-.cert-dialog .ui-calendar .ui-button .ui-icon {
-  font-size: 14px !important;
+/* Diálogo de certificado: iconos del calendario en tamaño consistente */
+.cert-dialog .ui-calendar .ui-button {
+  width: 38px !important;
+  min-width: 38px !important;
+  height: 38px !important;
+  padding: 0 !important;
+  border-radius: 0 4px 4px 0 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.cert-dialog .ui-calendar .ui-button .ui-button-icon-left,
+.cert-dialog .ui-calendar .ui-button .pi {
+  font-size: 16px !important;
+  margin: 0 !important;
 }
 
 /* Notificaciones: mantener icono de advertencia en tamaño normal */
