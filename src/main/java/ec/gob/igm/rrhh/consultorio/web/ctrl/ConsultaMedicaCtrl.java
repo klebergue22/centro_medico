@@ -725,7 +725,7 @@ public class ConsultaMedicaCtrl implements Serializable {
                 .append(".firma-espacio{height:42px;}")
                 .append(".firma-bloque{text-align:center;}")
                 .append(".correo{color:#0000EE;text-decoration:underline;}")
-                .append(".pie{position:fixed;left:12mm;right:12mm;bottom:0mm;text-align:left;}")
+                .append(".pie{position:fixed;left:0mm;right:auto;bottom:0mm;width:85%;text-align:left;}")
                 .append(".membrete-bottom{margin-top:4px;text-align:left;}")
                 .append(".membrete-bottom img{width:100%;max-height:88px;object-fit:contain;}")
                 .append("</style></head><body>")
@@ -905,6 +905,18 @@ public class ConsultaMedicaCtrl implements Serializable {
         }
         if (isBlank(certDomicilio)) {
             faltantes.add("domicilio");
+        }
+        if (isBlank(certTelefono)) {
+            faltantes.add("teléfono de contacto");
+        }
+        if (isBlank(certTipoContingencia)) {
+            faltantes.add("tipo de contingencia");
+        }
+        if (isBlank(certMedicoTelefono)) {
+            faltantes.add("teléfono del médico");
+        }
+        if (isBlank(certMedicoCorreo)) {
+            faltantes.add("correo del médico");
         }
         if (!faltantes.isEmpty()) {
             addMessage(FacesMessage.SEVERITY_ERROR,
