@@ -671,6 +671,8 @@ public class ConsultaMedicaCtrl implements Serializable {
         String fechaFinTxt = fechaEnLetrasCompleta(certFechaFin);
         long diasReposo = getCertDiasReposo();
         String medicoMsp = consulta.getMedicoCodigo() == null ? "" : consulta.getMedicoCodigo();
+        String medicoTelefono = isBlank(certMedicoTelefono) ? "NO REGISTRA" : certMedicoTelefono;
+        String medicoCorreo = isBlank(certMedicoCorreo) ? "NO REGISTRA" : certMedicoCorreo;
         String logoIgm = resolveLogo("LOGO_IGM_FULL_COLOR.png");
         String logoMidena = resolveLogo("LOGO_MIDENA.png");
         String membreteBottom = resolveLogo("membrete-bottom.png");
@@ -682,12 +684,12 @@ public class ConsultaMedicaCtrl implements Serializable {
                 .append("body{font-family:Arial,sans-serif;font-size:13px;line-height:1.2;margin:0;color:#111827;}")
                 .append(".encabezado{display:grid;grid-template-columns:1fr 1fr;align-items:center;column-gap:12px;margin-bottom:10px;}")
                 .append(".logo-bloque{display:flex;align-items:center;gap:10px;}")
-                .append(".logo{max-height:44px;max-width:92px;}")
+                .append(".logo{width:85px;height:85px;display:block;object-fit:contain;}")
                 .append(".titulo{text-align:center;font-size:22px;font-weight:700;letter-spacing:.2px;margin:8px 0 12px 0;}")
                 .append(".texto{font-size:13px;margin-bottom:8px;}")
-                .append(".firma{text-align:center;margin-top:16px;}")
-                .append(".membrete-bottom{margin-top:10px;text-align:left;}")
-                .append(".membrete-bottom img{width:100%;max-height:95px;object-fit:contain;}")
+                .append(".firma{text-align:center;margin-top:10px;}")
+                .append(".membrete-bottom{margin-top:4px;text-align:left;}")
+                .append(".membrete-bottom img{width:100%;max-height:55px;object-fit:contain;}")
                 .append("</style></head><body>")
                 .append("<div class='encabezado'>")
                 .append("<div class='logo-bloque'><img class='logo' alt='LOGO_MIDENA' src='").append(escape(logoMidena)).append("'/></div>")
@@ -708,14 +710,15 @@ public class ConsultaMedicaCtrl implements Serializable {
                 .append("<p class='texto'><b>Domicilio del paciente:</b> ").append(escape(direccionPaciente)).append("<br/>")
                 .append("<b>Teléfono de contacto:</b> ").append(escape(certTelefono)).append("<br/>")
                 .append("<b>Tipo de contingencia:</b> ").append(escape(certTipoContingencia)).append("</p>")
+                .append("<p class='texto'><b>Datos del médico:</b><br/>")
+                .append("MSP: ").append(escape(medicoMsp)).append("<br/>")
+                .append("Teléfono: ").append(escape(medicoTelefono)).append("<br/>")
+                .append("Correo: ").append(escape(medicoCorreo)).append("</p>")
                 .append("<p class='texto' style='margin-top:30px;'>")
                 .append("Quito DM, ").append(escape(fechaEnLetrasCompleta(consulta.getFechaConsulta() != null ? consulta.getFechaConsulta() : new Date()))).append(".</p>")
                 .append("<p class='firma'>Atentamente,</p>")
                 .append("<p class='firma'>").append(escape(consulta.getMedicoNombre())).append("<br/>")
-                .append(escape(certMedicoCargo)).append("<br/>")
-                .append("MSP: ").append(escape(medicoMsp)).append("<br/>")
-                .append("Teléfono: ").append(escape(certMedicoTelefono)).append("<br/>")
-                .append("Correo: ").append(escape(certMedicoCorreo)).append("</p>")
+                .append(escape(certMedicoCargo)).append("</p>")
                 .append("<div class='membrete-bottom'>")
                 .append("<img alt='membrete-bottom' src='").append(escape(membreteBottom)).append("'/>")
                 .append("</div>")
@@ -873,10 +876,7 @@ public class ConsultaMedicaCtrl implements Serializable {
         LocalDate inicio = Instant.ofEpochMilli(certFechaInicio.getTime()).atZone(CERTIFICADO_ZONE).toLocalDate();
         LocalDate fin = Instant.ofEpochMilli(certFechaFin.getTime()).atZone(CERTIFICADO_ZONE).toLocalDate();
         long dias = ChronoUnit.DAYS.between(inicio, fin);
-        if (dias < 0) {
-            return 0L;
-        }
-        return dias + 1L;
+        return Math.max(dias, 0L);
     }
 
     public String getCertDiasReposoLetras() {
@@ -942,6 +942,13 @@ public class ConsultaMedicaCtrl implements Serializable {
     }
 
     private String resolveDireccionPaciente() {
+        String cedula = getCedulaPaciente();
+        if (empleadoRhService != null && !isBlank(cedula)) {
+            String direccionTrabajo = empleadoRhService.buscarDireccionTrabajoVigentePorCedula(cedula);
+            if (!isBlank(direccionTrabajo)) {
+                return direccionTrabajo;
+            }
+        }
         if (empleado != null && !isBlank(empleado.getDireccion())) {
             return empleado.getDireccion();
         }

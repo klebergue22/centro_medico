@@ -24,6 +24,19 @@ public class EmpleadoRhService {
         FROM RH.VW_EMP_CONTRATO_VIGENTE
         WHERE NO_CEDULA = :cedula
         """;
+    private static final String SQL_DIRECCION_TRABAJO_VIGENTE = """
+        SELECT a.area_descrip
+          FROM RH.t_contrataciones c
+          JOIN RH.t_areas a ON a.no_area = c.no_area
+         WHERE c.no_persona = (
+                SELECT v.no_persona
+                  FROM RH.vw_emp_contrato_vigente v
+                 WHERE v.no_cedula = :cedula
+               )
+           AND c.estado = 'V'
+           AND c.f_salida IS NULL
+         ORDER BY c.f_contrato DESC
+        """;
 
     /**
      * Busca en la vista RH.VW_EMP_CONTRATO_VIGENTE por cedula.
@@ -66,6 +79,28 @@ public class EmpleadoRhService {
         try {
             return extractTrimmedValue(querySingleColumn(ced));
         } catch (Exception e) {
+            return null;
+        }
+    }
+
+    /**
+     * Consulta la dirección/área de trabajo vigente en RH usando T_CONTRATACIONES + T_AREAS.
+     */
+    public String buscarDireccionTrabajoVigentePorCedula(String cedula) {
+        final String ced = trimToNull(cedula);
+        if (ced == null) {
+            return null;
+        }
+
+        try {
+            Query q = em.createNativeQuery(SQL_DIRECCION_TRABAJO_VIGENTE);
+            q.setParameter("cedula", ced);
+            q.setMaxResults(1);
+            @SuppressWarnings("unchecked")
+            List<Object> rows = q.getResultList();
+            return extractTrimmedValue(rows);
+        } catch (Exception e) {
+            LOG.error("[RH] Error consultando direccion de trabajo vigente para cedula={}", ced, e);
             return null;
         }
     }
