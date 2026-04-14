@@ -22,7 +22,7 @@
                 </h:panelGrid>
 
                 <p:outputPanel id="pacientePanel" style="margin-top:10px;">
-                    <h:panelGrid columns="2" cellpadding="4" rendered="#{not empty consultaMedicaCtrl.nombrePaciente}">
+                    <h:panelGrid columns="2" cellpadding="4" styleClass="textarea-grid ui-fluid" columnClasses="22%,78%" rendered="#{not empty consultaMedicaCtrl.nombrePaciente}">
                         <h:outputText value="Paciente:" style="font-weight:bold;"/>
                         <h:outputText value="#{consultaMedicaCtrl.nombrePaciente}"/>
                         <h:outputText value="Cargo:" style="font-weight:bold;"/>
@@ -87,7 +87,7 @@
             </p:panel>
 
             <p:panel header="Datos clínicos y certificado" style="margin-top:10px;">
-                <h:panelGrid columns="2" cellpadding="6" styleClass="ui-fluid">
+                <h:panelGrid columns="2" cellpadding="6" styleClass="ui-fluid textarea-grid" columnClasses="22%,78%">
                     <h:outputText value="Motivo de consulta:"/>
                     <p:inputTextarea value="#{consultaMedicaCtrl.consulta.motivoConsulta}" rows="2" autoResize="false" styleClass="consulta-textarea"/>
                     <h:outputText value="Síntomas:"/>
@@ -108,7 +108,7 @@
                     </p:column>
                 </p:dataTable>
 
-                <h:panelGrid columns="2" cellpadding="6" style="margin-top:8px; width:100%;">
+                <h:panelGrid columns="2" cellpadding="6" styleClass="textarea-grid ui-fluid" columnClasses="22%,78%" style="margin-top:8px; width:100%;">
                     <h:outputText value="Recomendaciones no farmacológicas"/>
                     <p:inputTextarea value="#{consultaMedicaCtrl.recomendaciones}" rows="3" autoResize="false" styleClass="consulta-textarea"/>
                     <h:outputText value="Signos de alarma"/>
@@ -158,7 +158,7 @@
             </p:panel>
 
             <p:panel header="Datos del médico" style="margin-top:10px;">
-                <h:panelGrid columns="2" cellpadding="6" styleClass="ui-fluid">
+                <h:panelGrid columns="2" cellpadding="6" styleClass="ui-fluid textarea-grid" columnClasses="22%,78%">
                     <h:outputText value="Médico:"/>
                     <p:inputText value="#{consultaMedicaCtrl.consulta.medicoNombre}"/>
                     <h:outputText value="MSP (código médico):"/>
@@ -209,7 +209,7 @@
 
             <p:dialog id="certDialog" widgetVar="certDialogWv" header="Certificado médico" modal="true" width="1100" appendTo="@(body)" resizable="false" styleClass="cert-dialog">
                 <h:panelGrid columns="4" styleClass="ui-fluid cert-grid"
-                             columnClasses="col-12 md:col-2,col-12 md:col-4,col-12 md:col-2,col-12 md:col-4" cellpadding="6">
+                             columnClasses="18%,32%,18%,32%" cellpadding="6">
                     <h:outputText value="Paciente"/>
                     <p:inputText value="#{consultaMedicaCtrl.nombrePaciente}" readonly="true"/>
                     <h:outputText value="Cargo del paciente"/>

@@ -2283,12 +2283,35 @@ td.j-date  .ui-datepicker-trigger{
 
 
 /* Textareas uniformes para consulta y certificado */
-.consulta-textarea {
+#consultaForm .consulta-textarea,
+#consultaForm textarea.ui-inputtextarea,
+#consultaForm .ui-inputtextarea,
+#consultaForm .ui-inputtextarea.ui-inputfield {
   width: 100% !important;
+  max-width: 100% !important;
   min-height: 72px;
   resize: vertical;
   overflow-y: auto;
   box-sizing: border-box;
+  display: block;
+}
+
+/* En grids de 2 columnas, el campo (columna 2) debe ocupar todo el ancho */
+#consultaForm .textarea-grid {
+  width: 100%;
+}
+
+#consultaForm .textarea-grid > tbody > tr > td:nth-child(1) {
+  white-space: nowrap;
+}
+
+#consultaForm .textarea-grid > tbody > tr > td:nth-child(2) {
+  width: 100%;
+}
+
+#consultaForm .textarea-grid > tbody > tr > td:nth-child(2) .ui-inputfield,
+#consultaForm .textarea-grid > tbody > tr > td:nth-child(2) .ui-inputtextarea {
+  width: 100% !important;
 }
 
 /* Diálogo de certificado: scroll interno para mantener visible el botón de generar */
