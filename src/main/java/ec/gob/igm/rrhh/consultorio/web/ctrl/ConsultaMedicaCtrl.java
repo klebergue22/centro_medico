@@ -1039,7 +1039,7 @@ private String construirHtmlCertificado() {
         LocalDate inicio = Instant.ofEpochMilli(certFechaInicio.getTime()).atZone(CERTIFICADO_ZONE).toLocalDate();
         LocalDate fin = Instant.ofEpochMilli(certFechaFin.getTime()).atZone(CERTIFICADO_ZONE).toLocalDate();
         long dias = ChronoUnit.DAYS.between(inicio, fin);
-        return Math.max(dias, 0L) + 1L;
+        return Math.max(dias, 0L);
     }
 
     public String getCertDiasReposoLetras() {
