@@ -724,14 +724,15 @@ private String construirHtmlCertificado() {
         .append("body{font-family:Arial,sans-serif;font-size:16px;line-height:1.2;margin:0;color:#000000;}")
         .append(".contenido{padding-bottom:112px;}")
 
-        .append(".encabezado{margin:0 0 16px 0;text-align:center;}")
+        .append(".encabezado{margin:0 0 12px 0;text-align:center;}")
         .append(".encabezado-table{width:100%;border-collapse:collapse;table-layout:fixed;}")
-        .append(".encabezado-table td{vertical-align:middle;text-align:center;}")
-        .append(".header-spacer{width:12%;}")
-        .append(".header-logo-cell{width:38%;}")
-        .append(".logo-midena{display:inline-block;max-width:260px;max-height:110px;width:auto;height:auto;object-fit:contain;}")
-        .append(".logo-igm{display:inline-block;max-width:240px;max-height:110px;width:auto;height:auto;object-fit:contain;}")
-        .append(".titulo{text-align:center;font-size:22px;font-weight:700;letter-spacing:.2px;margin:10px 0 12px 0;}")
+        .append(".encabezado-table td{vertical-align:middle;text-align:center;padding:0 8px;}")
+        .append(".header-logo-cell{width:50%;}")
+
+        .append(".logo-midena{display:block;width:170px;height:auto;margin:0 auto;}")
+        .append(".logo-igm{display:block;width:170px;height:auto;margin:0 auto;}")
+
+        .append(".titulo{text-align:center;font-size:22px;font-weight:700;letter-spacing:.2px;margin:6px 0 12px 0;}")
 
         .append(".cuerpo-certificado{width:calc(100% - 50mm);margin-left:38mm;margin-right:12mm;box-sizing:border-box;}")
         .append(".texto{font-size:16px;margin:0 0 6px 0;text-align:justify;}")
@@ -756,7 +757,6 @@ private String construirHtmlCertificado() {
     html.append("<div class='encabezado'>")
         .append("<table class='encabezado-table'>")
         .append("<tr>")
-        .append("<td class='header-spacer'></td>")
         .append("<td class='header-logo-cell'>")
         .append("<img class='logo-midena' alt='LOGO_MIDENA' src='")
         .append(escape(logoMidena))
@@ -767,7 +767,6 @@ private String construirHtmlCertificado() {
         .append(escape(logoIgm))
         .append("'/>")
         .append("</td>")
-        .append("<td class='header-spacer'></td>")
         .append("</tr>")
         .append("</table>")
         .append("</div>");
