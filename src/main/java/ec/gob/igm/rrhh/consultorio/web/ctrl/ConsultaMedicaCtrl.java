@@ -686,6 +686,9 @@ public class ConsultaMedicaCtrl implements Serializable {
         return sb.toString();
     }
 
+    /**
+     * Certificado médico de Consulta Médica (no usa la plantilla de aptitud).
+     */
     private String construirHtmlCertificado() {
         String nombrePaciente = getNombrePaciente();
         String cedula = getCedulaPaciente();
@@ -713,7 +716,7 @@ public class ConsultaMedicaCtrl implements Serializable {
                 .append("<style>")
                 .append("@page{size:A4;margin:10mm 12mm 4mm 12mm;}")
                 .append("body{font-family:Arial,sans-serif;font-size:13px;line-height:1.2;margin:0;color:#000000;}")
-                .append(".contenido{padding-bottom:40px;}")
+                .append(".contenido{padding-bottom:64px;}")
                 .append(".encabezado{margin-bottom:6px;}")
                 .append(".encabezado-table{width:100%;border-collapse:collapse;}")
                 .append(".encabezado-table td{vertical-align:middle;}")
@@ -726,7 +729,12 @@ public class ConsultaMedicaCtrl implements Serializable {
                 .append(".firma-bloque{text-align:center;}")
                 .append(".correo{color:#0000EE;text-decoration:underline;}")
                 .append(".pie{position:relative;left:0mm;right:auto;margin-top:6px;width:100%;text-align:left;}")
-                .append(".membrete-bottom{position:fixed;left:12mm;right:12mm;bottom:4mm;text-align:right;font-size:11px;line-height:1.2;color:#b3b3b3;font-weight:600;}")
+                .append(".membrete-bottom{position:fixed;left:12mm;right:12mm;bottom:0mm;width:auto;}")
+                .append(".membrete-bottom table{width:100%;border-collapse:collapse;}")
+                .append(".membrete-bottom td{vertical-align:bottom;}")
+                .append(".membrete-bottom .mb-img{width:28%;text-align:left;}")
+                .append(".membrete-bottom .mb-img img{width:100%;height:86px;object-fit:contain;object-position:left bottom;}")
+                .append(".membrete-bottom .mb-text{width:72%;text-align:center;font-size:11px;line-height:1.15;color:#b3b3b3;font-weight:600;padding-bottom:8px;}")
                 .append("</style></head><body>")
                 .append("<div class='contenido'>")
                 .append("<div class='encabezado'>")
@@ -765,8 +773,12 @@ public class ConsultaMedicaCtrl implements Serializable {
                 .append("<span class='correo'>").append(escape(medicoCorreo)).append("</span></p>")
                 .append("</div>")
                 .append("<div class='membrete-bottom'>")
-                .append("QUITO: Seniergues E4-676 y Gral. Telmo Paz y Miño Sector El Dorado<br/>")
-                .append("Teléf.: 593(2) 3975100 al 130 GUAYAQUIL: Av. Guillermo Pareja # 402 Ciudadela la Garzota Teléf.: 593(4) 26247 597 y 593(4) 2627829")
+                .append("<table><tr>")
+                .append("<td class='mb-img'><img alt='membrete-bottom' src='").append(escape(membreteBottom)).append("'/></td>")
+                .append("<td class='mb-text'>QUITO: Seniergues E4-676 y Gral. Telmo Paz y Miño Sector El Dorado<br/>")
+                .append("Teléf.: 593(2) 3975100 al 130 GUAYAQUIL: Av. Guillermo Pareja # 402 Ciudadela la Garzota<br/>")
+                .append("Teléf.: 593(4) 26247 597 y 593(4) 2627829</td>")
+                .append("</tr></table>")
                 .append("</div>")
                 .append("</body></html>");
         return html.toString();
