@@ -696,7 +696,7 @@ private String construirHtmlCertificado() {
     String cargoPaciente = isBlank(certCargoPaciente) ? resolveCargoPaciente() : certCargoPaciente;
     String areaTrabajo = getAreaTrabajoPaciente();
     String diagnosticoPaciente = isBlank(getDiagnosticosTexto()) ? "NO REGISTRA" : getDiagnosticosTexto();
-    String sintomasPaciente = isBlank(consulta.getMotivoConsulta()) ? "NO REGISTRA" : consulta.getMotivoConsulta();
+    String sintomasPaciente = isBlank(consulta.getEnfermedadActual()) ? "NO REGISTRA" : consulta.getEnfermedadActual();
     String fechaInicioTexto = formatoFechaDiaMesAnioConLetras(certFechaInicio);
     String fechaFinTexto = formatoFechaDiaMesAnioConLetras(certFechaFin);
     long diasReposo = getCertDiasReposo();
