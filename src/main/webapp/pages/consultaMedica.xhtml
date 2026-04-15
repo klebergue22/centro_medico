@@ -22,24 +22,51 @@
                 </h:panelGrid>
 
                 <p:outputPanel id="pacientePanel" style="margin-top:10px;">
-                    <h:panelGrid columns="2" cellpadding="4" styleClass="textarea-grid ui-fluid" columnClasses="22%,78%" rendered="#{not empty consultaMedicaCtrl.nombrePaciente}">
-                        <h:outputText value="Paciente:" style="font-weight:bold;"/>
-                        <h:outputText value="#{consultaMedicaCtrl.nombrePaciente}"/>
-                        <h:outputText value="Cargo:" style="font-weight:bold;"/>
-                        <h:outputText value="#{consultaMedicaCtrl.certCargoPaciente}"/>
-                        <h:outputText value="Área:" style="font-weight:bold;"/>
-                        <h:outputText value="#{consultaMedicaCtrl.areaTrabajoPaciente}"/>
-                        <h:outputText value="Fecha nacimiento:" style="font-weight:bold;"/>
-                        <p:calendar value="#{consultaMedicaCtrl.fechaNacimientoPaciente}" pattern="dd/MM/yyyy" showOn="button"/>
-                        <h:outputText value="Sexo:" style="font-weight:bold;"/>
+                    <h:panelGrid columns="2"
+                                 cellpadding="6"
+                                 styleClass="paciente-grid ui-fluid"
+                                 columnClasses="paciente-label,paciente-field"
+                                 style="width:100%; table-layout:fixed;"
+                                 rendered="#{not empty consultaMedicaCtrl.nombrePaciente}">
+
+                        <h:outputText value="Paciente:" styleClass="paciente-etiqueta"/>
+                        <h:outputText value="#{consultaMedicaCtrl.nombrePaciente}" styleClass="paciente-valor"/>
+
+                        <h:outputText value="Cargo:" styleClass="paciente-etiqueta"/>
+                        <h:outputText value="#{consultaMedicaCtrl.certCargoPaciente}" styleClass="paciente-valor"/>
+
+                        <h:outputText value="Área:" styleClass="paciente-etiqueta"/>
+                        <h:outputText value="#{consultaMedicaCtrl.areaTrabajoPaciente}" styleClass="paciente-valor"/>
+
+                        <h:outputText value="Fecha nacimiento:" styleClass="paciente-etiqueta"/>
+                        <p:calendar value="#{consultaMedicaCtrl.fechaNacimientoPaciente}"
+                                    pattern="dd/MM/yyyy"
+                                    showOn="button"
+                                    readonlyInput="true"
+                                    navigator="true"
+                                    styleClass="fecha-grid"/>
+
+                        <h:outputText value="Sexo:" styleClass="paciente-etiqueta"/>
                         <p:inputText value="#{consultaMedicaCtrl.sexoPaciente}" readonly="true"/>
-                        <h:outputText value="Edad:" style="font-weight:bold;"/>
-                        <h:outputText value="#{consultaMedicaCtrl.edadPaciente}"/>
-                        <h:outputText value="Fecha consulta:" style="font-weight:bold;"/>
-                        <p:calendar value="#{consultaMedicaCtrl.consulta.fechaConsulta}" pattern="dd/MM/yyyy" showOn="button"/>
-                        <h:outputText value="Antecedente de alergias:" style="font-weight:bold;"/>
-                        <p:inputTextarea value="#{consultaMedicaCtrl.alergias}" rows="1" autoResize="true" styleClass="consulta-textarea"/>
+
+                        <h:outputText value="Edad:" styleClass="paciente-etiqueta"/>
+                        <h:outputText value="#{consultaMedicaCtrl.edadPaciente}" styleClass="paciente-valor"/>
+
+                        <h:outputText value="Fecha consulta:" styleClass="paciente-etiqueta"/>
+                        <p:calendar value="#{consultaMedicaCtrl.consulta.fechaConsulta}"
+                                    pattern="dd/MM/yyyy"
+                                    showOn="button"
+                                    readonlyInput="true"
+                                    navigator="true"
+                                    styleClass="fecha-grid"/>
+
+                        <h:outputText value="Antecedente de alergias:" styleClass="paciente-etiqueta"/>
+                        <p:inputTextarea value="#{consultaMedicaCtrl.alergias}"
+                                         rows="4"
+                                         autoResize="false"
+                                         styleClass="consulta-textarea"/>
                     </h:panelGrid>
+
                     <p:panel header="Consultas anteriores"
                              style="margin-top:10px;"
                              rendered="#{not empty consultaMedicaCtrl.consultasAnteriores}">
@@ -117,7 +144,7 @@
 
             <p:panel header="Diagnósticos" style="margin-top:10px;">
                 <p:commandButton value="Agregar diagnóstico" icon="pi pi-plus" actionListener="#{consultaMedicaCtrl.agregarDiagnostico}" update="diagTbl"/>
-                    <p:dataTable id="diagTbl" var="diag" value="#{consultaMedicaCtrl.diagnosticos}" lazy="false" rowIndexVar="idx" style="margin-top:8px;" styleClass="diag-table">
+                <p:dataTable id="diagTbl" var="diag" value="#{consultaMedicaCtrl.diagnosticos}" lazy="false" rowIndexVar="idx" style="margin-top:8px;" styleClass="diag-table">
                     <p:column headerText="#" style="width:50px;">#{idx + 1}</p:column>
                     <p:column headerText="Código CIE10" styleClass="diag-col-code">
                         <p:autoComplete value="#{diag.codigo}"
@@ -295,14 +322,14 @@
             function q(s){return document.querySelector("input[id$='"+s+"']");}
             function n(v){return parseFloat(String(v).replace(',','.'));}
             function calcIMC(){
-                var peso=q("peso_input"), talla=q("talla_input"), imc=q("imc_input");
-                if(!peso||!talla||!imc)return;
-                var p=n(peso.value), t=n(talla.value);
-                if(!isNaN(p)&amp;&amp;!isNaN(t)&amp;&amp;t>0){
-                    imc.value=(p/Math.pow(t/100,2)).toFixed(2);
-                }else{
-                    imc.value="";
-                }
+            var peso=q("peso_input"), talla=q("talla_input"), imc=q("imc_input");
+            if(!peso||!talla||!imc)return;
+            var p=n(peso.value), t=n(talla.value);
+            if(!isNaN(p)&amp;&amp;!isNaN(t)&amp;&amp;t>0){
+            imc.value=(p/Math.pow(t/100,2)).toFixed(2);
+            }else{
+            imc.value="";
+            }
             }
             document.addEventListener('DOMContentLoaded',calcIMC);
         </h:outputScript>
