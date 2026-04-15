@@ -722,7 +722,7 @@ private String construirHtmlCertificado() {
         .append("<style>")
         .append("@page{size:A4;margin:10mm 12mm 8mm 12mm;}")
 
-        .append("body{font-family:Arial,sans-serif;font-size:15px;line-height:1.18;margin:0;color:#000000;}")
+        .append("body{font-family:Arial,sans-serif;font-size:18px;line-height:1.18;margin:0;color:#000000;}")
         .append(".contenido{padding-bottom:108px;}")
 
         .append(".encabezado{margin:0 0 6px 0;text-align:center;}")
@@ -833,25 +833,27 @@ private String construirHtmlCertificado() {
         .append(".</p>")
         .append("</div>");
 
-    html.append("<div class='pie'>")
-        .append("<p class='firma firma-label'>Atentamente,</p>")
-        .append("<p class='firma firma-bloque'>")
-        .append(escape(consulta.getMedicoNombre()))
-        .append("<br/>")
-        .append(escape(certMedicoCargo))
-        .append("<br/>")
-        .append("MSP: ")
-        .append(escape(medicoMsp))
-        .append("<br/>")
-        .append("Teléfono: ")
-        .append(escape(medicoTelefono))
-        .append("<br/>")
-        .append("<span class='correo'>")
-        .append(escape(medicoCorreo))
-        .append("</span></p>")
-        .append("</div>");
+html.append("<div class='pie'>")
+          .append("<div style='height: 90px;'></div>")  
+    .append("<p class='firma firma-label'>Atentamente,</p>")
+    .append("<div style='height: 90px;'></div>")  
+    .append("<p class='firma firma-bloque'>")
+    .append(escape(consulta.getMedicoNombre()))
+    .append("<br/>")
+    .append(escape(certMedicoCargo))
+    .append("<br/>")
+    .append("MSP: ")
+    .append(escape(medicoMsp))
+    .append("<br/>")
+    .append("Teléfono: ")
+    .append(escape(medicoTelefono))
+    .append("<br/>")
+    .append("<span class='correo'>")
+    .append(escape(medicoCorreo))
+    .append("</span></p>")
+    .append("</div>");
 
-    html.append("</div>");
+html.append("</div>");
 
     html.append("<div class='membrete-bottom'>")
         .append("<table>")
