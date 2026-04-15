@@ -260,6 +260,7 @@
 
                     <h:outputText value="Fecha inicio (números)"/>
                     <p:calendar id="certFechaInicioNum" value="#{consultaMedicaCtrl.certFechaInicio}" pattern="dd/MM/yyyy" showOn="button" readonlyInput="true"
+                                timeZone="America/Guayaquil"
                                 maxdate="#{consultaMedicaCtrl.certFechaInicioMax}">
                         <p:ajax event="dateSelect" listener="#{consultaMedicaCtrl.onFechaInicioSelect}"
                                 update="certFechaFinNum certFechaInicioTxt certFechaFinTxt certDiasReposoNum certDiasReposoTxt growl"/>
@@ -270,6 +271,7 @@
                     </p:calendar>
                     <h:outputText value="Fecha fin (números)"/>
                     <p:calendar id="certFechaFinNum" value="#{consultaMedicaCtrl.certFechaFin}" pattern="dd/MM/yyyy" showOn="button" readonlyInput="true"
+                                timeZone="America/Guayaquil"
                                 mindate="#{consultaMedicaCtrl.certFechaFinMin}">
                         <p:ajax event="dateSelect" listener="#{consultaMedicaCtrl.onFechaFinSelect}"
                                 update="certFechaInicioNum certFechaFinNum certFechaInicioTxt certFechaFinTxt certDiasReposoNum certDiasReposoTxt growl"/>
@@ -280,9 +282,11 @@
                     </p:calendar>
 
                     <h:outputText value="Fecha inicio (letras)"/>
-                    <p:calendar id="certFechaInicioTxt" value="#{consultaMedicaCtrl.certFechaInicio}" pattern="dd 'de' MMMM 'de' yyyy" locale="es" readonlyInput="true" disabled="true"/>
+                    <p:calendar id="certFechaInicioTxt" value="#{consultaMedicaCtrl.certFechaInicio}" pattern="dd 'de' MMMM 'de' yyyy" locale="es" readonlyInput="true" disabled="true"
+                                timeZone="America/Guayaquil"/>
                     <h:outputText value="Fecha fin (letras)"/>
-                    <p:calendar id="certFechaFinTxt" value="#{consultaMedicaCtrl.certFechaFin}" pattern="dd 'de' MMMM 'de' yyyy" locale="es" readonlyInput="true" disabled="true"/>
+                    <p:calendar id="certFechaFinTxt" value="#{consultaMedicaCtrl.certFechaFin}" pattern="dd 'de' MMMM 'de' yyyy" locale="es" readonlyInput="true" disabled="true"
+                                timeZone="America/Guayaquil"/>
 
                     <h:outputText value="Días reposo (número)"/>
                     <p:inputText id="certDiasReposoNum" value="#{consultaMedicaCtrl.certDiasReposo}" readonly="true"/>

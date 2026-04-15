@@ -36,6 +36,7 @@ import java.time.Period;
 import java.time.temporal.ChronoUnit;
 import java.time.format.TextStyle;
 import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
@@ -51,6 +52,7 @@ public class ConsultaMedicaCtrl implements Serializable {
 
     private static final long serialVersionUID = 1L;
     private static final ZoneId CERTIFICADO_ZONE = ZoneId.of("America/Guayaquil");
+    private static final ZoneId CERTIFICADO_DATE_ZONE = ZoneOffset.UTC;
 
     @Inject
     private transient EmpleadoService empleadoService;
@@ -900,7 +902,7 @@ html.append("</div>");
         if (date == null) {
             return "";
         }
-        LocalDate local = Instant.ofEpochMilli(date.getTime()).atZone(CERTIFICADO_ZONE).toLocalDate();
+        LocalDate local = toCertLocalDate(date);
         String mes = local.getMonth().getDisplayName(TextStyle.FULL, new java.util.Locale("es", "EC"));
         return local.getDayOfMonth() + " de " + mes + " de " + local.getYear();
     }
@@ -909,7 +911,7 @@ html.append("</div>");
         if (date == null) {
             return "";
         }
-        LocalDate local = Instant.ofEpochMilli(date.getTime()).atZone(CERTIFICADO_ZONE).toLocalDate();
+        LocalDate local = toCertLocalDate(date);
         String mes = local.getMonth().getDisplayName(TextStyle.FULL, new java.util.Locale("es", "EC"));
         return numeroEnLetras(local.getDayOfMonth()) + " de " + mes + " de " + anioEnLetras(local.getYear());
     }
@@ -918,7 +920,7 @@ html.append("</div>");
         if (date == null) {
             return "";
         }
-        LocalDate local = Instant.ofEpochMilli(date.getTime()).atZone(CERTIFICADO_ZONE).toLocalDate();
+        LocalDate local = toCertLocalDate(date);
         String mes = local.getMonth().getDisplayName(TextStyle.FULL, new java.util.Locale("es", "EC"));
         return local.getDayOfMonth() + " (" + numeroEnLetras(local.getDayOfMonth()) + ") de " + mes
                 + " de " + local.getYear() + " (" + anioEnLetras(local.getYear()) + ")";
@@ -928,10 +930,14 @@ html.append("</div>");
         if (date == null) {
             return "";
         }
-        LocalDate local = Instant.ofEpochMilli(date.getTime()).atZone(CERTIFICADO_ZONE).toLocalDate();
+        LocalDate local = toCertLocalDate(date);
         String fechaNumerica = String.format("%02d/%02d/%04d",
                 local.getDayOfMonth(), local.getMonthValue(), local.getYear());
         return fechaNumerica + " (" + fechaEnLetrasCompleta(date) + ")";
+    }
+
+    private LocalDate toCertLocalDate(Date date) {
+        return Instant.ofEpochMilli(date.getTime()).atZone(CERTIFICADO_DATE_ZONE).toLocalDate();
     }
 
     private void sincronizarFechasCertificado() {
@@ -999,17 +1005,17 @@ html.append("</div>");
         if (base == null) {
             return null;
         }
-        LocalDate local = Instant.ofEpochMilli(base.getTime()).atZone(CERTIFICADO_ZONE).toLocalDate();
+        LocalDate local = toCertLocalDate(base);
         LocalDate ajustada = local.plusDays(dias);
-        return Date.from(ajustada.atStartOfDay(CERTIFICADO_ZONE).toInstant());
+        return Date.from(ajustada.atStartOfDay(CERTIFICADO_DATE_ZONE).toInstant());
     }
 
     private Date truncateTime(Date fecha) {
         if (fecha == null) {
             return null;
         }
-        LocalDate local = Instant.ofEpochMilli(fecha.getTime()).atZone(CERTIFICADO_ZONE).toLocalDate();
-        return Date.from(local.atStartOfDay(CERTIFICADO_ZONE).toInstant());
+        LocalDate local = toCertLocalDate(fecha);
+        return Date.from(local.atStartOfDay(CERTIFICADO_DATE_ZONE).toInstant());
     }
 
     private boolean validarCamposObligatoriosCertificado() {
@@ -1064,8 +1070,8 @@ html.append("</div>");
         if (certFechaInicio == null || certFechaFin == null) {
             return 0L;
         }
-        LocalDate inicio = Instant.ofEpochMilli(certFechaInicio.getTime()).atZone(CERTIFICADO_ZONE).toLocalDate();
-        LocalDate fin = Instant.ofEpochMilli(certFechaFin.getTime()).atZone(CERTIFICADO_ZONE).toLocalDate();
+        LocalDate inicio = toCertLocalDate(certFechaInicio);
+        LocalDate fin = toCertLocalDate(certFechaFin);
         long dias = ChronoUnit.DAYS.between(inicio, fin);
         return Math.max(dias, 0L);
     }
