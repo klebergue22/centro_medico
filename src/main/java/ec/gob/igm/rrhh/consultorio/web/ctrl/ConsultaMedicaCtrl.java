@@ -697,8 +697,8 @@ private String construirHtmlCertificado() {
     String areaTrabajo = getAreaTrabajoPaciente();
     String diagnosticoPaciente = isBlank(getDiagnosticosTexto()) ? "NO REGISTRA" : getDiagnosticosTexto();
     String sintomasPaciente = isBlank(consulta.getMotivoConsulta()) ? "NO REGISTRA" : consulta.getMotivoConsulta();
-    String fechaInicioTexto = fechaEnLetras(certFechaInicio);
-    String fechaFinTexto = fechaEnLetras(certFechaFin);
+    String fechaInicioTexto = formatoFechaDiaMesAnioConLetras(certFechaInicio);
+    String fechaFinTexto = formatoFechaDiaMesAnioConLetras(certFechaFin);
     long diasReposo = getCertDiasReposo();
     String telefonoContacto = valueOrNoRegistra(certTelefono);
     String medicoMsp = consulta.getMedicoCodigo() == null ? "" : consulta.getMedicoCodigo();
@@ -904,6 +904,16 @@ private String construirHtmlCertificado() {
         String mes = local.getMonth().getDisplayName(TextStyle.FULL, new java.util.Locale("es", "EC"));
         return local.getDayOfMonth() + " (" + numeroEnLetras(local.getDayOfMonth()) + ") de " + mes
                 + " de " + local.getYear() + " (" + anioEnLetras(local.getYear()) + ")";
+    }
+
+    private String formatoFechaDiaMesAnioConLetras(Date date) {
+        if (date == null) {
+            return "";
+        }
+        LocalDate local = Instant.ofEpochMilli(date.getTime()).atZone(CERTIFICADO_ZONE).toLocalDate();
+        String fechaNumerica = String.format("%02d/%02d/%04d",
+                local.getDayOfMonth(), local.getMonthValue(), local.getYear());
+        return fechaNumerica + " (" + fechaEnLetrasCompleta(date) + ")";
     }
 
     private void sincronizarFechasCertificado() {
