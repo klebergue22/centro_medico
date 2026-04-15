@@ -710,7 +710,6 @@ public class ConsultaMedicaCtrl implements Serializable {
                 consulta.getFechaConsulta() != null ? consulta.getFechaConsulta() : new Date());
         String logoIgm = resolveLogo("LOGO_IGM_FULL_COLOR.png");
         String logoMidena = resolveLogo("LOGO_MIDENA.png");
-        String membreteBottom = resolveLogo("membrete-bottom.png");
 
         StringBuilder html = new StringBuilder();
         html.append("<!DOCTYPE html><html><head><meta charset='UTF-8'/>")
