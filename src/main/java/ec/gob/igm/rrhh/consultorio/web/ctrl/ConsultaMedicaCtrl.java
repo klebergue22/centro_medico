@@ -707,13 +707,13 @@ public class ConsultaMedicaCtrl implements Serializable {
                 consulta.getFechaConsulta() != null ? consulta.getFechaConsulta() : new Date());
         String logoIgm = resolveLogo("LOGO_IGM_FULL_COLOR.png");
         String logoMidena = resolveLogo("LOGO_MIDENA.png");
-        String membreteBottom = resolveLogo("membrete-bottom.png");
 
         StringBuilder html = new StringBuilder();
         html.append("<!DOCTYPE html><html><head><meta charset='UTF-8'/>")
                 .append("<style>")
                 .append("@page{size:A4;margin:10mm 12mm 4mm 12mm;}")
                 .append("body{font-family:Arial,sans-serif;font-size:13px;line-height:1.2;margin:0;color:#000000;}")
+                .append(".contenido{padding-bottom:40px;}")
                 .append(".encabezado{margin-bottom:6px;}")
                 .append(".encabezado-table{width:100%;border-collapse:collapse;}")
                 .append(".encabezado-table td{vertical-align:middle;}")
@@ -726,12 +726,7 @@ public class ConsultaMedicaCtrl implements Serializable {
                 .append(".firma-bloque{text-align:center;}")
                 .append(".correo{color:#0000EE;text-decoration:underline;}")
                 .append(".pie{position:relative;left:0mm;right:auto;margin-top:6px;width:100%;text-align:left;}")
-                .append(".membrete-bottom{margin-top:8px;width:100%;}")
-                .append(".membrete-bottom table{width:100%;border-collapse:collapse;}")
-                .append(".membrete-bottom td{vertical-align:bottom;}")
-                .append(".membrete-bottom .mb-img{width:42%;text-align:left;}")
-                .append(".membrete-bottom .mb-img img{width:100%;height:44px;object-fit:contain;object-position:left bottom;}")
-                .append(".membrete-bottom .mb-text{text-align:right;font-size:11px;line-height:1.2;color:#b3b3b3;font-weight:600;}")
+                .append(".membrete-bottom{position:fixed;left:12mm;right:12mm;bottom:4mm;text-align:right;font-size:11px;line-height:1.2;color:#b3b3b3;font-weight:600;}")
                 .append("</style></head><body>")
                 .append("<div class='contenido'>")
                 .append("<div class='encabezado'>")
@@ -768,15 +763,10 @@ public class ConsultaMedicaCtrl implements Serializable {
                 .append("MSP: ").append(escape(medicoMsp)).append("<br/>")
                 .append("Teléfono: ").append(escape(medicoTelefono)).append("<br/>")
                 .append("<span class='correo'>").append(escape(medicoCorreo)).append("</span></p>")
+                .append("</div>")
                 .append("<div class='membrete-bottom'>")
-                .append("<table><tr>")
-                .append("<td class='mb-img'><img alt='membrete-bottom' src='").append(escape(membreteBottom)).append("'/></td>")
-                .append("<td class='mb-text'>")
                 .append("QUITO: Seniergues E4-676 y Gral. Telmo Paz y Miño Sector El Dorado<br/>")
                 .append("Teléf.: 593(2) 3975100 al 130 GUAYAQUIL: Av. Guillermo Pareja # 402 Ciudadela la Garzota Teléf.: 593(4) 26247 597 y 593(4) 2627829")
-                .append("</td>")
-                .append("</tr></table>")
-                .append("</div>")
                 .append("</div>")
                 .append("</body></html>");
         return html.toString();
