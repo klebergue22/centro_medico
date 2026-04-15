@@ -2363,3 +2363,97 @@ td.j-date  .ui-datepicker-trigger{
   width: 1rem !important;
   height: 1rem !important;
 }
+/* ===== Panel de datos del paciente - consulta médica ===== */
+#consultaForm .paciente-grid {
+  width: 100%;
+  table-layout: fixed;
+}
+
+#consultaForm .paciente-grid > tbody > tr > td {
+  padding: 6px 8px;
+  vertical-align: middle;
+  box-sizing: border-box;
+}
+
+#consultaForm .paciente-grid > tbody > tr > td:nth-child(odd) {
+  width: 22%;
+  white-space: nowrap;
+  font-weight: 600;
+  color: #2f3e2f;
+}
+
+#consultaForm .paciente-grid > tbody > tr > td:nth-child(even) {
+  width: 78%;
+  overflow: hidden;
+}
+
+#consultaForm .paciente-grid .paciente-valor {
+  display: block;
+  width: 100%;
+  white-space: normal;
+  word-break: break-word;
+  line-height: 1.4;
+}
+
+/* Inputs y textarea dentro del grid */
+#consultaForm .paciente-grid .ui-inputfield,
+#consultaForm .paciente-grid .ui-inputtextarea,
+#consultaForm .paciente-grid .ui-calendar {
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box;
+}
+
+/* Corrección puntual del calendario */
+#consultaForm .paciente-grid .ui-calendar {
+  display: flex !important;
+  align-items: center;
+}
+
+#consultaForm .paciente-grid .ui-calendar input.ui-inputfield {
+  flex: 1 1 auto;
+  width: auto !important;
+  min-width: 0;
+  margin: 0;
+}
+
+#consultaForm .paciente-grid .ui-calendar .ui-datepicker-trigger,
+#consultaForm .paciente-grid .ui-calendar .ui-button {
+  flex: 0 0 38px;
+  width: 38px !important;
+  min-width: 38px !important;
+  height: 36px !important;
+  margin-left: 6px !important;
+  padding: 0 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+/* textarea de alergias */
+#consultaForm .paciente-grid .consulta-textarea {
+  width: 100% !important;
+  min-height: 90px;
+  resize: vertical;
+  box-sizing: border-box;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  #consultaForm .paciente-grid,
+  #consultaForm .paciente-grid > tbody,
+  #consultaForm .paciente-grid > tbody > tr,
+  #consultaForm .paciente-grid > tbody > tr > td {
+    display: block !important;
+    width: 100% !important;
+  }
+
+  #consultaForm .paciente-grid > tbody > tr > td:nth-child(odd) {
+    margin-bottom: 4px;
+    white-space: normal;
+  }
+
+  #consultaForm .paciente-grid > tbody > tr > td:nth-child(even) {
+    margin-bottom: 10px;
+  }
+}
