@@ -774,7 +774,7 @@ public class ConsultaMedicaCtrl implements Serializable {
                 .append("</div>")
                 .append("<div class='membrete-bottom'>")
                 .append("<table><tr>")
-                .append("<td class='mb-img'><img alt='membrete-bottom' src='").append(escape(membreteBottom)).append("'/></td>")
+                .append("<td class='mb-img'><img alt='membrete-bottom' src='").append(escape(resolveLogo("membrete-bottom.png"))).append("'/></td>")
                 .append("<td class='mb-text'>QUITO: Seniergues E4-676 y Gral. Telmo Paz y Miño Sector El Dorado<br/>")
                 .append("Teléf.: 593(2) 3975100 al 130 GUAYAQUIL: Av. Guillermo Pareja # 402 Ciudadela la Garzota<br/>")
                 .append("Teléf.: 593(4) 26247 597 y 593(4) 2627829</td>")
