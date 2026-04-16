@@ -412,6 +412,7 @@ public class CentroMedicoPdfControllerSupport implements Serializable {
         public Consumer<String> ciiuSetter;
         public Consumer<String> noHistoriaSetter;
         public Consumer<String> noArchivoSetter;
+        public Consumer<String> motivoObsSetter;
         public Consumer<String> ginecoExamen1Setter;
         public Consumer<String> ginecoTiempo1Setter;
         public Consumer<String> ginecoResultado1Setter;
@@ -438,6 +439,7 @@ public class CentroMedicoPdfControllerSupport implements Serializable {
         input.ciiuSetter.accept(data.ciiu);
         input.noHistoriaSetter.accept(data.noHistoria);
         input.noArchivoSetter.accept(data.noArchivo);
+        input.motivoObsSetter.accept(data.motivoObs);
         input.ginecoExamen1Setter.accept(data.ginecoExamen1);
         input.ginecoTiempo1Setter.accept(data.ginecoTiempo1);
         input.ginecoResultado1Setter.accept(data.ginecoResultado1);

@@ -15,6 +15,7 @@ public class FichaPdfMappedData implements Serializable {
     public String ciiu;
     public String noHistoria;
     public String noArchivo;
+    public String motivoObs;
     public String ginecoExamen1;
     public String ginecoTiempo1;
     public String ginecoResultado1;

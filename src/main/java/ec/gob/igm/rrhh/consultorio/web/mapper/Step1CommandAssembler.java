@@ -13,7 +13,8 @@ public class Step1CommandAssembler {
     public Step1FichaService.Step1Command toCommand(Step1ViewData viewData) {
         return new Step1FichaService.Step1Command(
                 viewData.ficha, viewData.empleadoSel, viewData.personaAux, viewData.signos, viewData.noPersonaSel,
-                viewData.fechaAtencion, viewData.tipoEval, viewData.paStr, viewData.temp, viewData.fc,
+                viewData.fechaAtencion, viewData.tipoEval, viewData.fecIngreso, viewData.fecReintegro,
+                viewData.fecRetiro, viewData.motivoObs, viewData.paStr, viewData.temp, viewData.fc,
                 viewData.fr, viewData.satO2, viewData.peso, viewData.tallaCm, viewData.perimetroAbd,
                 viewData.apEmbarazada, viewData.apDiscapacidad, viewData.apCatastrofica, viewData.apLactancia,
                 viewData.apAdultoMayor, viewData.antClinicoQuirurgico, viewData.antFamiliares, viewData.condicionEspecial,
@@ -29,4 +30,3 @@ public class Step1CommandAssembler {
                 viewData.medCual, viewData.medCant, viewData.consumoVidaCondObs, viewData.usuario);
     }
 }
-

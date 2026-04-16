@@ -30,7 +30,7 @@ public class FichaPdfDataMapper implements Serializable {
 
     public FichaPdfMappedData map(FichaOcupacional ficha, DatEmpleado empleadoSel, PersonaAux personaAux, Date fechaNacimientoActual) {
         FichaPdfMappedData data = new FichaPdfMappedData();
-        DatEmpleado empleadoData = resolveManagedEmpleado(empleadoSel);
+        DatEmpleado empleadoData = resolveManagedEmpleado(empleadoSel, ficha);
         PersonaAux personaAuxData = resolvePersonaAux(ficha, personaAux);
         data.personaAux = personaAuxData;
 
@@ -41,21 +41,22 @@ public class FichaPdfDataMapper implements Serializable {
         return data;
     }
 
-    private DatEmpleado resolveManagedEmpleado(DatEmpleado empleadoSel) {
-        if (empleadoSel == null || empleadoService == null) {
-            return empleadoSel;
+    private DatEmpleado resolveManagedEmpleado(DatEmpleado empleadoSel, FichaOcupacional ficha) {
+        DatEmpleado source = empleadoSel != null ? empleadoSel : (ficha != null ? ficha.getEmpleado() : null);
+        if (source == null || empleadoService == null) {
+            return source;
         }
         Integer noPersona;
         try {
-            noPersona = empleadoSel.getNoPersona();
+            noPersona = source.getNoPersona();
         } catch (RuntimeException ex) {
             return null;
         }
         if (noPersona == null) {
-            return empleadoSel;
+            return source;
         }
         DatEmpleado managed = empleadoService.buscarPorId(noPersona);
-        return managed != null ? managed : empleadoSel;
+        return managed != null ? managed : source;
     }
 
     private PersonaAux resolvePersonaAux(FichaOcupacional ficha, PersonaAux personaAux) {
@@ -79,6 +80,7 @@ public class FichaPdfDataMapper implements Serializable {
         data.ciiu = ficha.getCiiu();
         data.noHistoria = ficha.getNoHistoriaClinica();
         data.noArchivo = ficha.getNoArchivo();
+        data.motivoObs = ficha.getObservacion();
         data.ginecoExamen1 = ficha.getGinecoExamen1();
         data.ginecoTiempo1 = ficha.getGinecoTiempo1();
         data.ginecoResultado1 = ficha.getGinecoResultado1();

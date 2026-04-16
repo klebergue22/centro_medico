@@ -344,6 +344,9 @@ public class FichaPdfViewModelBuilder implements Serializable {
         if (ctx.fecIngreso != null) {
             return ctx.fecIngreso;
         }
+        if ("REINTEGRO".equalsIgnoreCase(safe(ctx.tipoEval))) {
+            return null;
+        }
         return empleado != null ? empleado.getfIngreso() : null;
     }
 
@@ -351,6 +354,9 @@ public class FichaPdfViewModelBuilder implements Serializable {
         DatEmpleado empleado = resolveEmpleado(ctx);
         if (ctx.fecReintegro != null) {
             return ctx.fecReintegro;
+        }
+        if (!"REINTEGRO".equalsIgnoreCase(safe(ctx.tipoEval))) {
+            return null;
         }
         return empleado != null ? empleado.getfReingreso() : null;
     }
