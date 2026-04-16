@@ -254,58 +254,70 @@ public class FichaPdfViewModelBuilder implements Serializable {
     }
 
     private String resolveApellido1(FichaPdfViewModelContext ctx) {
-        String[] nombreCompleto = splitNombreCompleto(ctx.empleadoSel != null ? ctx.empleadoSel.getNombreC() : null);
+        DatEmpleado empleado = resolveEmpleado(ctx);
+        PersonaAux personaAux = resolvePersonaAux(ctx);
+        String[] nombreCompleto = splitNombreCompleto(empleado != null ? empleado.getNombreC() : null);
         return firstNotBlank(
                 ctx.apellido1,
-                ctx.personaAux != null ? ctx.personaAux.getApellido1() : null,
-                ctx.empleadoSel != null ? ctx.empleadoSel.getPriApellido() : null,
+                personaAux != null ? personaAux.getApellido1() : null,
+                empleado != null ? empleado.getPriApellido() : null,
                 nombreCompleto[0]);
     }
 
     private String resolveApellido2(FichaPdfViewModelContext ctx) {
-        String[] nombreCompleto = splitNombreCompleto(ctx.empleadoSel != null ? ctx.empleadoSel.getNombreC() : null);
+        DatEmpleado empleado = resolveEmpleado(ctx);
+        PersonaAux personaAux = resolvePersonaAux(ctx);
+        String[] nombreCompleto = splitNombreCompleto(empleado != null ? empleado.getNombreC() : null);
         return firstNotBlank(
                 ctx.apellido2,
-                ctx.personaAux != null ? ctx.personaAux.getApellido2() : null,
-                ctx.empleadoSel != null ? ctx.empleadoSel.getSegApellido() : null,
+                personaAux != null ? personaAux.getApellido2() : null,
+                empleado != null ? empleado.getSegApellido() : null,
                 nombreCompleto[1]);
     }
 
     private String resolveNombre1(FichaPdfViewModelContext ctx) {
-        String[] nombresEmpleado = splitNombres(ctx.empleadoSel != null ? ctx.empleadoSel.getNombres() : null);
-        String[] nombreCompleto = splitNombreCompleto(ctx.empleadoSel != null ? ctx.empleadoSel.getNombreC() : null);
+        DatEmpleado empleado = resolveEmpleado(ctx);
+        PersonaAux personaAux = resolvePersonaAux(ctx);
+        String[] nombresEmpleado = splitNombres(empleado != null ? empleado.getNombres() : null);
+        String[] nombreCompleto = splitNombreCompleto(empleado != null ? empleado.getNombreC() : null);
         return firstNotBlank(
                 ctx.nombre1,
-                ctx.personaAux != null ? ctx.personaAux.getNombre1() : null,
+                personaAux != null ? personaAux.getNombre1() : null,
                 nombresEmpleado[0],
                 nombreCompleto[2]);
     }
 
     private String resolveNombre2(FichaPdfViewModelContext ctx) {
-        String[] nombresEmpleado = splitNombres(ctx.empleadoSel != null ? ctx.empleadoSel.getNombres() : null);
-        String[] nombreCompleto = splitNombreCompleto(ctx.empleadoSel != null ? ctx.empleadoSel.getNombreC() : null);
+        DatEmpleado empleado = resolveEmpleado(ctx);
+        PersonaAux personaAux = resolvePersonaAux(ctx);
+        String[] nombresEmpleado = splitNombres(empleado != null ? empleado.getNombres() : null);
+        String[] nombreCompleto = splitNombreCompleto(empleado != null ? empleado.getNombreC() : null);
         return firstNotBlank(
                 ctx.nombre2,
-                ctx.personaAux != null ? ctx.personaAux.getNombre2() : null,
+                personaAux != null ? personaAux.getNombre2() : null,
                 nombresEmpleado[1],
                 nombreCompleto[3]);
     }
 
     private String resolveSexo(FichaPdfViewModelContext ctx) {
+        DatEmpleado empleado = resolveEmpleado(ctx);
+        PersonaAux personaAux = resolvePersonaAux(ctx);
         return firstNotBlank(
                 ctx.sexo,
-                ctx.personaAux != null ? ctx.personaAux.getSexo() : null,
-                ctx.empleadoSel != null && ctx.empleadoSel.getSexo() != null ? ctx.empleadoSel.getSexo().getDescripcion() : null);
+                personaAux != null ? personaAux.getSexo() : null,
+                empleado != null && empleado.getSexo() != null ? empleado.getSexo().getDescripcion() : null);
     }
 
     private java.util.Date resolveFechaNacimiento(FichaPdfViewModelContext ctx) {
+        DatEmpleado empleado = resolveEmpleado(ctx);
+        PersonaAux personaAux = resolvePersonaAux(ctx);
         if (ctx.fechaNacimiento != null) {
             return ctx.fechaNacimiento;
         }
-        if (ctx.personaAux != null && ctx.personaAux.getFechaNac() != null) {
-            return ctx.personaAux.getFechaNac();
+        if (personaAux != null && personaAux.getFechaNac() != null) {
+            return personaAux.getFechaNac();
         }
-        return ctx.empleadoSel != null ? ctx.empleadoSel.getfNacimiento() : null;
+        return empleado != null ? empleado.getfNacimiento() : null;
     }
 
     private Integer resolveEdad(FichaPdfViewModelContext ctx, java.util.Date fechaNacimiento) {
@@ -320,17 +332,19 @@ public class FichaPdfViewModelBuilder implements Serializable {
     }
 
     private java.util.Date resolveFecIngreso(FichaPdfViewModelContext ctx) {
+        DatEmpleado empleado = resolveEmpleado(ctx);
         if (ctx.fecIngreso != null) {
             return ctx.fecIngreso;
         }
-        return ctx.empleadoSel != null ? ctx.empleadoSel.getfIngreso() : null;
+        return empleado != null ? empleado.getfIngreso() : null;
     }
 
     private java.util.Date resolveFecReintegro(FichaPdfViewModelContext ctx) {
+        DatEmpleado empleado = resolveEmpleado(ctx);
         if (ctx.fecReintegro != null) {
             return ctx.fecReintegro;
         }
-        return ctx.empleadoSel != null ? ctx.empleadoSel.getfReingreso() : null;
+        return empleado != null ? empleado.getfReingreso() : null;
     }
 
     private Double resolveImc(FichaPdfViewModelContext ctx) {
@@ -389,6 +403,20 @@ public class FichaPdfViewModelBuilder implements Serializable {
             nombre2 = sb.toString();
         }
         return new String[] {apellido1, apellido2, nombre1, nombre2};
+    }
+
+    private DatEmpleado resolveEmpleado(FichaPdfViewModelContext ctx) {
+        if (ctx.empleadoSel != null) {
+            return ctx.empleadoSel;
+        }
+        return ctx.ficha != null ? ctx.ficha.getEmpleado() : null;
+    }
+
+    private PersonaAux resolvePersonaAux(FichaPdfViewModelContext ctx) {
+        if (ctx.personaAux != null) {
+            return ctx.personaAux;
+        }
+        return ctx.ficha != null ? ctx.ficha.getPersonaAux() : null;
     }
 
     private static String getCedulaIfLoaded(PersonaAux personaAux) {

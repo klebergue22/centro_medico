@@ -51,8 +51,12 @@ public class PdfCertificadoInputAssembler {
 
     private void populatePacienteData(CentroMedicoPdfControllerSupport.CapturePdfCertificadoInput input,
             CentroMedicoCtrl source) {
-        DatEmpleado empleadoSel = source.getEmpleadoSel();
-        PersonaAux personaAux = source.getPersonaAux();
+        DatEmpleado empleadoSel = source.getEmpleadoSel() != null
+                ? source.getEmpleadoSel()
+                : (source.getFicha() != null ? source.getFicha().getEmpleado() : null);
+        PersonaAux personaAux = source.getPersonaAux() != null
+                ? source.getPersonaAux()
+                : (source.getFicha() != null ? source.getFicha().getPersonaAux() : null);
         String[] nombreCompleto = splitNombreCompleto(empleadoSel != null ? empleadoSel.getNombreC() : null);
 
         input.apellido1 = firstNotBlank(source.getApellido1(),
