@@ -53,6 +53,13 @@ public class ConsultaMedicaCtrl implements Serializable {
     private static final long serialVersionUID = 1L;
     private static final ZoneId CERTIFICADO_ZONE = ZoneId.of("America/Guayaquil");
     private static final ZoneId CERTIFICADO_DATE_ZONE = ZoneOffset.UTC;
+    private static final String[] NUMEROS_BASE = {"", "uno", "dos", "tres", "cuatro", "cinco", "seis", "siete", "ocho", "nueve",
+            "diez", "once", "doce", "trece", "catorce", "quince", "dieciséis", "diecisiete", "dieciocho",
+            "diecinueve", "veinte", "veintiuno", "veintidós", "veintitrés", "veinticuatro", "veinticinco",
+            "veintiséis", "veintisiete", "veintiocho", "veintinueve"};
+    private static final String[] DECENAS = {"", "", "veinte", "treinta", "cuarenta", "cincuenta", "sesenta", "setenta", "ochenta", "noventa"};
+    private static final String[] CENTENAS = {"", "ciento", "doscientos", "trescientos", "cuatrocientos",
+            "quinientos", "seiscientos", "setecientos", "ochocientos", "novecientos"};
 
     @Inject
     private transient EmpleadoService empleadoService;
@@ -123,49 +130,52 @@ public class ConsultaMedicaCtrl implements Serializable {
     }
 
     public void buscarPorCedula() {
-        if (cedulaBusqueda == null || cedulaBusqueda.isBlank()) {
+        if (isBlank(cedulaBusqueda)) {
             addMessage(FacesMessage.SEVERITY_WARN, "Cédula requerida", "Ingrese la cédula del paciente.");
             return;
         }
         String cedula = cedulaBusqueda.trim();
-        empleado = empleadoService.buscarPorCedula(cedula);
-        personaAux = null;
-        fichaReferencia = fichaOcupacionalService.buscarFichaActivaOUltimaPorCedula(cedula);
-
-        if (empleado == null) {
-            personaAux = personaAuxService.findByCedulaConFichaYCertificado(cedula);
-            if (personaAux == null) {
-                personaAux = personaAuxService.findByCedula(cedula);
-            }
-            if (personaAux != null && personaAux.getNoPersona() != null) {
-                Long noPersonaAux = personaAux.getNoPersona();
-                if (noPersonaAux <= Integer.MAX_VALUE && noPersonaAux >= Integer.MIN_VALUE) {
-                    empleado = empleadoService.buscarPorId(noPersonaAux.intValue());
-                }
-            }
-        }
-
+        cargarPaciente(cedula);
         if (empleado == null && personaAux == null) {
             addMessage(FacesMessage.SEVERITY_WARN, "Sin resultados", "No existe un paciente con esa cédula.");
             return;
         }
-
-        consulta.setEmpleado(empleado);
-        fechaNacimientoPaciente = (empleado != null) ? empleado.getfNacimiento() : personaAux.getFechaNac();
-        alergias = obtenerAntecedenteClinicoQuirurgico();
-        if (isBlank(certDomicilio)) {
-            certDomicilio = resolveDireccionPaciente();
-        }
-        if (isBlank(certCargoPaciente)) {
-            certCargoPaciente = resolveCargoPaciente();
-        }
-        if (isBlank(certAreaTrabajo)) {
-            certAreaTrabajo = getAreaTrabajoPaciente();
-        }
-        consultasAnteriores = (empleado != null)
-                ? consultaMedicaService.buscarPorEmpleado(empleado.getNoPersona())
-                : new ArrayList<>();
+        actualizarDatosPacienteCargado();
         addMessage(FacesMessage.SEVERITY_INFO, "Paciente cargado", getNombrePaciente());
+    }
+
+    private void cargarPaciente(String cedula) {
+        empleado = empleadoService.buscarPorCedula(cedula);
+        personaAux = null;
+        fichaReferencia = fichaOcupacionalService.buscarFichaActivaOUltimaPorCedula(cedula);
+        if (empleado != null) {
+            return;
+        }
+        personaAux = personaAuxService.findByCedulaConFichaYCertificado(cedula);
+        if (personaAux == null) {
+            personaAux = personaAuxService.findByCedula(cedula);
+        }
+        vincularEmpleadoDesdePersonaAux();
+    }
+
+    private void vincularEmpleadoDesdePersonaAux() {
+        if (personaAux == null || personaAux.getNoPersona() == null) {
+            return;
+        }
+        Long noPersonaAux = personaAux.getNoPersona();
+        if (noPersonaAux <= Integer.MAX_VALUE && noPersonaAux >= Integer.MIN_VALUE) {
+            empleado = empleadoService.buscarPorId(noPersonaAux.intValue());
+        }
+    }
+
+    private void actualizarDatosPacienteCargado() {
+        consulta.setEmpleado(empleado);
+        fechaNacimientoPaciente = empleado != null ? empleado.getfNacimiento() : personaAux.getFechaNac();
+        alergias = obtenerAntecedenteClinicoQuirurgico();
+        if (isBlank(certDomicilio)) certDomicilio = resolveDireccionPaciente();
+        if (isBlank(certCargoPaciente)) certCargoPaciente = resolveCargoPaciente();
+        if (isBlank(certAreaTrabajo)) certAreaTrabajo = getAreaTrabajoPaciente();
+        consultasAnteriores = empleado != null ? consultaMedicaService.buscarPorEmpleado(empleado.getNoPersona()) : new ArrayList<>();
     }
 
     public void agregarDiagnostico() {
@@ -226,32 +236,44 @@ public class ConsultaMedicaCtrl implements Serializable {
         List<ConsultaDiagnostico> limpios = new ArrayList<>();
         Set<String> codigosUsados = new HashSet<>();
         int duplicados = 0;
-
         for (ConsultaDiagnostico d : diagnosticos) {
-            if (d == null) {
+            String codigo = validarYNormalizarDiagnostico(d, codigosUsados);
+            if (codigo == null && (d == null || isBlank(d.getDescripcion()))) {
                 continue;
             }
-            String codigo = normalizarCodigo(d.getCodigo());
-            if (codigo == null && isBlank(d.getDescripcion())) {
-                continue;
-            }
-            if (codigo != null && !codigosUsados.add(codigo)) {
+            if ("DUPLICADO".equals(codigo)) {
                 duplicados++;
                 continue;
             }
-
             d.setCodigo(codigo);
             d.setConsulta(consulta);
             d.setEstado("ACTIVO");
             limpios.add(d);
         }
-
-        if (duplicados > 0) {
-            addMessage(FacesMessage.SEVERITY_WARN, "Diagnósticos duplicados omitidos",
-                    "Se omitieron " + duplicados + " diagnóstico(s) repetido(s) por código CIE10.");
-        }
-
+        notificarDiagnosticosDuplicados(duplicados);
         return limpios;
+    }
+
+    private String validarYNormalizarDiagnostico(ConsultaDiagnostico d, Set<String> codigosUsados) {
+        if (d == null) {
+            return null;
+        }
+        String codigo = normalizarCodigo(d.getCodigo());
+        if (codigo == null && isBlank(d.getDescripcion())) {
+            return null;
+        }
+        if (codigo != null && !codigosUsados.add(codigo)) {
+            return "DUPLICADO";
+        }
+        return codigo;
+    }
+
+    private void notificarDiagnosticosDuplicados(int duplicados) {
+        if (duplicados <= 0) {
+            return;
+        }
+        addMessage(FacesMessage.SEVERITY_WARN, "Diagnósticos duplicados omitidos",
+                "Se omitieron " + duplicados + " diagnóstico(s) repetido(s) por código CIE10.");
     }
 
     private void normalizarTipoDiagnostico(List<ConsultaDiagnostico> lista) {
@@ -340,11 +362,20 @@ public class ConsultaMedicaCtrl implements Serializable {
     }
 
     private List<RecetaMedica> construirRecetasParaPersistencia() {
+        List<RecetaItem> items = mapearItemsReceta();
+        if (items.isEmpty()) {
+            return new ArrayList<>();
+        }
+        RecetaMedica recetaMedica = crearRecetaMedica(items);
+        List<RecetaMedica> resultado = new ArrayList<>();
+        resultado.add(recetaMedica);
+        return resultado;
+    }
+
+    private List<RecetaItem> mapearItemsReceta() {
         List<RecetaItem> items = new ArrayList<>();
         for (RecetaItemForm fila : recetas) {
-            if (fila == null || isBlank(fila.getMedicamento())) {
-                continue;
-            }
+            if (fila == null || isBlank(fila.getMedicamento())) continue;
             RecetaItem item = new RecetaItem();
             item.setMedicamento(fila.getMedicamento().trim());
             item.setDosis(null);
@@ -355,24 +386,18 @@ public class ConsultaMedicaCtrl implements Serializable {
             item.setEstado("ACTIVO");
             items.add(item);
         }
-        if (items.isEmpty()) {
-            return new ArrayList<>();
-        }
+        return items;
+    }
 
+    private RecetaMedica crearRecetaMedica(List<RecetaItem> items) {
         RecetaMedica recetaMedica = new RecetaMedica();
         recetaMedica.setConsulta(consulta);
         recetaMedica.setFechaEmision(vigenciaReceta != null ? vigenciaReceta : consulta.getFechaConsulta());
         recetaMedica.setIndicaciones(construirIndicacionesRecetaCabecera());
         recetaMedica.setEstado("ACTIVA");
-
-        for (RecetaItem item : items) {
-            item.setReceta(recetaMedica);
-        }
+        for (RecetaItem item : items) item.setReceta(recetaMedica);
         recetaMedica.setItems(items);
-
-        List<RecetaMedica> resultado = new ArrayList<>();
-        resultado.add(recetaMedica);
-        return resultado;
+        return recetaMedica;
     }
 
     private String construirIndicacionesRecetaCabecera() {
@@ -589,41 +614,27 @@ public class ConsultaMedicaCtrl implements Serializable {
 
     private String construirHtmlReceta() {
         String fecha = fechaEnLetrasCompleta(consulta.getFechaConsulta());
-        String nombrePaciente = getNombrePaciente();
-        String cedula = getCedulaPaciente();
-        String edad = calcularEdadTexto(fechaNacimientoPaciente);
         String medicoNombre = consulta.getMedicoNombre() == null ? "" : consulta.getMedicoNombre();
         String medicoMsp = consulta.getMedicoCodigo() == null ? "" : consulta.getMedicoCodigo();
-        String logoIgm = resolveLogo("LOGO_IGM_FULL_COLOR.png");
-        String logoMidena = resolveLogo("LOGO_MIDENA.png");
-
         StringBuilder html = new StringBuilder();
         html.append("<!DOCTYPE html><html xmlns='http://www.w3.org/1999/xhtml'><head><meta charset='UTF-8'/>")
                 .append("<style>")
-                .append("@page{size:A5 portrait;margin:10mm;}")
-                .append("body{font-family:Arial,sans-serif;font-size:12px;margin:22px;color:#000;}")
-                .append(".panel{position:relative;border:1px solid #9ca3af;padding:14px 16px 28px 16px;}")
-                .append(".encabezado{border-bottom:2px solid #1f2937;margin-bottom:10px;padding-bottom:7px;}")
-                .append(".encabezado-table{width:100%;border-collapse:collapse;}")
-                .append(".encabezado-table td{vertical-align:middle;}")
-                .append(".logo-cell{width:120px;text-align:center;}")
-                .append(".logo{width:85px;height:85px;display:block;margin:0 auto;object-fit:contain;}")
-                .append(".encabezado-titulo{text-align:center;font-size:14px;font-weight:700;letter-spacing:.5px;margin:2px 0 0 0;}")
-                .append(".encabezado-sub{font-size:11px;color:#374151;text-align:center;margin:3px 0 0 0;}")
-                .append(".titulo{font-weight:bold;margin-top:15px;margin-bottom:6px;}")
-                .append(".row{margin-bottom:6px;}")
-                .append("table{width:100%;border-collapse:collapse;}th,td{padding:4px 2px;vertical-align:top;}")
-                .append("table{table-layout:fixed;}")
-                .append("th,td{word-wrap:break-word;overflow-wrap:anywhere;}")
-                .append(".firmante{margin-top:42px;text-align:center;}")
-                .append(".firma-linea{border-top:1px solid #000;width:260px;margin:0 auto 8px auto;}")
-                .append(".small{font-size:10px;}")
+                .append(recetaStyles())
                 .append("</style></head><body>");
-
-        html.append(construirColumnaReceta(fecha, nombrePaciente, cedula, edad, medicoNombre, medicoMsp, logoIgm, logoMidena));
-
+        html.append(construirColumnaReceta(fecha, getNombrePaciente(), getCedulaPaciente(), calcularEdadTexto(fechaNacimientoPaciente),
+                medicoNombre, medicoMsp, resolveLogo("LOGO_IGM_FULL_COLOR.png"), resolveLogo("LOGO_MIDENA.png")));
         html.append("</body></html>");
         return html.toString();
+    }
+
+    private String recetaStyles() {
+        return "@page{size:A5 portrait;margin:10mm;}body{font-family:Arial,sans-serif;font-size:12px;margin:22px;color:#000;}"
+                + ".panel{position:relative;border:1px solid #9ca3af;padding:14px 16px 28px 16px;}.encabezado{border-bottom:2px solid #1f2937;margin-bottom:10px;padding-bottom:7px;}"
+                + ".encabezado-table{width:100%;border-collapse:collapse;}.encabezado-table td{vertical-align:middle;}.logo-cell{width:120px;text-align:center;}"
+                + ".logo{width:85px;height:85px;display:block;margin:0 auto;object-fit:contain;}.encabezado-titulo{text-align:center;font-size:14px;font-weight:700;letter-spacing:.5px;margin:2px 0 0 0;}"
+                + ".encabezado-sub{font-size:11px;color:#374151;text-align:center;margin:3px 0 0 0;}.titulo{font-weight:bold;margin-top:15px;margin-bottom:6px;}.row{margin-bottom:6px;}"
+                + "table{width:100%;border-collapse:collapse;table-layout:fixed;}th,td{padding:4px 2px;vertical-align:top;word-wrap:break-word;overflow-wrap:anywhere;}"
+                + ".firmante{margin-top:42px;text-align:center;}.firma-linea{border-top:1px solid #000;width:260px;margin:0 auto 8px auto;}.small{font-size:10px;}";
     }
 
     private String construirColumnaReceta(String fecha, String nombrePaciente, String cedula, String edad,
@@ -733,16 +744,12 @@ public class ConsultaMedicaCtrl implements Serializable {
         html.append("</div>");
     }
 
-
-        .append("body{font-family:Arial,sans-serif;font-size:20px;line-height:1.18;margin:0;color:#000000;}")
-        .append(".contenido{padding-bottom:108px;}")14,0
     private void appendCertificadoEncabezado(StringBuilder html, String logoMidena, String logoIgm) {
         html.append("<div class='encabezado'><table class='encabezado-table'><tr>")
                 .append("<td class='header-logo-cell'><img class='logo-midena' alt='LOGO_MIDENA' src='").append(escape(logoMidena)).append("'/></td>")
                 .append("<td class='header-logo-cell'><img class='logo-igm' alt='LOGO_IGM_FULL_COLOR' src='").append(escape(logoIgm)).append("'/></td>")
                 .append("</tr></table></div><div class='titulo'>CERTIFICADO MEDICO</div>");
     }
-
 
     private void appendCertificadoCuerpo(StringBuilder html, CertificadoData data) {
         html.append("<div class='cuerpo-certificado'><p class='texto'>EL MEDICO CERTIFICA:</p><p class='texto'>El señor ")
@@ -777,148 +784,28 @@ public class ConsultaMedicaCtrl implements Serializable {
                 .append("</td></tr></table></div>");
     }
 
-
-        .append(".cuerpo-certificado{width:calc(100% - 52mm);margin-left:26mm;margin-right:26mm;box-sizing:border-box;}")
-        .append(".texto{font-size:15px;line-height:1.18;margin:0 0 8px 0;text-align:justify;}")
-        .append(".texto-strong{font-weight:700;}")
-        .append(".texto-fechas{margin:0 0 10px 0;}")
-        .append(".texto-final{margin:0 0 12px 0;}")
-
-        .append(".pie{width:calc(100% - 52mm);margin-left:26mm;margin-right:26mm;margin-top:8px;text-align:center;box-sizing:border-box;}")
-        .append(".firma{font-size:15px;line-height:1.15;margin:0;text-align:center;}")
-        .append(".firma-label{margin:0 0 32px 0;text-align:center;}")
-        .append(".firma-bloque{margin:0;text-align:center;}")
-        .append(".correo{color:#0000EE;text-decoration:underline;}")
-
-        .append(".membrete-bottom{position:fixed;left:12mm;right:12mm;bottom:4mm;width:auto;}")
-        .append(".membrete-bottom table{width:100%;border-collapse:collapse;table-layout:fixed;}")
-        .append(".membrete-bottom td{vertical-align:bottom;}")
-        .append(".membrete-bottom .mb-img{width:185px;text-align:left;}")
-        .append(".membrete-bottom .mb-img img{display:block;width:165px;height:auto;margin:0;object-fit:contain;}")
-        .append(".membrete-bottom .mb-text{text-align:right;font-family:Arial,sans-serif;font-size:10px;line-height:1.1;color:#b3b3b3;font-weight:600;padding-bottom:4px;}")
-
-        .append("</style>")
-        .append("</head>")
-        .append("<body>");
-
-    html.append("<div class='contenido'>");
-
-    html.append("<div class='encabezado'>")
-        .append("<table class='encabezado-table'>")
-        .append("<tr>")
-        .append("<td class='header-spacer'></td>")
-        .append("<td class='header-logo-cell'>")
-        .append("<img class='logo-midena' alt='LOGO_MIDENA' src='")
-        .append(escape(logoMidena))
-        .append("'/>")
-        .append("</td>")
-        .append("<td class='header-logo-cell'>")
-        .append("<img class='logo-igm' alt='LOGO_IGM_FULL_COLOR' src='")
-        .append(escape(logoIgm))
-        .append("'/>")
-        .append("</td>")
-        .append("<td class='header-spacer'></td>")
-        .append("</tr>")
-        .append("</table>")
-        .append("</div>")
-        .append("<br/>")
-        .append("<br/>");
-
-    html.append("<div class='titulo'>CERTIFICADO MEDICO</div>");
-
-    html.append("<div class='cuerpo-certificado'>")
-        .append("<p class='texto'>EL MEDICO CERTIFICA:</p>")
-
-        .append("<p class='texto'>El señor ")
-        .append(escape(nombrePaciente))
-        .append(" con Cédula de Ciudadanía ")
-        .append(escape(cedula))
-        .append(", presenta diagnóstico: ")
-        .append(escape(diagnosticoPaciente))
-        .append("; por lo que requiere reposo médico absoluto durante ")
-        .append(diasReposo)
-        .append(" (")
-        .append(escape(numeroEnLetras((int) diasReposo)))
-        .append(") día(s).</p>")
-
-        .append("<p class='texto'><span class='texto-strong'>Historia clínica:</span> ")
-        .append(escape(numeroHistoria))
-        .append("</p>")
-
-        .append("<p class='texto texto-fechas'><span class='texto-strong'>Desde:</span> ")
-        .append(escape(fechaInicioTexto))
-        .append(".<br/>")
-        .append("<span class='texto-strong'>Hasta:</span> ")
-        .append(escape(fechaFinTexto))
-        .append(".</p>")
-
-        .append("<p class='texto'>Labora en el <span class='texto-strong'>INSTITUTO GEOGRAFICO MILITAR (ubicado en Seniergues E4-676 y Gral. Telmo Paz y Miño Sector El Dorado)</span>, con el cargo de ")
-        .append(escape(cargoPaciente))
-        .append(", en el área de ")
-        .append(escape(areaTrabajo))
-        .append(".</p>")
-
-        .append("<p class='texto'>Paciente sintomático quien presenta: ")
-        .append(escape(sintomasPaciente))
-        .append(".</p>")
-
-        .append("<p class='texto'><span class='texto-strong'>Domicilio del paciente:</span> ")
-        .append(escape(domicilioPaciente))
-        .append("<br/>")
-        .append("<span class='texto-strong'>Teléfono de contacto:</span> ")
-        .append(escape(telefonoContacto))
-        .append("<br/>")
-        .append("<span class='texto-strong'>Tipo de contingencia:</span> <span class='texto-strong'>")
-        .append(escape(tipoContingencia))
-        .append("</span></p>")
-
-        .append("<p class='texto texto-final'>Quito DM, ")
-        .append(escape(fechaEmision))
-        .append(".</p>")
-        .append("</div>");
-
-html.append("<div class='pie'>")
-          .append("<div style='height: 90px;'></div>")  
-    .append("<p class='firma firma-label'>Atentamente,</p>")
-    .append("<div style='height: 90px;'></div>")  
-    .append("<p class='firma firma-bloque'>")
-    .append(escape(consulta.getMedicoNombre()))
-    .append("<br/>")
-    .append(escape(certMedicoCargo))
-    .append("<br/>")
-    .append("MSP: ")
-    .append(escape(medicoMsp))
-    .append("<br/>")
-    .append("Teléfono: ")
-    .append(escape(medicoTelefono))
-    .append("<br/>")
-    .append("<span class='correo'>")
-    .append(escape(medicoCorreo))
-    .append("</span></p>")
-    .append("</div>");
-
-html.append("</div>");
-
-    html.append("<div class='membrete-bottom'>")
-        .append("<table>")
-        .append("<tr>")
-        .append("<td class='mb-img'><img alt='membrete-bottom' src='")
-        .append(escape(membreteBottom))
-        .append("'/></td>")
-        .append("<td class='mb-text'>")
-        .append("QUITO: Seniergues E4-676 y Gral. Telmo Paz y Miño Sector El Dorado<br/>")
-        .append("Teléf.: 593(2) 3975100 al 130 GUAYAQUIL: Av. Guillermo Pareja # 402 Ciudadela la Garzota<br/>")
-        .append("Teléf.: 593(4) 26247 597 y 593(4) 2627829")
-        .append("</td>")
-        .append("</tr>")
-        .append("</table>")
-        .append("</div>");
-
-    html.append("</body>")
-        .append("</html>");
-
-    return html.toString();
-}
+    private static class CertificadoData {
+        String nombrePaciente;
+        String cedula;
+        String numeroHistoria;
+        String cargoPaciente;
+        String areaTrabajo;
+        String diagnosticoPaciente;
+        String sintomasPaciente;
+        String fechaInicioTexto;
+        String fechaFinTexto;
+        long diasReposo;
+        String telefonoContacto;
+        String medicoMsp;
+        String medicoTelefono;
+        String medicoCorreo;
+        String tipoContingencia;
+        String domicilioPaciente;
+        String fechaEmision;
+        String logoIgm;
+        String logoMidena;
+        String membreteBottom;
+    }
 
     private static class CertificadoData {
         String nombrePaciente;
@@ -942,7 +829,7 @@ html.append("</div>");
         String logoMidena;
         String membreteBottom;
     }
->>>>>>> 178d9955ad8fc9ad740771086a7f41b311ec0c75
+
 
     private String valueOrNoRegistra(String value) {
         return isBlank(value) ? "NO REGISTRA" : value.trim();
@@ -1442,36 +1329,25 @@ html.append("</div>");
         if (numero <= 0) {
             return "cero";
         }
-        if (numero < 30) {
-            String[] base = {"", "uno", "dos", "tres", "cuatro", "cinco", "seis", "siete", "ocho", "nueve",
-                    "diez", "once", "doce", "trece", "catorce", "quince", "dieciséis", "diecisiete", "dieciocho",
-                    "diecinueve", "veinte", "veintiuno", "veintidós", "veintitrés", "veinticuatro", "veinticinco",
-                    "veintiséis", "veintisiete", "veintiocho", "veintinueve"};
-            return base[numero];
-        }
-        if (numero < 100) {
-            String[] decenas = {"", "", "veinte", "treinta", "cuarenta", "cincuenta", "sesenta", "setenta", "ochenta", "noventa"};
-            int d = numero / 10;
-            int u = numero % 10;
-            if (u == 0) {
-                return decenas[d];
-            }
-            return decenas[d] + " y " + numeroEnLetras(u);
-        }
-        if (numero == 100) {
-            return "cien";
-        }
-        if (numero < 1000) {
-            String[] centenas = {"", "ciento", "doscientos", "trescientos", "cuatrocientos",
-                    "quinientos", "seiscientos", "setecientos", "ochocientos", "novecientos"};
-            int c = numero / 100;
-            int resto = numero % 100;
-            if (resto == 0) {
-                return centenas[c];
-            }
-            return centenas[c] + " " + numeroEnLetras(resto);
-        }
+        if (numero < 30) return NUMEROS_BASE[numero];
+        if (numero < 100) return numeroDecenasEnLetras(numero);
+        if (numero == 100) return "cien";
+        if (numero < 1000) return numeroCentenasEnLetras(numero);
         return Integer.toString(numero);
+    }
+
+    private String numeroDecenasEnLetras(int numero) {
+        int d = numero / 10;
+        int u = numero % 10;
+        if (u == 0) return DECENAS[d];
+        return DECENAS[d] + " y " + numeroEnLetras(u);
+    }
+
+    private String numeroCentenasEnLetras(int numero) {
+        int c = numero / 100;
+        int resto = numero % 100;
+        if (resto == 0) return CENTENAS[c];
+        return CENTENAS[c] + " " + numeroEnLetras(resto);
     }
 
     private boolean isBlank(String value) {
