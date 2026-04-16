@@ -991,7 +991,7 @@ public class ConsultaMedicaCtrl implements Serializable {
         LocalDate inicio = toCertLocalDate(certFechaInicio);
         LocalDate fin = toCertLocalDate(certFechaFin);
         long dias = ChronoUnit.DAYS.between(inicio, fin);
-        return Math.max(dias, 0L) + 1L;
+        return Math.max(dias, 0L);
     }
 
     public String getCertDiasReposoLetras() {
