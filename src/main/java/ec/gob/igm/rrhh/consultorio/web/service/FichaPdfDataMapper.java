@@ -14,6 +14,7 @@ import ec.gob.igm.rrhh.consultorio.domain.enums.Sexo;
 import ec.gob.igm.rrhh.consultorio.domain.model.DatEmpleado;
 import ec.gob.igm.rrhh.consultorio.domain.model.FichaOcupacional;
 import ec.gob.igm.rrhh.consultorio.domain.model.PersonaAux;
+import ec.gob.igm.rrhh.consultorio.service.EmpleadoService;
 import ec.gob.igm.rrhh.consultorio.service.PersonaAuxService;
 
 @Stateless
@@ -24,17 +25,37 @@ public class FichaPdfDataMapper implements Serializable {
 
     @Inject
     private PersonaAuxService personaAuxService;
+    @Inject
+    private EmpleadoService empleadoService;
 
     public FichaPdfMappedData map(FichaOcupacional ficha, DatEmpleado empleadoSel, PersonaAux personaAux, Date fechaNacimientoActual) {
         FichaPdfMappedData data = new FichaPdfMappedData();
+        DatEmpleado empleadoData = resolveManagedEmpleado(empleadoSel);
         PersonaAux personaAuxData = resolvePersonaAux(ficha, personaAux);
         data.personaAux = personaAuxData;
 
         applyFichaData(data, ficha);
-        applyPersonaData(data, empleadoSel, personaAuxData, fechaNacimientoActual);
-        applyFechaNacimiento(data, empleadoSel, personaAuxData, fechaNacimientoActual);
+        applyPersonaData(data, empleadoData, personaAuxData, fechaNacimientoActual);
+        applyFechaNacimiento(data, empleadoData, personaAuxData, fechaNacimientoActual);
         applyEdad(data);
         return data;
+    }
+
+    private DatEmpleado resolveManagedEmpleado(DatEmpleado empleadoSel) {
+        if (empleadoSel == null || empleadoService == null) {
+            return empleadoSel;
+        }
+        Integer noPersona;
+        try {
+            noPersona = empleadoSel.getNoPersona();
+        } catch (RuntimeException ex) {
+            return null;
+        }
+        if (noPersona == null) {
+            return empleadoSel;
+        }
+        DatEmpleado managed = empleadoService.buscarPorId(noPersona);
+        return managed != null ? managed : empleadoSel;
     }
 
     private PersonaAux resolvePersonaAux(FichaOcupacional ficha, PersonaAux personaAux) {
