@@ -426,8 +426,12 @@ public class FichaPdfViewModelBuilder implements Serializable {
         if (noPersona == null || empleadoService == null) {
             return empleadoSel;
         }
-        DatEmpleado managed = empleadoService.buscarPorId(noPersona);
-        return managed != null ? managed : empleadoSel;
+        try {
+            DatEmpleado managed = empleadoService.buscarPorId(noPersona);
+            return managed != null ? managed : empleadoSel;
+        } catch (RuntimeException ex) {
+            return empleadoSel;
+        }
     }
 
     private Integer resolveNoPersona(DatEmpleado empleadoSel) {
