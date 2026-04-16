@@ -1,12 +1,13 @@
 package ec.gob.igm.rrhh.consultorio.web.mapper;
 
+import ec.gob.igm.rrhh.consultorio.domain.model.DatEmpleado;
+import ec.gob.igm.rrhh.consultorio.domain.model.PersonaAux;
 import ec.gob.igm.rrhh.consultorio.web.ctrl.CentroMedicoCtrl;
 import ec.gob.igm.rrhh.consultorio.web.facade.CentroMedicoPdfFacade;
 import ec.gob.igm.rrhh.consultorio.web.pdf.CertificadoPdfTemplateService;
 import ec.gob.igm.rrhh.consultorio.web.pdf.PdfResourceResolver;
 import ec.gob.igm.rrhh.consultorio.web.pdf.PdfTemplateEngine;
 import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoPdfControllerSupport;
-import ec.gob.igm.rrhh.consultorio.web.viewstate.PacienteFormData;
 import jakarta.ejb.Stateless;
 import java.util.Date;
 import java.util.function.Consumer;
@@ -24,7 +25,7 @@ public class PdfCertificadoInputAssembler {
             CertificadoPdfTemplateService certificadoPdfTemplateService) {
         CentroMedicoPdfControllerSupport.CapturePdfCertificadoInput input = new CentroMedicoPdfControllerSupport.CapturePdfCertificadoInput();
         populateCertificadoCore(input, source, verificarFichaCompleta, fechaEmisionSetter, centroMedicoPdfFacade);
-        populatePacienteData(input, source.getStep1FormModel().getPaciente());
+        populatePacienteData(input, source);
         populateCertificadoTemplateData(input, source, pdfResourceResolver, pdfTemplateEngine, certificadoPdfTemplateService);
         return input;
     }
@@ -49,12 +50,33 @@ public class PdfCertificadoInputAssembler {
     }
 
     private void populatePacienteData(CentroMedicoPdfControllerSupport.CapturePdfCertificadoInput input,
-            PacienteFormData paciente) {
-        input.apellido1 = paciente.getApellido1();
-        input.apellido2 = paciente.getApellido2();
-        input.nombre1 = paciente.getNombre1();
-        input.nombre2 = paciente.getNombre2();
-        input.sexo = paciente.getSexo();
+            CentroMedicoCtrl source) {
+        DatEmpleado empleadoSel = source.getEmpleadoSel();
+        PersonaAux personaAux = source.getPersonaAux();
+        String[] nombreCompleto = splitNombreCompleto(empleadoSel != null ? empleadoSel.getNombreC() : null);
+
+        input.apellido1 = firstNotBlank(source.getApellido1(),
+                personaAux != null ? personaAux.getApellido1() : null,
+                empleadoSel != null ? empleadoSel.getPriApellido() : null,
+                nombreCompleto[0]);
+        input.apellido2 = firstNotBlank(source.getApellido2(),
+                personaAux != null ? personaAux.getApellido2() : null,
+                empleadoSel != null ? empleadoSel.getSegApellido() : null,
+                nombreCompleto[1]);
+
+        String[] nombresEmpleado = splitNombres(empleadoSel != null ? empleadoSel.getNombres() : null);
+        input.nombre1 = firstNotBlank(source.getNombre1(),
+                personaAux != null ? personaAux.getNombre1() : null,
+                nombresEmpleado[0],
+                nombreCompleto[2]);
+        input.nombre2 = firstNotBlank(source.getNombre2(),
+                personaAux != null ? personaAux.getNombre2() : null,
+                nombresEmpleado[1],
+                nombreCompleto[3]);
+
+        input.sexo = firstNotBlank(source.getSexo(),
+                personaAux != null ? personaAux.getSexo() : null,
+                empleadoSel != null && empleadoSel.getSexo() != null ? empleadoSel.getSexo().getDescripcion() : null);
     }
 
     private void populateCertificadoTemplateData(CentroMedicoPdfControllerSupport.CapturePdfCertificadoInput input,
@@ -67,5 +89,49 @@ public class PdfCertificadoInputAssembler {
         input.pdfResourceResolver = pdfResourceResolver;
         input.pdfTemplateEngine = pdfTemplateEngine;
         input.certificadoPdfTemplateService = certificadoPdfTemplateService;
+    }
+
+    private String firstNotBlank(String... values) {
+        if (values == null) {
+            return "";
+        }
+        for (String value : values) {
+            if (value != null && !value.trim().isEmpty()) {
+                return value.trim();
+            }
+        }
+        return "";
+    }
+
+    private String[] splitNombres(String nombres) {
+        if (nombres == null || nombres.trim().isEmpty()) {
+            return new String[] {"", ""};
+        }
+        String[] parts = nombres.trim().split("\\s+", 2);
+        String nombre1 = parts.length > 0 ? parts[0] : "";
+        String nombre2 = parts.length > 1 ? parts[1] : "";
+        return new String[] {nombre1, nombre2};
+    }
+
+    private String[] splitNombreCompleto(String nombreCompleto) {
+        if (nombreCompleto == null || nombreCompleto.trim().isEmpty()) {
+            return new String[] {"", "", "", ""};
+        }
+        String[] parts = nombreCompleto.trim().split("\\s+");
+        String apellido1 = parts.length > 0 ? parts[0] : "";
+        String apellido2 = parts.length > 1 ? parts[1] : "";
+        String nombre1 = parts.length > 2 ? parts[2] : "";
+        String nombre2 = "";
+        if (parts.length > 3) {
+            StringBuilder sb = new StringBuilder();
+            for (int i = 3; i < parts.length; i++) {
+                if (sb.length() > 0) {
+                    sb.append(' ');
+                }
+                sb.append(parts[i]);
+            }
+            nombre2 = sb.toString();
+        }
+        return new String[] {apellido1, apellido2, nombre1, nombre2};
     }
 }

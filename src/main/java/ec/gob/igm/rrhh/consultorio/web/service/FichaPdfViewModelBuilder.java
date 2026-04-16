@@ -2,6 +2,9 @@ package ec.gob.igm.rrhh.consultorio.web.service;
 
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.Period;
+import java.time.ZoneId;
 import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -107,13 +110,15 @@ public class FichaPdfViewModelBuilder implements Serializable {
     }
 
     private void cargarDatosPersonales(Map<String, String> rep, FichaPdfViewModelContext ctx) {
-        rep.put("apellido1", safe(ctx.apellido1));
-        rep.put("apellido2", safe(ctx.apellido2));
-        rep.put("nombre1", safe(ctx.nombre1));
-        rep.put("nombre2", safe(ctx.nombre2));
-        rep.put("sexo", safe(ctx.sexo));
-        rep.put("fechaNacimiento", fmtDate(ctx.fechaNacimiento));
-        rep.put("edad", ctx.edad == null ? "" : String.valueOf(ctx.edad));
+        rep.put("apellido1", safe(resolveApellido1(ctx)));
+        rep.put("apellido2", safe(resolveApellido2(ctx)));
+        rep.put("nombre1", safe(resolveNombre1(ctx)));
+        rep.put("nombre2", safe(resolveNombre2(ctx)));
+        rep.put("sexo", safe(resolveSexo(ctx)));
+        java.util.Date fechaNacimiento = resolveFechaNacimiento(ctx);
+        rep.put("fechaNacimiento", fmtDate(fechaNacimiento));
+        Integer edad = resolveEdad(ctx, fechaNacimiento);
+        rep.put("edad", edad == null ? "" : String.valueOf(edad));
         rep.put("grupoSanguineo", safe(ctx.grupoSanguineo));
         rep.put("lateralidad", safe(ctx.lateralidad));
         rep.put("cedula", safe(resolveCedulaForPdf(ctx.empleadoSel, ctx.personaAux, ctx.cedulaBusqueda)));
@@ -146,8 +151,8 @@ public class FichaPdfViewModelBuilder implements Serializable {
     private void cargarFechasYContexto(Map<String, String> rep, FichaPdfViewModelContext ctx) {
         rep.put("recomendaciones", safe(ctx.recomendaciones));
         rep.put("fechaAtencion", fmtDate(ctx.fechaAtencion));
-        rep.put("fecIngreso", fmtDate(ctx.fecIngreso));
-        rep.put("fecReintegro", fmtDate(ctx.fecReintegro));
+        rep.put("fecIngreso", fmtDate(resolveFecIngreso(ctx)));
+        rep.put("fecReintegro", fmtDate(resolveFecReintegro(ctx)));
         rep.put("fecRetiro", fmtDate(ctx.fecRetiro));
         rep.put("motivoObs", safe(ctx.motivoObs));
         rep.put("condicionEspecial", safe(ctx.condicionEspecial));
@@ -183,7 +188,8 @@ public class FichaPdfViewModelBuilder implements Serializable {
         rep.put("satO2", ctx.satO2 == null ? "" : String.valueOf(ctx.satO2));
         rep.put("peso", ctx.peso == null ? "" : String.valueOf(ctx.peso));
         rep.put("tallaCm", ctx.tallaCm == null ? "" : String.valueOf(ctx.tallaCm));
-        rep.put("imc", ctx.imc == null ? "" : String.valueOf(ctx.imc));
+        Double imc = resolveImc(ctx);
+        rep.put("imc", imc == null ? "" : String.valueOf(imc));
         rep.put("perimetroAbd", ctx.perimetroAbd == null ? "" : String.valueOf(ctx.perimetroAbd));
     }
 
@@ -245,6 +251,144 @@ public class FichaPdfViewModelBuilder implements Serializable {
             return cedulaPersonaAux;
         }
         return cedulaBusqueda == null ? "" : cedulaBusqueda;
+    }
+
+    private String resolveApellido1(FichaPdfViewModelContext ctx) {
+        String[] nombreCompleto = splitNombreCompleto(ctx.empleadoSel != null ? ctx.empleadoSel.getNombreC() : null);
+        return firstNotBlank(
+                ctx.apellido1,
+                ctx.personaAux != null ? ctx.personaAux.getApellido1() : null,
+                ctx.empleadoSel != null ? ctx.empleadoSel.getPriApellido() : null,
+                nombreCompleto[0]);
+    }
+
+    private String resolveApellido2(FichaPdfViewModelContext ctx) {
+        String[] nombreCompleto = splitNombreCompleto(ctx.empleadoSel != null ? ctx.empleadoSel.getNombreC() : null);
+        return firstNotBlank(
+                ctx.apellido2,
+                ctx.personaAux != null ? ctx.personaAux.getApellido2() : null,
+                ctx.empleadoSel != null ? ctx.empleadoSel.getSegApellido() : null,
+                nombreCompleto[1]);
+    }
+
+    private String resolveNombre1(FichaPdfViewModelContext ctx) {
+        String[] nombresEmpleado = splitNombres(ctx.empleadoSel != null ? ctx.empleadoSel.getNombres() : null);
+        String[] nombreCompleto = splitNombreCompleto(ctx.empleadoSel != null ? ctx.empleadoSel.getNombreC() : null);
+        return firstNotBlank(
+                ctx.nombre1,
+                ctx.personaAux != null ? ctx.personaAux.getNombre1() : null,
+                nombresEmpleado[0],
+                nombreCompleto[2]);
+    }
+
+    private String resolveNombre2(FichaPdfViewModelContext ctx) {
+        String[] nombresEmpleado = splitNombres(ctx.empleadoSel != null ? ctx.empleadoSel.getNombres() : null);
+        String[] nombreCompleto = splitNombreCompleto(ctx.empleadoSel != null ? ctx.empleadoSel.getNombreC() : null);
+        return firstNotBlank(
+                ctx.nombre2,
+                ctx.personaAux != null ? ctx.personaAux.getNombre2() : null,
+                nombresEmpleado[1],
+                nombreCompleto[3]);
+    }
+
+    private String resolveSexo(FichaPdfViewModelContext ctx) {
+        return firstNotBlank(
+                ctx.sexo,
+                ctx.personaAux != null ? ctx.personaAux.getSexo() : null,
+                ctx.empleadoSel != null && ctx.empleadoSel.getSexo() != null ? ctx.empleadoSel.getSexo().getDescripcion() : null);
+    }
+
+    private java.util.Date resolveFechaNacimiento(FichaPdfViewModelContext ctx) {
+        if (ctx.fechaNacimiento != null) {
+            return ctx.fechaNacimiento;
+        }
+        if (ctx.personaAux != null && ctx.personaAux.getFechaNac() != null) {
+            return ctx.personaAux.getFechaNac();
+        }
+        return ctx.empleadoSel != null ? ctx.empleadoSel.getfNacimiento() : null;
+    }
+
+    private Integer resolveEdad(FichaPdfViewModelContext ctx, java.util.Date fechaNacimiento) {
+        if (ctx.edad != null) {
+            return ctx.edad;
+        }
+        if (fechaNacimiento == null) {
+            return null;
+        }
+        LocalDate fn = fechaNacimiento.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+        return Period.between(fn, LocalDate.now()).getYears();
+    }
+
+    private java.util.Date resolveFecIngreso(FichaPdfViewModelContext ctx) {
+        if (ctx.fecIngreso != null) {
+            return ctx.fecIngreso;
+        }
+        return ctx.empleadoSel != null ? ctx.empleadoSel.getfIngreso() : null;
+    }
+
+    private java.util.Date resolveFecReintegro(FichaPdfViewModelContext ctx) {
+        if (ctx.fecReintegro != null) {
+            return ctx.fecReintegro;
+        }
+        return ctx.empleadoSel != null ? ctx.empleadoSel.getfReingreso() : null;
+    }
+
+    private Double resolveImc(FichaPdfViewModelContext ctx) {
+        if (ctx.imc != null) {
+            return ctx.imc;
+        }
+        if (ctx.peso == null || ctx.tallaCm == null || ctx.tallaCm <= 0) {
+            return null;
+        }
+        double tallaM = ctx.tallaCm / 100.0d;
+        if (tallaM <= 0) {
+            return null;
+        }
+        return ctx.peso / (tallaM * tallaM);
+    }
+
+    private String firstNotBlank(String... values) {
+        if (values == null) {
+            return "";
+        }
+        for (String value : values) {
+            if (value != null && !value.trim().isEmpty()) {
+                return value.trim();
+            }
+        }
+        return "";
+    }
+
+    private String[] splitNombres(String nombres) {
+        if (nombres == null || nombres.trim().isEmpty()) {
+            return new String[] {"", ""};
+        }
+        String[] parts = nombres.trim().split("\\s+", 2);
+        String nombre1 = parts.length > 0 ? parts[0] : "";
+        String nombre2 = parts.length > 1 ? parts[1] : "";
+        return new String[] {nombre1, nombre2};
+    }
+
+    private String[] splitNombreCompleto(String nombreCompleto) {
+        if (nombreCompleto == null || nombreCompleto.trim().isEmpty()) {
+            return new String[] {"", "", "", ""};
+        }
+        String[] parts = nombreCompleto.trim().split("\\s+");
+        String apellido1 = parts.length > 0 ? parts[0] : "";
+        String apellido2 = parts.length > 1 ? parts[1] : "";
+        String nombre1 = parts.length > 2 ? parts[2] : "";
+        String nombre2 = "";
+        if (parts.length > 3) {
+            StringBuilder sb = new StringBuilder();
+            for (int i = 3; i < parts.length; i++) {
+                if (sb.length() > 0) {
+                    sb.append(' ');
+                }
+                sb.append(parts[i]);
+            }
+            nombre2 = sb.toString();
+        }
+        return new String[] {apellido1, apellido2, nombre1, nombre2};
     }
 
     private static String getCedulaIfLoaded(PersonaAux personaAux) {
