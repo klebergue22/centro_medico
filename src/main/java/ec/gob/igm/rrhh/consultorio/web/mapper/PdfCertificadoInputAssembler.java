@@ -2,6 +2,7 @@ package ec.gob.igm.rrhh.consultorio.web.mapper;
 
 import ec.gob.igm.rrhh.consultorio.domain.model.DatEmpleado;
 import ec.gob.igm.rrhh.consultorio.domain.model.PersonaAux;
+import ec.gob.igm.rrhh.consultorio.service.EmpleadoService;
 import ec.gob.igm.rrhh.consultorio.web.ctrl.CentroMedicoCtrl;
 import ec.gob.igm.rrhh.consultorio.web.facade.CentroMedicoPdfFacade;
 import ec.gob.igm.rrhh.consultorio.web.pdf.CertificadoPdfTemplateService;
@@ -15,6 +16,9 @@ import java.util.function.Supplier;
 
 @Stateless
 public class PdfCertificadoInputAssembler {
+
+    @jakarta.inject.Inject
+    private EmpleadoService empleadoService;
 
     public CentroMedicoPdfControllerSupport.CapturePdfCertificadoInput capture(CentroMedicoCtrl source,
             Supplier<Boolean> verificarFichaCompleta,
@@ -54,6 +58,7 @@ public class PdfCertificadoInputAssembler {
         DatEmpleado empleadoSel = source.getEmpleadoSel() != null
                 ? source.getEmpleadoSel()
                 : (source.getFicha() != null ? source.getFicha().getEmpleado() : null);
+        empleadoSel = resolveManagedEmpleado(empleadoSel);
         PersonaAux personaAux = source.getPersonaAux() != null
                 ? source.getPersonaAux()
                 : (source.getFicha() != null ? source.getFicha().getPersonaAux() : null);
@@ -81,6 +86,18 @@ public class PdfCertificadoInputAssembler {
         input.sexo = firstNotBlank(source.getSexo(),
                 personaAux != null ? personaAux.getSexo() : null,
                 empleadoSel != null && empleadoSel.getSexo() != null ? empleadoSel.getSexo().getDescripcion() : null);
+    }
+
+    private DatEmpleado resolveManagedEmpleado(DatEmpleado empleadoSel) {
+        if (empleadoSel == null) {
+            return null;
+        }
+        Integer noPersona = empleadoSel.getNoPersona();
+        if (noPersona == null || empleadoService == null) {
+            return empleadoSel;
+        }
+        DatEmpleado managed = empleadoService.buscarPorId(noPersona);
+        return managed != null ? managed : empleadoSel;
     }
 
     private void populateCertificadoTemplateData(CentroMedicoPdfControllerSupport.CapturePdfCertificadoInput input,
