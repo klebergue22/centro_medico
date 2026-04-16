@@ -333,7 +333,9 @@ public class FichaPdfViewModelBuilder implements Serializable {
         if (fechaNacimiento == null) {
             return null;
         }
-        LocalDate fn = fechaNacimiento.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+        LocalDate fn = java.time.Instant.ofEpochMilli(fechaNacimiento.getTime())
+                .atZone(ZoneId.systemDefault())
+                .toLocalDate();
         return Period.between(fn, LocalDate.now()).getYears();
     }
 
