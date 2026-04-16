@@ -51,23 +51,32 @@ public class PdfCertificadoInputAssembler {
 
     private void populatePacienteData(CentroMedicoPdfControllerSupport.CapturePdfCertificadoInput input,
             CentroMedicoCtrl source) {
-        DatEmpleado empleadoSel = source.getEmpleadoSel();
-        PersonaAux personaAux = source.getPersonaAux();
+        DatEmpleado empleadoSel = source.getEmpleadoSel() != null
+                ? source.getEmpleadoSel()
+                : (source.getFicha() != null ? source.getFicha().getEmpleado() : null);
+        PersonaAux personaAux = source.getPersonaAux() != null
+                ? source.getPersonaAux()
+                : (source.getFicha() != null ? source.getFicha().getPersonaAux() : null);
+        String[] nombreCompleto = splitNombreCompleto(empleadoSel != null ? empleadoSel.getNombreC() : null);
 
         input.apellido1 = firstNotBlank(source.getApellido1(),
                 personaAux != null ? personaAux.getApellido1() : null,
-                empleadoSel != null ? empleadoSel.getPriApellido() : null);
+                empleadoSel != null ? empleadoSel.getPriApellido() : null,
+                nombreCompleto[0]);
         input.apellido2 = firstNotBlank(source.getApellido2(),
                 personaAux != null ? personaAux.getApellido2() : null,
-                empleadoSel != null ? empleadoSel.getSegApellido() : null);
+                empleadoSel != null ? empleadoSel.getSegApellido() : null,
+                nombreCompleto[1]);
 
         String[] nombresEmpleado = splitNombres(empleadoSel != null ? empleadoSel.getNombres() : null);
         input.nombre1 = firstNotBlank(source.getNombre1(),
                 personaAux != null ? personaAux.getNombre1() : null,
-                nombresEmpleado[0]);
+                nombresEmpleado[0],
+                nombreCompleto[2]);
         input.nombre2 = firstNotBlank(source.getNombre2(),
                 personaAux != null ? personaAux.getNombre2() : null,
-                nombresEmpleado[1]);
+                nombresEmpleado[1],
+                nombreCompleto[3]);
 
         input.sexo = firstNotBlank(source.getSexo(),
                 personaAux != null ? personaAux.getSexo() : null,
@@ -106,5 +115,27 @@ public class PdfCertificadoInputAssembler {
         String nombre1 = parts.length > 0 ? parts[0] : "";
         String nombre2 = parts.length > 1 ? parts[1] : "";
         return new String[] {nombre1, nombre2};
+    }
+
+    private String[] splitNombreCompleto(String nombreCompleto) {
+        if (nombreCompleto == null || nombreCompleto.trim().isEmpty()) {
+            return new String[] {"", "", "", ""};
+        }
+        String[] parts = nombreCompleto.trim().split("\\s+");
+        String apellido1 = parts.length > 0 ? parts[0] : "";
+        String apellido2 = parts.length > 1 ? parts[1] : "";
+        String nombre1 = parts.length > 2 ? parts[2] : "";
+        String nombre2 = "";
+        if (parts.length > 3) {
+            StringBuilder sb = new StringBuilder();
+            for (int i = 3; i < parts.length; i++) {
+                if (sb.length() > 0) {
+                    sb.append(' ');
+                }
+                sb.append(parts[i]);
+            }
+            nombre2 = sb.toString();
+        }
+        return new String[] {apellido1, apellido2, nombre1, nombre2};
     }
 }
