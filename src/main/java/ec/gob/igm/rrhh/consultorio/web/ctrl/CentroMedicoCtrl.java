@@ -7,7 +7,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Objects;
 
 import jakarta.annotation.PostConstruct;
 import jakarta.faces.application.FacesMessage;
@@ -30,7 +29,6 @@ import ec.gob.igm.rrhh.consultorio.domain.model.FichaOcupacional;
 import ec.gob.igm.rrhh.consultorio.domain.model.FichaRiesgo;
 import ec.gob.igm.rrhh.consultorio.domain.model.PersonaAux;
 import ec.gob.igm.rrhh.consultorio.domain.model.SignosVitales;
-import ec.gob.igm.rrhh.consultorio.service.EmpleadoService;
 import ec.gob.igm.rrhh.consultorio.web.facade.CentroMedicoPdfFacade;
 import ec.gob.igm.rrhh.consultorio.web.facade.CentroMedicoWizardCoordinator;
 import ec.gob.igm.rrhh.consultorio.web.jsf.CentroMedicoMessageService;
@@ -132,9 +130,6 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     private transient CentroMedicoReactiveUiService reactiveUiService;
 
     @Inject
-    private transient EmpleadoService empleadoService;
-
-    @Inject
     private transient Step3CommandAssembler step3CommandAssembler;
     @Inject
     private transient StepValidationInputAssembler stepValidationInputAssembler;
@@ -210,93 +205,6 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
         centroMedicoFormInitializer.initStep2Defaults(this, STATIC_RISK_COLS);
         centroMedicoFormInitializer.initStep3Defaults(this, H_ROWS, DIAG_ROWS);
         centroMedicoFormStateService.prepareStep3Collections(this, H_ROWS, DIAG_ROWS, 5);
-        if (!inicializarModoEdicionDesdeParametro()) {
-            inicializarNuevaAtencionDesdeParametros();
-        }
-    }
-
-    private boolean inicializarModoEdicionDesdeParametro() {
-        FacesContext ctx = FacesContext.getCurrentInstance();
-        if (ctx == null) {
-            return false;
-        }
-
-        String idFichaRaw = ctx.getExternalContext().getRequestParameterMap().get("idFicha");
-        if (idFichaRaw == null || idFichaRaw.trim().isEmpty()) {
-            return false;
-        }
-
-        Long idFicha;
-        try {
-            idFicha = Long.valueOf(idFichaRaw.trim());
-        } catch (NumberFormatException ex) {
-            messageService.warn("El parámetro idFicha no es válido.");
-            return false;
-        }
-
-        FichaOcupacional fichaEdit = wizardSectionFacade.recargarFicha(idFicha);
-        if (fichaEdit == null) {
-            messageService.warn("No se encontró la ficha solicitada para edición.");
-            return false;
-        }
-
-        setFicha(fichaEdit);
-        setEmpleadoSel(fichaEdit.getEmpleado());
-        setNoPersonaSel(fichaEdit.getEmpleado() != null ? fichaEdit.getEmpleado().getNoPersona() : null);
-        setPersonaAux(Objects.requireNonNullElseGet(fichaEdit.getPersonaAux(), PersonaAux::new));
-        setCedulaBusqueda(resolveCedulaBusqueda(fichaEdit));
-        setMostrarDlgCedula(false);
-        wizardViewState.setCedulaDlgAutoOpened(true);
-        syncPatientStateFromFicha();
-        return true;
-    }
-
-    private void inicializarNuevaAtencionDesdeParametros() {
-        FacesContext ctx = FacesContext.getCurrentInstance();
-        if (ctx == null) {
-            return;
-        }
-
-        Map<String, String> params = ctx.getExternalContext().getRequestParameterMap();
-        Integer noPersona = parseInteger(params.get("noPersona"));
-        if (noPersona == null) {
-            return;
-        }
-
-        DatEmpleado empleado = empleadoService.buscarPorId(noPersona);
-        if (empleado == null) {
-            messageService.warn("No se encontró el empleado para iniciar la nueva atención.");
-            return;
-        }
-
-        setEmpleadoSel(empleado);
-        setNoPersonaSel(empleado.getNoPersona());
-        setCedulaBusqueda(empleado.getNoCedula());
-        syncPatientStateFromFicha();
-    }
-
-    private Integer parseInteger(String raw) {
-        if (raw == null || raw.trim().isEmpty()) {
-            return null;
-        }
-        try {
-            return Integer.valueOf(raw.trim());
-        } catch (NumberFormatException ex) {
-            return null;
-        }
-    }
-
-    private String resolveCedulaBusqueda(FichaOcupacional fichaEdit) {
-        if (fichaEdit == null) {
-            return null;
-        }
-        if (fichaEdit.getEmpleado() != null && fichaEdit.getEmpleado().getNoCedula() != null) {
-            return fichaEdit.getEmpleado().getNoCedula();
-        }
-        if (fichaEdit.getPersonaAux() != null) {
-            return fichaEdit.getPersonaAux().getCedula();
-        }
-        return null;
     }
 
     // =========================
@@ -348,8 +256,6 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     // VALIDACIÓN DE STEPS
     // =========================
     private boolean validarStep1() {
-        syncPatientStateFromFicha();
-
         FichaRiesgo fichaRiesgo = step2FormModel.getFichaRiesgo();
         Step1ValidationInput input = stepValidationInputAssembler.buildStep1Input(
                 pacienteFormData.getApellido1(),
@@ -444,7 +350,6 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
 
         pacienteSectionFacade.applyPacienteUiResult(this, result.preUiResult);
         setFicha(result.ficha);
-        syncPuestoTrabajoRiesgoFromFicha(result.ficha);
         setEmpleadoSel(result.empleadoSel);
         setPersonaAux(result.personaAux);
         setSignos(result.signos);
@@ -463,16 +368,6 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
                 wizardViewState.getActiveStep(),
                 getNoPersonaSel(),
                 getCedulaBusqueda()));
-    }
-
-    private void syncPuestoTrabajoRiesgoFromFicha(FichaOcupacional fichaActualizada) {
-        if (step2FormModel.getFichaRiesgo() == null || fichaActualizada == null) {
-            return;
-        }
-        String ciiu = fichaActualizada.getCiiu();
-        if (ciiu != null && !ciiu.trim().isEmpty()) {
-            step2FormModel.getFichaRiesgo().setPuestoTrabajo(ciiu);
-        }
     }
 
     private void saveStep2() {
@@ -606,14 +501,6 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
                 this::setFicha,
                 wizardViewState::setActiveStep,
                 this::setMostrarDlgCedula);
-        syncPatientStateFromFicha();
-    }
-
-    private void syncPatientStateFromFicha() {
-        if (getFicha() == null) {
-            return;
-        }
-        pacienteSectionFacade.syncPatientStateFromFicha(this);
     }
 
     // =========================
@@ -808,14 +695,6 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
         reactiveUiService.onNoConsumeChange(
                 habitosConsumoFormModel.getConsNoConsume(),
                 habitosConsumoFormModel.getConsExConsumidor(),
-                habitosConsumoFormModel.getConsTiempoConsumoMeses(),
-                habitosConsumoFormModel.getConsTiempoAbstinenciaMeses(),
-                idx);
-    }
-
-    public void onConsumoTiempoChange(int idx) {
-        reactiveUiService.onConsumoTiempoChange(
-                habitosConsumoFormModel.getConsNoConsume(),
                 habitosConsumoFormModel.getConsTiempoConsumoMeses(),
                 habitosConsumoFormModel.getConsTiempoAbstinenciaMeses(),
                 idx);
@@ -2182,21 +2061,6 @@ public List<String> completarKDescStrings(String query) {
     }
 
     @Deprecated
-    public Date getFecIngreso() {
-        return step1FormModel.getFecIngreso();
-    }
-
-    @Deprecated
-    public Date getFecReintegro() {
-        return step1FormModel.getFecReintegro();
-    }
-
-    @Deprecated
-    public Date getFecRetiro() {
-        return step1FormModel.getFecRetiro();
-    }
-
-    @Deprecated
     public String getTipoEval() {
         return step1FormModel.getTipoEval();
     }
@@ -2228,10 +2092,6 @@ public List<String> completarKDescStrings(String query) {
 
     public Double getTallaCm() {
         return signosVitalesFormModel.getTallaCm();
-    }
-
-    public Double getImc() {
-        return signosVitalesFormModel.getImc();
     }
 
     public Double getPerimetroAbd() {
@@ -2439,4 +2299,57 @@ public List<String> completarKDescStrings(String query) {
         step2FormModel.setMedidasPreventivas(medidasPreventivas);
     }
 
+    private static final List<String> CIE10_PRUEBA_FIJA = List.of(
+            "K00 - TRASTORNOS DEL DESARROLLO Y DE LA ERUPCION DE LOS DIENTES",
+            "K01 - DIENTES INCLUIDOS E IMPACTADOS",
+            "K02 - CARIES DENTAL",
+            "K03 - OTRAS ENFERMEDADES DE LOS TEJIDOS DUROS DE LOS DIENTES",
+            "K04 - ENFERMEDADES DE LA PULPA Y DE LOS TEJIDOS PERIAPICALES",
+            "K05 - GINGIVITIS Y ENFERMEDADES PERIODONTALES"
+    );
+
+    private String pruebaCieTexto;
+
+    public String getPruebaCieTexto() {
+        return pruebaCieTexto;
+    }
+
+    public void setPruebaCieTexto(String pruebaCieTexto) {
+        this.pruebaCieTexto = pruebaCieTexto;
+    }
+
+    public List<String> completarCiePruebaFija(String query) {
+        if (FacesContext.getCurrentInstance() != null
+                && FacesContext.getCurrentInstance().getViewRoot() != null) {
+            LOG.info(">>> [PRUEBA-FIJA] viewId={}",
+                    FacesContext.getCurrentInstance().getViewRoot().getViewId());
+        } else {
+            LOG.info(">>> [PRUEBA-FIJA] viewId={}", (Object) null);
+        }
+        LOG.info(">>> [PRUEBA-FIJA] query=[{}]", query);
+
+        if (query == null || query.trim().isEmpty()) {
+            LOG.info("<<< [PRUEBA-FIJA] size={} items={}", CIE10_PRUEBA_FIJA.size(), CIE10_PRUEBA_FIJA);
+            return CIE10_PRUEBA_FIJA;
+        }
+
+        String q = query.trim().toUpperCase();
+        List<String> out = new ArrayList<>();
+        for (String item : CIE10_PRUEBA_FIJA) {
+            if (item != null && item.toUpperCase().contains(q)) {
+                out.add(item);
+            }
+        }
+
+        if (out.isEmpty()) {
+            out.addAll(CIE10_PRUEBA_FIJA);
+        }
+
+        LOG.info("<<< [PRUEBA-FIJA] size={} items={}", out.size(), out);
+        return out;
+    }
+
+    public List<String> getCiePruebaOpciones() {
+        return CIE10_PRUEBA_FIJA;
+    }
 }
