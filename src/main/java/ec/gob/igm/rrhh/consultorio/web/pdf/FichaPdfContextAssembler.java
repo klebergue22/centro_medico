@@ -2,6 +2,7 @@ package ec.gob.igm.rrhh.consultorio.web.pdf;
 
 import java.io.Serializable;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
 import java.util.List;
 import java.util.function.BiFunction;
@@ -136,6 +137,12 @@ public class FichaPdfContextAssembler implements Serializable {
                 return method.invoke(source);
             } catch (NoSuchMethodException ex) {
                 // Probar siguiente alternativa de getter
+            } catch (InvocationTargetException ex) {
+                Throwable cause = ex.getCause();
+                if (cause instanceof UnsupportedOperationException) {
+                    return null;
+                }
+                throw new IllegalStateException("No se pudo leer propiedad '" + fieldName + "'", cause);
             } catch (ReflectiveOperationException ex) {
                 throw new IllegalStateException("No se pudo leer propiedad '" + fieldName + "'", ex);
             }
