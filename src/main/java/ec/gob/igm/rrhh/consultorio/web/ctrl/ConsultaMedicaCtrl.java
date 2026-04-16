@@ -724,8 +724,8 @@ private String construirHtmlCertificado() {
         .append("<style>")
         .append("@page{size:A4;margin:10mm 12mm 8mm 12mm;}")
 
-        .append("body{font-family:Arial,sans-serif;font-size:18px;line-height:1.18;margin:0;color:#000000;}")
-        .append(".contenido{padding-bottom:108px;}")
+        .append("body{font-family:Arial,sans-serif;font-size:20px;line-height:1.18;margin:0;color:#000000;}")
+        .append(".contenido{padding-bottom:108px;}")14,0
 
         .append(".encabezado{margin:0 0 6px 0;text-align:center;}")
         .append(".encabezado-table{width:100%;border-collapse:collapse;table-layout:fixed;}")
@@ -780,7 +780,9 @@ private String construirHtmlCertificado() {
         .append("<td class='header-spacer'></td>")
         .append("</tr>")
         .append("</table>")
-        .append("</div>");
+        .append("</div>")
+        .append("<br/>")
+        .append("<br/>");
 
     html.append("<div class='titulo'>CERTIFICADO MEDICO</div>");
 
