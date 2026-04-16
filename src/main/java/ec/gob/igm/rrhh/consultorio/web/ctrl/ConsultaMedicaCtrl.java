@@ -726,7 +726,7 @@ public class ConsultaMedicaCtrl implements Serializable {
 
     private String certificadoStyles() {
         return "@page{size:A4;margin:10mm 12mm 8mm 12mm;}body{font-family:Arial,sans-serif;font-size:16px;line-height:1.2;margin:0;color:#000000;}"
-                + ".contenido{padding-bottom:112px;}.encabezado{margin:0 0 12px 0;text-align:center;}.encabezado-table{width:100%;border-collapse:collapse;table-layout:fixed;}"
+                + ".contenido{padding:0 18mm 112px 18mm;box-sizing:border-box;}.encabezado{margin:0 0 12px 0;text-align:center;}.encabezado-table{width:100%;border-collapse:collapse;table-layout:fixed;}"
                 + ".encabezado-table td{vertical-align:middle;text-align:center;padding:0 8px;}.header-logo-cell{width:50%;}.logo-midena{display:block;width:170px;height:auto;margin:0 auto;}"
                 + ".logo-igm{display:block;width:170px;height:auto;margin:0 auto;}.titulo{text-align:center;font-size:22px;font-weight:700;letter-spacing:.2px;margin:6px 0 12px 0;}"
                 + ".cuerpo-certificado{width:100%;margin:0;box-sizing:border-box;}.texto{font-size:16px;margin:0 0 6px 0;text-align:justify;}"
