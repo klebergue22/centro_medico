@@ -25,11 +25,16 @@ public class FichaPdfPlaceholderAssembler implements Serializable {
 
     public Map<String, String> buildReemplazosFicha(FichaState state) {
         Map<String, String> rep = new LinkedHashMap<>();
+        if (state == null) {
+            return rep;
+        }
         cargarLogos(rep, state.centroMedicoPdfFacade, state.log);
         cargarFechaActual(rep);
         cargarAntecedentes(rep, state.antClinicoQuirurgico, state.antFamiliares, state.antTerapeutica, state.antObs);
         cargarRiesgos(rep, state.riesgos);
-        rep.putAll(state.fichaPdfViewModelBuilder.buildReemplazosFicha(state.fichaPdfViewModelContext));
+        if (state.fichaPdfViewModelBuilder != null && state.fichaPdfViewModelContext != null) {
+            rep.putAll(state.fichaPdfViewModelBuilder.buildReemplazosFicha(state.fichaPdfViewModelContext));
+        }
         cargarActividadesLaboralesList(rep, state.actividadesLab);
         cargarMedidasPreventivasList(rep, state.medidasPreventivas);
         cargarHActividadLaboral(rep, state);
@@ -45,16 +50,21 @@ public class FichaPdfPlaceholderAssembler implements Serializable {
     }
 
     private void cargarLogos(Map<String, String> rep, CentroMedicoPdfFacade facade, Logger log) {
+        if (facade == null) {
+            rep.put("LOGO_IGM_DATAURI", "");
+            rep.put("LOGO_MIDENA_DATAURI", "");
+            return;
+        }
         try {
             rep.put("LOGO_IGM_DATAURI", facade.dataUriFromResource("images/LOGO_IGM_FULL_COLOR.png"));
         } catch (IOException ex) {
-            log.warn("[FICHA] No se pudo cargar LOGo IGM", ex);
+            warn(log, "[FICHA] No se pudo cargar LOGo IGM", ex);
             rep.put("LOGO_IGM_DATAURI", "");
         }
         try {
             rep.put("LOGO_MIDENA_DATAURI", facade.dataUriFromResource("images/LOGO_MIDENA.png"));
         } catch (IOException ex) {
-            log.warn("[FICHA] No se pudo cargar LOGo MIDENA", ex);
+            warn(log, "[FICHA] No se pudo cargar LOGo MIDENA", ex);
             rep.put("LOGO_MIDENA_DATAURI", "");
         }
     }
@@ -102,20 +112,22 @@ public class FichaPdfPlaceholderAssembler implements Serializable {
     }
 
     private void cargarHActividadLaboral(Map<String, String> rep, FichaState s) {
+        BiFunction<List<?>, Integer, Object> safeAccessor = s.getSafe != null ? s.getSafe : FichaPdfPlaceholderAssembler::getSafe;
+        Function<Object, java.util.Date> dateParser = s.toDateParser != null ? s.toDateParser : unused -> null;
         for (int i = 0; i < 4; i++) {
-            rep.put("act_lab_centro_" + i, safePdfObject(s.getSafe.apply(s.actLabCentroTrabajo, i)));
-            rep.put("act_lab_actividad_" + i, safePdfObject(s.getSafe.apply(s.actLabActividad, i)));
-            rep.put("act_lab_tiempo_" + i, safePdfObject(s.getSafe.apply(s.actLabTiempo, i)));
-            rep.put("act_lab_anterior_" + i, truthy(s.getSafe.apply(s.actLabTrabajoAnterior, i)) ? "X" : "");
-            rep.put("act_lab_actual_" + i, truthy(s.getSafe.apply(s.actLabTrabajoActual, i)) ? "X" : "");
-            rep.put("act_lab_incidente_" + i, truthy(s.getSafe.apply(s.actLabIncidenteChk, i)) ? "X" : "");
-            rep.put("act_lab_accidente_" + i, truthy(s.getSafe.apply(s.actLabAccidenteChk, i)) ? "X" : "");
-            rep.put("act_lab_enfermedad_" + i, truthy(s.getSafe.apply(s.actLabEnfermedadChk, i)) ? "X" : "");
-            rep.put("iess_si_" + i, truthy(s.getSafe.apply(s.iessSi, i)) ? "X" : "");
-            rep.put("iess_no_" + i, truthy(s.getSafe.apply(s.iessNo, i)) ? "X" : "");
-            rep.put("iess_fecha_" + i, PdfTextUtil.safeDate(s.toDateParser.apply(s.getSafe.apply(s.iessFecha, i))));
-            rep.put("iess_especificar_" + i, safePdfObject(s.getSafe.apply(s.iessEspecificar, i)));
-            rep.put("act_lab_obs_" + i, safePdfObject(s.getSafe.apply(s.actLabObservaciones, i)));
+            rep.put("act_lab_centro_" + i, safePdfObject(safeAccessor.apply(s.actLabCentroTrabajo, i)));
+            rep.put("act_lab_actividad_" + i, safePdfObject(safeAccessor.apply(s.actLabActividad, i)));
+            rep.put("act_lab_tiempo_" + i, safePdfObject(safeAccessor.apply(s.actLabTiempo, i)));
+            rep.put("act_lab_anterior_" + i, truthy(safeAccessor.apply(s.actLabTrabajoAnterior, i)) ? "X" : "");
+            rep.put("act_lab_actual_" + i, truthy(safeAccessor.apply(s.actLabTrabajoActual, i)) ? "X" : "");
+            rep.put("act_lab_incidente_" + i, truthy(safeAccessor.apply(s.actLabIncidenteChk, i)) ? "X" : "");
+            rep.put("act_lab_accidente_" + i, truthy(safeAccessor.apply(s.actLabAccidenteChk, i)) ? "X" : "");
+            rep.put("act_lab_enfermedad_" + i, truthy(safeAccessor.apply(s.actLabEnfermedadChk, i)) ? "X" : "");
+            rep.put("iess_si_" + i, truthy(safeAccessor.apply(s.iessSi, i)) ? "X" : "");
+            rep.put("iess_no_" + i, truthy(safeAccessor.apply(s.iessNo, i)) ? "X" : "");
+            rep.put("iess_fecha_" + i, PdfTextUtil.safeDate(dateParser.apply(safeAccessor.apply(s.iessFecha, i))));
+            rep.put("iess_especificar_" + i, safePdfObject(safeAccessor.apply(s.iessEspecificar, i)));
+            rep.put("act_lab_obs_" + i, safePdfObject(safeAccessor.apply(s.actLabObservaciones, i)));
         }
     }
 
@@ -125,21 +137,29 @@ public class FichaPdfPlaceholderAssembler implements Serializable {
 
     private void cargarIActividadesExtra(Map<String, String> rep, List<String> tipoAct, List<?> fechaAct, List<String> descAct,
             Function<Object, java.util.Date> toDateParser) {
+        Function<Object, java.util.Date> dateParser = toDateParser != null ? toDateParser : unused -> null;
         for (int i = 0; i < 3; i++) {
             rep.put("tipo_act_" + i, PdfTextUtil.safePdf(getSafe(tipoAct, i)));
-            rep.put("fecha_act_" + i, PdfTextUtil.safeDate(toDateParser.apply(getSafe(fechaAct, i))));
+            rep.put("fecha_act_" + i, PdfTextUtil.safeDate(dateParser.apply(getSafe(fechaAct, i))));
             rep.put("desc_act_" + i, PdfTextUtil.safePdf(getSafe(descAct, i)));
         }
     }
 
     private void cargarJExamenes(Map<String, String> rep, List<String> examNombre, List<?> examFecha, List<String> examResultado,
             String obsJ, Function<Object, java.util.Date> toDateParser) {
+        Function<Object, java.util.Date> dateParser = toDateParser != null ? toDateParser : unused -> null;
         for (int i = 0; i < 5; i++) {
             rep.put("exam_nombre_" + i, PdfTextUtil.safePdf(getSafe(examNombre, i)));
-            rep.put("exam_fecha_" + i, PdfTextUtil.safeDate(toDateParser.apply(getSafe(examFecha, i))));
+            rep.put("exam_fecha_" + i, PdfTextUtil.safeDate(dateParser.apply(getSafe(examFecha, i))));
             rep.put("exam_resultado_" + i, PdfTextUtil.safePdf(getSafe(examResultado, i)));
         }
         rep.put("obs_j", PdfTextUtil.safePdf(obsJ));
+    }
+
+    private void warn(Logger log, String message, Throwable throwable) {
+        if (log != null) {
+            log.warn(message, throwable);
+        }
     }
 
     private void cargarKDiagnosticos(Map<String, String> rep, List<ConsultaDiagnostico> listaDiag) {

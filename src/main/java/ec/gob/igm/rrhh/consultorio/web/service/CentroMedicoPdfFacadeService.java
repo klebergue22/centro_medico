@@ -74,8 +74,8 @@ public class CentroMedicoPdfFacadeService implements Serializable {
                     cmd.obtenerTipoEvaluacionPdf,
                     cmd.centroMedicoPdfFacade);
         } catch (RuntimeException ex) {
-            Throwable cause = ex.getCause() != null ? ex.getCause() : ex;
-            cmd.log.error("[FICHA] Error cargando plantilla_ficha.html", cause);
+            Throwable cause = resolveMeaningfulCause(ex);
+            cmd.log.error("[FICHA] Error cargando plantilla_ficha.html. Cadena de causas: {}", buildCauseChain(ex), cause);
             return "<html><body><h3>Error cargando plantilla_ficha.html</h3><pre>"
                     + safe(cause.getMessage()) + "</pre></body></html>";
         } catch (Exception e) {
@@ -83,6 +83,37 @@ public class CentroMedicoPdfFacadeService implements Serializable {
             return "<html><body><h3>Error cargando plantilla_ficha.html</h3><pre>"
                     + safe(e.getMessage()) + "</pre></body></html>";
         }
+    }
+
+    private Throwable resolveMeaningfulCause(Throwable throwable) {
+        Throwable current = throwable;
+        Throwable previous = null;
+        while (current != null && current != previous) {
+            previous = current;
+            current = current.getCause();
+        }
+        return previous != null ? previous : throwable;
+    }
+
+    private String buildCauseChain(Throwable throwable) {
+        StringBuilder sb = new StringBuilder();
+        Throwable current = throwable;
+        int depth = 0;
+        while (current != null && depth < 12) {
+            if (depth > 0) {
+                sb.append(" -> ");
+            }
+            sb.append(current.getClass().getSimpleName());
+            if (current.getMessage() != null && !current.getMessage().isBlank()) {
+                sb.append(": ").append(current.getMessage());
+            }
+            current = current.getCause();
+            depth++;
+        }
+        if (current != null) {
+            sb.append(" -> ...");
+        }
+        return sb.toString();
     }
 
     public String construirHtmlDesdePlantilla(CertificadoTemplateCommand cmd) throws IOException {
