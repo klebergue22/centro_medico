@@ -600,6 +600,7 @@ public class ConsultaMedicaCtrl implements Serializable {
         StringBuilder html = new StringBuilder();
         html.append("<!DOCTYPE html><html xmlns='http://www.w3.org/1999/xhtml'><head><meta charset='UTF-8'/>")
                 .append("<style>")
+                .append("@page{size:A5 portrait;margin:10mm;}")
                 .append("body{font-family:Arial,sans-serif;font-size:12px;margin:22px;color:#000;}")
                 .append(".panel{position:relative;border:1px solid #9ca3af;padding:14px 16px 28px 16px;}")
                 .append(".encabezado{border-bottom:2px solid #1f2937;margin-bottom:10px;padding-bottom:7px;}")
@@ -627,256 +628,173 @@ public class ConsultaMedicaCtrl implements Serializable {
 
     private String construirColumnaReceta(String fecha, String nombrePaciente, String cedula, String edad,
             String medicoNombre, String medicoMsp, String logoIgm, String logoMidena) {
-        String sexo = getSexoPaciente();
         StringBuilder sb = new StringBuilder();
-        sb.append("<div class='panel'>")
-                .append("<div class='encabezado'>")
-                .append("<table class='encabezado-table'><tr>")
+        appendRecetaEncabezado(sb, fecha, nombrePaciente, cedula, edad, logoIgm, logoMidena);
+        appendRecetaMedicamentos(sb);
+        appendRecetaPie(sb, medicoNombre, medicoMsp);
+        return sb.toString();
+    }
+
+    private void appendRecetaEncabezado(StringBuilder sb, String fecha, String nombrePaciente, String cedula,
+            String edad, String logoIgm, String logoMidena) {
+        sb.append("<div class='panel'><div class='encabezado'><table class='encabezado-table'><tr>")
                 .append("<td class='logo-cell'><img class='logo' alt='LOGO_IGM_FULL_COLOR_COMPLETA' src='").append(escape(logoIgm)).append("'/></td>")
-                .append("<td>")
-                .append("<div class='encabezado-titulo'>INSTITUTO GEOGRÁFICO MILITAR</div>")
-                .append("<div class='encabezado-sub'>DISPENSARIO MÉDICO</div>")
-                .append("<div class='encabezado-sub'><b>RECETA</b></div>")
-                .append("</td>")
+                .append("<td><div class='encabezado-titulo'>INSTITUTO GEOGRÁFICO MILITAR</div><div class='encabezado-sub'>DISPENSARIO MÉDICO</div><div class='encabezado-sub'><b>RECETA</b></div></td>")
                 .append("<td class='logo-cell'><img class='logo' alt='LOGO_MIDENA_FULL_COLO' src='").append(escape(logoMidena)).append("'/></td>")
-                .append("</tr></table>")
-                .append("</div>")
+                .append("</tr></table></div>")
                 .append("<div class='row'>QUITO,").append(escape(fecha).toUpperCase()).append("</div>")
                 .append("<div class='row'><b>Paciente:</b> ").append(escape(nombrePaciente)).append("</div>")
                 .append("<div class='row'><b>Cédula:</b> ").append(escape(cedula)).append("</div>")
-                .append("<div class='row'><b>Sexo:</b> ").append(escape(sexo)).append("</div>")
+                .append("<div class='row'><b>Sexo:</b> ").append(escape(getSexoPaciente())).append("</div>")
                 .append("<div class='row'><b>Edad:</b> ").append(escape(edad)).append("</div>");
+    }
 
-        sb.append("<div class='titulo'>Antecedente de Alergias:</div>")
+    private void appendRecetaMedicamentos(StringBuilder sb) {
+        sb.append("<div class='titulo'>Antecedentes Patológicos Personales:</div>")
                 .append("<div class='row'>").append(escape(resolveAlergiasTexto())).append("</div>")
-                .append("<table><thead><tr><th>Medicamento</th><th>Diagnóstico</th><th>Vía</th><th>Días</th><th>Indicaciones</th></tr></thead><tbody>");
-
+                .append("<table><thead><tr><th>Medicamento</th><th>Vía</th><th>Días</th><th>Indicaciones</th></tr></thead><tbody>");
         for (RecetaItemForm item : recetas) {
             if (item == null || isBlank(item.getMedicamento())) {
                 continue;
             }
             sb.append("<tr><td>").append(escape(item.getMedicamento())).append("</td><td>")
-                    .append(escape(item.getDiagnostico())).append("</td><td>")
                     .append(escape(item.getVia())).append("</td><td>")
                     .append(item.getDuracionDias() == null ? "" : item.getDuracionDias()).append("</td><td>")
                     .append(escape(item.getIndicaciones())).append("</td></tr>");
         }
+    }
 
-        sb.append("</tbody></table>")
-                .append("<div class='titulo'>DIAGNÓSTICO</div>");
-
-        int count = 1;
-        for (ConsultaDiagnostico d : diagnosticos) {
-            if (d == null || (isBlank(d.getCodigo()) && isBlank(d.getDescripcion()))) {
-                continue;
-            }
-            sb.append("<div class='row'>").append(count++)
-                    .append(". ").append(escape(d.getCodigo()))
-                    .append(" ").append(escape(d.getDescripcion()))
-                    .append("</div>");
-        }
-
-        sb.append("<div class='titulo'>Recomendaciones no farmacológicas:</div>")
+    private void appendRecetaPie(StringBuilder sb, String medicoNombre, String medicoMsp) {
+        sb.append("</tbody></table><div class='titulo'>Recomendaciones no farmacológicas:</div>")
                 .append("<div class='row'>").append(escape(recomendaciones)).append("</div>")
                 .append("<div class='titulo'>Signos de alarma:</div>")
                 .append("<div class='row'>").append(escape(signosAlarma)).append("</div>")
-                .append("<div class='firmante'>")
-                .append("<div><b>Médico:</b> ").append(escape(medicoNombre)).append("</div>")
-                .append("<div><b>MSP:</b> ").append(escape(medicoMsp)).append("</div>")
-                .append("</div></div>");
-
-        return sb.toString();
+                .append("<div class='firmante'><div><b>Médico:</b> ").append(escape(medicoNombre)).append("</div>")
+                .append("<div><b>MSP:</b> ").append(escape(medicoMsp)).append("</div></div></div>");
     }
 
     /**
      * Certificado médico de Consulta Médica (no usa la plantilla de aptitud).
      */
-private String construirHtmlCertificado() {
-    String nombrePaciente = getNombrePaciente();
-    String cedula = getCedulaPaciente();
-    String numeroHistoria = getCedulaPaciente();
-    String cargoPaciente = isBlank(certCargoPaciente) ? resolveCargoPaciente() : certCargoPaciente;
-    String areaTrabajo = getAreaTrabajoPaciente();
-    String diagnosticoPaciente = isBlank(getDiagnosticosTexto()) ? "NO REGISTRA" : getDiagnosticosTexto();
-    String sintomasPaciente = isBlank(consulta.getEnfermedadActual()) ? "NO REGISTRA" : consulta.getEnfermedadActual();
-    String fechaInicioTexto = formatoFechaDiaMesAnioConLetras(certFechaInicio);
-    String fechaFinTexto = formatoFechaDiaMesAnioConLetras(certFechaFin);
-    long diasReposo = getCertDiasReposo();
-    String telefonoContacto = valueOrNoRegistra(certTelefono);
-    String medicoMsp = consulta.getMedicoCodigo() == null ? "" : consulta.getMedicoCodigo();
-    String medicoTelefono = valueOrNoRegistra(certMedicoTelefono);
-    String medicoCorreo = isBlank(certMedicoCorreo) ? "NO REGISTRA" : certMedicoCorreo;
-    String tipoContingencia = valueOrNoRegistra(certTipoContingencia);
-    String domicilioPaciente = valueOrNoRegistra(certDomicilio);
-    String fechaEmision = formatoFechaNumericoYLetras(
-            consulta.getFechaConsulta() != null ? consulta.getFechaConsulta() : new Date());
+    private String construirHtmlCertificado() {
+        CertificadoData data = buildCertificadoData();
+        StringBuilder html = new StringBuilder();
+        html.append("<!DOCTYPE html><html><head><meta charset='UTF-8'/><style>")
+                .append(certificadoStyles())
+                .append("</style></head><body>");
+        appendCertificadoContenido(html, data);
+        appendCertificadoMembrete(html, data.membreteBottom);
+        html.append("</body></html>");
+        return html.toString();
+    }
 
-    String logoIgm = resolveLogo("LOGO_IGM_FULL_COLOR_COMPLETA.png");
-    String logoMidena = resolveLogo("LOGO_MIDENA_FULL_COLO.png");
-    String membreteBottom = resolveLogo("membrete-bottom.png");
+    private CertificadoData buildCertificadoData() {
+        CertificadoData data = new CertificadoData();
+        data.nombrePaciente = getNombrePaciente();
+        data.cedula = getCedulaPaciente();
+        data.numeroHistoria = getCedulaPaciente();
+        data.cargoPaciente = isBlank(certCargoPaciente) ? resolveCargoPaciente() : certCargoPaciente;
+        data.areaTrabajo = getAreaTrabajoPaciente();
+        data.diagnosticoPaciente = isBlank(getDiagnosticosTexto()) ? "NO REGISTRA" : getDiagnosticosTexto();
+        data.sintomasPaciente = isBlank(consulta.getEnfermedadActual()) ? "NO REGISTRA" : consulta.getEnfermedadActual();
+        data.fechaInicioTexto = formatoFechaDiaMesAnioConLetras(certFechaInicio);
+        data.fechaFinTexto = formatoFechaDiaMesAnioConLetras(certFechaFin);
+        data.diasReposo = getCertDiasReposo();
+        data.telefonoContacto = valueOrNoRegistra(certTelefono);
+        data.medicoMsp = consulta.getMedicoCodigo() == null ? "" : consulta.getMedicoCodigo();
+        data.medicoTelefono = valueOrNoRegistra(certMedicoTelefono);
+        data.medicoCorreo = isBlank(certMedicoCorreo) ? "NO REGISTRA" : certMedicoCorreo;
+        data.tipoContingencia = valueOrNoRegistra(certTipoContingencia);
+        data.domicilioPaciente = valueOrNoRegistra(certDomicilio);
+        data.fechaEmision = formatoFechaNumericoYLetras(consulta.getFechaConsulta() != null ? consulta.getFechaConsulta() : new Date());
+        data.logoIgm = resolveLogo("LOGO_IGM_FULL_COLOR_COMPLETA.png");
+        data.logoMidena = resolveLogo("LOGO_MIDENA_FULL_COLO.png");
+        data.membreteBottom = resolveLogo("membrete-bottom.png");
+        return data;
+    }
 
-    StringBuilder html = new StringBuilder();
+    private String certificadoStyles() {
+        return "@page{size:A4;margin:10mm 12mm 8mm 12mm;}body{font-family:Arial,sans-serif;font-size:16px;line-height:1.2;margin:0;color:#000000;}"
+                + ".contenido{padding-bottom:112px;}.encabezado{margin:0 0 12px 0;text-align:center;}.encabezado-table{width:100%;border-collapse:collapse;table-layout:fixed;}"
+                + ".encabezado-table td{vertical-align:middle;text-align:center;padding:0 8px;}.header-logo-cell{width:50%;}.logo-midena{display:block;width:170px;height:auto;margin:0 auto;}"
+                + ".logo-igm{display:block;width:170px;height:auto;margin:0 auto;}.titulo{text-align:center;font-size:22px;font-weight:700;letter-spacing:.2px;margin:6px 0 12px 0;}"
+                + ".cuerpo-certificado{width:calc(100% - 50mm);margin-left:38mm;margin-right:12mm;box-sizing:border-box;}.texto{font-size:16px;margin:0 0 6px 0;text-align:justify;}"
+                + ".pie{width:calc(100% - 50mm);margin-left:38mm;margin-right:12mm;margin-top:8px;text-align:center;box-sizing:border-box;}.firma{text-align:center;font-size:16px;margin:0;}"
+                + ".firma-bloque{text-align:center;margin:0;}.correo{color:#0000EE;text-decoration:underline;}.membrete-bottom{position:fixed;left:12mm;right:12mm;bottom:4mm;width:auto;}"
+                + ".membrete-bottom table{width:100%;border-collapse:collapse;table-layout:fixed;}.membrete-bottom td{vertical-align:bottom;}.membrete-bottom .mb-img{width:185px;text-align:left;}"
+                + ".membrete-bottom .mb-img img{display:block;width:165px;height:auto;margin:0;object-fit:contain;}.membrete-bottom .mb-text{text-align:right;font-family:Arial,sans-serif;font-size:11px;line-height:1.15;color:#b3b3b3;font-weight:600;padding-bottom:6px;}";
+    }
 
-    html.append("<!DOCTYPE html>")
-        .append("<html>")
-        .append("<head>")
-        .append("<meta charset='UTF-8'/>")
-        .append("<style>")
-        .append("@page{size:A4;margin:10mm 12mm 8mm 12mm;}")
+    private void appendCertificadoContenido(StringBuilder html, CertificadoData data) {
+        html.append("<div class='contenido'>");
+        appendCertificadoEncabezado(html, data.logoMidena, data.logoIgm);
+        appendCertificadoCuerpo(html, data);
+        appendCertificadoFirma(html, data);
+        html.append("</div>");
+    }
 
-        .append("body{font-family:Arial,sans-serif;font-size:18px;line-height:1.18;margin:0;color:#000000;}")
-        .append(".contenido{padding-bottom:108px;}")
+    private void appendCertificadoEncabezado(StringBuilder html, String logoMidena, String logoIgm) {
+        html.append("<div class='encabezado'><table class='encabezado-table'><tr>")
+                .append("<td class='header-logo-cell'><img class='logo-midena' alt='LOGO_MIDENA' src='").append(escape(logoMidena)).append("'/></td>")
+                .append("<td class='header-logo-cell'><img class='logo-igm' alt='LOGO_IGM_FULL_COLOR' src='").append(escape(logoIgm)).append("'/></td>")
+                .append("</tr></table></div><div class='titulo'>CERTIFICADO MEDICO</div>");
+    }
 
-        .append(".encabezado{margin:0 0 6px 0;text-align:center;}")
-        .append(".encabezado-table{width:100%;border-collapse:collapse;table-layout:fixed;}")
-        .append(".encabezado-table td{vertical-align:middle;text-align:center;padding:0 6px;}")
-        .append(".header-spacer{width:16%;}")
-        .append(".header-logo-cell{width:34%;}")
+    private void appendCertificadoCuerpo(StringBuilder html, CertificadoData data) {
+        html.append("<div class='cuerpo-certificado'><p class='texto'>EL MEDICO CERTIFICA:</p><p class='texto'>El señor ")
+                .append(escape(data.nombrePaciente)).append(" con Cédula de Ciudadanía ").append(escape(data.cedula))
+                .append(", presenta diagnóstico: ").append(escape(data.diagnosticoPaciente))
+                .append("; por lo que requiere reposo médico absoluto durante ").append(data.diasReposo).append(" (")
+                .append(escape(numeroEnLetras((int) data.diasReposo))).append(") día(s).</p><p class='texto'><b>Historia clínica:</b> ")
+                .append(escape(data.numeroHistoria)).append("</p><p class='texto'><b>Desde:</b> ").append(escape(data.fechaInicioTexto))
+                .append(".<br/><b>Hasta:</b> ").append(escape(data.fechaFinTexto))
+                .append(".</p><p class='texto'>Labora en el <b>INSTITUTO GEOGRAFICO MILITAR (ubicado en Seniergues E4-676 y Gral. Telmo Paz y Miño Sector El Dorado)</b>, con el cargo de ")
+                .append(escape(data.cargoPaciente)).append(", en el área de ").append(escape(data.areaTrabajo))
+                .append(".</p><p class='texto'>Paciente sintomático quien presenta: ").append(escape(data.sintomasPaciente))
+                .append(".</p><p class='texto'><b>Domicilio del paciente:</b> ").append(escape(data.domicilioPaciente))
+                .append("<br/><b>Teléfono de contacto:</b> ").append(escape(data.telefonoContacto))
+                .append("<br/><b>Tipo de contingencia:</b> <b>").append(escape(data.tipoContingencia))
+                .append("</b></p><p class='texto'>Quito DM, ").append(escape(data.fechaEmision)).append(".</p></div>");
+    }
 
-        .append(".logo-midena{display:block;width:120px;height:auto;margin:0 auto;}")
-        .append(".logo-igm{display:block;width:120px;height:auto;margin:0 auto;}")
+    private void appendCertificadoFirma(StringBuilder html, CertificadoData data) {
+        html.append("<div class='pie'><p class='firma'>Atentamente,<br/><br/><br/></p><p class='firma firma-bloque'>")
+                .append(escape(consulta.getMedicoNombre())).append("<br/>").append(escape(certMedicoCargo)).append("<br/>MSP: ")
+                .append(escape(data.medicoMsp)).append("<br/>Teléfono: ").append(escape(data.medicoTelefono))
+                .append("<br/><span class='correo'>").append(escape(data.medicoCorreo)).append("</span></p></div>");
+    }
 
-        .append(".titulo{text-align:center;font-size:19px;font-weight:700;letter-spacing:0;margin:4px 0 10px 0;}")
+    private void appendCertificadoMembrete(StringBuilder html, String membreteBottom) {
+        html.append("<div class='membrete-bottom'><table><tr><td class='mb-img'><img alt='membrete-bottom' src='")
+                .append(escape(membreteBottom)).append("'/></td><td class='mb-text'>")
+                .append("QUITO: Seniergues E4-676 y Gral. Telmo Paz y Miño Sector El Dorado<br/>")
+                .append("Teléf.: 593(2) 3975100 al 130 GUAYAQUIL: Av. Guillermo Pareja # 402 Ciudadela la Garzota<br/>")
+                .append("Teléf.: 593(4) 26247 597 y 593(4) 2627829")
+                .append("</td></tr></table></div>");
+    }
 
-        .append(".cuerpo-certificado{width:calc(100% - 52mm);margin-left:26mm;margin-right:26mm;box-sizing:border-box;}")
-        .append(".texto{font-size:15px;line-height:1.18;margin:0 0 8px 0;text-align:justify;}")
-        .append(".texto-strong{font-weight:700;}")
-        .append(".texto-fechas{margin:0 0 10px 0;}")
-        .append(".texto-final{margin:0 0 12px 0;}")
-
-        .append(".pie{width:calc(100% - 52mm);margin-left:26mm;margin-right:26mm;margin-top:8px;text-align:center;box-sizing:border-box;}")
-        .append(".firma{font-size:15px;line-height:1.15;margin:0;text-align:center;}")
-        .append(".firma-label{margin:0 0 32px 0;text-align:center;}")
-        .append(".firma-bloque{margin:0;text-align:center;}")
-        .append(".correo{color:#0000EE;text-decoration:underline;}")
-
-        .append(".membrete-bottom{position:fixed;left:12mm;right:12mm;bottom:4mm;width:auto;}")
-        .append(".membrete-bottom table{width:100%;border-collapse:collapse;table-layout:fixed;}")
-        .append(".membrete-bottom td{vertical-align:bottom;}")
-        .append(".membrete-bottom .mb-img{width:185px;text-align:left;}")
-        .append(".membrete-bottom .mb-img img{display:block;width:165px;height:auto;margin:0;object-fit:contain;}")
-        .append(".membrete-bottom .mb-text{text-align:right;font-family:Arial,sans-serif;font-size:10px;line-height:1.1;color:#b3b3b3;font-weight:600;padding-bottom:4px;}")
-
-        .append("</style>")
-        .append("</head>")
-        .append("<body>");
-
-    html.append("<div class='contenido'>");
-
-    html.append("<div class='encabezado'>")
-        .append("<table class='encabezado-table'>")
-        .append("<tr>")
-        .append("<td class='header-spacer'></td>")
-        .append("<td class='header-logo-cell'>")
-        .append("<img class='logo-midena' alt='LOGO_MIDENA' src='")
-        .append(escape(logoMidena))
-        .append("'/>")
-        .append("</td>")
-        .append("<td class='header-logo-cell'>")
-        .append("<img class='logo-igm' alt='LOGO_IGM_FULL_COLOR' src='")
-        .append(escape(logoIgm))
-        .append("'/>")
-        .append("</td>")
-        .append("<td class='header-spacer'></td>")
-        .append("</tr>")
-        .append("</table>")
-        .append("</div>");
-
-    html.append("<div class='titulo'>CERTIFICADO MEDICO</div>");
-
-    html.append("<div class='cuerpo-certificado'>")
-        .append("<p class='texto'>EL MEDICO CERTIFICA:</p>")
-
-        .append("<p class='texto'>El señor ")
-        .append(escape(nombrePaciente))
-        .append(" con Cédula de Ciudadanía ")
-        .append(escape(cedula))
-        .append(", presenta diagnóstico: ")
-        .append(escape(diagnosticoPaciente))
-        .append("; por lo que requiere reposo médico absoluto durante ")
-        .append(diasReposo)
-        .append(" (")
-        .append(escape(numeroEnLetras((int) diasReposo)))
-        .append(") día(s).</p>")
-
-        .append("<p class='texto'><span class='texto-strong'>Historia clínica:</span> ")
-        .append(escape(numeroHistoria))
-        .append("</p>")
-
-        .append("<p class='texto texto-fechas'><span class='texto-strong'>Desde:</span> ")
-        .append(escape(fechaInicioTexto))
-        .append(".<br/>")
-        .append("<span class='texto-strong'>Hasta:</span> ")
-        .append(escape(fechaFinTexto))
-        .append(".</p>")
-
-        .append("<p class='texto'>Labora en el <span class='texto-strong'>INSTITUTO GEOGRAFICO MILITAR (ubicado en Seniergues E4-676 y Gral. Telmo Paz y Miño Sector El Dorado)</span>, con el cargo de ")
-        .append(escape(cargoPaciente))
-        .append(", en el área de ")
-        .append(escape(areaTrabajo))
-        .append(".</p>")
-
-        .append("<p class='texto'>Paciente sintomático quien presenta: ")
-        .append(escape(sintomasPaciente))
-        .append(".</p>")
-
-        .append("<p class='texto'><span class='texto-strong'>Domicilio del paciente:</span> ")
-        .append(escape(domicilioPaciente))
-        .append("<br/>")
-        .append("<span class='texto-strong'>Teléfono de contacto:</span> ")
-        .append(escape(telefonoContacto))
-        .append("<br/>")
-        .append("<span class='texto-strong'>Tipo de contingencia:</span> <span class='texto-strong'>")
-        .append(escape(tipoContingencia))
-        .append("</span></p>")
-
-        .append("<p class='texto texto-final'>Quito DM, ")
-        .append(escape(fechaEmision))
-        .append(".</p>")
-        .append("</div>");
-
-html.append("<div class='pie'>")
-          .append("<div style='height: 90px;'></div>")  
-    .append("<p class='firma firma-label'>Atentamente,</p>")
-    .append("<div style='height: 90px;'></div>")  
-    .append("<p class='firma firma-bloque'>")
-    .append(escape(consulta.getMedicoNombre()))
-    .append("<br/>")
-    .append(escape(certMedicoCargo))
-    .append("<br/>")
-    .append("MSP: ")
-    .append(escape(medicoMsp))
-    .append("<br/>")
-    .append("Teléfono: ")
-    .append(escape(medicoTelefono))
-    .append("<br/>")
-    .append("<span class='correo'>")
-    .append(escape(medicoCorreo))
-    .append("</span></p>")
-    .append("</div>");
-
-html.append("</div>");
-
-    html.append("<div class='membrete-bottom'>")
-        .append("<table>")
-        .append("<tr>")
-        .append("<td class='mb-img'><img alt='membrete-bottom' src='")
-        .append(escape(membreteBottom))
-        .append("'/></td>")
-        .append("<td class='mb-text'>")
-        .append("QUITO: Seniergues E4-676 y Gral. Telmo Paz y Miño Sector El Dorado<br/>")
-        .append("Teléf.: 593(2) 3975100 al 130 GUAYAQUIL: Av. Guillermo Pareja # 402 Ciudadela la Garzota<br/>")
-        .append("Teléf.: 593(4) 26247 597 y 593(4) 2627829")
-        .append("</td>")
-        .append("</tr>")
-        .append("</table>")
-        .append("</div>");
-
-    html.append("</body>")
-        .append("</html>");
-
-    return html.toString();
-}
+    private static class CertificadoData {
+        String nombrePaciente;
+        String cedula;
+        String numeroHistoria;
+        String cargoPaciente;
+        String areaTrabajo;
+        String diagnosticoPaciente;
+        String sintomasPaciente;
+        String fechaInicioTexto;
+        String fechaFinTexto;
+        long diasReposo;
+        String telefonoContacto;
+        String medicoMsp;
+        String medicoTelefono;
+        String medicoCorreo;
+        String tipoContingencia;
+        String domicilioPaciente;
+        String fechaEmision;
+        String logoIgm;
+        String logoMidena;
+        String membreteBottom;
+    }
 
     private String valueOrNoRegistra(String value) {
         return isBlank(value) ? "NO REGISTRA" : value.trim();
