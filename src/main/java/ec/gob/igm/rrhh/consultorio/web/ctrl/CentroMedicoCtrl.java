@@ -2174,6 +2174,21 @@ public List<String> completarKDescStrings(String query) {
     }
 
     @Deprecated
+    public Date getFecIngreso() {
+        return step1FormModel.getFecIngreso();
+    }
+
+    @Deprecated
+    public Date getFecReintegro() {
+        return step1FormModel.getFecReintegro();
+    }
+
+    @Deprecated
+    public Date getFecRetiro() {
+        return step1FormModel.getFecRetiro();
+    }
+
+    @Deprecated
     public String getTipoEval() {
         return step1FormModel.getTipoEval();
     }
@@ -2205,6 +2220,10 @@ public List<String> completarKDescStrings(String query) {
 
     public Double getTallaCm() {
         return signosVitalesFormModel.getTallaCm();
+    }
+
+    public Double getImc() {
+        return signosVitalesFormModel.getImc();
     }
 
     public Double getPerimetroAbd() {
