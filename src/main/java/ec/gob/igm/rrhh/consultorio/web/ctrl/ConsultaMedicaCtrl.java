@@ -807,6 +807,30 @@ public class ConsultaMedicaCtrl implements Serializable {
         String membreteBottom;
     }
 
+    private static class CertificadoData {
+        String nombrePaciente;
+        String cedula;
+        String numeroHistoria;
+        String cargoPaciente;
+        String areaTrabajo;
+        String diagnosticoPaciente;
+        String sintomasPaciente;
+        String fechaInicioTexto;
+        String fechaFinTexto;
+        long diasReposo;
+        String telefonoContacto;
+        String medicoMsp;
+        String medicoTelefono;
+        String medicoCorreo;
+        String tipoContingencia;
+        String domicilioPaciente;
+        String fechaEmision;
+        String logoIgm;
+        String logoMidena;
+        String membreteBottom;
+    }
+
+
     private String valueOrNoRegistra(String value) {
         return isBlank(value) ? "NO REGISTRA" : value.trim();
     }
@@ -1002,7 +1026,7 @@ public class ConsultaMedicaCtrl implements Serializable {
         LocalDate inicio = toCertLocalDate(certFechaInicio);
         LocalDate fin = toCertLocalDate(certFechaFin);
         long dias = ChronoUnit.DAYS.between(inicio, fin);
-        return Math.max(dias, 0L) + 1L;
+        return Math.max(dias, 0L);
     }
 
     public String getCertDiasReposoLetras() {
