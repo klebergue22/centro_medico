@@ -729,8 +729,8 @@ public class ConsultaMedicaCtrl implements Serializable {
                 + ".contenido{padding-bottom:112px;}.encabezado{margin:0 0 12px 0;text-align:center;}.encabezado-table{width:100%;border-collapse:collapse;table-layout:fixed;}"
                 + ".encabezado-table td{vertical-align:middle;text-align:center;padding:0 8px;}.header-logo-cell{width:50%;}.logo-midena{display:block;width:170px;height:auto;margin:0 auto;}"
                 + ".logo-igm{display:block;width:170px;height:auto;margin:0 auto;}.titulo{text-align:center;font-size:22px;font-weight:700;letter-spacing:.2px;margin:6px 0 12px 0;}"
-                + ".cuerpo-certificado{width:calc(100% - 50mm);margin-left:38mm;margin-right:12mm;box-sizing:border-box;}.texto{font-size:16px;margin:0 0 6px 0;text-align:justify;}"
-                + ".pie{width:calc(100% - 50mm);margin-left:38mm;margin-right:12mm;margin-top:8px;text-align:center;box-sizing:border-box;}.firma{text-align:center;font-size:16px;margin:0;}"
+                + ".cuerpo-certificado{width:100%;margin:0;box-sizing:border-box;}.texto{font-size:16px;margin:0 0 6px 0;text-align:justify;}"
+                + ".pie{width:100%;margin:8px 0 0 0;text-align:center;box-sizing:border-box;}.firma{text-align:center;font-size:16px;margin:0;}"
                 + ".firma-bloque{text-align:center;margin:0;}.correo{color:#0000EE;text-decoration:underline;}.membrete-bottom{position:fixed;left:12mm;right:12mm;bottom:4mm;width:auto;}"
                 + ".membrete-bottom table{width:100%;border-collapse:collapse;table-layout:fixed;}.membrete-bottom td{vertical-align:bottom;}.membrete-bottom .mb-img{width:185px;text-align:left;}"
                 + ".membrete-bottom .mb-img img{display:block;width:165px;height:auto;margin:0;object-fit:contain;}.membrete-bottom .mb-text{text-align:right;font-family:Arial,sans-serif;font-size:11px;line-height:1.15;color:#b3b3b3;font-weight:600;padding-bottom:6px;}";
@@ -806,30 +806,6 @@ public class ConsultaMedicaCtrl implements Serializable {
         String logoMidena;
         String membreteBottom;
     }
-
-    private static class CertificadoData {
-        String nombrePaciente;
-        String cedula;
-        String numeroHistoria;
-        String cargoPaciente;
-        String areaTrabajo;
-        String diagnosticoPaciente;
-        String sintomasPaciente;
-        String fechaInicioTexto;
-        String fechaFinTexto;
-        long diasReposo;
-        String telefonoContacto;
-        String medicoMsp;
-        String medicoTelefono;
-        String medicoCorreo;
-        String tipoContingencia;
-        String domicilioPaciente;
-        String fechaEmision;
-        String logoIgm;
-        String logoMidena;
-        String membreteBottom;
-    }
-
 
     private String valueOrNoRegistra(String value) {
         return isBlank(value) ? "NO REGISTRA" : value.trim();
