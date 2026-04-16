@@ -48,23 +48,12 @@
 
                         <h:outputText value="Sexo:" styleClass="paciente-etiqueta"/>
                         <p:inputText value="#{consultaMedicaCtrl.sexoPaciente}" readonly="true"/>
-
-                        <h:outputText value="Edad:" styleClass="paciente-etiqueta"/>
-                        <h:outputText value="#{consultaMedicaCtrl.edadPaciente}" styleClass="paciente-valor"/>
-
-                        <h:outputText value="Fecha consulta:" styleClass="paciente-etiqueta"/>
-                        <p:calendar value="#{consultaMedicaCtrl.consulta.fechaConsulta}"
-                                    pattern="dd/MM/yyyy"
-                                    showOn="button"
-                                    readonlyInput="true"
-                                    navigator="true"
-                                    styleClass="fecha-grid"/>
-
-                        <h:outputText value="Antecedente de alergias:" styleClass="paciente-etiqueta"/>
-                        <p:inputTextarea value="#{consultaMedicaCtrl.alergias}"
-                                         rows="4"
-                                         autoResize="false"
-                                         styleClass="consulta-textarea"/>
+                        <h:outputText value="Edad:" style="font-weight:bold;"/>
+                        <h:outputText value="#{consultaMedicaCtrl.edadPaciente}"/>
+                        <h:outputText value="Fecha consulta:" style="font-weight:bold;"/>
+                        <p:calendar value="#{consultaMedicaCtrl.consulta.fechaConsulta}" pattern="dd/MM/yyyy" showOn="button"/>
+                        <h:outputText value="Antecedentes Patológicos Personales:" style="font-weight:bold;"/>
+                        <p:inputTextarea value="#{consultaMedicaCtrl.alergias}" rows="1" autoResize="true" styleClass="consulta-textarea"/>
                     </h:panelGrid>
 
                     <p:panel header="Consultas anteriores"
@@ -263,10 +252,11 @@
                                 timeZone="America/Guayaquil"
                                 maxdate="#{consultaMedicaCtrl.certFechaInicioMax}">
                         <p:ajax event="dateSelect" listener="#{consultaMedicaCtrl.onFechaInicioSelect}"
+                                process="certFechaInicioNum certFechaFinNum"
                                 update="certFechaFinNum certFechaInicioTxt certFechaFinTxt certDiasReposoNum certDiasReposoTxt growl"/>
                         <p:ajax event="change"
                                 listener="#{consultaMedicaCtrl.onFechaInicioSelect}"
-                                process="@this"
+                                process="certFechaInicioNum certFechaFinNum"
                                 update="certFechaFinNum certFechaInicioTxt certFechaFinTxt certDiasReposoNum certDiasReposoTxt growl"/>
                     </p:calendar>
                     <h:outputText value="Fecha fin (números)"/>
@@ -274,10 +264,11 @@
                                 timeZone="America/Guayaquil"
                                 mindate="#{consultaMedicaCtrl.certFechaFinMin}">
                         <p:ajax event="dateSelect" listener="#{consultaMedicaCtrl.onFechaFinSelect}"
+                                process="certFechaInicioNum certFechaFinNum"
                                 update="certFechaInicioNum certFechaFinNum certFechaInicioTxt certFechaFinTxt certDiasReposoNum certDiasReposoTxt growl"/>
                         <p:ajax event="change"
                                 listener="#{consultaMedicaCtrl.onFechaFinSelect}"
-                                process="@this"
+                                process="certFechaInicioNum certFechaFinNum"
                                 update="certFechaInicioNum certFechaFinNum certFechaInicioTxt certFechaFinTxt certDiasReposoNum certDiasReposoTxt growl"/>
                     </p:calendar>
 
