@@ -813,6 +813,14 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
                 idx);
     }
 
+    public void onConsumoTiempoChange(int idx) {
+        reactiveUiService.onConsumoTiempoChange(
+                habitosConsumoFormModel.getConsNoConsume(),
+                habitosConsumoFormModel.getConsTiempoConsumoMeses(),
+                habitosConsumoFormModel.getConsTiempoAbstinenciaMeses(),
+                idx);
+    }
+
     // =========================
     // ATENCIÓN PRIORITARIA - TOGGLES
     // =========================

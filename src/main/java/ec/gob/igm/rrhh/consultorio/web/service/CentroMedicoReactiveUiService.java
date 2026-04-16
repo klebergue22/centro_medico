@@ -41,6 +41,17 @@ public class CentroMedicoReactiveUiService implements Serializable {
         }
     }
 
+    public void onConsumoTiempoChange(Boolean[] consNoConsume,
+                                      Integer[] consTiempoConsumoMeses,
+                                      Integer[] consTiempoAbstinenciaMeses,
+                                      int idx) {
+        Integer tiempoConsumo = consTiempoConsumoMeses[idx];
+        Integer tiempoAbstinencia = consTiempoAbstinenciaMeses[idx];
+        if (tiempoConsumo != null || tiempoAbstinencia != null) {
+            consNoConsume[idx] = false;
+        }
+    }
+
     public AttentionPriorityState onToggleDiscapacidad(boolean apDiscapacidad,
                                                         String discapTipo,
                                                         String discapDesc,
@@ -97,4 +108,3 @@ public class CentroMedicoReactiveUiService implements Serializable {
         }
     }
 }
-

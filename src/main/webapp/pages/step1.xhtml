@@ -594,18 +594,33 @@
                             <!-- CONSUMO -->
                             <td>TABACO</td>
                             <td>
-                                <p:inputNumber value="#{centroMedicoCtrl.consTiempoConsumo[0]}"
-                                               decimalPlaces="0" minValue="0" styleClass="cons-fit"/>
+                                <p:inputNumber id="cons_tiempo_consumo_0"
+                                               value="#{centroMedicoCtrl.consTiempoConsumo[0]}"
+                                               decimalPlaces="0" minValue="0" styleClass="cons-fit">
+                                    <p:ajax event="change" process="@this"
+                                            listener="#{centroMedicoCtrl.onConsumoTiempoChange(0)}"
+                                            update="cons_no_consume_0"/>
+                                </p:inputNumber>
                             </td>
                             <td class="txt-c">
                                 <p:selectBooleanCheckbox value="#{centroMedicoCtrl.consExConsumidor[0]}"/>
                             </td>
                             <td>
-                                <p:inputNumber value="#{centroMedicoCtrl.consTiempoAbstinencia[0]}"
-                                               decimalPlaces="0" minValue="0" styleClass="cons-fit"/>
+                                <p:inputNumber id="cons_tiempo_abstinencia_0"
+                                               value="#{centroMedicoCtrl.consTiempoAbstinencia[0]}"
+                                               decimalPlaces="0" minValue="0" styleClass="cons-fit">
+                                    <p:ajax event="change" process="@this"
+                                            listener="#{centroMedicoCtrl.onConsumoTiempoChange(0)}"
+                                            update="cons_no_consume_0"/>
+                                </p:inputNumber>
                             </td>
                             <td class="txt-c">
-                                <p:selectBooleanCheckbox value="#{centroMedicoCtrl.consNoConsume[0]}"/>
+                                <p:selectBooleanCheckbox id="cons_no_consume_0"
+                                                         value="#{centroMedicoCtrl.consNoConsume[0]}">
+                                    <p:ajax event="change" process="@this"
+                                            listener="#{centroMedicoCtrl.onNoConsumeChange(0)}"
+                                            update="cons_tiempo_consumo_0 cons_tiempo_abstinencia_0"/>
+                                </p:selectBooleanCheckbox>
                             </td>
 
                             <!-- ESTILO DE VIDA -->
@@ -636,18 +651,33 @@
                             <!-- CONSUMO -->
                             <td>ALCOHOL</td>
                             <td>
-                                <p:inputNumber value="#{centroMedicoCtrl.consTiempoConsumo[1]}"
-                                               decimalPlaces="0" minValue="0" styleClass="cons-fit"/>
+                                <p:inputNumber id="cons_tiempo_consumo_1"
+                                               value="#{centroMedicoCtrl.consTiempoConsumo[1]}"
+                                               decimalPlaces="0" minValue="0" styleClass="cons-fit">
+                                    <p:ajax event="change" process="@this"
+                                            listener="#{centroMedicoCtrl.onConsumoTiempoChange(1)}"
+                                            update="cons_no_consume_1"/>
+                                </p:inputNumber>
                             </td>
                             <td class="txt-c">
                                 <p:selectBooleanCheckbox value="#{centroMedicoCtrl.consExConsumidor[1]}"/>
                             </td>
                             <td>
-                                <p:inputNumber value="#{centroMedicoCtrl.consTiempoAbstinencia[1]}"
-                                               decimalPlaces="0" minValue="0" styleClass="cons-fit"/>
+                                <p:inputNumber id="cons_tiempo_abstinencia_1"
+                                               value="#{centroMedicoCtrl.consTiempoAbstinencia[1]}"
+                                               decimalPlaces="0" minValue="0" styleClass="cons-fit">
+                                    <p:ajax event="change" process="@this"
+                                            listener="#{centroMedicoCtrl.onConsumoTiempoChange(1)}"
+                                            update="cons_no_consume_1"/>
+                                </p:inputNumber>
                             </td>
                             <td class="txt-c">
-                                <p:selectBooleanCheckbox value="#{centroMedicoCtrl.consNoConsume[1]}"/>
+                                <p:selectBooleanCheckbox id="cons_no_consume_1"
+                                                         value="#{centroMedicoCtrl.consNoConsume[1]}">
+                                    <p:ajax event="change" process="@this"
+                                            listener="#{centroMedicoCtrl.onNoConsumeChange(1)}"
+                                            update="cons_tiempo_consumo_1 cons_tiempo_abstinencia_1"/>
+                                </p:selectBooleanCheckbox>
                             </td>
 
                             <!-- ESTILO DE VIDA -->
@@ -676,18 +706,33 @@
                             <!-- CONSUMO -->
                             <td>OTRAS: <span class="c-sub">¿cuál?</span></td>
                             <td>
-                                <p:inputNumber value="#{centroMedicoCtrl.consTiempoConsumo[2]}"
-                                               decimalPlaces="0" minValue="0" styleClass="cons-fit"/>
+                                <p:inputNumber id="cons_tiempo_consumo_2"
+                                               value="#{centroMedicoCtrl.consTiempoConsumo[2]}"
+                                               decimalPlaces="0" minValue="0" styleClass="cons-fit">
+                                    <p:ajax event="change" process="@this"
+                                            listener="#{centroMedicoCtrl.onConsumoTiempoChange(2)}"
+                                            update="cons_no_consume_2"/>
+                                </p:inputNumber>
                             </td>
                             <td class="txt-c">
                                 <p:selectBooleanCheckbox value="#{centroMedicoCtrl.consExConsumidor[2]}"/>
                             </td>
                             <td>
-                                <p:inputNumber value="#{centroMedicoCtrl.consTiempoAbstinencia[2]}"
-                                               decimalPlaces="0" minValue="0" styleClass="cons-fit"/>
+                                <p:inputNumber id="cons_tiempo_abstinencia_2"
+                                               value="#{centroMedicoCtrl.consTiempoAbstinencia[2]}"
+                                               decimalPlaces="0" minValue="0" styleClass="cons-fit">
+                                    <p:ajax event="change" process="@this"
+                                            listener="#{centroMedicoCtrl.onConsumoTiempoChange(2)}"
+                                            update="cons_no_consume_2"/>
+                                </p:inputNumber>
                             </td>
                             <td class="txt-c">
-                                <p:selectBooleanCheckbox value="#{centroMedicoCtrl.consNoConsume[2]}"/>
+                                <p:selectBooleanCheckbox id="cons_no_consume_2"
+                                                         value="#{centroMedicoCtrl.consNoConsume[2]}">
+                                    <p:ajax event="change" process="@this"
+                                            listener="#{centroMedicoCtrl.onNoConsumeChange(2)}"
+                                            update="cons_tiempo_consumo_2 cons_tiempo_abstinencia_2"/>
+                                </p:selectBooleanCheckbox>
                             </td>
 
                             <!-- ESTILO DE VIDA -->
