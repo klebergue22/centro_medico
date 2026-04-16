@@ -769,7 +769,7 @@ public class ConsultaMedicaCtrl implements Serializable {
     }
 
     private void appendCertificadoFirma(StringBuilder html, CertificadoData data) {
-        html.append("<div class='pie'><p class='firma'>Atentamente,<br/><br/><br/></p><p class='firma firma-bloque'>")
+        html.append("<div class='pie'><p class='firma'>Atentamente,<br/><br/><br/><br/><br/><br/><br/><br/><br/></p><p class='firma firma-bloque'>")
                 .append(escape(consulta.getMedicoNombre())).append("<br/>").append(escape(certMedicoCargo)).append("<br/>MSP: ")
                 .append(escape(data.medicoMsp)).append("<br/>Teléfono: ").append(escape(data.medicoTelefono))
                 .append("<br/><span class='correo'>").append(escape(data.medicoCorreo)).append("</span></p></div>");
