@@ -282,10 +282,16 @@ public class CentroMedicoFormInitializer implements Serializable {
             ctrl.getConsExConsumidor()[i] = ctrl.getConsExConsumidor()[i] == null
                     ? Boolean.FALSE
                     : ctrl.getConsExConsumidor()[i];
-            ctrl.getConsNoConsume()[i] = ctrl.getConsNoConsume()[i] == null
-                    ? Boolean.FALSE
-                    : ctrl.getConsNoConsume()[i];
+            if (ctrl.getConsNoConsume()[i] == null) {
+                boolean tieneTiempoRegistrado = isTiempoMayorACero(ctrl.getConsTiempoConsumoMeses()[i])
+                        || isTiempoMayorACero(ctrl.getConsTiempoAbstinenciaMeses()[i]);
+                ctrl.getConsNoConsume()[i] = !tieneTiempoRegistrado;
+            }
         }
+    }
+
+    private boolean isTiempoMayorACero(Integer value) {
+        return value != null && value > 0;
     }
 
     public void initExamenes(CentroMedicoCtrl ctrl, int n) {
