@@ -6,7 +6,6 @@ import ec.gob.igm.rrhh.consultorio.web.pdf.CertificadoPdfTemplateService;
 import ec.gob.igm.rrhh.consultorio.web.pdf.PdfResourceResolver;
 import ec.gob.igm.rrhh.consultorio.web.pdf.PdfTemplateEngine;
 import ec.gob.igm.rrhh.consultorio.web.service.CentroMedicoPdfControllerSupport;
-import ec.gob.igm.rrhh.consultorio.web.viewstate.PacienteFormData;
 import jakarta.ejb.Stateless;
 import java.util.Date;
 import java.util.function.Consumer;
@@ -24,7 +23,7 @@ public class PdfCertificadoInputAssembler {
             CertificadoPdfTemplateService certificadoPdfTemplateService) {
         CentroMedicoPdfControllerSupport.CapturePdfCertificadoInput input = new CentroMedicoPdfControllerSupport.CapturePdfCertificadoInput();
         populateCertificadoCore(input, source, verificarFichaCompleta, fechaEmisionSetter, centroMedicoPdfFacade);
-        populatePacienteData(input, source.getStep1FormModel().getPaciente());
+        populatePacienteData(input, source);
         populateCertificadoTemplateData(input, source, pdfResourceResolver, pdfTemplateEngine, certificadoPdfTemplateService);
         return input;
     }
@@ -49,12 +48,12 @@ public class PdfCertificadoInputAssembler {
     }
 
     private void populatePacienteData(CentroMedicoPdfControllerSupport.CapturePdfCertificadoInput input,
-            PacienteFormData paciente) {
-        input.apellido1 = paciente.getApellido1();
-        input.apellido2 = paciente.getApellido2();
-        input.nombre1 = paciente.getNombre1();
-        input.nombre2 = paciente.getNombre2();
-        input.sexo = paciente.getSexo();
+            CentroMedicoCtrl source) {
+        input.apellido1 = source.getApellido1();
+        input.apellido2 = source.getApellido2();
+        input.nombre1 = source.getNombre1();
+        input.nombre2 = source.getNombre2();
+        input.sexo = source.getSexo();
     }
 
     private void populateCertificadoTemplateData(CentroMedicoPdfControllerSupport.CapturePdfCertificadoInput input,
