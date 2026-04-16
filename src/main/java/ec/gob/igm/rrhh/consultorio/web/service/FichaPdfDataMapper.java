@@ -148,7 +148,14 @@ public class FichaPdfDataMapper implements Serializable {
         if (data.fechaNacimiento == null) {
             return;
         }
-        LocalDate fn = data.fechaNacimiento.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+        LocalDate fn = toLocalDate(data.fechaNacimiento);
         data.edad = Period.between(fn, LocalDate.now()).getYears();
+    }
+
+    private LocalDate toLocalDate(Date fecha) {
+        if (fecha instanceof java.sql.Date) {
+            return ((java.sql.Date) fecha).toLocalDate();
+        }
+        return fecha.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
     }
 }
