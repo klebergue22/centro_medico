@@ -37,7 +37,7 @@
                         <h:outputText value="#{consultaMedicaCtrl.edadPaciente}"/>
                         <h:outputText value="Fecha consulta:" style="font-weight:bold;"/>
                         <p:calendar value="#{consultaMedicaCtrl.consulta.fechaConsulta}" pattern="dd/MM/yyyy" showOn="button"/>
-                        <h:outputText value="Antecedente de alergias:" style="font-weight:bold;"/>
+                        <h:outputText value="Antecedentes Patológicos Personales:" style="font-weight:bold;"/>
                         <p:inputTextarea value="#{consultaMedicaCtrl.alergias}" rows="1" autoResize="true" styleClass="consulta-textarea"/>
                     </h:panelGrid>
                     <p:panel header="Consultas anteriores"
@@ -233,29 +233,35 @@
 
                     <h:outputText value="Fecha inicio (números)"/>
                     <p:calendar id="certFechaInicioNum" value="#{consultaMedicaCtrl.certFechaInicio}" pattern="dd/MM/yyyy" showOn="button" readonlyInput="true"
+                                timeZone="America/Guayaquil"
                                 maxdate="#{consultaMedicaCtrl.certFechaInicioMax}">
                         <p:ajax event="dateSelect" listener="#{consultaMedicaCtrl.onFechaInicioSelect}"
+                                process="certFechaInicioNum certFechaFinNum"
                                 update="certFechaFinNum certFechaInicioTxt certFechaFinTxt certDiasReposoNum certDiasReposoTxt growl"/>
                         <p:ajax event="change"
                                 listener="#{consultaMedicaCtrl.onFechaInicioSelect}"
-                                process="@this"
+                                process="certFechaInicioNum certFechaFinNum"
                                 update="certFechaFinNum certFechaInicioTxt certFechaFinTxt certDiasReposoNum certDiasReposoTxt growl"/>
                     </p:calendar>
                     <h:outputText value="Fecha fin (números)"/>
                     <p:calendar id="certFechaFinNum" value="#{consultaMedicaCtrl.certFechaFin}" pattern="dd/MM/yyyy" showOn="button" readonlyInput="true"
+                                timeZone="America/Guayaquil"
                                 mindate="#{consultaMedicaCtrl.certFechaFinMin}">
                         <p:ajax event="dateSelect" listener="#{consultaMedicaCtrl.onFechaFinSelect}"
+                                process="certFechaInicioNum certFechaFinNum"
                                 update="certFechaInicioNum certFechaFinNum certFechaInicioTxt certFechaFinTxt certDiasReposoNum certDiasReposoTxt growl"/>
                         <p:ajax event="change"
                                 listener="#{consultaMedicaCtrl.onFechaFinSelect}"
-                                process="@this"
+                                process="certFechaInicioNum certFechaFinNum"
                                 update="certFechaInicioNum certFechaFinNum certFechaInicioTxt certFechaFinTxt certDiasReposoNum certDiasReposoTxt growl"/>
                     </p:calendar>
 
                     <h:outputText value="Fecha inicio (letras)"/>
-                    <p:calendar id="certFechaInicioTxt" value="#{consultaMedicaCtrl.certFechaInicio}" pattern="dd 'de' MMMM 'de' yyyy" locale="es" readonlyInput="true" disabled="true"/>
+                    <p:calendar id="certFechaInicioTxt" value="#{consultaMedicaCtrl.certFechaInicio}" pattern="dd 'de' MMMM 'de' yyyy" locale="es" readonlyInput="true" disabled="true"
+                                timeZone="America/Guayaquil"/>
                     <h:outputText value="Fecha fin (letras)"/>
-                    <p:calendar id="certFechaFinTxt" value="#{consultaMedicaCtrl.certFechaFin}" pattern="dd 'de' MMMM 'de' yyyy" locale="es" readonlyInput="true" disabled="true"/>
+                    <p:calendar id="certFechaFinTxt" value="#{consultaMedicaCtrl.certFechaFin}" pattern="dd 'de' MMMM 'de' yyyy" locale="es" readonlyInput="true" disabled="true"
+                                timeZone="America/Guayaquil"/>
 
                     <h:outputText value="Días reposo (número)"/>
                     <p:inputText id="certDiasReposoNum" value="#{consultaMedicaCtrl.certDiasReposo}" readonly="true"/>
