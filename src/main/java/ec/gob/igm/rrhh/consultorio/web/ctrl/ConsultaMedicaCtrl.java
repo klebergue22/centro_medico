@@ -632,7 +632,7 @@ public class ConsultaMedicaCtrl implements Serializable {
                 + ".panel{position:relative;border:1px solid #9ca3af;padding:14px 16px 28px 16px;}.encabezado{border-bottom:2px solid #1f2937;margin-bottom:10px;padding-bottom:7px;}"
                 + ".encabezado-table{width:100%;border-collapse:collapse;}.encabezado-table td{vertical-align:middle;}.logo-cell{width:120px;text-align:center;}"
                 + ".logo{width:85px;height:85px;display:block;margin:0 auto;object-fit:contain;}.encabezado-titulo{text-align:center;font-size:14px;font-weight:700;letter-spacing:.5px;margin:2px 0 0 0;}"
-                + ".encabezado-sub{font-size:11px;color:#374151;text-align:center;margin:3px 0 0 0;}.titulo{font-weight:bold;margin-top:15px;margin-bottom:6px;}.row{margin-bottom:6px;}"
+                + ".encabezado-sub{font-size:11px;color:#374151;text-align:center;margin:3px 0 0 0;}.titulo{font-weight:bold;margin-top:15px;margin-bottom:6px;}.row{margin-bottom:6px;white-space:normal;word-break:break-word;overflow-wrap:anywhere;}"
                 + "table{width:100%;border-collapse:collapse;table-layout:fixed;}th,td{padding:4px 2px;vertical-align:top;word-wrap:break-word;overflow-wrap:anywhere;}"
                 + ".firmante{margin-top:42px;text-align:center;}.firma-linea{border-top:1px solid #000;width:260px;margin:0 auto 8px auto;}.small{font-size:10px;}";
     }
