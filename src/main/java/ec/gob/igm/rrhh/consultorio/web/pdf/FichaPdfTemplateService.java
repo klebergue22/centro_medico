@@ -43,12 +43,30 @@ public class FichaPdfTemplateService {
             FichaPdfPlaceholderAssembler assembler,
             Supplier<FichaState> fichaStateSupplier) {
 
-        recalcularImc.run();
-        cargarAtencionPrioritaria.run();
-        cargarActividadLaboral.run();
+        runIfPresent(recalcularImc);
+        runIfPresent(cargarAtencionPrioritaria);
+        runIfPresent(cargarActividadLaboral);
 
-        Map<String, String> rep = new LinkedHashMap<>(snapshotSupplier.get());
-        rep.putAll(assembler.buildReemplazosFicha(fichaStateSupplier.get()));
+        Map<String, String> rep = new LinkedHashMap<>();
+        if (snapshotSupplier != null) {
+            Map<String, String> snapshot = snapshotSupplier.get();
+            if (snapshot != null) {
+                rep.putAll(snapshot);
+            }
+        }
+
+        if (assembler != null && fichaStateSupplier != null) {
+            FichaState state = fichaStateSupplier.get();
+            if (state != null) {
+                rep.putAll(assembler.buildReemplazosFicha(state));
+            }
+        }
         return rep;
+    }
+
+    private void runIfPresent(Runnable action) {
+        if (action != null) {
+            action.run();
+        }
     }
 }
