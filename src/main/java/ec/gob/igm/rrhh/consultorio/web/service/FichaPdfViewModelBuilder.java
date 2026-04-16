@@ -16,12 +16,16 @@ import ec.gob.igm.rrhh.consultorio.domain.model.DatEmpleado;
 import ec.gob.igm.rrhh.consultorio.domain.model.FichaOcupacional;
 import ec.gob.igm.rrhh.consultorio.domain.model.FichaRiesgo;
 import ec.gob.igm.rrhh.consultorio.domain.model.PersonaAux;
+import ec.gob.igm.rrhh.consultorio.service.EmpleadoService;
 
 @Stateless
 /**
  * Class FichaPdfViewModelBuilder: orquesta la lógica de presentación y flujo web.
  */
 public class FichaPdfViewModelBuilder implements Serializable {
+
+    @jakarta.inject.Inject
+    private EmpleadoService empleadoService;
 
     public Map<String, String> buildReemplazosFicha(FichaPdfViewModelContext ctx) {
         Map<String, String> rep = new LinkedHashMap<>();
@@ -110,6 +114,8 @@ public class FichaPdfViewModelBuilder implements Serializable {
     }
 
     private void cargarDatosPersonales(Map<String, String> rep, FichaPdfViewModelContext ctx) {
+        DatEmpleado empleado = resolveEmpleado(ctx);
+        PersonaAux personaAux = resolvePersonaAux(ctx);
         rep.put("apellido1", safe(resolveApellido1(ctx)));
         rep.put("apellido2", safe(resolveApellido2(ctx)));
         rep.put("nombre1", safe(resolveNombre1(ctx)));
@@ -121,7 +127,7 @@ public class FichaPdfViewModelBuilder implements Serializable {
         rep.put("edad", edad == null ? "" : String.valueOf(edad));
         rep.put("grupoSanguineo", safe(ctx.grupoSanguineo));
         rep.put("lateralidad", safe(ctx.lateralidad));
-        rep.put("cedula", safe(resolveCedulaForPdf(ctx.empleadoSel, ctx.personaAux, ctx.cedulaBusqueda)));
+        rep.put("cedula", safe(resolveCedulaForPdf(empleado, personaAux, ctx.cedulaBusqueda)));
         rep.put("email", "");
     }
 
@@ -406,10 +412,30 @@ public class FichaPdfViewModelBuilder implements Serializable {
     }
 
     private DatEmpleado resolveEmpleado(FichaPdfViewModelContext ctx) {
-        if (ctx.empleadoSel != null) {
-            return ctx.empleadoSel;
+        DatEmpleado empleado = ctx.empleadoSel != null
+                ? ctx.empleadoSel
+                : (ctx.ficha != null ? ctx.ficha.getEmpleado() : null);
+        return resolveManagedEmpleado(empleado);
+    }
+
+    private DatEmpleado resolveManagedEmpleado(DatEmpleado empleadoSel) {
+        if (empleadoSel == null) {
+            return null;
         }
-        return ctx.ficha != null ? ctx.ficha.getEmpleado() : null;
+        Integer noPersona = resolveNoPersona(empleadoSel);
+        if (noPersona == null || empleadoService == null) {
+            return empleadoSel;
+        }
+        DatEmpleado managed = empleadoService.buscarPorId(noPersona);
+        return managed != null ? managed : empleadoSel;
+    }
+
+    private Integer resolveNoPersona(DatEmpleado empleadoSel) {
+        try {
+            return empleadoSel.getNoPersona();
+        } catch (RuntimeException ex) {
+            return null;
+        }
     }
 
     private PersonaAux resolvePersonaAux(FichaPdfViewModelContext ctx) {
