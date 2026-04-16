@@ -10,7 +10,8 @@ public class Step1ViewDataAssembler {
     public Step1ViewData capture(CentroMedicoCtrl source, String usuario) {
         return new Step1ViewData(
                 source.getFicha(), source.getEmpleadoSel(), source.getPersonaAux(), source.getSignos(), source.getNoPersonaSel(),
-                source.getFechaAtencion(), source.getTipoEval(), source.getPaStr(), source.getTemp(), source.getFc(), source.getFr(), source.getSatO2(),
+                source.getFechaAtencion(), source.getTipoEval(), source.getFecIngreso(), source.getFecReintegro(),
+                source.getFecRetiro(), source.getMotivoObs(), source.getPaStr(), source.getTemp(), source.getFc(), source.getFr(), source.getSatO2(),
                 source.getPeso(), source.getTallaCm(), source.getPerimetroAbd(), source.isApEmbarazada(), source.isApDiscapacidad(), source.isApCatastrofica(), source.isApLactancia(), source.isApAdultoMayor(),
                 source.getAntClinicoQuirurgico(), source.getAntFamiliares(), source.getCondicionEspecial(), source.getAutorizaTransfusion(), source.getTratamientoHormonal(),
                 source.getTratamientoHormonalCual(), source.getExamenReproMasculino(), source.getTiempoReproMasculino(), source.getGinecoExamen1(), source.getGinecoTiempo1(),

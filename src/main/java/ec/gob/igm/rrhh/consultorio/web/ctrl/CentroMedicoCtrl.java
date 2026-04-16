@@ -2066,6 +2066,36 @@ public List<String> completarKDescStrings(String query) {
     }
 
     @Deprecated
+    public Date getFecIngreso() {
+        return step1FormModel.getFecIngreso();
+    }
+
+    @Deprecated
+    public Date getFecReintegro() {
+        return step1FormModel.getFecReintegro();
+    }
+
+    @Deprecated
+    public Date getFecRetiro() {
+        return step1FormModel.getFecRetiro();
+    }
+
+    @Deprecated
+    public void setFecIngreso(Date fecIngreso) {
+        step1FormModel.setFecIngreso(fecIngreso);
+    }
+
+    @Deprecated
+    public void setFecReintegro(Date fecReintegro) {
+        step1FormModel.setFecReintegro(fecReintegro);
+    }
+
+    @Deprecated
+    public void setFecRetiro(Date fecRetiro) {
+        step1FormModel.setFecRetiro(fecRetiro);
+    }
+
+    @Deprecated
     public String getPaStr() {
         return signosVitalesFormModel.getPaStr();
     }

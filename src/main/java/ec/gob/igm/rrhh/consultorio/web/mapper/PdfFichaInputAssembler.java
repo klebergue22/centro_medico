@@ -94,6 +94,7 @@ public class PdfFichaInputAssembler {
         input.ciiuSetter = source::setCiiu;
         input.noHistoriaSetter = source::setNoHistoria;
         input.noArchivoSetter = source::setNoArchivo;
+        input.motivoObsSetter = source::setMotivoObs;
         input.ginecoExamen1Setter = source::setGinecoExamen1;
         input.ginecoTiempo1Setter = source::setGinecoTiempo1;
         input.ginecoResultado1Setter = source::setGinecoResultado1;

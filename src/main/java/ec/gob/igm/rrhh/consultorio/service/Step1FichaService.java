@@ -44,7 +44,7 @@ public class Step1FichaService {
         final String user = cmd.usuario();
 
         FichaOcupacional ficha = ensureFichaInitialized(cmd.ficha());
-        DatEmpleado empleado = resolveSelectedEmployeeIfNeeded(cmd.empleadoSel(), cmd.noPersonaSel());
+        DatEmpleado empleado = resolveSelectedEmployeeIfNeeded(cmd.ficha(), cmd.empleadoSel(), cmd.noPersonaSel());
         PersonaAux personaAux = cmd.personaAux();
 
         validateStep1InputsOrThrow(cmd, empleado, personaAux);
@@ -67,9 +67,17 @@ public class Step1FichaService {
         return (ficha != null) ? ficha : new FichaOcupacional();
     }
 
-    private DatEmpleado resolveSelectedEmployeeIfNeeded(DatEmpleado empleadoSel, Integer noPersonaSel) {
+    private DatEmpleado resolveSelectedEmployeeIfNeeded(FichaOcupacional ficha, DatEmpleado empleadoSel, Integer noPersonaSel) {
         if (empleadoSel == null && noPersonaSel != null) {
             return empleadoService.buscarPorId(noPersonaSel);
+        }
+        if (empleadoSel == null && ficha != null) {
+            DatEmpleado empleadoFicha = ficha.getEmpleado();
+            if (empleadoFicha != null && empleadoFicha.getNoPersona() != null) {
+                DatEmpleado managed = empleadoService.buscarPorId(empleadoFicha.getNoPersona());
+                return managed != null ? managed : empleadoFicha;
+            }
+            return empleadoFicha;
         }
         return empleadoSel;
     }
@@ -142,6 +150,7 @@ public class Step1FichaService {
     private void mapStep1ToOccupationalRecord(FichaOcupacional ficha, Step1Command cmd) {
         ficha.setFechaEvaluacion(cmd.fechaAtencion());
         ficha.setTipoEvaluacion(cmd.tipoEval());
+        ficha.setObservacion(trimToNull(cmd.motivoObs()));
         mapGinecologicalData(ficha, cmd);
         mapSpecialConditions(ficha, cmd);
         mapClinicalHistory(ficha, cmd);
@@ -435,6 +444,10 @@ public class Step1FichaService {
             Integer noPersonaSel,
             Date fechaAtencion,
             String tipoEval,
+            Date fecIngreso,
+            Date fecReintegro,
+            Date fecRetiro,
+            String motivoObs,
             String paStr,
             Double temp,
             Integer fc,

@@ -19,6 +19,10 @@ public class Step1ViewData {
     public final Integer noPersonaSel;
     public final Date fechaAtencion;
     public final String tipoEval;
+    public final Date fecIngreso;
+    public final Date fecReintegro;
+    public final Date fecRetiro;
+    public final String motivoObs;
     public final String paStr;
     public final Double temp;
     public final Integer fc;
@@ -75,7 +79,8 @@ public class Step1ViewData {
     public final String usuario;
 
     public Step1ViewData(FichaOcupacional ficha, DatEmpleado empleadoSel, PersonaAux personaAux, SignosVitales signos,
-                         Integer noPersonaSel, Date fechaAtencion, String tipoEval, String paStr, Double temp,
+                         Integer noPersonaSel, Date fechaAtencion, String tipoEval, Date fecIngreso,
+                         Date fecReintegro, Date fecRetiro, String motivoObs, String paStr, Double temp,
                          Integer fc, Integer fr, Integer satO2, Double peso, Double tallaCm, Double perimetroAbd,
                          Boolean apEmbarazada, Boolean apDiscapacidad, Boolean apCatastrofica, Boolean apLactancia,
                          Boolean apAdultoMayor, String antClinicoQuirurgico, String antFamiliares,
@@ -97,6 +102,10 @@ public class Step1ViewData {
         this.noPersonaSel = noPersonaSel;
         this.fechaAtencion = fechaAtencion;
         this.tipoEval = tipoEval;
+        this.fecIngreso = fecIngreso;
+        this.fecReintegro = fecReintegro;
+        this.fecRetiro = fecRetiro;
+        this.motivoObs = motivoObs;
         this.paStr = paStr;
         this.temp = temp;
         this.fc = fc;
