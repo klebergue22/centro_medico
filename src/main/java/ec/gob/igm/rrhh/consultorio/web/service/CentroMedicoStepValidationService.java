@@ -10,6 +10,7 @@ import jakarta.faces.context.FacesContext;
 
 import ec.gob.igm.rrhh.consultorio.domain.model.ConsultaDiagnostico;
 import ec.gob.igm.rrhh.consultorio.domain.model.DatEmpleado;
+import ec.gob.igm.rrhh.consultorio.domain.model.FichaOcupacional;
 import ec.gob.igm.rrhh.consultorio.domain.model.FichaRiesgo;
 import ec.gob.igm.rrhh.consultorio.domain.model.PersonaAux;
 import ec.gob.igm.rrhh.consultorio.domain.model.SignosVitales;
@@ -34,10 +35,10 @@ public class CentroMedicoStepValidationService implements Serializable {
                                          Date fechaAtencion, String sexo, String tipoEval, String paStr, Integer fc,
                                          Double peso, Double tallaCm, SignosVitales signos, String puestoTrabajoCiuo,
                                          FichaRiesgo fichaRiesgo, DatEmpleado empleadoSel, Integer noPersonaSel,
-                                         PersonaAux personaAux) {
+                                         PersonaAux personaAux, FichaOcupacional ficha) {
         return step1Validator.validate(apellido1, apellido2, nombre1, nombre2, fechaAtencion, sexo, tipoEval,
                 paStr, fc, peso, tallaCm, signos, puestoTrabajoCiuo, fichaRiesgo, empleadoSel, noPersonaSel,
-                personaAux);
+                personaAux, ficha);
     }
 
     public ValidationResult validarStep2(FichaRiesgo fichaRiesgo, List<String> actividadesLab, List<String> medidasPreventivas) {

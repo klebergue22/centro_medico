@@ -31,13 +31,14 @@ public class StepValidationInputAssembler {
             Double tallaCm,
             SignosVitales signos,
             FichaRiesgo fichaRiesgo,
+            FichaOcupacional ficha,
             DatEmpleado empleadoSel,
             Integer noPersonaSel,
             PersonaAux personaAux) {
         Step1ValidationInput input = new Step1ValidationInput();
         populateBasicStep1Fields(input, apellido1, apellido2, nombre1, nombre2, fechaAtencion, sexo, tipoEval);
         populateClinicalStep1Fields(input, paStr, fc, peso, tallaCm, signos, fichaRiesgo);
-        populatePatientStep1Fields(input, empleadoSel, noPersonaSel, personaAux);
+        populatePatientStep1Fields(input, empleadoSel, noPersonaSel, personaAux, ficha);
         return input;
     }
 
@@ -105,9 +106,10 @@ public class StepValidationInputAssembler {
     }
 
     private void populatePatientStep1Fields(Step1ValidationInput input, DatEmpleado empleadoSel, Integer noPersonaSel,
-            PersonaAux personaAux) {
+            PersonaAux personaAux, FichaOcupacional ficha) {
         input.empleadoSel = empleadoSel;
         input.noPersonaSel = noPersonaSel;
         input.personaAux = personaAux;
+        input.ficha = ficha;
     }
 }

@@ -271,6 +271,7 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
                 signosVitalesFormModel.getTallaCm(),
                 getSignos(),
                 fichaRiesgo,
+                getFicha(),
                 getEmpleadoSel(),
                 getNoPersonaSel(),
                 getPersonaAux());
