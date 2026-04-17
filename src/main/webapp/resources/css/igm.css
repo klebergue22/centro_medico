@@ -2438,6 +2438,16 @@ td.j-date  .ui-datepicker-trigger{
   box-sizing: border-box;
 }
 
+#consultaForm .paciente-grid .antecedentes-wrapper {
+  display: block;
+  width: 100%;
+}
+
+#consultaForm .paciente-grid .antecedentes-wrapper .antecedentes-label {
+  display: block;
+  margin-bottom: 6px;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   #consultaForm .paciente-grid,
