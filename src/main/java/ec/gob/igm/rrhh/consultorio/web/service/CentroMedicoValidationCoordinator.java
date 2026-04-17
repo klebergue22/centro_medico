@@ -51,7 +51,8 @@ public class CentroMedicoValidationCoordinator implements Serializable {
                 input.fichaRiesgo,
                 input.empleadoSel,
                 input.noPersonaSel,
-                input.personaAux);
+                input.personaAux,
+                input.ficha);
         return new ValidationUiResult(result, "Step 1", false, null, true);
     }
 
@@ -104,6 +105,7 @@ public class CentroMedicoValidationCoordinator implements Serializable {
         public DatEmpleado empleadoSel;
         public Integer noPersonaSel;
         public PersonaAux personaAux;
+        public FichaOcupacional ficha;
     }
 
     public static class FichaCompletaValidationInput implements Serializable {
