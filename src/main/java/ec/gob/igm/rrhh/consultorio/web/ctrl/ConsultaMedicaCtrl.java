@@ -628,13 +628,14 @@ public class ConsultaMedicaCtrl implements Serializable {
     }
 
     private String recetaStyles() {
-        return "@page{size:A5 portrait;margin:10mm;}body{font-family:Arial,sans-serif;font-size:12px;margin:22px;color:#000;}"
-                + ".panel{position:relative;border:1px solid #9ca3af;padding:14px 16px 28px 16px;}.encabezado{border-bottom:2px solid #1f2937;margin-bottom:10px;padding-bottom:7px;}"
-                + ".encabezado-table{width:100%;border-collapse:collapse;}.encabezado-table td{vertical-align:middle;}.logo-cell{width:120px;text-align:center;}"
-                + ".logo{width:85px;height:85px;display:block;margin:0 auto;object-fit:contain;}.encabezado-titulo{text-align:center;font-size:14px;font-weight:700;letter-spacing:.5px;margin:2px 0 0 0;}"
-                + ".encabezado-sub{font-size:11px;color:#374151;text-align:center;margin:3px 0 0 0;}.titulo{font-weight:bold;margin-top:15px;margin-bottom:6px;}.row{margin-bottom:6px;white-space:normal;word-break:break-word;overflow-wrap:anywhere;}"
-                + "table{width:100%;border-collapse:collapse;table-layout:fixed;}th,td{padding:4px 2px;vertical-align:top;word-wrap:break-word;overflow-wrap:anywhere;}"
-                + ".firmante{margin-top:42px;text-align:center;}.firma-linea{border-top:1px solid #000;width:260px;margin:0 auto 8px auto;}.small{font-size:10px;}";
+        return "@page{size:A5 portrait;margin:7mm;}body{font-family:Arial,sans-serif;font-size:11px;margin:0;color:#000;}"
+                + ".panel{position:relative;border:1px solid #9ca3af;padding:10px 12px 14px 12px;}.encabezado{border-bottom:2px solid #1f2937;margin-bottom:7px;padding-bottom:5px;}"
+                + ".encabezado-table{width:100%;border-collapse:collapse;}.encabezado-table td{vertical-align:middle;}.logo-cell{width:88px;text-align:center;}"
+                + ".logo{width:62px;height:62px;display:block;margin:0 auto;object-fit:contain;}.encabezado-titulo{text-align:center;font-size:12px;font-weight:700;letter-spacing:.3px;margin:1px 0 0 0;}"
+                + ".encabezado-sub{font-size:10px;color:#374151;text-align:center;margin:2px 0 0 0;}.titulo{font-weight:bold;margin-top:8px;margin-bottom:3px;}.row{margin-bottom:3px;white-space:normal;word-break:break-word;overflow-wrap:anywhere;line-height:1.2;}"
+                + ".texto-libre{font-size:10.5px;white-space:pre-wrap;word-break:break-word;overflow-wrap:anywhere;line-height:1.2;}"
+                + "table{width:100%;border-collapse:collapse;table-layout:fixed;font-size:10.5px;}th,td{padding:2px 2px;vertical-align:top;word-wrap:break-word;overflow-wrap:anywhere;}"
+                + ".firmante{margin-top:16px;text-align:center;}.firma-linea{border-top:1px solid #000;width:220px;margin:0 auto 6px auto;}.small{font-size:9px;}";
     }
 
     private String construirColumnaReceta(String fecha, String nombrePaciente, String cedula, String edad,
@@ -677,9 +678,9 @@ public class ConsultaMedicaCtrl implements Serializable {
 
     private void appendRecetaPie(StringBuilder sb, String medicoNombre, String medicoMsp) {
         sb.append("</tbody></table><div class='titulo'>Recomendaciones no farmacológicas:</div>")
-                .append("<div class='row'>").append(escape(recomendaciones)).append("</div>")
+                .append("<div class='row texto-libre'>").append(escape(recomendaciones)).append("</div>")
                 .append("<div class='titulo'>Signos de alarma:</div>")
-                .append("<div class='row'>").append(escape(signosAlarma)).append("</div>")
+                .append("<div class='row texto-libre'>").append(escape(signosAlarma)).append("</div>")
                 .append("<div class='firmante'><div><b>Médico:</b> ").append(escape(medicoNombre)).append("</div>")
                 .append("<div><b>MSP:</b> ").append(escape(medicoMsp)).append("</div></div></div>");
     }
