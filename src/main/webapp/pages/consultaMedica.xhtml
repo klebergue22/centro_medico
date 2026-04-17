@@ -18,7 +18,11 @@
                     <p:commandButton value="Buscar" icon="pi pi-search"
                                      actionListener="#{consultaMedicaCtrl.buscarPorCedula}"
                                      update="pacientePanel growl"/>
-                    <h:outputText/>
+                    <p:commandButton value="Nuevo" icon="pi pi-refresh"
+                                     process="@this"
+                                     actionListener="#{consultaMedicaCtrl.nuevaConsulta}"
+                                     update="@form"
+                                     styleClass="ui-button-secondary"/>
                 </h:panelGrid>
 
                 <p:outputPanel id="pacientePanel" style="margin-top:10px;">
@@ -52,8 +56,11 @@
                         <h:outputText value="#{consultaMedicaCtrl.edadPaciente}"/>
                         <h:outputText value="Fecha consulta:" style="font-weight:bold;"/>
                         <p:calendar value="#{consultaMedicaCtrl.consulta.fechaConsulta}" pattern="dd/MM/yyyy" showOn="button"/>
-                        <h:outputText value="Antecedentes Patológicos Personales:" style="font-weight:bold;"/>
-                        <p:inputTextarea value="#{consultaMedicaCtrl.alergias}" rows="1" autoResize="true" styleClass="consulta-textarea"/>
+                        <h:outputText value=""/>
+                        <h:panelGroup layout="block" styleClass="antecedentes-wrapper">
+                            <h:outputText value="Antecedentes Patológicos Personales:" styleClass="paciente-etiqueta antecedentes-label"/>
+                            <p:inputTextarea value="#{consultaMedicaCtrl.alergias}" rows="3" autoResize="false" styleClass="consulta-textarea"/>
+                        </h:panelGroup>
                     </h:panelGrid>
 
                     <p:panel header="Consultas anteriores"

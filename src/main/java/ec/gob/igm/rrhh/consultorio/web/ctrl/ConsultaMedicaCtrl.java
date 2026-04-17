@@ -115,6 +115,19 @@ public class ConsultaMedicaCtrl implements Serializable {
 
     @PostConstruct
     public void init() {
+        resetFormulario();
+    }
+
+    public void nuevaConsulta() {
+        resetFormulario();
+        addMessage(FacesMessage.SEVERITY_INFO, "Formulario reiniciado", "Puede buscar otro paciente.");
+    }
+
+    private void resetFormulario() {
+        cedulaBusqueda = null;
+        empleado = null;
+        personaAux = null;
+        fichaReferencia = null;
         consulta = new ConsultaMedica();
         consulta.setFechaConsulta(new Date());
         consulta.setEstado("ACTIVO");
@@ -123,8 +136,27 @@ public class ConsultaMedicaCtrl implements Serializable {
         consultasAnteriores = new ArrayList<>();
         recetas = new ArrayList<>();
         vigenciaReceta = new Date();
+        recomendaciones = null;
+        signosAlarma = null;
+        alergias = null;
+        tokenPdf = null;
+        tokenPdfCertificado = null;
+        fechaNacimientoPaciente = null;
         signosModel = new SignosVitales();
+        paStr = null;
+        generarCertificado = false;
+        certFechaInicio = null;
+        certFechaFin = null;
+        certFechaInicioLetras = null;
+        certFechaFinLetras = null;
+        certDomicilio = null;
+        certCargoPaciente = null;
+        certAreaTrabajo = null;
+        certTelefono = null;
+        certTipoContingencia = null;
         certMedicoCargo = "MEDICO SALUD OCUPACIONAL";
+        certMedicoTelefono = null;
+        certMedicoCorreo = null;
         agregarDiagnostico();
         agregarReceta();
     }
