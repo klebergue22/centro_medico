@@ -628,9 +628,9 @@ public class ConsultaMedicaCtrl implements Serializable {
     }
 
     private String recetaStyles() {
-        return "@page{size:A5 portrait;margin:7mm;}body{font-family:Arial,sans-serif;font-size:11px;margin:0;color:#000;}"
+        return "@page{size:A5 landscape;margin:7mm;}body{font-family:Arial,sans-serif;font-size:11px;margin:0;color:#000;}"
                 + ".panel{position:relative;border:1px solid #9ca3af;padding:10px 12px 14px 12px;}.encabezado{border-bottom:2px solid #1f2937;margin-bottom:7px;padding-bottom:5px;}"
-                + ".encabezado-table{width:100%;border-collapse:collapse;}.encabezado-table td{vertical-align:middle;}.logo-cell{width:88px;text-align:center;}"
+                + ".encabezado-table{width:100%;border-collapse:collapse;}.encabezado-table td{vertical-align:middle;}.logo-cell{width:105px;text-align:center;}"
                 + ".logo{width:62px;height:62px;display:block;margin:0 auto;object-fit:contain;}.encabezado-titulo{text-align:center;font-size:12px;font-weight:700;letter-spacing:.3px;margin:1px 0 0 0;}"
                 + ".encabezado-sub{font-size:10px;color:#374151;text-align:center;margin:2px 0 0 0;}.titulo{font-weight:bold;margin-top:8px;margin-bottom:3px;}.row{margin-bottom:3px;white-space:normal;word-break:break-word;overflow-wrap:anywhere;line-height:1.2;}"
                 + ".texto-libre{font-size:10.5px;white-space:pre-wrap;word-break:break-word;overflow-wrap:anywhere;line-height:1.2;}"
@@ -664,7 +664,8 @@ public class ConsultaMedicaCtrl implements Serializable {
     private void appendRecetaMedicamentos(StringBuilder sb) {
         sb.append("<div class='titulo'>Antecedentes Patológicos Personales:</div>")
                 .append("<div class='row'>").append(escape(resolveAlergiasTexto())).append("</div>")
-                .append("<table><thead><tr><th>Medicamento</th><th>Vía</th><th>Días</th><th>Indicaciones</th></tr></thead><tbody>");
+                .append("<table><colgroup><col style='width:28%'/><col style='width:14%'/><col style='width:8%'/>")
+                .append("<col style='width:50%'/></colgroup><thead><tr><th>Medicamento</th><th>Vía</th><th>Días</th><th>Indicaciones</th></tr></thead><tbody>");
         for (RecetaItemForm item : recetas) {
             if (item == null || isBlank(item.getMedicamento())) {
                 continue;
