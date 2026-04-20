@@ -1646,19 +1646,33 @@ public List<String> completarKDescStrings(String query) {
     }
 
     public String getNoHistoria() {
+        if (fichaContext.getFicha() != null && fichaContext.getFicha().getNoHistoriaClinica() != null
+                && !fichaContext.getFicha().getNoHistoriaClinica().trim().isEmpty()) {
+            return fichaContext.getFicha().getNoHistoriaClinica();
+        }
         return step1FormModel.getNoHistoria();
     }
 
     public void setNoHistoria(String noHistoria) {
         step1FormModel.setNoHistoria(noHistoria);
+        if (fichaContext.getFicha() != null) {
+            fichaContext.getFicha().setNoHistoriaClinica(noHistoria);
+        }
     }
 
     public String getNoArchivo() {
+        if (fichaContext.getFicha() != null && fichaContext.getFicha().getNoArchivo() != null
+                && !fichaContext.getFicha().getNoArchivo().trim().isEmpty()) {
+            return fichaContext.getFicha().getNoArchivo();
+        }
         return step1FormModel.getNoArchivo();
     }
 
     public void setNoArchivo(String noArchivo) {
         step1FormModel.setNoArchivo(noArchivo);
+        if (fichaContext.getFicha() != null) {
+            fichaContext.getFicha().setNoArchivo(noArchivo);
+        }
     }
 
     public String getTipoEvaluacion() {

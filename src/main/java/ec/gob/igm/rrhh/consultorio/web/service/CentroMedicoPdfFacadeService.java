@@ -220,8 +220,12 @@ public class CentroMedicoPdfFacadeService implements Serializable {
         data.logoMidena = cmd.pdfResourceResolver.resolveImageUrl("LOGO_MIDENA.png");
         data.institucion = safe(cmd.institucion);
         data.ruc = safe(cmd.ruc);
-        data.noHistoria = safe(cmd.noHistoria);
-        data.noArchivo = safe(cmd.noArchivo);
+        data.noHistoria = safe(firstNotBlank(
+                cmd.noHistoria,
+                cmd.ficha != null ? cmd.ficha.getNoHistoriaClinica() : null));
+        data.noArchivo = safe(firstNotBlank(
+                cmd.noArchivo,
+                cmd.ficha != null ? cmd.ficha.getNoArchivo() : null));
     }
 
     private void applyPacienteData(
