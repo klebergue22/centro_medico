@@ -284,6 +284,7 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     private boolean validarStep2() {
         ValidationUiResult uiResult = wizardSectionFacade.validarStep2(
                 step2FormModel.getFichaRiesgo(),
+                getFicha() != null ? getFicha().getCiiu() : null,
                 step2FormModel.getActividadesLab(),
                 step2FormModel.getMedidasPreventivas(),
                 true);
