@@ -284,6 +284,7 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     private boolean validarStep2() {
         ValidationUiResult uiResult = wizardSectionFacade.validarStep2(
                 step2FormModel.getFichaRiesgo(),
+                getFicha() != null ? getFicha().getCiiu() : null,
                 step2FormModel.getActividadesLab(),
                 step2FormModel.getMedidasPreventivas(),
                 true);
@@ -1645,7 +1646,11 @@ public List<String> completarKDescStrings(String query) {
     }
 
     public String getNoHistoria() {
-        return step1FormModel.getNoHistoria();
+        String noHistoria = step1FormModel.getNoHistoria();
+        if (noHistoria != null && !noHistoria.trim().isEmpty()) {
+            return noHistoria;
+        }
+        return getFicha() != null ? getFicha().getNoHistoriaClinica() : null;
     }
 
     public void setNoHistoria(String noHistoria) {

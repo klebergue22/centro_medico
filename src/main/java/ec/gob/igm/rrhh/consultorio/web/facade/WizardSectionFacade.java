@@ -45,8 +45,8 @@ public class WizardSectionFacade implements Serializable {
     public void guardarStepActual(CentroMedicoWizardFacade.GuardarStepActualCommand cmd) { centroMedicoWizardFacade.guardarStepActual(cmd); }
 
     public ValidationUiResult validarStep1(Step1ValidationInput input) { return validationCoordinator.validarStep1(input); }
-    public ValidationUiResult validarStep2(FichaRiesgo fichaRiesgo, java.util.List<String> actividadesLab, java.util.List<String> medidasPreventivas, boolean requerirDetalle) {
-        return validationCoordinator.validarStep2(fichaRiesgo, actividadesLab, medidasPreventivas, requerirDetalle);
+    public ValidationUiResult validarStep2(FichaRiesgo fichaRiesgo, String ciiuFicha, java.util.List<String> actividadesLab, java.util.List<String> medidasPreventivas, boolean requerirDetalle) {
+        return validationCoordinator.validarStep2(fichaRiesgo, ciiuFicha, actividadesLab, medidasPreventivas, requerirDetalle);
     }
     public ValidationUiResult validarStep3(java.util.List<ConsultaDiagnostico> listaDiag, String aptitudSel, String recomendaciones, String medicoNombre, String medicoCodigo) {
         return validationCoordinator.validarStep3(listaDiag, aptitudSel, recomendaciones, medicoNombre, medicoCodigo);
