@@ -1646,7 +1646,11 @@ public List<String> completarKDescStrings(String query) {
     }
 
     public String getNoHistoria() {
-        return step1FormModel.getNoHistoria();
+        String noHistoria = step1FormModel.getNoHistoria();
+        if (noHistoria != null && !noHistoria.trim().isEmpty()) {
+            return noHistoria;
+        }
+        return getFicha() != null ? getFicha().getNoHistoriaClinica() : null;
     }
 
     public void setNoHistoria(String noHistoria) {
