@@ -56,9 +56,9 @@ public class CentroMedicoValidationCoordinator implements Serializable {
         return new ValidationUiResult(result, "Step 1", false, null, true);
     }
 
-    public ValidationUiResult validarStep2(FichaRiesgo fichaRiesgo, List<String> actividadesLab,
+    public ValidationUiResult validarStep2(FichaRiesgo fichaRiesgo, String ciiuFicha, List<String> actividadesLab,
                                            List<String> medidasPreventivas, boolean markValidationFailedOnError) {
-        ValidationResult result = step2Validator.validate(fichaRiesgo, actividadesLab, medidasPreventivas);
+        ValidationResult result = step2Validator.validate(fichaRiesgo, ciiuFicha, actividadesLab, medidasPreventivas);
         return new ValidationUiResult(result, "Step 2", false, null, markValidationFailedOnError);
     }
 

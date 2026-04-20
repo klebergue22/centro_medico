@@ -9,14 +9,14 @@ import ec.gob.igm.rrhh.consultorio.domain.model.FichaRiesgo;
  */
 public class Step2Validator {
 
-    public ValidationResult validate(FichaRiesgo fichaRiesgo, List<String> actividadesLab, List<String> medidasPreventivas) {
+    public ValidationResult validate(FichaRiesgo fichaRiesgo, String ciiuFicha, List<String> actividadesLab, List<String> medidasPreventivas) {
         ValidationResult result = new ValidationResult();
 
         String puestoTrabajo = fichaRiesgo != null
                 ? firstNonBlank(
                         fichaRiesgo.getPuestoTrabajo(),
-                        fichaRiesgo.getFicha() != null ? fichaRiesgo.getFicha().getCiiu() : null)
-                : null;
+                        ciiuFicha)
+                : ciiuFicha;
 
         if (isBlank(puestoTrabajo)) {
             result.addError("Debe ingresar el puesto de trabajo.");
