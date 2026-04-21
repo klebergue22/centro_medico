@@ -280,10 +280,12 @@
                          maxlength="250"/>
 
         <h:outputLabel value="Fecha de atención"/>
-        <p:calendar value="#{centroMedicoCtrl.step1.fechaAtencion}"
+        <p:calendar id="fecAtencion"
+                    value="#{centroMedicoCtrl.step1.fechaAtencion}"
                     pattern="dd/MM/yyyy"
                     navigator="true"
-                    showOn="button"/>
+                    showOn="button"
+                    yearRange="1924:2100"/>
 
         <!-- Selector de tipo de evaluación -->
         <h:panelGrid>
@@ -311,7 +313,9 @@
                     <p:calendar id="fecIngreso"
                                 value="#{centroMedicoCtrl.step1.fecIngreso}"
                                 pattern="dd/MM/yyyy"
-                                showOn="button"/>
+                                navigator="true"
+                                showOn="button"
+                                yearRange="1924:2100"/>
                 </ui:fragment>
 
                 <!-- Fecha de reintegro: solo REINTEGRO -->
@@ -320,7 +324,9 @@
                     <p:calendar id="fecReintegro"
                                 value="#{centroMedicoCtrl.step1.fecReintegro}"
                                 pattern="dd/MM/yyyy"
-                                showOn="button"/>
+                                navigator="true"
+                                showOn="button"
+                                yearRange="1924:2100"/>
                 </ui:fragment>
 
                 <!-- Último día laboral: solo RETIRO -->
@@ -329,7 +335,9 @@
                     <p:calendar id="fecRetiro"
                                 value="#{centroMedicoCtrl.step1.fecRetiro}"
                                 pattern="dd/MM/yyyy"
-                                showOn="button"/>
+                                navigator="true"
+                                showOn="button"
+                                yearRange="1924:2100"/>
                 </ui:fragment>
 
             </h:panelGrid>
