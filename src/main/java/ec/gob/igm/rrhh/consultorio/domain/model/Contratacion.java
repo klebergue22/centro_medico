@@ -2,6 +2,7 @@ package ec.gob.igm.rrhh.consultorio.domain.model;
 
 import ec.gob.igm.rrhh.consultorio.domain.enums.EstadoContrato;
 import ec.gob.igm.rrhh.consultorio.domain.enums.TipoContrato;
+import ec.gob.igm.rrhh.consultorio.persistence.converter.EstadoContratoConverter;
 import jakarta.persistence.*;
 import java.io.Serializable;
 import java.util.Date;
@@ -22,6 +23,7 @@ public class Contratacion implements Serializable {
     private DatEmpleado empleado;
 
     @Column(name = "ESTADO", length = 1)
+    @Convert(converter = EstadoContratoConverter.class)
     private EstadoContrato estado;
 
     @Temporal(TemporalType.DATE)
