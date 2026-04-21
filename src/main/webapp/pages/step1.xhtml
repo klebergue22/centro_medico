@@ -280,10 +280,12 @@
                          maxlength="250"/>
 
         <h:outputLabel value="Fecha de atención"/>
-        <p:calendar value="#{centroMedicoCtrl.step1.fechaAtencion}"
+        <p:calendar id="fecAtencion"
+                    value="#{centroMedicoCtrl.step1.fechaAtencion}"
                     pattern="dd/MM/yyyy"
                     navigator="true"
-                    showOn="button"/>
+                    showOn="button"
+                    yearRange="1924:2100"/>
 
         <!-- Selector de tipo de evaluación -->
         <h:panelGrid>
@@ -312,8 +314,8 @@
                                 value="#{centroMedicoCtrl.step1.fecIngreso}"
                                 pattern="dd/MM/yyyy"
                                 navigator="true"
-                                yearRange="1900:2100"
-                                showOn="button"/>
+                                showOn="button"
+                                yearRange="1924:2100"/>
                 </ui:fragment>
 
                 <!-- Fecha de reintegro: solo REINTEGRO -->
@@ -323,8 +325,8 @@
                                 value="#{centroMedicoCtrl.step1.fecReintegro}"
                                 pattern="dd/MM/yyyy"
                                 navigator="true"
-                                yearRange="1900:2100"
-                                showOn="button"/>
+                                showOn="button"
+                                yearRange="1924:2100"/>
                 </ui:fragment>
 
                 <!-- Último día laboral: solo RETIRO -->
@@ -334,8 +336,8 @@
                                 value="#{centroMedicoCtrl.step1.fecRetiro}"
                                 pattern="dd/MM/yyyy"
                                 navigator="true"
-                                yearRange="1900:2100"
-                                showOn="button"/>
+                                showOn="button"
+                                yearRange="1924:2100"/>
                 </ui:fragment>
 
             </h:panelGrid>
