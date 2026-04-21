@@ -769,6 +769,11 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
                 pdfFichaInputAssembler.buildSyncCamposDesdeObjetosInput(this, fichaPdfContextAssembler, fichaPdfDataMapper));
     }
 
+    public void prepararVistaImpresionRecuperada() {
+        syncCamposDesdeObjetosInternal();
+        recalcularIMC();
+    }
+
     // =========================
     // UTILIDADES DE CARGA DE DATOS PDF
     // =========================
