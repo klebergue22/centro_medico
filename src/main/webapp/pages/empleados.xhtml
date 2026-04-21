@@ -131,16 +131,19 @@
 
                         <p:column headerText="Acciones" style="width:360px" exportable="false" filterable="false">
                             <p:commandButton value="Visualizar Ficha" icon="pi pi-file-pdf" styleClass="p-button-text"
+                                             ajax="false"
                                              process="@this"
                                              actionListener="#{empleadosController.visualizarFicha(h)}"
                                              update=":msgsEmpl"/>
 
                             <p:commandButton value="Visualizar Certificado" icon="pi pi-file" styleClass="p-button-text"
+                                             ajax="false"
                                              process="@this"
                                              actionListener="#{empleadosController.visualizarCertificado(h)}"
                                              update=":msgsEmpl"/>
 
                             <p:commandButton value="Editar / Regenerar" icon="pi pi-pencil" styleClass="p-button-text"
+                                             ajax="false"
                                              process="@this"
                                              actionListener="#{empleadosController.editarYRegenerar(h)}"
                                              update=":msgsEmpl"/>
