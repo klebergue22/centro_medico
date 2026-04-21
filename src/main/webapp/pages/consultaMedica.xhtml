@@ -42,13 +42,13 @@
                         <h:outputText value="Área:" styleClass="paciente-etiqueta"/>
                         <h:outputText value="#{consultaMedicaCtrl.areaTrabajoPaciente}" styleClass="paciente-valor"/>
 
-                        <h:outputText value="Fecha nacimiento:" styleClass="paciente-etiqueta"/>
-                        <p:calendar value="#{consultaMedicaCtrl.fechaNacimientoPaciente}"
+                        <h:outputText value="Fecha de nacimiento:" styleClass="paciente-etiqueta"/>
+                        <p:calendar id="fecNacConsulta"
+                                    value="#{consultaMedicaCtrl.fechaNacimientoPaciente}"
                                     pattern="dd/MM/yyyy"
                                     showOn="button"
-                                    readonlyInput="true"
                                     navigator="true"
-                                    styleClass="fecha-grid"/>
+                                    yearRange="1924:2007"/>
 
                         <h:outputText value="Sexo:" styleClass="paciente-etiqueta"/>
                         <p:inputText value="#{consultaMedicaCtrl.sexoPaciente}" readonly="true"/>
