@@ -58,6 +58,7 @@ public class FichaPrintCtrl {
         cm.setEmpleadoSel(ficha.getEmpleado());
         cm.setNoPersonaSel(ficha.getEmpleado() != null ? ficha.getEmpleado().getNoPersona() : null);
         cm.setPersonaAux(ficha.getPersonaAux());
+        cm.prepararVistaImpresionRecuperada();
         ec.getSessionMap().put("centroMedicoPrint", cm);
         return cm;
     }
