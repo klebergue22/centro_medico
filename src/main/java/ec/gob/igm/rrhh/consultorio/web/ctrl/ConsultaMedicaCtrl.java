@@ -956,6 +956,10 @@ public class ConsultaMedicaCtrl implements Serializable {
         sincronizarFechasCertificado();
     }
 
+    public void onFechaNacimientoPacienteChange() {
+        // No-op: fuerza roundtrip AJAX para refrescar edad con la fecha nac. editada.
+    }
+
     public Date getCertFechaFinMin() {
         return certFechaInicio;
     }
