@@ -51,16 +51,10 @@
                                     yearRange="1924:2007">
                             <p:ajax event="dateSelect"
                                     process="@this"
-                                    listener="#{consultaMedicaCtrl.onFechaNacimientoPacienteChange}"
-                                    update=":consultaForm:pacientePanel"/>
+                                    update=":consultaForm:edadPaciente"/>
                             <p:ajax event="change"
                                     process="@this"
-                                    listener="#{consultaMedicaCtrl.onFechaNacimientoPacienteChange}"
-                                    update=":consultaForm:pacientePanel"/>
-                            <p:ajax event="blur"
-                                    process="@this"
-                                    listener="#{consultaMedicaCtrl.onFechaNacimientoPacienteChange}"
-                                    update=":consultaForm:pacientePanel"/>
+                                    update=":consultaForm:edadPaciente"/>
                         </p:calendar>
 
                         <h:outputText value="Sexo:" styleClass="paciente-etiqueta"/>
