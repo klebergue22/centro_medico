@@ -48,12 +48,19 @@
                                     pattern="dd/MM/yyyy"
                                     showOn="button"
                                     navigator="true"
-                                    yearRange="1924:2007"/>
+                                    yearRange="1924:2007">
+                            <p:ajax event="dateSelect"
+                                    process="@this"
+                                    update=":consultaForm:edadPaciente"/>
+                            <p:ajax event="change"
+                                    process="@this"
+                                    update=":consultaForm:edadPaciente"/>
+                        </p:calendar>
 
                         <h:outputText value="Sexo:" styleClass="paciente-etiqueta"/>
                         <p:inputText value="#{consultaMedicaCtrl.sexoPaciente}" readonly="true"/>
                         <h:outputText value="Edad:" style="font-weight:bold;"/>
-                        <h:outputText value="#{consultaMedicaCtrl.edadPaciente}"/>
+                        <h:outputText id="edadPaciente" value="#{consultaMedicaCtrl.edadPaciente}"/>
                         <h:outputText value="Fecha consulta:" style="font-weight:bold;"/>
                         <p:calendar value="#{consultaMedicaCtrl.consulta.fechaConsulta}" pattern="dd/MM/yyyy" showOn="button"/>
                         <h:outputText value=""/>
