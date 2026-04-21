@@ -1,6 +1,5 @@
 package ec.gob.igm.rrhh.consultorio.web.ctrl;
 
-
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -176,7 +175,6 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     private final PacienteViewState pacienteViewState = new PacienteViewState();
     private final WizardViewState wizardViewState = new WizardViewState();
     private final FichaContext fichaContext = new FichaContext();
-
 
     // VARIABLES DE DATOS PERSONALES
     // =========================
@@ -693,6 +691,14 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     // =========================
     // CONSUMO, HÁBITOS Y ESTRUCTURAS AUXILIARES
     // =========================
+    public void onConsumoTiempoChange(int idx) {
+        reactiveUiService.onConsumoTiempoChange(
+                habitosConsumoFormModel.getConsNoConsume(),
+                habitosConsumoFormModel.getConsTiempoConsumoMeses(),
+                habitosConsumoFormModel.getConsTiempoAbstinenciaMeses(),
+                idx);
+    }
+
     public void onNoConsumeChange(int idx) {
         reactiveUiService.onNoConsumeChange(
                 habitosConsumoFormModel.getConsNoConsume(),
@@ -798,12 +804,12 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     }
 
     public List<String> completarKCieStrings(String query) {
-    return diagnosticoSectionFacade.completarKCieStrings(query);
-}
+        return diagnosticoSectionFacade.completarKCieStrings(query);
+    }
 
-public List<String> completarKDescStrings(String query) {
-    return diagnosticoSectionFacade.completarKDescStrings(query);
-}
+    public List<String> completarKDescStrings(String query) {
+        return diagnosticoSectionFacade.completarKDescStrings(query);
+    }
 
     // =========================
     // GETTERS Y SETTERS
@@ -851,8 +857,6 @@ public List<String> completarKDescStrings(String query) {
     public void setActiveStep(String activeStep) {
         wizardViewState.setActiveStep(activeStep);
     }
-
-
 
     public List<String> getTipoAct() {
         if (actividadLaboralFormModel.getTipoAct() == null) {
@@ -950,10 +954,6 @@ public List<String> completarKDescStrings(String query) {
     public void setNObsRetiro(String nObsRetiro) {
         diagnosticoFormModel.setnObsRetiro(nObsRetiro);
     }
-
-
-
-
 
     public void setEnfermedadActual(String enfermedadActual) {
         examenFisicoFormModel.setEnfermedadActual(enfermedadActual);
@@ -1199,8 +1199,6 @@ public List<String> completarKDescStrings(String query) {
         actividadLaboralFormModel.setActLabTrabajoAnterior(actLabTrabajoAnterior);
     }
 
-
-
     public String[] getAfCual() {
         return habitosConsumoFormModel.getAfCual();
     }
@@ -1217,20 +1215,6 @@ public List<String> completarKDescStrings(String query) {
         habitosConsumoFormModel.setAfTiempo(afTiempo);
     }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     public String getApellido1() {
         return pacienteFormData.getApellido1();
     }
@@ -1246,10 +1230,6 @@ public List<String> completarKDescStrings(String query) {
     public void setApellido2(String apellido2) {
         pacienteFormData.setApellido2(apellido2);
     }
-
-
-
-
 
     public String getCedulaBusqueda() {
         return pacienteViewState.getCedulaBusqueda();
@@ -1274,8 +1254,6 @@ public List<String> completarKDescStrings(String query) {
     public void setCesareas(Integer cesareas) {
         ginecoObstetricoFormModel.setCesareas(cesareas);
     }
-
-
 
     public Boolean[] getConsExConsumidor() {
         return habitosConsumoFormModel.getConsExConsumidor();
@@ -1341,14 +1319,6 @@ public List<String> completarKDescStrings(String query) {
         ginecoObstetricoFormModel.setExamenReproMasculino(examenReproMasculino);
     }
 
-
-
-
-
-
-
-
-
     public FichaOcupacional getFicha() {
         return fichaContext.getFicha();
     }
@@ -1357,10 +1327,6 @@ public List<String> completarKDescStrings(String query) {
         fichaContext.setFicha(ficha);
     }
 
-
-
-
-
     public Integer getGestas() {
         return ginecoObstetricoFormModel.getGestas();
     }
@@ -1368,8 +1334,6 @@ public List<String> completarKDescStrings(String query) {
     public void setGestas(Integer gestas) {
         ginecoObstetricoFormModel.setGestas(gestas);
     }
-
-
 
     public List<String> getIessEspecificar() {
         return actividadLaboralFormModel.getIessEspecificar();
@@ -1402,10 +1366,6 @@ public List<String> completarKDescStrings(String query) {
     public void setIessSi(List<Boolean> iessSi) {
         actividadLaboralFormModel.setIessSi(iessSi);
     }
-
-
-
-
 
     public List<ConsultaDiagnostico> getListaDiag() {
         return step3FormModel.getListaDiag();
@@ -1447,8 +1407,6 @@ public List<String> completarKDescStrings(String query) {
         diagnosticoFormModel.setMedicoNombre(medicoNombre);
     }
 
-
-
     public String getNombre1() {
         return pacienteFormData.getNombre1();
     }
@@ -1473,9 +1431,6 @@ public List<String> completarKDescStrings(String query) {
         habitosConsumoFormModel.setObsJ(obsJ);
     }
 
-
-
-
     public Integer getPartos() {
         return ginecoObstetricoFormModel.getPartos();
     }
@@ -1492,8 +1447,6 @@ public List<String> completarKDescStrings(String query) {
         pdfPreviewState.setPdfTokenCertificado(pdfTokenCertificado);
     }
 
-
-
     public boolean isPermitirIngresoManual() {
         return pacienteViewState.isPermitirIngresoManual();
     }
@@ -1502,8 +1455,6 @@ public List<String> completarKDescStrings(String query) {
         pacienteViewState.setPermitirIngresoManual(permitirIngresoManual);
     }
 
-
-
     public String getRecomendaciones() {
         return diagnosticoFormModel.getRecomendaciones();
     }
@@ -1511,9 +1462,6 @@ public List<String> completarKDescStrings(String query) {
     public void setRecomendaciones(String recomendaciones) {
         diagnosticoFormModel.setRecomendaciones(recomendaciones);
     }
-
-
-
 
     public String getSexo() {
         return pacienteFormData.getSexo();
@@ -1531,10 +1479,6 @@ public List<String> completarKDescStrings(String query) {
         step1FormModel.setGrupoSanguineo(grupoSanguineo);
     }
 
-
-
-
-
     public Integer getTiempoReproMasculino() {
         return ginecoObstetricoFormModel.getTiempoReproMasculino();
     }
@@ -1542,12 +1486,6 @@ public List<String> completarKDescStrings(String query) {
     public void setTiempoReproMasculino(Integer tiempoReproMasculino) {
         ginecoObstetricoFormModel.setTiempoReproMasculino(tiempoReproMasculino);
     }
-
-
-
-
-
-
 
     public String getDialogDiagnosticoCodigo() {
         return step3FormModel.getDialogDiagnosticoCodigo();
@@ -1646,23 +1584,33 @@ public List<String> completarKDescStrings(String query) {
     }
 
     public String getNoHistoria() {
-        String noHistoria = step1FormModel.getNoHistoria();
-        if (noHistoria != null && !noHistoria.trim().isEmpty()) {
-            return noHistoria;
+        if (fichaContext.getFicha() != null && fichaContext.getFicha().getNoHistoriaClinica() != null
+                && !fichaContext.getFicha().getNoHistoriaClinica().trim().isEmpty()) {
+            return fichaContext.getFicha().getNoHistoriaClinica();
         }
-        return getFicha() != null ? getFicha().getNoHistoriaClinica() : null;
+        return step1FormModel.getNoHistoria();
     }
 
     public void setNoHistoria(String noHistoria) {
         step1FormModel.setNoHistoria(noHistoria);
+        if (fichaContext.getFicha() != null) {
+            fichaContext.getFicha().setNoHistoriaClinica(noHistoria);
+        }
     }
 
     public String getNoArchivo() {
+        if (fichaContext.getFicha() != null && fichaContext.getFicha().getNoArchivo() != null
+                && !fichaContext.getFicha().getNoArchivo().trim().isEmpty()) {
+            return fichaContext.getFicha().getNoArchivo();
+        }
         return step1FormModel.getNoArchivo();
     }
 
     public void setNoArchivo(String noArchivo) {
         step1FormModel.setNoArchivo(noArchivo);
+        if (fichaContext.getFicha() != null) {
+            fichaContext.getFicha().setNoArchivo(noArchivo);
+        }
     }
 
     public String getTipoEvaluacion() {
@@ -2029,16 +1977,6 @@ public List<String> completarKDescStrings(String query) {
         historiaLaboralFormModel.sethEnfermedad(hEnfermedad);
     }
 
-
-
-
-
-
-
-
-
-
-
     public boolean isCertPdfListo() {
         return pdfPreviewState.isCertificadoListo();
     }
@@ -2303,6 +2241,7 @@ public List<String> completarKDescStrings(String query) {
     public PacienteViewState getPacienteViewState() {
         return pacienteViewState;
     }
+
     public List<String> getActividadesLab() {
         return step2FormModel.getActividadesLab();
     }

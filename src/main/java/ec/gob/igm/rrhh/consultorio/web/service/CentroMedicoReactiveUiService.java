@@ -34,10 +34,8 @@ public class CentroMedicoReactiveUiService implements Serializable {
     public void onNoConsumeChange(Boolean[] consNoConsume, Boolean[] consExConsumidor,
                                   Integer[] consTiempoConsumoMeses, Integer[] consTiempoAbstinenciaMeses,
                                   int idx) {
-        if (Boolean.TRUE.equals(consNoConsume[idx])) {
-            consExConsumidor[idx] = false;
-            consTiempoConsumoMeses[idx] = 0;
-            consTiempoAbstinenciaMeses[idx] = 0;
+        if (hasConsumoRegistrado(consTiempoConsumoMeses[idx], consTiempoAbstinenciaMeses[idx])) {
+            consNoConsume[idx] = false;
         }
     }
 
@@ -45,11 +43,17 @@ public class CentroMedicoReactiveUiService implements Serializable {
                                       Integer[] consTiempoConsumoMeses,
                                       Integer[] consTiempoAbstinenciaMeses,
                                       int idx) {
-        Integer tiempoConsumo = consTiempoConsumoMeses[idx];
-        Integer tiempoAbstinencia = consTiempoAbstinenciaMeses[idx];
-        if (tiempoConsumo != null || tiempoAbstinencia != null) {
+        if (hasConsumoRegistrado(consTiempoConsumoMeses[idx], consTiempoAbstinenciaMeses[idx])) {
             consNoConsume[idx] = false;
         }
+    }
+
+    private boolean hasConsumoRegistrado(Integer tiempoConsumo, Integer tiempoAbstinencia) {
+        return isTiempoMayorACero(tiempoConsumo) || isTiempoMayorACero(tiempoAbstinencia);
+    }
+
+    private boolean isTiempoMayorACero(Integer value) {
+        return value != null && value > 0;
     }
 
     public AttentionPriorityState onToggleDiscapacidad(boolean apDiscapacidad,
