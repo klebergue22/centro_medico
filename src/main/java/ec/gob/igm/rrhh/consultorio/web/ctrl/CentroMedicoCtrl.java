@@ -2073,6 +2073,10 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
         return signosVitalesFormModel.getTallaCm();
     }
 
+    public Double getImc() {
+        return signosVitalesFormModel.getImc();
+    }
+
     public Double getPerimetroAbd() {
         return signosVitalesFormModel.getPerimetroAbd();
     }
