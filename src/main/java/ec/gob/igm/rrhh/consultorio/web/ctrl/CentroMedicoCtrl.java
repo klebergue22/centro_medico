@@ -691,6 +691,14 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
     // =========================
     // CONSUMO, HÁBITOS Y ESTRUCTURAS AUXILIARES
     // =========================
+    public void onConsumoTiempoChange(int idx) {
+        reactiveUiService.onConsumoTiempoChange(
+                habitosConsumoFormModel.getConsNoConsume(),
+                habitosConsumoFormModel.getConsTiempoConsumoMeses(),
+                habitosConsumoFormModel.getConsTiempoAbstinenciaMeses(),
+                idx);
+    }
+
     public void onNoConsumeChange(int idx) {
         reactiveUiService.onNoConsumeChange(
                 habitosConsumoFormModel.getConsNoConsume(),

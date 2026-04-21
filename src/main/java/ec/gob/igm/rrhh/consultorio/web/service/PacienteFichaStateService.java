@@ -7,8 +7,10 @@ import ec.gob.igm.rrhh.consultorio.domain.model.FichaOcupacional;
 import ec.gob.igm.rrhh.consultorio.domain.model.PersonaAux;
 import ec.gob.igm.rrhh.consultorio.service.EmpleadoService;
 import ec.gob.igm.rrhh.consultorio.service.FichaOcupacionalService;
+import ec.gob.igm.rrhh.consultorio.service.PersonaAuxService;
 import jakarta.ejb.EJB;
 import jakarta.enterprise.context.ApplicationScoped;
+import org.hibernate.proxy.HibernateProxy;
 
 @ApplicationScoped
 /**
@@ -24,10 +26,18 @@ public class PacienteFichaStateService implements Serializable {
     @EJB
     private FichaOcupacionalService fichaService;
 
+    @EJB
+    private PersonaAuxService personaAuxService;
+
     public PatientState ensureEmpleadoSelEnViewScope(boolean permitirIngresoManual, DatEmpleado empleadoSel,
             Integer noPersonaSel, FichaOcupacional ficha, PersonaAux personaAux) {
         if (permitirIngresoManual) {
-            return new PatientState(ficha, empleadoSel, noPersonaSel, personaAux, true);
+            PersonaAux personaAuxView = resolvePersonaAuxForView(
+                    personaAux != null ? personaAux : (ficha != null ? ficha.getPersonaAux() : null));
+            if (ficha != null && ficha.getEmpleado() == null) {
+                ficha.setPersonaAux(personaAuxView);
+            }
+            return new PatientState(ficha, empleadoSel, noPersonaSel, personaAuxView, true);
         }
 
         if (empleadoSel != null) {
@@ -66,8 +76,12 @@ public class PacienteFichaStateService implements Serializable {
             return new PatientState(ficha, empleadoFicha, empleadoFicha.getNoPersona(), null, false);
         }
 
-        if (ficha.getPersonaAux() != null) {
-            return new PatientState(ficha, null, null, ficha.getPersonaAux(), true);
+        PersonaAux personaAuxView = resolvePersonaAuxForView(
+                personaAux != null ? personaAux : ficha.getPersonaAux());
+        if (personaAuxView != null) {
+            ficha.setPersonaAux(personaAuxView);
+            ficha.setEmpleado(null);
+            return new PatientState(ficha, null, null, personaAuxView, true);
         }
 
         return new PatientState(ficha, empleadoSel, noPersonaSel, personaAux, permitirIngresoManual);
@@ -127,9 +141,10 @@ public class PacienteFichaStateService implements Serializable {
             return new PatientState(ficha, empleado, empleado.getNoPersona(), null, false);
         }
         if (personaAux != null) {
-            ficha.setPersonaAux(personaAux);
+            PersonaAux personaAuxView = resolvePersonaAuxForView(personaAux);
+            ficha.setPersonaAux(personaAuxView);
             ficha.setEmpleado(null);
-            return new PatientState(ficha, null, null, personaAux, true);
+            return new PatientState(ficha, null, null, personaAuxView, true);
         }
         return null;
     }
@@ -149,9 +164,10 @@ public class PacienteFichaStateService implements Serializable {
             return new PatientState(ficha, empleadoPersistido, empleadoPersistido.getNoPersona(), null, false);
         }
         if (persisted.getPersonaAux() != null) {
-            ficha.setPersonaAux(persisted.getPersonaAux());
+            PersonaAux personaAuxPersistida = resolvePersonaAuxForView(persisted.getPersonaAux());
+            ficha.setPersonaAux(personaAuxPersistida);
             ficha.setEmpleado(null);
-            return new PatientState(ficha, null, null, persisted.getPersonaAux(), true);
+            return new PatientState(ficha, null, null, personaAuxPersistida, true);
         }
         return null;
     }
@@ -163,6 +179,20 @@ public class PacienteFichaStateService implements Serializable {
 
         DatEmpleado completo = empleadoService.buscarPorId(empleado.getNoPersona());
         return completo != null ? completo : empleado;
+    }
+
+    private PersonaAux resolvePersonaAuxForView(PersonaAux personaAux) {
+        if (personaAux == null) {
+            return null;
+        }
+
+        Long idPersonaAux = personaAux.getIdPersonaAux();
+        if (!(personaAux instanceof HibernateProxy) || idPersonaAux == null) {
+            return personaAux;
+        }
+
+        PersonaAux completa = personaAuxService.find(idPersonaAux);
+        return completa != null ? completa : personaAux;
     }
 
     public static class PatientState {

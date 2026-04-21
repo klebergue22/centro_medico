@@ -311,6 +311,8 @@
                     <p:calendar id="fecIngreso"
                                 value="#{centroMedicoCtrl.step1.fecIngreso}"
                                 pattern="dd/MM/yyyy"
+                                navigator="true"
+                                yearRange="1900:2100"
                                 showOn="button"/>
                 </ui:fragment>
 
@@ -320,6 +322,8 @@
                     <p:calendar id="fecReintegro"
                                 value="#{centroMedicoCtrl.step1.fecReintegro}"
                                 pattern="dd/MM/yyyy"
+                                navigator="true"
+                                yearRange="1900:2100"
                                 showOn="button"/>
                 </ui:fragment>
 
@@ -329,6 +333,8 @@
                     <p:calendar id="fecRetiro"
                                 value="#{centroMedicoCtrl.step1.fecRetiro}"
                                 pattern="dd/MM/yyyy"
+                                navigator="true"
+                                yearRange="1900:2100"
                                 showOn="button"/>
                 </ui:fragment>
 
@@ -619,7 +625,7 @@
                                                          value="#{centroMedicoCtrl.consNoConsume[0]}">
                                     <p:ajax event="change" process="@this"
                                             listener="#{centroMedicoCtrl.onNoConsumeChange(0)}"
-                                            update="cons_tiempo_consumo_0 cons_tiempo_abstinencia_0"/>
+                                            update="@this cons_tiempo_consumo_0 cons_tiempo_abstinencia_0"/>
                                 </p:selectBooleanCheckbox>
                             </td>
 
@@ -676,7 +682,7 @@
                                                          value="#{centroMedicoCtrl.consNoConsume[1]}">
                                     <p:ajax event="change" process="@this"
                                             listener="#{centroMedicoCtrl.onNoConsumeChange(1)}"
-                                            update="cons_tiempo_consumo_1 cons_tiempo_abstinencia_1"/>
+                                            update="@this cons_tiempo_consumo_1 cons_tiempo_abstinencia_1"/>
                                 </p:selectBooleanCheckbox>
                             </td>
 
@@ -731,7 +737,7 @@
                                                          value="#{centroMedicoCtrl.consNoConsume[2]}">
                                     <p:ajax event="change" process="@this"
                                             listener="#{centroMedicoCtrl.onNoConsumeChange(2)}"
-                                            update="cons_tiempo_consumo_2 cons_tiempo_abstinencia_2"/>
+                                            update="@this cons_tiempo_consumo_2 cons_tiempo_abstinencia_2"/>
                                 </p:selectBooleanCheckbox>
                             </td>
 
