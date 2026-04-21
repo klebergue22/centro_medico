@@ -739,7 +739,7 @@ public class ConsultaMedicaCtrl implements Serializable {
         data.cedula = getCedulaPaciente();
         data.numeroHistoria = getCedulaPaciente();
         data.cargoPaciente = isBlank(certCargoPaciente) ? resolveCargoPaciente() : certCargoPaciente;
-        data.areaTrabajo = getAreaTrabajoPaciente();
+        data.areaTrabajo = isBlank(certAreaTrabajo) ? getAreaTrabajoPaciente() : certAreaTrabajo;
         data.diagnosticoPaciente = isBlank(getDiagnosticosTexto()) ? "NO REGISTRA" : getDiagnosticosTexto();
         data.sintomasPaciente = isBlank(consulta.getEnfermedadActual()) ? "NO REGISTRA" : consulta.getEnfermedadActual();
         data.fechaInicioTexto = formatoFechaDiaMesAnioConLetras(certFechaInicio);
