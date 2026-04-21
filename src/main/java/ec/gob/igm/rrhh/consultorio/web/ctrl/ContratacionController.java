@@ -7,9 +7,9 @@ import ec.gob.igm.rrhh.consultorio.domain.model.ContratacionId;
 import ec.gob.igm.rrhh.consultorio.domain.model.DatEmpleado;
 import ec.gob.igm.rrhh.consultorio.service.ContratacionService;
 import jakarta.annotation.PostConstruct;
+import jakarta.enterprise.context.SessionScoped;
 import jakarta.faces.application.FacesMessage;
 import jakarta.faces.context.FacesContext;
-import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import java.io.Serializable;
@@ -19,7 +19,7 @@ import java.util.List;
 import org.primefaces.PrimeFaces;
 
 @Named("contratacionController")
-@ViewScoped
+@SessionScoped
 public class ContratacionController implements Serializable {
 
     private static final long serialVersionUID = 1L;
