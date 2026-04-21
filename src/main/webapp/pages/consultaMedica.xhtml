@@ -206,7 +206,7 @@
             <p:toolbar style="margin-top:10px;">
                 <p:toolbarGroup>
                     <p:commandButton value="Guardar consulta" icon="pi pi-save" actionListener="#{consultaMedicaCtrl.guardarConsulta}" update="growl"/>
-                    <p:commandButton value="Generar PDF" icon="pi pi-file-pdf" actionListener="#{consultaMedicaCtrl.generarPdfReceta}" update="growl pdfPanel" styleClass="ui-button-warning"/>
+                    <p:commandButton value="Generar Receta" icon="pi pi-file-pdf" actionListener="#{consultaMedicaCtrl.generarPdfReceta}" update="growl pdfPanel" styleClass="ui-button-warning"/>
                     <p:selectBooleanCheckbox id="chkCert" value="#{consultaMedicaCtrl.generarCertificado}" itemLabel="Generar certificado médico opcional" style="margin-left:10px;">
                         <p:ajax process="@this" update="btnDatosCert"/>
                     </p:selectBooleanCheckbox>
@@ -252,7 +252,7 @@
                     <h:outputText value="Cargo del paciente"/>
                     <p:inputText value="#{consultaMedicaCtrl.certCargoPaciente}" placeholder="Ingrese cargo del paciente"/>
                     <h:outputText value="Área de trabajo"/>
-                    <p:inputText value="#{consultaMedicaCtrl.certAreaTrabajo}" placeholder="Ingrese área de trabajo"/>
+                    <p:inputText value="#{consultaMedicaCtrl.areaTrabajoPaciente}" />
                     <h:outputText value=""/>
                     <h:outputText value=""/>
 
