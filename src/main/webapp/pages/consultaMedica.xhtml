@@ -78,6 +78,12 @@
                             <p:column headerText="Motivo">
                                 <h:outputText value="#{c.motivoConsulta}"/>
                             </p:column>
+                            <p:column headerText="Enfermedad actual" style="min-width:220px;">
+                                <h:outputText value="#{c.enfermedadActual}"/>
+                            </p:column>
+                            <p:column headerText="Examen físico" style="min-width:220px;">
+                                <h:outputText value="#{c.examenFisico}"/>
+                            </p:column>
                             <p:column headerText="Receta">
                                 <h:outputText value="#{consultaMedicaCtrl.obtenerRecetaConsulta(c)}"/>
                             </p:column>
@@ -114,7 +120,9 @@
                     <h:outputText value="Motivo de consulta:"/>
                     <p:inputTextarea value="#{consultaMedicaCtrl.consulta.motivoConsulta}" rows="2" autoResize="true" styleClass="consulta-textarea"/>
                     <h:outputText value="Enfermedad actual:"/>
-                    <p:inputTextarea value="#{consultaMedicaCtrl.consulta.enfermedadActual}" rows="3" autoResize="true" styleClass="consulta-textarea"/>
+                    <p:inputTextarea value="#{consultaMedicaCtrl.consulta.enfermedadActual}" rows="4" autoResize="true" styleClass="consulta-textarea"/>
+                    <h:outputText value="Examen físico:"/>
+                    <p:inputTextarea value="#{consultaMedicaCtrl.consulta.examenFisico}" rows="4" autoResize="true" styleClass="consulta-textarea"/>
                 </h:panelGrid>
             </p:panel>
 
