@@ -48,7 +48,20 @@
                                     pattern="dd/MM/yyyy"
                                     showOn="button"
                                     navigator="true"
-                                    yearRange="1924:2100"/> 
+                                    yearRange="1924:2007">
+                            <p:ajax event="dateSelect"
+                                    process="@this"
+                                    listener="#{consultaMedicaCtrl.onFechaNacimientoPacienteChange}"
+                                    update=":consultaForm:pacientePanel"/>
+                            <p:ajax event="change"
+                                    process="@this"
+                                    listener="#{consultaMedicaCtrl.onFechaNacimientoPacienteChange}"
+                                    update=":consultaForm:pacientePanel"/>
+                            <p:ajax event="blur"
+                                    process="@this"
+                                    listener="#{consultaMedicaCtrl.onFechaNacimientoPacienteChange}"
+                                    update=":consultaForm:pacientePanel"/>
+                        </p:calendar>
 
                         <h:outputText value="Sexo:" styleClass="paciente-etiqueta"/>
                         <p:inputText value="#{consultaMedicaCtrl.sexoPaciente}" readonly="true"/>
