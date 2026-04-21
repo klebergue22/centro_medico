@@ -48,10 +48,14 @@
                                     pattern="dd/MM/yyyy"
                                     showOn="button"
                                     navigator="true"
+<<<<<<< HEAD
                                     yearRange="1924:2007">
                             <p:ajax event="dateSelect" process="@this" update="edadPaciente"/>
                             <p:ajax event="change" process="@this" update="edadPaciente"/>
                         </p:calendar>
+=======
+                                    yearRange="1924:2100"/> 
+>>>>>>> 2dc9e3d (cambios locales)
 
                         <h:outputText value="Sexo:" styleClass="paciente-etiqueta"/>
                         <p:inputText value="#{consultaMedicaCtrl.sexoPaciente}" readonly="true"/>
