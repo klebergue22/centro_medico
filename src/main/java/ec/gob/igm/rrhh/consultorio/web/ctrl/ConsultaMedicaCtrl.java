@@ -1082,6 +1082,9 @@ public class ConsultaMedicaCtrl implements Serializable {
     }
 
     public String getAreaTrabajoPaciente() {
+        if (!isBlank(certAreaTrabajo)) {
+            return certAreaTrabajo;
+        }
         var datosLaboralesRh = resolveDatosLaboralesRh();
         if (datosLaboralesRh != null && !isBlank(datosLaboralesRh.getAreaDescrip())) {
             return datosLaboralesRh.getAreaDescrip();
@@ -1090,6 +1093,10 @@ public class ConsultaMedicaCtrl implements Serializable {
             return fichaReferencia.getEstablecimientoCt();
         }
         return "";
+    }
+
+    public void setAreaTrabajoPaciente(String areaTrabajoPaciente) {
+        this.certAreaTrabajo = areaTrabajoPaciente;
     }
 
     public String getNombrePaciente() {
