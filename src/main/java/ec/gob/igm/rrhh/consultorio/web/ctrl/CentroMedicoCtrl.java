@@ -2255,6 +2255,14 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
         return step2FormModel.getActividadesLab();
     }
 
+    public FichaRiesgo getFichaRiesgo() {
+        return step2FormModel.getFichaRiesgo();
+    }
+
+    public List<String> getRiskCols() {
+        return STATIC_RISK_COLS;
+    }
+
     public void setActividadesLab(List<String> actividadesLab) {
         step2FormModel.setActividadesLab(actividadesLab);
     }
