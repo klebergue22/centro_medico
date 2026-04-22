@@ -48,6 +48,13 @@
                         <p:menuitem value="Salud Ocupacional" icon="pi pi-plus-circle" outcome="/pages/centroMedico.xhtml"/>
                     </p:submenu>
                 </p:menubar>
+                <h:panelGroup rendered="#{not empty sessionScope.AUTH_USER}" layout="block" styleClass="session-user-box">
+                    <h:outputText value="Usuario: #{sessionScope.AUTH_USER_NAME}" styleClass="session-user-name"/>
+                    <h:outputText value="(#{sessionScope.AUTH_USER})" styleClass="session-user-id"/>
+                    <h:form>
+                        <p:commandButton value="Salir" icon="pi pi-sign-out" actionListener="#{authCtrl.logout}" ajax="false" styleClass="session-logout"/>
+                    </h:form>
+                </h:panelGroup>
                 <span class="brand">RRHH · Salud</span>
             </div>
 
