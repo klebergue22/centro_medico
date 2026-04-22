@@ -199,10 +199,111 @@ input.ui-inputfield:focus, textarea.ui-inputfield:focus{
   border:0 !important; padding:0 !important;
 }
 .topbar{
-  display:flex; align-items:center; gap:12px;
+  max-width: 1280px;
+  margin: 12px auto 8px;
+  padding: 0 16px;
 }
-.topbar .navbar-militar{ flex:1 1 auto; }
-.topbar .brand{ color:#fff; font-weight:700; margin-left:8px; }
+
+.system-header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:14px;
+  background:linear-gradient(130deg,var(--olive-800),var(--olive-700));
+  border:1px solid var(--insignia-gold);
+  border-radius:12px;
+  padding:10px 14px;
+  box-shadow:var(--shadow-2);
+}
+
+.system-title-wrap{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  min-width:0;
+}
+
+.system-logo-icon{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  width:46px;
+  height:46px;
+  border-radius:50%;
+  background:rgba(216,195,106,.20);
+  color:var(--insignia-gold);
+  font-size:1.3rem;
+  flex:0 0 auto;
+}
+
+.system-title-group{
+  display:flex;
+  flex-direction:column;
+}
+
+.system-title{
+  color:#fff;
+  font-weight:800;
+  font-size:1.25rem;
+  line-height:1.2;
+}
+
+.system-subtitle{
+  color:#e8eddc;
+  font-size:.88rem;
+}
+
+.session-user-box{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  background:rgba(255,255,255,.12);
+  border:1px solid rgba(216,195,106,.45);
+  border-radius:10px;
+  padding:8px 10px;
+  color:#fff;
+  flex-wrap:wrap;
+  justify-content:flex-end;
+}
+
+.session-user-label{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  color:#e8eddc;
+  font-size:.82rem;
+  text-transform:uppercase;
+  letter-spacing:.45px;
+}
+
+.session-user-name{
+  font-weight:700;
+}
+
+.session-user-id{
+  color:#d7e2c7;
+  font-size:.92rem;
+}
+
+.session-user-box .session-logout{
+  margin-left:6px;
+}
+
+.topbar .navbar-militar{
+  margin-top:10px;
+}
+
+@media (max-width: 900px){
+  .system-header{
+    flex-direction:column;
+    align-items:flex-start;
+  }
+
+  .session-user-box{
+    width:100%;
+    justify-content:flex-start;
+  }
+}
 
 /* ===================== SOLO DIALOGO EMPLEADO ===================== */
 /* Escapamos el ':' en el id renderizado por JSF: layoutForm:dlg */
