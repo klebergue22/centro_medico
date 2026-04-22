@@ -45,14 +45,15 @@ public class AuthCtrl implements Serializable {
             return null;
         }
 
-        if (!isEmpleadoValido(cedulaNormalizada)) {
+        DatEmpleado empleado = getEmpleadoValido(cedulaNormalizada);
+        if (empleado == null) {
             addError("La cédula ingresada no corresponde a un empleado registrado.");
             return null;
         }
 
-        String cargoVigente = empleadoRhService.buscarCargoVigentePorCedula(cedulaNormalizada);
+        String cargoVigente = resolveCargoParaLogin(empleado, cedulaNormalizada);
         if (!isCargoAutorizado(cargoVigente)) {
-            addError("Acceso denegado: el cargo debe ser MEDCO o MEDICO GENERAL.");
+            addError("Acceso denegado: el cargo registrado no corresponde a un perfil médico autorizado.");
             return null;
         }
 
@@ -111,14 +112,24 @@ public class AuthCtrl implements Serializable {
     }
 
 
-    private boolean isEmpleadoValido(String cedulaValue) {
-        DatEmpleado empleado = empleadoService.buscarPorCedula(cedulaValue);
-        return empleado != null;
+    private DatEmpleado getEmpleadoValido(String cedulaValue) {
+        return empleadoService.buscarPorCedula(cedulaValue);
+    }
+
+    private String resolveCargoParaLogin(DatEmpleado empleado, String cedulaValue) {
+        String cargoEmpleado = normalize(empleado.getCargoLossca());
+        if (cargoEmpleado != null) {
+            return cargoEmpleado;
+        }
+        return normalize(empleadoRhService.buscarCargoVigentePorCedula(cedulaValue));
     }
 
     private boolean isCargoAutorizado(String cargo) {
         String normalized = normalizeCargo(cargo);
-        return normalized.contains("MEDCO") || normalized.contains("MEDICO GENERAL");
+        return normalized.contains("MEDCO")
+                || normalized.contains("MEDICO GENERAL")
+                || "MEDICO".equals(normalized)
+                || normalized.startsWith("MEDICO ");
     }
 
     private String normalizeCargo(String cargo) {
