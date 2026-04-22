@@ -9,6 +9,7 @@
 
     <ui:define name="content">
         <h:form id="loginForm" styleClass="ui-fluid">
+            <p:growl id="growl" showDetail="true" life="7000"/>
             <p:panel header="Acceso al módulo de Centro Médico"
                      style="max-width:680px; margin:2rem auto; border-radius:12px;">
 
@@ -16,6 +17,9 @@
 
                 <h:panelGroup layout="block" style="margin-bottom:1rem; color:#3a4b32;">
                     <h:outputText value="Primer ingreso: utilice su cédula como usuario y también como clave."/>
+                </h:panelGroup>
+                <h:panelGroup layout="block" style="margin-bottom:1rem; color:#3a4b32;">
+                    <h:outputText value="¿Olvidó su clave? Ingrese su cédula y su correo institucional para restablecer la clave."/>
                 </h:panelGroup>
 
                 <p:panelGrid columns="3" styleClass="emp-3col ui-fluid"
@@ -29,11 +33,20 @@
                     <p:password id="clave" value="#{authCtrl.clave}" required="true"
                                 requiredMessage="Ingrese la clave" feedback="false"/>
                     <p:message for="clave"/>
+
+                    <h:outputLabel for="correoReset" value="Correo institucional (reset)"/>
+                    <p:inputText id="correoReset" value="#{authCtrl.correoInstitucionalReset}" maxlength="150"
+                                 placeholder="usuario@geograficomilitar.gob.ec"/>
+                    <p:message for="correoReset"/>
                 </p:panelGrid>
 
-                <div style="display:flex; justify-content:flex-end; margin-top:1rem;">
+                <div style="display:flex; justify-content:flex-end; gap:.5rem; margin-top:1rem;">
+                    <p:commandButton value="Restablecer clave" icon="pi pi-envelope"
+                                     actionListener="#{authCtrl.solicitarResetClave}"
+                                     process="cedula correoReset" update="msgs growl loginForm"
+                                     styleClass="ui-button-secondary"/>
                     <p:commandButton value="Ingresar" icon="pi pi-sign-in"
-                                     action="#{authCtrl.login}" update="msgs loginForm"/>
+                                     action="#{authCtrl.login}" update="msgs growl loginForm"/>
                 </div>
             </p:panel>
         </h:form>
