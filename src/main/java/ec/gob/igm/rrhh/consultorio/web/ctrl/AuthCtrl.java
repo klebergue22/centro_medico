@@ -1,9 +1,11 @@
 package ec.gob.igm.rrhh.consultorio.web.ctrl;
 
 import ec.gob.igm.rrhh.consultorio.domain.model.DatEmpleado;
+import ec.gob.igm.rrhh.consultorio.domain.model.UsuarioAuth;
 import ec.gob.igm.rrhh.consultorio.service.EmpleadoRhService;
 import ec.gob.igm.rrhh.consultorio.service.EmpleadoService;
-import ec.gob.igm.rrhh.consultorio.web.security.CredentialStore;
+import ec.gob.igm.rrhh.consultorio.service.UsuarioAuthService;
+import ec.gob.igm.rrhh.consultorio.service.SeguridadAccesoService;
 import jakarta.ejb.EJB;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.faces.application.FacesMessage;
@@ -24,14 +26,17 @@ public class AuthCtrl implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private static final String KEY_AUTH_USER = "AUTH_USER";
+    private static final String KEY_AUTH_USER_NAME = "AUTH_USER_NAME";
     private static final String KEY_FORCE_CHANGE = "AUTH_PASSWORD_CHANGE_REQUIRED";
 
-    @EJB
-    private CredentialStore credentialStore;
     @EJB
     private EmpleadoService empleadoService;
     @EJB
     private EmpleadoRhService empleadoRhService;
+    @EJB
+    private UsuarioAuthService usuarioAuthService;
+    @EJB
+    private SeguridadAccesoService seguridadAccesoService;
 
     private String cedula;
     private String clave;
@@ -48,22 +53,29 @@ public class AuthCtrl implements Serializable {
         DatEmpleado empleado = getEmpleadoValido(cedulaNormalizada);
         if (empleado == null) {
             addError("La cédula ingresada no corresponde a un empleado registrado.");
+            audit(null, cedulaNormalizada, "INTENTO_FALLIDO", false, "Cedula no registrada en DAT_EMPLEADO");
             return null;
         }
 
         String cargoVigente = resolveCargoParaLogin(empleado, cedulaNormalizada);
         if (!isCargoAutorizado(cargoVigente)) {
             addError("Acceso denegado: el cargo registrado no corresponde a un perfil médico autorizado.");
+            audit(null, cedulaNormalizada, "INTENTO_FALLIDO", false, "Cargo no autorizado");
             return null;
         }
 
-        if (!credentialStore.validate(cedulaNormalizada, clave)) {
+        UsuarioAuth usuarioAuth = usuarioAuthService.findOrCreateByEmpleado(empleado);
+        if (!usuarioAuthService.validatePassword(usuarioAuth, clave)) {
             addError("Usuario o clave inválidos.");
+            audit(usuarioAuth.getIdUsuario(), cedulaNormalizada, "INTENTO_FALLIDO", false, "Clave invalida");
             return null;
         }
 
-        boolean forceChange = credentialStore.isFirstLogin(cedulaNormalizada) && cedulaNormalizada.equals(clave);
-        setSessionAuth(cedulaNormalizada, forceChange);
+        usuarioAuthService.registrarLoginExitoso(usuarioAuth);
+
+        boolean forceChange = usuarioAuthService.requiereCambioClave(usuarioAuth);
+        audit(usuarioAuth.getIdUsuario(), cedulaNormalizada, "LOGIN", true, "Login exitoso");
+        setSessionAuth(cedulaNormalizada, resolveNombreUsuario(empleado), forceChange);
 
         if (forceChange) {
             addInfo("Primer ingreso detectado. Debe cambiar su clave para continuar.");
@@ -99,18 +111,37 @@ public class AuthCtrl implements Serializable {
             return null;
         }
 
-        credentialStore.updatePassword(usuario, nuevaClave);
-        setSessionAuth(usuario, false);
+        DatEmpleado empleado = getEmpleadoValido(usuario);
+        if (empleado == null) {
+            addError("No se encontró el empleado asociado a la sesión.");
+            return null;
+        }
+
+        UsuarioAuth usuarioAuth = usuarioAuthService.findOrCreateByEmpleado(empleado);
+        usuarioAuthService.actualizarClave(usuarioAuth, nuevaClave);
+        audit(usuarioAuth.getIdUsuario(), usuario, "CAMBIO_CLAVE", true, "Cambio de clave exitoso");
+        setSessionForceChange(false);
         addInfo("Clave actualizada correctamente.");
         return "/pages/centroMedico.xhtml?faces-redirect=true";
     }
 
     public void logout() throws IOException {
         ExternalContext externalContext = FacesContext.getCurrentInstance().getExternalContext();
+        String username = getSessionStringValue(KEY_AUTH_USER);
+        audit(null, username, "LOGOUT", true, "Cierre de sesion manual");
         externalContext.invalidateSession();
         externalContext.redirect(externalContext.getRequestContextPath() + "/login.xhtml");
     }
 
+
+
+    private void audit(Long idUsuario, String usernameIntentado, String evento, boolean exitoso, String detalle) {
+        try {
+            seguridadAccesoService.registrarEvento(idUsuario, usernameIntentado, evento, exitoso, detalle);
+        } catch (RuntimeException ignored) {
+            // No bloquear autenticación por un fallo de bitácora.
+        }
+    }
 
     private DatEmpleado getEmpleadoValido(String cedulaValue) {
         return empleadoService.buscarPorCedula(cedulaValue);
@@ -122,6 +153,11 @@ public class AuthCtrl implements Serializable {
             return cargoEmpleado;
         }
         return normalize(empleadoRhService.buscarCargoVigentePorCedula(cedulaValue));
+    }
+
+    private String resolveNombreUsuario(DatEmpleado empleado) {
+        String nombre = normalize(empleado.getNombreC());
+        return nombre != null ? nombre : empleado.getNoCedula();
     }
 
     private boolean isCargoAutorizado(String cargo) {
@@ -153,11 +189,17 @@ public class AuthCtrl implements Serializable {
         return trimmed.isEmpty() ? null : trimmed;
     }
 
-    private void setSessionAuth(String user, boolean forceChange) {
+    private void setSessionAuth(String user, String nombreUsuario, boolean forceChange) {
         ExternalContext externalContext = FacesContext.getCurrentInstance().getExternalContext();
         Map<String, Object> session = externalContext.getSessionMap();
         session.put(KEY_AUTH_USER, user);
+        session.put(KEY_AUTH_USER_NAME, nombreUsuario);
         session.put(KEY_FORCE_CHANGE, forceChange);
+    }
+
+    private void setSessionForceChange(boolean forceChange) {
+        ExternalContext externalContext = FacesContext.getCurrentInstance().getExternalContext();
+        externalContext.getSessionMap().put(KEY_FORCE_CHANGE, forceChange);
     }
 
     private Object getSessionValue(String key) {
@@ -172,6 +214,7 @@ public class AuthCtrl implements Serializable {
         }
         return value.toString();
     }
+
 
     private void addError(String detail) {
         FacesContext.getCurrentInstance().addMessage(null,

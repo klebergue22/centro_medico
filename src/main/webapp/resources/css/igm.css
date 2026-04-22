@@ -2467,3 +2467,17 @@ td.j-date  .ui-datepicker-trigger{
     margin-bottom: 10px;
   }
 }
+
+.session-user-box{
+  display:flex;
+  align-items:center;
+  gap:.45rem;
+  margin-left:.75rem;
+  background:rgba(255,255,255,.15);
+  border:1px solid rgba(216,195,106,.6);
+  border-radius:10px;
+  padding:.35rem .6rem;
+}
+.session-user-name{ color:#fff; font-weight:700; }
+.session-user-id{ color:#ece7c9; font-size:.9rem; }
+.session-logout.ui-button{ margin-left:.35rem; padding:.25rem .6rem !important; }
