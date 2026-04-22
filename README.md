@@ -1,5 +1,33 @@
 # centro-medico
 
+## Configuración de correo para notificaciones
+
+El sistema usa un servicio de notificaciones por correo reutilizable para:
+- restablecimiento de clave,
+- notificación de receta médica,
+- y eventos de citas (agendamiento, cancelación y reagendamiento).
+La configuración SMTP es parametrizable por variables de entorno o propiedades JVM:
+
+- `CONSULTORIO_MAIL_FROM` o `-Dconsultorio.mail.from`
+- `CONSULTORIO_MAIL_SERVER` o `-Dconsultorio.mail.server`
+- `CONSULTORIO_MAIL_PORT` o `-Dconsultorio.mail.port`
+- `CONSULTORIO_MAIL_USERNAME` o `-Dconsultorio.mail.username`
+- `CONSULTORIO_MAIL_PASSWORD` o `-Dconsultorio.mail.password`
+- `CONSULTORIO_MAIL_ENABLESSL` o `-Dconsultorio.mail.enableSsl`
+- `CONSULTORIO_MAIL_ADMIN` o `-Dconsultorio.mail.admin`
+
+Ejemplo (PowerShell):
+
+```powershell
+$env:CONSULTORIO_MAIL_FROM = "notificaciones.igm@geograficomilitar.gob.ec"
+$env:CONSULTORIO_MAIL_SERVER = "mail.geograficomilitar.gob.ec"
+$env:CONSULTORIO_MAIL_PORT = "587"
+$env:CONSULTORIO_MAIL_USERNAME = "notificaciones.igm@geograficomilitar.gob.ec"
+$env:CONSULTORIO_MAIL_PASSWORD = "notiFI2023"
+$env:CONSULTORIO_MAIL_ENABLESSL = "true"
+$env:CONSULTORIO_MAIL_ADMIN = "kleber.guerra@geograficomilitar.gob.ec"
+```
+
 
 
 ## Getting started
