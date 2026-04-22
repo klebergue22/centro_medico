@@ -1,5 +1,8 @@
 package ec.gob.igm.rrhh.consultorio.web.ctrl;
 
+import ec.gob.igm.rrhh.consultorio.domain.model.DatEmpleado;
+import ec.gob.igm.rrhh.consultorio.service.EmpleadoRhService;
+import ec.gob.igm.rrhh.consultorio.service.EmpleadoService;
 import ec.gob.igm.rrhh.consultorio.web.security.CredentialStore;
 import jakarta.ejb.EJB;
 import jakarta.enterprise.context.RequestScoped;
@@ -10,6 +13,8 @@ import jakarta.inject.Named;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.text.Normalizer;
+import java.util.Locale;
 import java.util.Map;
 
 @Named
@@ -23,6 +28,10 @@ public class AuthCtrl implements Serializable {
 
     @EJB
     private CredentialStore credentialStore;
+    @EJB
+    private EmpleadoService empleadoService;
+    @EJB
+    private EmpleadoRhService empleadoRhService;
 
     private String cedula;
     private String clave;
@@ -33,6 +42,17 @@ public class AuthCtrl implements Serializable {
         String cedulaNormalizada = normalize(cedula);
         if (!isCedulaValida(cedulaNormalizada)) {
             addError("La cédula debe tener 10 dígitos numéricos.");
+            return null;
+        }
+
+        if (!isEmpleadoValido(cedulaNormalizada)) {
+            addError("La cédula ingresada no corresponde a un empleado registrado.");
+            return null;
+        }
+
+        String cargoVigente = empleadoRhService.buscarCargoVigentePorCedula(cedulaNormalizada);
+        if (!isCargoAutorizado(cargoVigente)) {
+            addError("Acceso denegado: el cargo debe ser MEDCO o MEDICO GENERAL.");
             return null;
         }
 
@@ -88,6 +108,26 @@ public class AuthCtrl implements Serializable {
         ExternalContext externalContext = FacesContext.getCurrentInstance().getExternalContext();
         externalContext.invalidateSession();
         externalContext.redirect(externalContext.getRequestContextPath() + "/login.xhtml");
+    }
+
+
+    private boolean isEmpleadoValido(String cedulaValue) {
+        DatEmpleado empleado = empleadoService.buscarPorCedula(cedulaValue);
+        return empleado != null;
+    }
+
+    private boolean isCargoAutorizado(String cargo) {
+        String normalized = normalizeCargo(cargo);
+        return normalized.contains("MEDCO") || normalized.contains("MEDICO GENERAL");
+    }
+
+    private String normalizeCargo(String cargo) {
+        if (cargo == null) {
+            return "";
+        }
+        String stripped = Normalizer.normalize(cargo, Normalizer.Form.NFD)
+                .replaceAll("\\p{M}", "");
+        return stripped.trim().toUpperCase(Locale.ROOT);
     }
 
     private boolean isCedulaValida(String cedulaValue) {
