@@ -31,6 +31,11 @@ public class UserContextService {
             return remoteUser;
         }
 
+        String sessionUser = trimToNull(String.valueOf(externalContext.getSessionMap().get("AUTH_USER")));
+        if (sessionUser != null && !"null".equalsIgnoreCase(sessionUser)) {
+            return sessionUser;
+        }
+
         Principal principal = externalContext.getUserPrincipal();
         if (principal == null) {
             return DEFAULT_TECH_USER;
