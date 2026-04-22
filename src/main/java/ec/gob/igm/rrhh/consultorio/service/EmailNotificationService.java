@@ -29,8 +29,9 @@ public class EmailNotificationService {
             throw new MessagingException("No se puede enviar correo: destinatario vacío.");
         }
         MimeMessage message = new MimeMessage(buildSession());
-        message.setFrom(new InternetAddress(MailConfigResolver.resolve("consultorio.mail.from",
-                "CONSULTORIO_MAIL_FROM", DEFAULT_FROM)));
+        InternetAddress fromAddress = new InternetAddress(DEFAULT_FROM);
+        message.setFrom(fromAddress);
+        message.setSender(fromAddress);
         message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(recipient, false));
         message.setSubject(subject, StandardCharsets.UTF_8.name());
         message.setText(body, StandardCharsets.UTF_8.name());

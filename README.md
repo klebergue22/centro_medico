@@ -8,7 +8,7 @@ El sistema usa un servicio de notificaciones por correo reutilizable para:
 - y eventos de citas (agendamiento, cancelación y reagendamiento).
 La configuración SMTP es parametrizable por variables de entorno o propiedades JVM:
 
-- `CONSULTORIO_MAIL_FROM` o `-Dconsultorio.mail.from`
+- El remitente es fijo: `notificaciones.igm@geograficomilitar.gob.ec`
 - `CONSULTORIO_MAIL_SERVER` o `-Dconsultorio.mail.server`
 - `CONSULTORIO_MAIL_PORT` o `-Dconsultorio.mail.port`
 - `CONSULTORIO_MAIL_USERNAME` o `-Dconsultorio.mail.username`
@@ -19,7 +19,6 @@ La configuración SMTP es parametrizable por variables de entorno o propiedades 
 Ejemplo (PowerShell):
 
 ```powershell
-$env:CONSULTORIO_MAIL_FROM = "notificaciones.igm@geograficomilitar.gob.ec"
 $env:CONSULTORIO_MAIL_SERVER = "mail.geograficomilitar.gob.ec"
 $env:CONSULTORIO_MAIL_PORT = "587"
 $env:CONSULTORIO_MAIL_USERNAME = "notificaciones.igm@geograficomilitar.gob.ec"
