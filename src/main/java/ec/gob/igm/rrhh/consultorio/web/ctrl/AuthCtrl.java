@@ -44,7 +44,7 @@ public class AuthCtrl implements Serializable {
     private String confirmarNuevaClave;
 
     public String login() {
-        String cedulaNormalizada = normalize(cedula);
+        String cedulaNormalizada = normalizeCedula(cedula);
         if (!isCedulaValida(cedulaNormalizada)) {
             addError("La cédula debe tener 10 dígitos numéricos.");
             return null;
@@ -165,7 +165,9 @@ public class AuthCtrl implements Serializable {
         return normalized.contains("MEDCO")
                 || normalized.contains("MEDICO GENERAL")
                 || "MEDICO".equals(normalized)
-                || normalized.startsWith("MEDICO ");
+                || normalized.startsWith("MEDICO ")
+                || normalized.contains("DOCTOR")
+                || normalized.startsWith("DR ");
     }
 
     private String normalizeCargo(String cargo) {
@@ -187,6 +189,15 @@ public class AuthCtrl implements Serializable {
         }
         String trimmed = value.trim();
         return trimmed.isEmpty() ? null : trimmed;
+    }
+
+    private String normalizeCedula(String value) {
+        String normalized = normalize(value);
+        if (normalized == null) {
+            return null;
+        }
+        String onlyDigits = normalized.replaceAll("\\D", "");
+        return onlyDigits.isEmpty() ? null : onlyDigits;
     }
 
     private void setSessionAuth(String user, String nombreUsuario, boolean forceChange) {
