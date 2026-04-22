@@ -2073,6 +2073,10 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
         return signosVitalesFormModel.getTallaCm();
     }
 
+    public Double getImc() {
+        return signosVitalesFormModel.getImc();
+    }
+
     public Double getPerimetroAbd() {
         return signosVitalesFormModel.getPerimetroAbd();
     }
@@ -2249,6 +2253,14 @@ public class CentroMedicoCtrl implements Serializable, PacienteUiStateApplier.Pa
 
     public List<String> getActividadesLab() {
         return step2FormModel.getActividadesLab();
+    }
+
+    public FichaRiesgo getFichaRiesgo() {
+        return step2FormModel.getFichaRiesgo();
+    }
+
+    public List<String> getRiskCols() {
+        return STATIC_RISK_COLS;
     }
 
     public void setActividadesLab(List<String> actividadesLab) {
