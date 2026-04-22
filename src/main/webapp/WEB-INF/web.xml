@@ -11,16 +11,35 @@
     <load-on-startup>1</load-on-startup>
   </servlet>
 
-
   <servlet-mapping>
     <servlet-name>Faces Servlet</servlet-name>
     <url-pattern>*.jsf</url-pattern>
   </servlet-mapping>
   <servlet-mapping>
-  <servlet-name>Faces Servlet</servlet-name>
-  <url-pattern>*.xhtml</url-pattern>
-</servlet-mapping>
+    <servlet-name>Faces Servlet</servlet-name>
+    <url-pattern>*.xhtml</url-pattern>
+  </servlet-mapping>
 
+  <filter>
+    <filter-name>AuthFilter</filter-name>
+    <filter-class>ec.gob.igm.rrhh.consultorio.web.security.AuthFilter</filter-class>
+  </filter>
+  <filter-mapping>
+    <filter-name>AuthFilter</filter-name>
+    <url-pattern>/pages/*</url-pattern>
+  </filter-mapping>
+  <filter-mapping>
+    <filter-name>AuthFilter</filter-name>
+    <url-pattern>/index.xhtml</url-pattern>
+  </filter-mapping>
+  <filter-mapping>
+    <filter-name>AuthFilter</filter-name>
+    <url-pattern>/index.jsf</url-pattern>
+  </filter-mapping>
+  <filter-mapping>
+    <filter-name>AuthFilter</filter-name>
+    <url-pattern>/change-password.xhtml</url-pattern>
+  </filter-mapping>
 
   <context-param>
     <param-name>jakarta.faces.FACELETS_SUFFIX</param-name>
@@ -28,13 +47,11 @@
   </context-param>
 
   <welcome-file-list>
-    <welcome-file>index.jsf</welcome-file>
+    <welcome-file>login.xhtml</welcome-file>
   </welcome-file-list>
 
   <session-config>
     <session-timeout>60</session-timeout>
   </session-config>
-
-
 
 </web-app>
