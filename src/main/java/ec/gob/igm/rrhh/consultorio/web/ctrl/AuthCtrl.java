@@ -4,6 +4,7 @@ import ec.gob.igm.rrhh.consultorio.domain.model.DatEmpleado;
 import ec.gob.igm.rrhh.consultorio.domain.model.UsuarioAuth;
 import ec.gob.igm.rrhh.consultorio.service.EmpleadoRhService;
 import ec.gob.igm.rrhh.consultorio.service.EmpleadoService;
+import ec.gob.igm.rrhh.consultorio.service.SecurityNotificationService;
 import ec.gob.igm.rrhh.consultorio.service.UsuarioAuthService;
 import ec.gob.igm.rrhh.consultorio.service.SeguridadAccesoService;
 import jakarta.ejb.EJB;
@@ -37,6 +38,8 @@ public class AuthCtrl implements Serializable {
     private UsuarioAuthService usuarioAuthService;
     @EJB
     private SeguridadAccesoService seguridadAccesoService;
+    @EJB
+    private SecurityNotificationService securityNotificationService;
 
     private String cedula;
     private String clave;
@@ -125,6 +128,43 @@ public class AuthCtrl implements Serializable {
         return "/pages/centroMedico.xhtml?faces-redirect=true";
     }
 
+    public void solicitarResetClave() {
+        String cedulaNormalizada = normalizeCedula(cedula);
+        if (!isCedulaValida(cedulaNormalizada)) {
+            addError("Para restablecer la clave, ingrese una cédula válida de 10 dígitos.");
+            return;
+        }
+
+        DatEmpleado empleado = getEmpleadoValido(cedulaNormalizada);
+        if (empleado == null) {
+            addError("No se encontró un empleado registrado con esa cédula.");
+            audit(null, cedulaNormalizada, "RESET_CLAVE", false, "Cedula no registrada");
+            return;
+        }
+
+        UsuarioAuth usuarioAuth = usuarioAuthService.findOrCreateByEmpleado(empleado);
+        String correoUsuario = resolveCorreoUsuario(usuarioAuth, empleado);
+        if (correoUsuario == null) {
+            addError("El usuario no tiene correo registrado. Contacte al administrador.");
+            audit(usuarioAuth.getIdUsuario(), cedulaNormalizada, "RESET_CLAVE", false, "Usuario sin correo");
+            return;
+        }
+
+        String claveTemporal = securityNotificationService.generarClaveTemporal();
+        try {
+            securityNotificationService.enviarNotificacionResetClave(correoUsuario,
+                    resolveNombreUsuario(empleado), cedulaNormalizada, claveTemporal);
+            usuarioAuthService.actualizarClaveTemporal(usuarioAuth, claveTemporal);
+        } catch (Exception e) {
+            addError("No se pudo completar el restablecimiento de clave. Intente nuevamente.");
+            audit(usuarioAuth.getIdUsuario(), cedulaNormalizada, "RESET_CLAVE", false, "Error enviando correo");
+            return;
+        }
+
+        addInfo("Se envió una clave temporal al correo del usuario y al administrador.");
+        audit(usuarioAuth.getIdUsuario(), cedulaNormalizada, "RESET_CLAVE", true, "Reset enviado por correo");
+    }
+
     public void logout() throws IOException {
         ExternalContext externalContext = FacesContext.getCurrentInstance().getExternalContext();
         String username = getSessionStringValue(KEY_AUTH_USER);
@@ -158,6 +198,18 @@ public class AuthCtrl implements Serializable {
     private String resolveNombreUsuario(DatEmpleado empleado) {
         String nombre = normalize(empleado.getNombreC());
         return nombre != null ? nombre : empleado.getNoCedula();
+    }
+
+    private String resolveCorreoUsuario(UsuarioAuth usuarioAuth, DatEmpleado empleado) {
+        String emailUsuario = normalize(usuarioAuth.getEmail());
+        if (emailUsuario != null) {
+            return emailUsuario;
+        }
+        String emailInstitucional = normalize(empleado.getEmailInstitucional());
+        if (emailInstitucional != null) {
+            return emailInstitucional;
+        }
+        return normalize(empleado.getEmail());
     }
 
     private boolean isCargoAutorizado(String cargo) {

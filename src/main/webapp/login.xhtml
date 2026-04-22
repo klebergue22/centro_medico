@@ -17,6 +17,9 @@
                 <h:panelGroup layout="block" style="margin-bottom:1rem; color:#3a4b32;">
                     <h:outputText value="Primer ingreso: utilice su cédula como usuario y también como clave."/>
                 </h:panelGroup>
+                <h:panelGroup layout="block" style="margin-bottom:1rem; color:#3a4b32;">
+                    <h:outputText value="¿Olvidó su clave? Ingrese su cédula y presione “Restablecer clave” para recibir una clave temporal por correo."/>
+                </h:panelGroup>
 
                 <p:panelGrid columns="3" styleClass="emp-3col ui-fluid"
                              columnClasses="lab,fld,msg" layout="tabular">
@@ -31,7 +34,11 @@
                     <p:message for="clave"/>
                 </p:panelGrid>
 
-                <div style="display:flex; justify-content:flex-end; margin-top:1rem;">
+                <div style="display:flex; justify-content:flex-end; gap:.5rem; margin-top:1rem;">
+                    <p:commandButton value="Restablecer clave" icon="pi pi-envelope"
+                                     actionListener="#{authCtrl.solicitarResetClave}"
+                                     process="cedula" update="msgs loginForm"
+                                     styleClass="ui-button-secondary"/>
                     <p:commandButton value="Ingresar" icon="pi pi-sign-in"
                                      action="#{authCtrl.login}" update="msgs loginForm"/>
                 </div>
