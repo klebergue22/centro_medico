@@ -73,7 +73,7 @@ public class AuthCtrl implements Serializable {
     }
 
     public String cambiarClave() {
-        String usuario = getSessionValue(KEY_AUTH_USER);
+        String usuario = getSessionStringValue(KEY_AUTH_USER);
         if (usuario == null) {
             addError("Su sesión expiró. Inicie sesión nuevamente.");
             return "/login.xhtml?faces-redirect=true";
@@ -152,6 +152,14 @@ public class AuthCtrl implements Serializable {
     private Object getSessionValue(String key) {
         ExternalContext externalContext = FacesContext.getCurrentInstance().getExternalContext();
         return externalContext.getSessionMap().get(key);
+    }
+
+    private String getSessionStringValue(String key) {
+        Object value = getSessionValue(key);
+        if (value == null) {
+            return null;
+        }
+        return value.toString();
     }
 
     private void addError(String detail) {
