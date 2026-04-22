@@ -7,6 +7,7 @@ import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 
+import jakarta.ejb.EJB;
 import jakarta.enterprise.context.ApplicationScoped;
 
 import ec.gob.igm.rrhh.consultorio.domain.model.ConsultaDiagnostico;
@@ -24,6 +25,9 @@ import ec.gob.igm.rrhh.consultorio.web.ctrl.CentroMedicoCtrl;
 public class CentroMedicoFormInitializer implements Serializable {
 
     private static final long serialVersionUID = 1L;
+
+    @EJB
+    private UserContextService userContextService;
 
     public void initUiDefaults(CentroMedicoCtrl ctrl) {
         ctrl.setMostrarDlgCedula(true);
@@ -77,6 +81,22 @@ public class CentroMedicoFormInitializer implements Serializable {
         initActLab(ctrl, hRows);
         ensureDiagSize(ctrl, diagRows);
         ensureStep3PersonaAuxState(ctrl);
+        applyProfessionalDefaults(ctrl);
+    }
+
+
+    private void applyProfessionalDefaults(CentroMedicoCtrl ctrl) {
+        String currentUser = userContextService.resolveCurrentUser();
+        if (isBlank(ctrl.getMedicoNombre()) && !UserContextService.DEFAULT_TECH_USER.equals(currentUser)) {
+            ctrl.setMedicoNombre(currentUser);
+        }
+        if (isBlank(ctrl.getMedicoCodigo()) && !UserContextService.DEFAULT_TECH_USER.equals(currentUser)) {
+            ctrl.setMedicoCodigo(currentUser);
+        }
+    }
+
+    private boolean isBlank(String value) {
+        return value == null || value.isBlank();
     }
 
     private FichaRiesgo buildFichaRiesgo(FichaOcupacional ficha) {

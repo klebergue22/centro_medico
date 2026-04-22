@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui">
+<h:head>
+    <title>Ingreso - Centro Médico</title>
+</h:head>
+<h:body styleClass="ui-fluid" style="padding:2rem; max-width: 480px; margin: 0 auto;">
+    <h:form id="loginForm">
+        <h2>Acceso al módulo de Centro Médico</h2>
+        <p>Primer ingreso: utilice su cédula como usuario y también como clave.</p>
+
+        <p:messages id="msgs" showDetail="true" closable="true"/>
+
+        <div style="display:flex; flex-direction:column; gap:.75rem;">
+            <p:outputLabel for="cedula" value="Cédula"/>
+            <p:inputText id="cedula" value="#{authCtrl.cedula}" maxlength="10" required="true"/>
+
+            <p:outputLabel for="clave" value="Clave"/>
+            <p:password id="clave" value="#{authCtrl.clave}" required="true" feedback="false"/>
+
+            <p:commandButton value="Ingresar" action="#{authCtrl.login}" update="msgs"/>
+        </div>
+    </h:form>
+</h:body>
+</html>
