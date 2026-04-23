@@ -24,6 +24,9 @@ public class SegPermiso implements Serializable {
     @Column(name = "ACCION", nullable = false, length = 50)
     private String accion;
 
+    @Column(name = "NOMBRE", nullable = false, length = 120)
+    private String nombre;
+
     public Long getIdPermiso() { return idPermiso; }
     public void setIdPermiso(Long idPermiso) { this.idPermiso = idPermiso; }
     public String getCodigo() { return codigo; }
@@ -34,4 +37,6 @@ public class SegPermiso implements Serializable {
     public void setRecurso(String recurso) { this.recurso = recurso; }
     public String getAccion() { return accion; }
     public void setAccion(String accion) { this.accion = accion; }
+    public String getNombre() { return nombre; }
+    public void setNombre(String nombre) { this.nombre = nombre; }
 }

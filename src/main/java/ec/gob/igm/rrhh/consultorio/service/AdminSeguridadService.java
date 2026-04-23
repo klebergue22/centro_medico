@@ -27,11 +27,11 @@ public class AdminSeguridadService {
     private static final String CARGO_ADMIN_REQUERIDO_NORMALIZADO = normalizeCargo(CARGO_ADMIN_REQUERIDO);
 
     private static final List<PermisoSeed> PERMISOS_ADMIN = Arrays.asList(
-            new PermisoSeed("SEG_USUARIOS_ADMINISTRAR", "SEGURIDAD", "USUARIOS", "ADMINISTRAR"),
-            new PermisoSeed("SEG_ROLES_ADMINISTRAR", "SEGURIDAD", "ROLES", "ADMINISTRAR"),
-            new PermisoSeed("SEG_PERMISOS_ADMINISTRAR", "SEGURIDAD", "PERMISOS", "ADMINISTRAR"),
-            new PermisoSeed("SEG_AGENDA_ADMINISTRAR", "AGENDA", "CITAS", "ADMINISTRAR"),
-            new PermisoSeed("SEG_CONFIGURACION_ADMINISTRAR", "CONFIGURACION", "SISTEMA", "ADMINISTRAR")
+            new PermisoSeed("SEG_USUARIOS_ADMINISTRAR", "Administrar usuarios", "SEGURIDAD", "USUARIOS", "ADMINISTRAR"),
+            new PermisoSeed("SEG_ROLES_ADMINISTRAR", "Administrar roles", "SEGURIDAD", "ROLES", "ADMINISTRAR"),
+            new PermisoSeed("SEG_PERMISOS_ADMINISTRAR", "Administrar permisos", "SEGURIDAD", "PERMISOS", "ADMINISTRAR"),
+            new PermisoSeed("SEG_AGENDA_ADMINISTRAR", "Administrar agenda", "AGENDA", "CITAS", "ADMINISTRAR"),
+            new PermisoSeed("SEG_CONFIGURACION_ADMINISTRAR", "Administrar configuraciones", "CONFIGURACION", "SISTEMA", "ADMINISTRAR")
     );
 
     @PersistenceContext(unitName = "consultorioPU")
@@ -138,6 +138,7 @@ public class AdminSeguridadService {
 
         if (!rows.isEmpty()) {
             SegPermiso permiso = rows.get(0);
+            permiso.setNombre(seed.nombre);
             permiso.setModulo(seed.modulo);
             permiso.setRecurso(seed.recurso);
             permiso.setAccion(seed.accion);
@@ -146,6 +147,7 @@ public class AdminSeguridadService {
 
         SegPermiso permiso = new SegPermiso();
         permiso.setCodigo(seed.codigo);
+        permiso.setNombre(seed.nombre);
         permiso.setModulo(seed.modulo);
         permiso.setRecurso(seed.recurso);
         permiso.setAccion(seed.accion);
@@ -246,6 +248,6 @@ public class AdminSeguridadService {
         return stripped.replaceAll("\\s+", " ").trim().toUpperCase();
     }
 
-    private record PermisoSeed(String codigo, String modulo, String recurso, String accion) {
+    private record PermisoSeed(String codigo, String nombre, String modulo, String recurso, String accion) {
     }
 }

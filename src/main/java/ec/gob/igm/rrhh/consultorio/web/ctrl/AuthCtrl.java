@@ -269,15 +269,21 @@ public class AuthCtrl implements Serializable {
         }
 
         if (isCargoAdmin(cargoVigente)) {
-            adminSeguridadService.provisionarAdministrador(
-                    cedulaNormalizada,
-                    resolveNombreUsuario(empleado),
-                    correoInstitucional,
-                    "AUTH_AUTO"
-            );
-            addInfo("Registro exitoso como administrador. Ingrese con usuario (cédula) y clave inicial (su cédula).");
-            audit(null, cedulaNormalizada, "REGISTRO_USUARIO", true, "Administrador registrado en SEG_USUARIO");
-            return;
+            try {
+                adminSeguridadService.provisionarAdministrador(
+                        cedulaNormalizada,
+                        resolveNombreUsuario(empleado),
+                        correoInstitucional,
+                        "AUTH_AUTO"
+                );
+                addInfo("Registro exitoso como administrador. Ingrese con usuario (cédula) y clave inicial (su cédula).");
+                audit(null, cedulaNormalizada, "REGISTRO_USUARIO", true, "Administrador registrado en SEG_USUARIO");
+                return;
+            } catch (RuntimeException e) {
+                addError("No se pudo completar el registro de administrador. Intente nuevamente o contacte a soporte.");
+                audit(null, cedulaNormalizada, "REGISTRO_USUARIO", false, "Error registrando administrador");
+                return;
+            }
         }
 
         usuarioAuthService.findOrCreateByEmpleado(empleado);
