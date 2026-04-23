@@ -16,6 +16,7 @@ import jakarta.faces.view.ViewDeclarationLanguage;
 import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
+import jakarta.servlet.http.HttpSession;
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -117,6 +118,18 @@ public class CentroMedicoPdfFacade implements Serializable {
             LOG.error("Error al generar PDF desde HTML directo.", e);
             throw new RuntimeException("No fue posible generar el PDF.", e);
         }
+    }
+
+    public byte[] obtenerPdf(String token) {
+        FacesContext ctx = FacesContext.getCurrentInstance();
+        if (ctx == null || token == null || token.trim().isEmpty()) {
+            return null;
+        }
+        Object sessionObj = ctx.getExternalContext().getSession(false);
+        if (!(sessionObj instanceof HttpSession)) {
+            return null;
+        }
+        return pdfSessionStore.find((HttpSession) sessionObj, token);
     }
 
     public PdfPreviewResult prepararPreviewDesdeHtml(Supplier<Boolean> verificador,

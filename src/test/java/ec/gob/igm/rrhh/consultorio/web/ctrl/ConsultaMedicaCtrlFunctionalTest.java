@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -183,6 +184,31 @@ class ConsultaMedicaCtrlFunctionalTest {
 
         assertContainsMessage("Diagn");
         assertContainsMessage("Consulta guardada");
+    }
+
+    @Test
+    void guardarConsultaDebeEnviarCorreoConPdfAdjunto() throws Exception {
+        DatEmpleado empleado = cargarPacienteBase();
+        empleado.setEmailInstitucional("paciente@geograficomilitar.gob.ec");
+
+        controller.getDiagnosticos().clear();
+        controller.getDiagnosticos().add(crearDiagnostico("J00", "Resfriado comun"));
+        controller.getRecetas().clear();
+        ConsultaMedicaCtrl.RecetaItemForm item = new ConsultaMedicaCtrl.RecetaItemForm();
+        item.setMedicamento("Paracetamol");
+        controller.getRecetas().add(item);
+
+        when(centroMedicoPdfFacade.generarDesdeHtml(anyString(), eq("CONS_"))).thenReturn("PDF_TOKEN");
+        when(centroMedicoPdfFacade.obtenerPdf("PDF_TOKEN")).thenReturn(new byte[] {1, 2, 3});
+
+        controller.guardarConsulta();
+
+        verify(medicalNotificationService).enviarRecetaMedicaAtencion(
+                eq("paciente@geograficomilitar.gob.ec"),
+                eq("Ana Perez"),
+                any(Date.class),
+                eq(new byte[] {1, 2, 3}),
+                anyString());
     }
 
     @Test
