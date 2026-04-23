@@ -15,6 +15,7 @@ import ec.gob.igm.rrhh.consultorio.service.EmpleadoService;
 import ec.gob.igm.rrhh.consultorio.service.FichaOcupacionalService;
 import ec.gob.igm.rrhh.consultorio.service.PersonaAuxService;
 import ec.gob.igm.rrhh.consultorio.service.EmpleadoRhService;
+import ec.gob.igm.rrhh.consultorio.service.MedicalNotificationService;
 import ec.gob.igm.rrhh.consultorio.service.SignosVitalesService;
 import ec.gob.igm.rrhh.consultorio.web.facade.CentroMedicoPdfFacade;
 import ec.gob.igm.rrhh.consultorio.web.pdf.PdfResourceResolver;
@@ -81,6 +82,8 @@ public class ConsultaMedicaCtrl implements Serializable {
     private transient Cie10Service cie10Service;
     @Inject
     private transient SignosVitalesService signosVitalesService;
+    @Inject
+    private transient MedicalNotificationService medicalNotificationService;
 
     private String cedulaBusqueda;
     private DatEmpleado empleado;
@@ -562,6 +565,31 @@ public class ConsultaMedicaCtrl implements Serializable {
         String html = construirHtmlReceta();
         tokenPdf = centroMedicoPdfFacade.generarDesdeHtml(html, "CONS_");
         addMessage(FacesMessage.SEVERITY_INFO, "PDF generado", "Ya puede visualizar o descargar la receta.");
+        enviarRecetaACorreoInstitucional();
+    }
+
+    private void enviarRecetaACorreoInstitucional() {
+        DatEmpleado empleadoActual = resolveEmpleadoParaConsulta();
+        if (empleadoActual == null) {
+            addMessage(FacesMessage.SEVERITY_WARN, "Correo no enviado",
+                    "No se encontró el registro DAT_EMPLEADO para enviar la receta.");
+            return;
+        }
+        String correoInstitucional = normalizeEmail(empleadoActual.getEmailInstitucional());
+        if (isBlank(correoInstitucional)) {
+            addMessage(FacesMessage.SEVERITY_WARN, "Correo no enviado",
+                    "El paciente no tiene EMAIL_INSTITUCIONAL registrado en DAT_EMPLEADO.");
+            return;
+        }
+        Date fechaAtencion = consulta.getFechaConsulta() != null ? consulta.getFechaConsulta() : new Date();
+        try {
+            medicalNotificationService.enviarRecetaMedicaAtencion(correoInstitucional, getNombrePaciente(), fechaAtencion);
+            addMessage(FacesMessage.SEVERITY_INFO, "Correo enviado",
+                    "La receta fue notificada a " + correoInstitucional + ".");
+        } catch (Exception ex) {
+            addMessage(FacesMessage.SEVERITY_WARN, "Correo no enviado",
+                    "No se pudo enviar la receta al correo institucional.");
+        }
     }
 
     public void prepararDialogoCertificado() {

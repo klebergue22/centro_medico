@@ -65,6 +65,20 @@ public class UsuarioAuthService {
         em.merge(usuario);
     }
 
+    public void actualizarClaveTemporal(UsuarioAuth usuario, String claveTemporal) {
+        if (usuario == null) {
+            throw new IllegalArgumentException("Usuario no puede ser null");
+        }
+        if (claveTemporal == null || claveTemporal.isBlank()) {
+            throw new IllegalArgumentException("La clave temporal no puede estar vacía");
+        }
+        usuario.setClaveHash(hash(claveTemporal));
+        usuario.setRequiereCambioClave("S");
+        usuario.setFechaUltimoCambioClave(new Date());
+        usuario.setIntentosFallidos(0);
+        em.merge(usuario);
+    }
+
     public void registrarLoginExitoso(UsuarioAuth usuario) {
         if (usuario == null) return;
         usuario.setFechaUltimoLogin(new Date());
