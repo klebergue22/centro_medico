@@ -15,6 +15,12 @@ public class MedicalNotificationService {
 
     public void enviarRecetaMedicaAtencion(String correoInstitucional, String nombrePaciente, Date fechaAtencion)
             throws MessagingException {
+        enviarRecetaMedicaAtencion(correoInstitucional, nombrePaciente, fechaAtencion, null, null);
+    }
+
+    public void enviarRecetaMedicaAtencion(String correoInstitucional, String nombrePaciente, Date fechaAtencion,
+                                           byte[] recetaPdf, String recetaPdfNombre)
+            throws MessagingException {
         String destinatario = MailConfigResolver.normalize(correoInstitucional);
         if (destinatario == null) {
             throw new MessagingException("No existe correo institucional para enviar la receta.");
@@ -25,6 +31,15 @@ public class MedicalNotificationService {
                 + "Paciente: " + valueOrDefault(nombrePaciente, "N/D") + "\n"
                 + "Correo institucional destino: " + destinatario + "\n\n"
                 + "Este correo fue generado automáticamente por el Sistema Centro Médico.";
+        if (recetaPdf != null && recetaPdf.length > 0) {
+            String nombreAdjunto = MailConfigResolver.normalize(recetaPdfNombre);
+            if (nombreAdjunto == null) {
+                nombreAdjunto = "receta-medica-" + fechaTexto.replace("/", "-") + ".pdf";
+            }
+            emailNotificationService.sendWithAttachment(destinatario, subject, body,
+                    recetaPdf, nombreAdjunto, "application/pdf");
+            return;
+        }
         emailNotificationService.send(destinatario, subject, body);
     }
 
