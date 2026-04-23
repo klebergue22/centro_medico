@@ -20,11 +20,16 @@
             <p:panel header="Administración de usuarios y accesos" style="margin-top:10px;">
                 <h:panelGroup layout="block" styleClass="ui-fluid">
                     <p class="muted" style="margin-top:0;">
-                        Crea/actualiza un usuario administrador con gestión de usuarios, roles,
-                        permisos, agenda y configuraciones.
+                        Gestión integral de usuarios: listado de accesos, creación/actualización,
+                        asignación de roles y visualización de permisos.
                     </p>
+                    <h:panelGroup layout="block" rendered="#{not empty adminSeguridadCtrl.idUsuarioEdicion}">
+                        <p class="muted" style="margin-top:0;">
+                            Editando usuario ID: <b>#{adminSeguridadCtrl.idUsuarioEdicion}</b>
+                        </p>
+                    </h:panelGroup>
                     <p class="muted" style="margin-top:0;">
-                        Requisito: el cargo vigente en RRHH debe ser
+                        Requisito para provisionar administrador: el cargo vigente en RRHH debe ser
                         <b>#{adminSeguridadCtrl.cargoRequeridoAdmin}</b>.
                     </p>
 
@@ -39,16 +44,101 @@
                         <p:inputText id="nombre" value="#{adminSeguridadCtrl.nombreVisible}"/>
                     </div>
 
-                    <div class="p-field" style="margin-bottom:14px;">
+                    <div class="p-field" style="margin-bottom:12px;">
                         <p:outputLabel for="correo" value="Correo institucional"/>
                         <p:inputText id="correo" value="#{adminSeguridadCtrl.email}"/>
                     </div>
 
-                    <p:commandButton value="Provisionar administrador"
-                                     icon="pi pi-shield"
-                                     actionListener="#{adminSeguridadCtrl.provisionarAdministrador}"
-                                     update="@form"/>
+                    <div class="p-field" style="margin-bottom:14px;">
+                        <p:outputLabel for="rol" value="Rol"/>
+                        <p:selectOneMenu id="rol" value="#{adminSeguridadCtrl.idRolSeleccionado}" required="true"
+                                         requiredMessage="Seleccione un rol para el usuario.">
+                            <f:selectItem itemLabel="Seleccione..." itemValue="#{null}" noSelectionOption="true"/>
+                            <f:selectItems value="#{adminSeguridadCtrl.rolesActivos}" var="rol"
+                                           itemValue="#{rol.idRol}"
+                                           itemLabel="#{rol.nombre} (#{rol.codigo})"/>
+                            <p:ajax update="tblPermisosRol"/>
+                        </p:selectOneMenu>
+                    </div>
+
+                    <p:dataTable id="tblPermisosRol" value="#{adminSeguridadCtrl.permisosRolSeleccionado}" var="permiso"
+                                 emptyMessage="Seleccione un rol para visualizar sus permisos." rows="5"
+                                 paginator="#{not empty adminSeguridadCtrl.permisosRolSeleccionado}">
+                        <p:column headerText="Código">
+                            <h:outputText value="#{permiso.codigo}"/>
+                        </p:column>
+                        <p:column headerText="Módulo">
+                            <h:outputText value="#{permiso.modulo}"/>
+                        </p:column>
+                        <p:column headerText="Permiso">
+                            <h:outputText value="#{permiso.nombre}"/>
+                        </p:column>
+                    </p:dataTable>
+
+                    <div style="display:flex; gap:8px; margin-top:12px;">
+                        <p:commandButton value="Guardar usuario"
+                                         icon="pi pi-user-plus"
+                                         actionListener="#{adminSeguridadCtrl.guardarUsuario}"
+                                         update="@form"/>
+                        <p:commandButton value="Provisionar administrador"
+                                         icon="pi pi-shield"
+                                         actionListener="#{adminSeguridadCtrl.provisionarAdministrador}"
+                                         update="@form"
+                                         styleClass="ui-button-secondary"/>
+                    </div>
                 </h:panelGroup>
+            </p:panel>
+
+            <p:panel header="Listado de usuarios" style="margin-top:16px;">
+                <p:dataTable id="tblUsuarios" value="#{adminSeguridadCtrl.usuarios}" var="usr"
+                             paginator="true" rows="10" rowKey="#{usr.idUsuario}" reflow="true"
+                             emptyMessage="No existen usuarios registrados.">
+                    <p:column headerText="Usuario">
+                        <h:outputText value="#{usr.username}"/>
+                    </p:column>
+                    <p:column headerText="Nombre">
+                        <h:outputText value="#{usr.nombreVisible}"/>
+                    </p:column>
+                    <p:column headerText="Correo">
+                        <h:outputText value="#{usr.email}"/>
+                    </p:column>
+                    <p:column headerText="Roles">
+                        <h:outputText value="#{empty usr.roles ? 'Sin rol activo' : usr.roles}"/>
+                    </p:column>
+                    <p:column headerText="Estado">
+                        <h:outputText value="#{usr.activo eq 'S' ? 'Activo' : 'Inactivo'}"/>
+                    </p:column>
+                    <p:column headerText="Bloqueado">
+                        <h:outputText value="#{usr.bloqueado eq 'S' ? 'Sí' : 'No'}"/>
+                    </p:column>
+                    <p:column headerText="Gestión" style="width:160px;">
+                        <p:commandButton value="Editar"
+                                         icon="pi pi-pencil"
+                                         actionListener="#{adminSeguridadCtrl.editarUsuario(usr.idUsuario)}"
+                                         update="@form"
+                                         styleClass="ui-button-info ui-button-sm"/>
+                        <p:spacer width="6"/>
+                        <p:commandButton value="Reset clave"
+                                         icon="pi pi-refresh"
+                                         actionListener="#{adminSeguridadCtrl.resetearClaveUsuario(usr.idUsuario)}"
+                                         update="@form"
+                                         styleClass="ui-button-help ui-button-sm"/>
+                        <p:spacer width="6"/>
+                        <p:commandButton value="Activar"
+                                         rendered="#{usr.activo ne 'S'}"
+                                         icon="pi pi-check"
+                                         actionListener="#{adminSeguridadCtrl.cambiarEstadoUsuario(usr.idUsuario, true)}"
+                                         update="@form"
+                                         styleClass="ui-button-success ui-button-sm"/>
+                        <p:spacer width="6" rendered="#{usr.activo ne 'S'}"/>
+                        <p:commandButton value="Desactivar"
+                                         rendered="#{usr.activo eq 'S'}"
+                                         icon="pi pi-ban"
+                                         actionListener="#{adminSeguridadCtrl.cambiarEstadoUsuario(usr.idUsuario, false)}"
+                                         update="@form"
+                                         styleClass="ui-button-danger ui-button-sm"/>
+                    </p:column>
+                </p:dataTable>
             </p:panel>
         </h:form>
     </ui:define>
