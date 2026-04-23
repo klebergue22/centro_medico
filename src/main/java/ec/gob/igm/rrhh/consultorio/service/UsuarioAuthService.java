@@ -30,7 +30,7 @@ public class UsuarioAuthService {
         nuevo.setNoCedula(empleado.getNoCedula());
         nuevo.setNoPersona(empleado.getNoPersona());
         nuevo.setNombreVisible(empleado.getNombreC() != null ? empleado.getNombreC() : empleado.getNoCedula());
-        nuevo.setEmail(empleado.getEmailInstitucional() != null ? empleado.getEmailInstitucional() : empleado.getEmail());
+        nuevo.setEmail(empleado.getEmailInstitucional());
         nuevo.setClaveHash(hash(empleado.getNoCedula()));
         nuevo.setAlgoritmoHash("SHA-256");
         nuevo.setActivo("S");
@@ -41,6 +41,13 @@ public class UsuarioAuthService {
         nuevo.setUsrCreacion("AUTH_AUTO");
         em.persist(nuevo);
         return nuevo;
+    }
+
+    public UsuarioAuth findByUsername(String username) {
+        if (username == null || username.isBlank()) {
+            return null;
+        }
+        return findByUsernameInternal(username.trim());
     }
 
     public boolean validatePassword(UsuarioAuth usuario, String rawPassword) {
@@ -86,7 +93,7 @@ public class UsuarioAuthService {
         em.merge(usuario);
     }
 
-    private UsuarioAuth findByUsername(String username) {
+    private UsuarioAuth findByUsernameInternal(String username) {
         List<UsuarioAuth> rows = em.createQuery(
                         "SELECT u FROM UsuarioAuth u WHERE u.username = :username", UsuarioAuth.class)
                 .setParameter("username", username)

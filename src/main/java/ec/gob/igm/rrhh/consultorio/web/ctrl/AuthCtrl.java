@@ -47,6 +47,7 @@ public class AuthCtrl implements Serializable {
     private String nuevaClave;
     private String confirmarNuevaClave;
     private String correoInstitucionalReset;
+    private String cedulaRegistro;
 
     public String login() {
         String cedulaNormalizada = normalizeCedula(cedula);
@@ -69,7 +70,12 @@ public class AuthCtrl implements Serializable {
             return null;
         }
 
-        UsuarioAuth usuarioAuth = usuarioAuthService.findOrCreateByEmpleado(empleado);
+        UsuarioAuth usuarioAuth = usuarioAuthService.findByUsername(cedulaNormalizada);
+        if (usuarioAuth == null) {
+            addError("Usuario no registrado. Use el botón \"Registrar médico\" para crear su acceso.");
+            audit(null, cedulaNormalizada, "INTENTO_FALLIDO", false, "Usuario no registrado en SEG_USUARIO");
+            return null;
+        }
         if (!usuarioAuthService.validatePassword(usuarioAuth, clave)) {
             addError("Usuario o clave inválidos.");
             audit(usuarioAuth.getIdUsuario(), cedulaNormalizada, "INTENTO_FALLIDO", false, "Clave invalida");
@@ -122,7 +128,11 @@ public class AuthCtrl implements Serializable {
             return null;
         }
 
-        UsuarioAuth usuarioAuth = usuarioAuthService.findOrCreateByEmpleado(empleado);
+        UsuarioAuth usuarioAuth = usuarioAuthService.findByUsername(usuario);
+        if (usuarioAuth == null) {
+            addError("No se encontró el usuario de seguridad asociado a la sesión.");
+            return null;
+        }
         usuarioAuthService.actualizarClave(usuarioAuth, nuevaClave);
         audit(usuarioAuth.getIdUsuario(), usuario, "CAMBIO_CLAVE", true, "Cambio de clave exitoso");
         setSessionForceChange(false);
@@ -157,7 +167,26 @@ public class AuthCtrl implements Serializable {
             return;
         }
 
-        UsuarioAuth usuarioAuth = usuarioAuthService.findOrCreateByEmpleado(empleado);
+        UsuarioAuth usuarioAuth = usuarioAuthService.findByUsername(cedulaNormalizada);
+        if (usuarioAuth == null) {
+            addError("Usuario no registrado. Debe registrarse primero en el botón \"Registrar médico\".");
+            audit(null, cedulaNormalizada, "RESET_CLAVE", false, "Usuario no registrado en SEG_USUARIO");
+            return;
+        }
+
+        String correoRegistrado = normalize(usuarioAuth.getEmail());
+        if (correoRegistrado == null) {
+            addError("El usuario no tiene correo institucional registrado en SEG_USUARIO.");
+            audit(usuarioAuth.getIdUsuario(), cedulaNormalizada, "RESET_CLAVE", false, "Usuario sin correo registrado");
+            return;
+        }
+
+        if (!correoRegistrado.equalsIgnoreCase(correoIngresado)) {
+            addError("El correo institucional ingresado no coincide con el registrado para el usuario.");
+            audit(usuarioAuth.getIdUsuario(), cedulaNormalizada, "RESET_CLAVE", false, "Correo no coincide con SEG_USUARIO");
+            return;
+        }
+
         String claveTemporal = securityNotificationService.generarClaveTemporal();
         try {
             securityNotificationService.enviarNotificacionResetClave(correoIngresado,
@@ -171,6 +200,45 @@ public class AuthCtrl implements Serializable {
 
         addInfo("Correo enviado: se notificó al usuario (" + correoIngresado + ") y al administrador.");
         audit(usuarioAuth.getIdUsuario(), cedulaNormalizada, "RESET_CLAVE", true, "Reset enviado por correo");
+    }
+
+    public void registrarMedico() {
+        String cedulaNormalizada = normalizeCedula(cedulaRegistro);
+        if (!isCedulaValida(cedulaNormalizada)) {
+            addError("Para registrarse, ingrese una cédula válida de 10 dígitos.");
+            return;
+        }
+
+        DatEmpleado empleado = getEmpleadoValido(cedulaNormalizada);
+        if (empleado == null) {
+            addError("La cédula ingresada no corresponde a un empleado registrado.");
+            audit(null, cedulaNormalizada, "REGISTRO_USUARIO", false, "Cedula no registrada en DAT_EMPLEADO");
+            return;
+        }
+
+        String cargoVigente = resolveCargoParaLogin(empleado, cedulaNormalizada);
+        if (!isCargoAutorizado(cargoVigente)) {
+            addError("Solo perfiles médicos autorizados pueden registrarse.");
+            audit(null, cedulaNormalizada, "REGISTRO_USUARIO", false, "Cargo no autorizado");
+            return;
+        }
+
+        String correoInstitucional = normalize(empleado.getEmailInstitucional());
+        if (!isCorreoInstitucionalValido(correoInstitucional)) {
+            addError("No existe un correo institucional válido en DAT_EMPLEADO para completar el registro.");
+            audit(null, cedulaNormalizada, "REGISTRO_USUARIO", false, "Correo institucional invalido");
+            return;
+        }
+
+        if (usuarioAuthService.findByUsername(cedulaNormalizada) != null) {
+            addInfo("El usuario ya está registrado. Puede ingresar con su cédula y clave.");
+            audit(null, cedulaNormalizada, "REGISTRO_USUARIO", true, "Usuario ya existente");
+            return;
+        }
+
+        usuarioAuthService.findOrCreateByEmpleado(empleado);
+        addInfo("Registro exitoso. Ingrese con usuario (cédula) y clave inicial (su cédula).");
+        audit(null, cedulaNormalizada, "REGISTRO_USUARIO", true, "Usuario registrado en SEG_USUARIO");
     }
 
     public void logout() throws IOException {
@@ -206,18 +274,6 @@ public class AuthCtrl implements Serializable {
     private String resolveNombreUsuario(DatEmpleado empleado) {
         String nombre = normalize(empleado.getNombreC());
         return nombre != null ? nombre : empleado.getNoCedula();
-    }
-
-    private String resolveCorreoUsuario(UsuarioAuth usuarioAuth, DatEmpleado empleado) {
-        String emailUsuario = normalize(usuarioAuth.getEmail());
-        if (emailUsuario != null) {
-            return emailUsuario;
-        }
-        String emailInstitucional = normalize(empleado.getEmailInstitucional());
-        if (emailInstitucional != null) {
-            return emailInstitucional;
-        }
-        return normalize(empleado.getEmail());
     }
 
     private boolean isCargoAutorizado(String cargo) {
@@ -343,5 +399,13 @@ public class AuthCtrl implements Serializable {
 
     public void setCorreoInstitucionalReset(String correoInstitucionalReset) {
         this.correoInstitucionalReset = correoInstitucionalReset;
+    }
+
+    public String getCedulaRegistro() {
+        return cedulaRegistro;
+    }
+
+    public void setCedulaRegistro(String cedulaRegistro) {
+        this.cedulaRegistro = cedulaRegistro;
     }
 }
