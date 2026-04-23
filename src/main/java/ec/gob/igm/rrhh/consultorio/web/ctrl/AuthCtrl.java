@@ -45,6 +45,7 @@ public class AuthCtrl implements Serializable {
     private String clave;
     private String nuevaClave;
     private String confirmarNuevaClave;
+    private String correoInstitucionalReset;
 
     public String login() {
         String cedulaNormalizada = normalizeCedula(cedula);
@@ -142,17 +143,24 @@ public class AuthCtrl implements Serializable {
             return;
         }
 
-        UsuarioAuth usuarioAuth = usuarioAuthService.findOrCreateByEmpleado(empleado);
-        String correoUsuario = resolveCorreoUsuario(usuarioAuth, empleado);
-        if (correoUsuario == null) {
-            addError("El usuario no tiene correo registrado. Contacte al administrador.");
-            audit(usuarioAuth.getIdUsuario(), cedulaNormalizada, "RESET_CLAVE", false, "Usuario sin correo");
+        String correoIngresado = normalize(correoInstitucionalReset);
+        if (correoIngresado == null) {
+            addError("Para restablecer la clave, ingrese el correo institucional.");
+            audit(null, cedulaNormalizada, "RESET_CLAVE", false, "Correo institucional no ingresado");
             return;
         }
 
+        String correoInstitucional = normalize(empleado.getEmailInstitucional());
+        if (correoInstitucional == null || !correoInstitucional.equalsIgnoreCase(correoIngresado)) {
+            addError("El correo institucional no coincide con el registrado para esa cédula.");
+            audit(null, cedulaNormalizada, "RESET_CLAVE", false, "Correo institucional no coincide");
+            return;
+        }
+
+        UsuarioAuth usuarioAuth = usuarioAuthService.findOrCreateByEmpleado(empleado);
         String claveTemporal = securityNotificationService.generarClaveTemporal();
         try {
-            securityNotificationService.enviarNotificacionResetClave(correoUsuario,
+            securityNotificationService.enviarNotificacionResetClave(correoInstitucional,
                     resolveNombreUsuario(empleado), cedulaNormalizada, claveTemporal);
             usuarioAuthService.actualizarClaveTemporal(usuarioAuth, claveTemporal);
         } catch (Exception e) {
@@ -161,7 +169,7 @@ public class AuthCtrl implements Serializable {
             return;
         }
 
-        addInfo("Se envió una clave temporal al correo del usuario y al administrador.");
+        addInfo("Correo enviado: se notificó al usuario (" + correoInstitucional + ") y al administrador.");
         audit(usuarioAuth.getIdUsuario(), cedulaNormalizada, "RESET_CLAVE", true, "Reset enviado por correo");
     }
 
@@ -319,5 +327,13 @@ public class AuthCtrl implements Serializable {
 
     public void setConfirmarNuevaClave(String confirmarNuevaClave) {
         this.confirmarNuevaClave = confirmarNuevaClave;
+    }
+
+    public String getCorreoInstitucionalReset() {
+        return correoInstitucionalReset;
+    }
+
+    public void setCorreoInstitucionalReset(String correoInstitucionalReset) {
+        this.correoInstitucionalReset = correoInstitucionalReset;
     }
 }
