@@ -52,6 +52,7 @@ public class SeguridadSesionAuditoriaService {
                 + ", ID_USUARIO=" + usuario.getIdUsuario()
                 + ", ID_ROL=" + safe(rolId)
                 + ", IP_ORIGEN=" + safe(ipOrigen));
+        auditoriaDet.setIpOrigen(ipOrigen);
         auditoriaDet.setFechaEvento(ahora);
         em.persist(auditoriaDet);
 
