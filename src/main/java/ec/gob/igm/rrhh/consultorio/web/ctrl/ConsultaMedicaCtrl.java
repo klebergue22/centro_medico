@@ -218,7 +218,13 @@ public class ConsultaMedicaCtrl implements Serializable {
         if (isBlank(certDomicilio)) certDomicilio = resolveDireccionPaciente();
         if (isBlank(certCargoPaciente)) certCargoPaciente = resolveCargoPaciente();
         if (isBlank(certAreaTrabajo)) certAreaTrabajo = getAreaTrabajoPaciente();
-        consultasAnteriores = empleado != null ? consultaMedicaService.buscarPorEmpleado(empleado.getNoPersona()) : new ArrayList<>();
+        if (empleado == null) {
+            consultasAnteriores = new ArrayList<>();
+            return;
+        }
+        consultasAnteriores = isUsuarioOdontologo()
+                ? consultaMedicaService.buscarPorEmpleado(empleado.getNoPersona(), true)
+                : consultaMedicaService.buscarPorEmpleado(empleado.getNoPersona());
     }
 
     public void agregarDiagnostico() {
@@ -1559,6 +1565,10 @@ public class ConsultaMedicaCtrl implements Serializable {
     }
 
     public boolean isOcultarPanelSignosVitales() {
+        return isUsuarioOdontologo();
+    }
+
+    private boolean isUsuarioOdontologo() {
         FacesContext context = FacesContext.getCurrentInstance();
         if (context == null) {
             return false;
