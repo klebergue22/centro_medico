@@ -239,9 +239,12 @@ input.ui-inputfield:focus, textarea.ui-inputfield:focus{
   background:linear-gradient(180deg,#f8fbf4,#eef4e8);
 }
 .login-brand-logo{
-  width:66px;
-  height:66px;
+  width:72px;
+  max-width:72px;
+  height:auto;
   object-fit:contain;
+  flex:0 0 auto;
+  border-radius:8px;
 }
 .login-brand-title{
   display:block;
@@ -275,6 +278,26 @@ input.ui-inputfield:focus, textarea.ui-inputfield:focus{
 }
 .login-tooltip{
   max-width:360px;
+}
+.login-actions-row{
+  display:flex;
+  justify-content:flex-end;
+  align-items:center;
+  gap:.65rem;
+  margin-top:1rem;
+  flex-wrap:wrap;
+}
+.login-register-btn .ui-button-text{
+  letter-spacing:.2px;
+}
+.login-reset-link{
+  font-weight:700;
+  color:var(--olive-700) !important;
+  text-decoration:underline;
+  padding:.45rem .25rem;
+}
+.login-reset-link:hover{
+  color:var(--olive-800) !important;
 }
 
 .system-logo-icon{
