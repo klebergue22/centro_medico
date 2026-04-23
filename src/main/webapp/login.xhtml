@@ -55,7 +55,7 @@
                 <h:panelGrid columns="1" styleClass="ui-fluid" style="gap:.7rem;">
                     <h:outputText value="Ingrese su correo institucional para recibir la clave temporal de reseteo."
                                   style="font-weight:600; color:#2d3f27;"/>
-                    <p:inputText id="correoReset" value="#{authCtrl.correoInstitucionalReset}" maxlength="150"
+                    <p:inputText id="correoResetDlg" value="#{authCtrl.correoInstitucionalReset}" maxlength="150"
                                  required="true" requiredMessage="Ingrese el correo institucional"
                                  placeholder="usuario@geograficomilitar.gob.ec"/>
                     <small style="color:#4c5d43;">Solo se aceptan correos con dominio @geograficomilitar.gob.ec.</small>
@@ -63,7 +63,7 @@
                 <f:facet name="footer">
                     <p:commandButton value="Enviar clave temporal" icon="pi pi-send"
                                      actionListener="#{authCtrl.solicitarResetClave}"
-                                     process="cedula correoReset" update="msgs growl loginForm"
+                                     process="cedula correoResetDlg" update="msgs growl loginForm"
                                      oncomplete="if (!args.validationFailed) PF('dlgResetClave').hide();"/>
                     <p:commandButton value="Cancelar" type="button" icon="pi pi-times"
                                      onclick="PF('dlgResetClave').hide();" styleClass="ui-button-secondary"/>
