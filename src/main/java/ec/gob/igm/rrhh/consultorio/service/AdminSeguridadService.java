@@ -14,8 +14,14 @@ import java.text.Normalizer;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Date;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Stateless
 public class AdminSeguridadService {
@@ -53,6 +59,123 @@ public class AdminSeguridadService {
         return usuario;
     }
 
+    public UsuarioAuth guardarUsuarioConRol(String username, String nombreVisible, String email, Long idRol, String usuarioCreacion) {
+        if (isBlank(username)) {
+            throw new IllegalArgumentException("El usuario/cédula es obligatorio.");
+        }
+        if (idRol == null) {
+            throw new IllegalArgumentException("Seleccione un rol.");
+        }
+
+        SegRol rol = em.find(SegRol.class, idRol);
+        if (rol == null || !"S".equalsIgnoreCase(rol.getActivo())) {
+            throw new IllegalArgumentException("El rol seleccionado no existe o está inactivo.");
+        }
+
+        String usernameNormalizado = username.trim();
+        UsuarioAuth usuario = findUsuarioPorUsernameOCedula(usernameNormalizado);
+        if (usuario == null) {
+            usuario = crearUsuarioBase(usernameNormalizado, nombreVisible, email, usuarioCreacion);
+        } else {
+            actualizarDatosBasicos(usuario, nombreVisible, email);
+            em.merge(usuario);
+        }
+
+        vincularUsuarioRol(usuario, rol);
+        return usuario;
+    }
+
+    public List<SegRol> listarRolesActivos() {
+        return em.createQuery("SELECT r FROM SegRol r WHERE r.activo = 'S' ORDER BY r.nombre", SegRol.class)
+                .getResultList();
+    }
+
+    public List<SegPermiso> listarPermisosPorRol(Long idRol) {
+        if (idRol == null) {
+            return List.of();
+        }
+        return em.createQuery("""
+                        SELECT p
+                        FROM SegPermiso p
+                        WHERE p.idPermiso IN (
+                            SELECT rp.idPermiso
+                            FROM SegRolPermiso rp
+                            WHERE rp.idRol = :idRol AND rp.activo = 'S'
+                        )
+                        ORDER BY p.modulo, p.nombre
+                        """, SegPermiso.class)
+                .setParameter("idRol", idRol)
+                .getResultList();
+    }
+
+    public List<UsuarioGestionItem> listarUsuariosGestion() {
+        List<UsuarioAuth> usuarios = em.createQuery(
+                        "SELECT u FROM UsuarioAuth u ORDER BY u.fechaCreacion DESC, u.username", UsuarioAuth.class)
+                .getResultList();
+        if (usuarios.isEmpty()) {
+            return List.of();
+        }
+
+        List<Long> userIds = usuarios.stream()
+                .map(UsuarioAuth::getIdUsuario)
+                .toList();
+
+        List<SegUsuarioRol> usuarioRoles = em.createQuery(
+                        "SELECT ur FROM SegUsuarioRol ur WHERE ur.idUsuario IN :ids AND ur.activo = 'S'", SegUsuarioRol.class)
+                .setParameter("ids", userIds)
+                .getResultList();
+
+        Set<Long> roleIds = usuarioRoles.stream().map(SegUsuarioRol::getIdRol).collect(Collectors.toSet());
+        Map<Long, SegRol> rolesById = roleIds.isEmpty()
+                ? Map.of()
+                : em.createQuery("SELECT r FROM SegRol r WHERE r.idRol IN :ids", SegRol.class)
+                .setParameter("ids", roleIds)
+                .getResultList()
+                .stream()
+                .collect(Collectors.toMap(SegRol::getIdRol, r -> r));
+
+        Map<Long, Set<String>> rolesPorUsuario = usuarioRoles.stream()
+                .collect(Collectors.groupingBy(SegUsuarioRol::getIdUsuario,
+                        Collectors.mapping(ur -> {
+                            SegRol rol = rolesById.get(ur.getIdRol());
+                            return rol == null ? null : rol.getNombre();
+                        }, Collectors.toCollection(LinkedHashSet::new))));
+
+        List<UsuarioGestionItem> salida = new ArrayList<>();
+        for (UsuarioAuth usuario : usuarios) {
+            Set<String> roles = rolesPorUsuario.getOrDefault(usuario.getIdUsuario(), Set.of())
+                    .stream()
+                    .filter(v -> v != null && !v.isBlank())
+                    .sorted(Comparator.naturalOrder())
+                    .collect(Collectors.toCollection(LinkedHashSet::new));
+            salida.add(new UsuarioGestionItem(
+                    usuario.getIdUsuario(),
+                    usuario.getUsername(),
+                    usuario.getNombreVisible(),
+                    usuario.getEmail(),
+                    usuario.getActivo(),
+                    usuario.getBloqueado(),
+                    String.join(", ", roles)
+            ));
+        }
+        return salida;
+    }
+
+    public void actualizarEstadoUsuario(Long idUsuario, boolean activo) {
+        if (idUsuario == null) {
+            throw new IllegalArgumentException("No se encontró el usuario.");
+        }
+        UsuarioAuth usuario = em.find(UsuarioAuth.class, idUsuario);
+        if (usuario == null) {
+            throw new IllegalArgumentException("No se encontró el usuario.");
+        }
+        usuario.setActivo(activo ? "S" : "N");
+        if (activo) {
+            usuario.setBloqueado("N");
+        }
+        em.merge(usuario);
+    }
+
     public String getCargoAdminRequerido() {
         return CARGO_ADMIN_REQUERIDO;
     }
@@ -66,6 +189,10 @@ public class AdminSeguridadService {
     }
 
     private UsuarioAuth crearUsuarioAdmin(String username, String nombreVisible, String email, String usuarioCreacion) {
+        return crearUsuarioBase(username, nombreVisible, email, usuarioCreacion);
+    }
+
+    private UsuarioAuth crearUsuarioBase(String username, String nombreVisible, String email, String usuarioCreacion) {
         UsuarioAuth nuevo = new UsuarioAuth();
         nuevo.setUsername(username);
         nuevo.setNoCedula(username);
@@ -216,5 +343,54 @@ public class AdminSeguridadService {
         String stripped = Normalizer.normalize(cargo, Normalizer.Form.NFD)
                 .replaceAll("\\p{M}+", "");
         return stripped.replaceAll("\\s+", " ").trim().toUpperCase();
+    }
+
+    public static class UsuarioGestionItem {
+        private final Long idUsuario;
+        private final String username;
+        private final String nombreVisible;
+        private final String email;
+        private final String activo;
+        private final String bloqueado;
+        private final String roles;
+
+        public UsuarioGestionItem(Long idUsuario, String username, String nombreVisible, String email,
+                                  String activo, String bloqueado, String roles) {
+            this.idUsuario = idUsuario;
+            this.username = username;
+            this.nombreVisible = nombreVisible;
+            this.email = email;
+            this.activo = activo;
+            this.bloqueado = bloqueado;
+            this.roles = roles;
+        }
+
+        public Long getIdUsuario() {
+            return idUsuario;
+        }
+
+        public String getUsername() {
+            return username;
+        }
+
+        public String getNombreVisible() {
+            return nombreVisible;
+        }
+
+        public String getEmail() {
+            return email;
+        }
+
+        public String getActivo() {
+            return activo;
+        }
+
+        public String getBloqueado() {
+            return bloqueado;
+        }
+
+        public String getRoles() {
+            return roles;
+        }
     }
 }
