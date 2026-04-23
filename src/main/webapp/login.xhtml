@@ -34,6 +34,11 @@
                     <p:password id="clave" value="#{authCtrl.clave}" required="true"
                                 requiredMessage="Ingrese la clave" feedback="false"/>
                     <p:message for="clave"/>
+
+                    <h:outputLabel for="correoReset" value="Correo institucional (reset)"/>
+                    <p:inputText id="correoReset" value="#{authCtrl.correoInstitucionalReset}" maxlength="150"
+                                 placeholder="usuario@geograficomilitar.gob.ec"/>
+                    <p:message for="correoReset"/>
                 </p:panelGrid>
 
                 <div style="display:flex; justify-content:flex-end; gap:.5rem; margin-top:1rem;">

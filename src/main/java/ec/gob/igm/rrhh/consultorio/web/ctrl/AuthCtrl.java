@@ -208,6 +208,18 @@ public class AuthCtrl implements Serializable {
         return nombre != null ? nombre : empleado.getNoCedula();
     }
 
+    private String resolveCorreoUsuario(UsuarioAuth usuarioAuth, DatEmpleado empleado) {
+        String emailUsuario = normalize(usuarioAuth.getEmail());
+        if (emailUsuario != null) {
+            return emailUsuario;
+        }
+        String emailInstitucional = normalize(empleado.getEmailInstitucional());
+        if (emailInstitucional != null) {
+            return emailInstitucional;
+        }
+        return normalize(empleado.getEmail());
+    }
+
     private boolean isCargoAutorizado(String cargo) {
         String normalized = normalizeCargo(cargo);
         return normalized.contains("MEDCO")
