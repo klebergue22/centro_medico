@@ -2,6 +2,7 @@
 <ui:composition xmlns="http://www.w3.org/1999/xhtml"
                 xmlns:h="http://xmlns.jcp.org/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
                 xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
                 template="/templates/template.xhtml">
 
@@ -41,14 +42,33 @@
                 </p:panelGrid>
 
                 <div style="display:flex; justify-content:flex-end; gap:.5rem; margin-top:1rem;">
-                    <p:commandButton value="Restablecer clave" icon="pi pi-envelope"
-                                     actionListener="#{authCtrl.solicitarResetClave}"
-                                     process="cedula correoReset" update="msgs growl loginForm"
+                    <p:commandButton value="Restablecer clave" icon="pi pi-envelope" type="button"
+                                     onclick="PF('dlgResetClave').show();"
                                      styleClass="ui-button-secondary"/>
                     <p:commandButton value="Ingresar" icon="pi pi-sign-in"
                                      action="#{authCtrl.login}" update="msgs growl loginForm"/>
                 </div>
             </p:panel>
+
+            <p:dialog id="dlgResetClave" widgetVar="dlgResetClave" header="Restablecer clave"
+                      modal="true" closable="true" resizable="false" width="520">
+                <h:panelGrid columns="1" styleClass="ui-fluid" style="gap:.7rem;">
+                    <h:outputText value="Ingrese su correo institucional para recibir la clave temporal de reseteo."
+                                  style="font-weight:600; color:#2d3f27;"/>
+                    <p:inputText id="correoReset" value="#{authCtrl.correoInstitucionalReset}" maxlength="150"
+                                 required="true" requiredMessage="Ingrese el correo institucional"
+                                 placeholder="usuario@geograficomilitar.gob.ec"/>
+                    <small style="color:#4c5d43;">Solo se aceptan correos con dominio @geograficomilitar.gob.ec.</small>
+                </h:panelGrid>
+                <f:facet name="footer">
+                    <p:commandButton value="Enviar clave temporal" icon="pi pi-send"
+                                     actionListener="#{authCtrl.solicitarResetClave}"
+                                     process="cedula correoReset" update="msgs growl loginForm"
+                                     oncomplete="if (!args.validationFailed) PF('dlgResetClave').hide();"/>
+                    <p:commandButton value="Cancelar" type="button" icon="pi pi-times"
+                                     onclick="PF('dlgResetClave').hide();" styleClass="ui-button-secondary"/>
+                </f:facet>
+            </p:dialog>
         </h:form>
     </ui:define>
 </ui:composition>

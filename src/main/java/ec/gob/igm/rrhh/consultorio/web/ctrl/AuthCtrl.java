@@ -29,6 +29,7 @@ public class AuthCtrl implements Serializable {
     private static final String KEY_AUTH_USER = "AUTH_USER";
     private static final String KEY_AUTH_USER_NAME = "AUTH_USER_NAME";
     private static final String KEY_FORCE_CHANGE = "AUTH_PASSWORD_CHANGE_REQUIRED";
+    private static final String EMAIL_DOMAIN_INSTITUCIONAL = "@geograficomilitar.gob.ec";
 
     @EJB
     private EmpleadoService empleadoService;
@@ -150,17 +151,16 @@ public class AuthCtrl implements Serializable {
             return;
         }
 
-        String correoInstitucional = normalize(empleado.getEmailInstitucional());
-        if (correoInstitucional == null || !correoInstitucional.equalsIgnoreCase(correoIngresado)) {
-            addError("El correo institucional no coincide con el registrado para esa cédula.");
-            audit(null, cedulaNormalizada, "RESET_CLAVE", false, "Correo institucional no coincide");
+        if (!isCorreoInstitucionalValido(correoIngresado)) {
+            addError("El correo debe terminar en " + EMAIL_DOMAIN_INSTITUCIONAL + ".");
+            audit(null, cedulaNormalizada, "RESET_CLAVE", false, "Correo no institucional");
             return;
         }
 
         UsuarioAuth usuarioAuth = usuarioAuthService.findOrCreateByEmpleado(empleado);
         String claveTemporal = securityNotificationService.generarClaveTemporal();
         try {
-            securityNotificationService.enviarNotificacionResetClave(correoInstitucional,
+            securityNotificationService.enviarNotificacionResetClave(correoIngresado,
                     resolveNombreUsuario(empleado), cedulaNormalizada, claveTemporal);
             usuarioAuthService.actualizarClaveTemporal(usuarioAuth, claveTemporal);
         } catch (Exception e) {
@@ -169,7 +169,7 @@ public class AuthCtrl implements Serializable {
             return;
         }
 
-        addInfo("Correo enviado: se notificó al usuario (" + correoInstitucional + ") y al administrador.");
+        addInfo("Correo enviado: se notificó al usuario (" + correoIngresado + ") y al administrador.");
         audit(usuarioAuth.getIdUsuario(), cedulaNormalizada, "RESET_CLAVE", true, "Reset enviado por correo");
     }
 
@@ -258,6 +258,14 @@ public class AuthCtrl implements Serializable {
         }
         String onlyDigits = normalized.replaceAll("\\D", "");
         return onlyDigits.isEmpty() ? null : onlyDigits;
+    }
+
+    private boolean isCorreoInstitucionalValido(String correo) {
+        String normalized = normalize(correo);
+        if (normalized == null) {
+            return false;
+        }
+        return normalized.toLowerCase(Locale.ROOT).endsWith(EMAIL_DOMAIN_INSTITUCIONAL);
     }
 
     private void setSessionAuth(String user, String nombreUsuario, boolean forceChange) {
