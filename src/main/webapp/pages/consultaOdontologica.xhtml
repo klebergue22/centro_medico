@@ -5,13 +5,13 @@
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
 
-    <ui:define name="title">Consulta Médica y Receta</ui:define>
+    <ui:define name="title">Consulta Odontológica y Receta</ui:define>
 
     <ui:define name="content">
         <h:form id="consultaForm">
             <p:growl id="growl" showDetail="true"/>
 
-            <p:panel header="Nueva consulta médica" style="margin-top:10px;">
+            <p:panel header="Nueva consulta odontológica" style="margin-top:10px;">
                 <h:panelGrid columns="4" cellpadding="6" styleClass="ui-fluid" columnClasses="col-12 md:col-2,col-12 md:col-4,col-12 md:col-2,col-12 md:col-4">
                     <h:outputText value="Cédula"/>
                     <p:inputText value="#{consultaMedicaCtrl.cedulaBusqueda}"/>
@@ -99,28 +99,6 @@
                 </p:outputPanel>
             </p:panel>
 
-            <p:panel header="Signos vitales" style="margin-top:10px;" rendered="#{not consultaMedicaCtrl.ocultarPanelSignosVitales}">
-                <h:panelGrid columns="10" styleClass="ui-fluid vit-grid">
-                    <h:outputText value="Temp (°C)"/>
-                    <p:inputNumber value="#{consultaMedicaCtrl.signosModel.temperaturaC}" decimalPlaces="1"/>
-                    <h:outputText value="PA (mmHg)"/>
-                    <p:inputText value="#{consultaMedicaCtrl.paStr}" placeholder="120&#47;80"/>
-                    <h:outputText value="FC"/>
-                    <p:inputNumber value="#{consultaMedicaCtrl.signosModel.frecuenciaCard}" decimalPlaces="0"/>
-                    <h:outputText value="FR"/>
-                    <p:inputNumber value="#{consultaMedicaCtrl.signosModel.frecuenciaResp}" decimalPlaces="0"/>
-                    <h:outputText value="Sat O&#8322; (&#37;)"/>
-                    <p:inputNumber value="#{consultaMedicaCtrl.signosModel.satO2}" decimalPlaces="0"/>
-                    <h:outputText value="Peso (kg)"/>
-                    <p:inputNumber id="peso" value="#{consultaMedicaCtrl.signosModel.pesoKg}" decimalPlaces="2" decimalSeparator="," thousandSeparator="" onkeyup="calcIMC()" onchange="calcIMC()" oninput="calcIMC()"/>
-                    <h:outputText value="Talla (cm)"/>
-                    <p:inputNumber id="talla" value="#{consultaMedicaCtrl.tallaCm}" decimalPlaces="2" decimalSeparator="," thousandSeparator="" onkeyup="calcIMC()" onchange="calcIMC()" oninput="calcIMC()"/>
-                    <h:outputText value="IMC"/>
-                    <p:inputNumber id="imc" value="#{consultaMedicaCtrl.signosModel.imc}" decimalPlaces="2" decimalSeparator="," thousandSeparator="" readonly="true"/>
-                    <h:outputText value="Perímetro abd (cm)"/>
-                    <p:inputNumber value="#{consultaMedicaCtrl.signosModel.perimetroAbdCm}" decimalPlaces="1"/>
-                </h:panelGrid>
-            </p:panel>
 
             <p:panel header="Datos clínicos y certificado" style="margin-top:10px;">
                 <h:panelGrid columns="2" cellpadding="6" styleClass="ui-fluid textarea-grid" columnClasses="22%,78%">
