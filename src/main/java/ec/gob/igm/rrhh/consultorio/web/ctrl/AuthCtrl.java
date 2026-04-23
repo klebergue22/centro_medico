@@ -389,6 +389,11 @@ public class AuthCtrl implements Serializable {
                 new FacesMessage(FacesMessage.SEVERITY_INFO, "Información", detail));
     }
 
+    private void addWarn(String detail) {
+        FacesContext.getCurrentInstance().addMessage(null,
+                new FacesMessage(FacesMessage.SEVERITY_WARN, "Advertencia", detail));
+    }
+
     public String getCedula() {
         return cedula;
     }
