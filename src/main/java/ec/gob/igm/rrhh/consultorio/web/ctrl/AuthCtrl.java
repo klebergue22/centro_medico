@@ -32,7 +32,10 @@ public class AuthCtrl implements Serializable {
     private static final String KEY_AUTH_USER_NAME = "AUTH_USER_NAME";
     private static final String KEY_FORCE_CHANGE = "AUTH_PASSWORD_CHANGE_REQUIRED";
     private static final String KEY_AUTH_IS_ADMIN = "AUTH_IS_ADMIN";
+    private static final String KEY_AUTH_ROLE = "AUTH_ROLE";
     private static final String EMAIL_DOMAIN_INSTITUCIONAL = "@geograficomilitar.gob.ec";
+    private static final String ROLE_MEDICO = "MEDICO";
+    private static final String ROLE_ODONTOLOGO = "ODONTOLOGO";
 
     @EJB
     private EmpleadoService empleadoService;
@@ -115,7 +118,7 @@ public class AuthCtrl implements Serializable {
         audit(usuarioAuth.getIdUsuario(), cedulaNormalizada, "LOGIN", true, "Login exitoso");
         registrarLoginExitosoAuditoria(usuarioAuth, cedulaNormalizada);
         boolean esAdmin = usuarioAuthService.tieneRolAdminActivo(usuarioAuth.getIdUsuario());
-        setSessionAuth(cedulaNormalizada, resolveNombreUsuario(empleado), forceChange, esAdmin);
+        setSessionAuth(cedulaNormalizada, resolveNombreUsuario(empleado), forceChange, esAdmin, resolveRole(cargoVigente, esAdmin));
 
         if (forceChange) {
             addInfo("Primer ingreso detectado. Debe cambiar su clave para continuar.");
@@ -287,7 +290,11 @@ public class AuthCtrl implements Serializable {
         }
 
         usuarioAuthService.findOrCreateByEmpleado(empleado);
-        addInfo("Registro exitoso. Ingrese con usuario (cédula) y clave inicial (su cédula).");
+        if (isCargoOdontologo(cargoVigente)) {
+            addInfo("Registro exitoso con rol ODONTOLOGO. Ingrese con usuario (cédula) y clave inicial (su cédula).");
+        } else {
+            addInfo("Registro exitoso. Ingrese con usuario (cédula) y clave inicial (su cédula).");
+        }
         audit(null, cedulaNormalizada, "REGISTRO_USUARIO", true, "Usuario registrado en SEG_USUARIO");
     }
 
@@ -349,7 +356,15 @@ public class AuthCtrl implements Serializable {
                 || "MEDICO".equals(normalized)
                 || normalized.startsWith("MEDICO ")
                 || normalized.contains("DOCTOR")
-                || normalized.startsWith("DR ");
+                || normalized.startsWith("DR ")
+                || isCargoOdontologo(cargo);
+    }
+
+    private boolean isCargoOdontologo(String cargo) {
+        String normalized = normalizeCargo(cargo);
+        return normalized.contains("ODONTOLOGO GENERAL")
+                || "ODONTOLOGO".equals(normalized)
+                || normalized.startsWith("ODONTOLOGO ");
     }
 
     private boolean isCargoAdmin(String cargo) {
@@ -395,13 +410,21 @@ public class AuthCtrl implements Serializable {
         return normalized.toLowerCase(Locale.ROOT).endsWith(EMAIL_DOMAIN_INSTITUCIONAL);
     }
 
-    private void setSessionAuth(String user, String nombreUsuario, boolean forceChange, boolean esAdmin) {
+    private String resolveRole(String cargo, boolean esAdmin) {
+        if (esAdmin) {
+            return UsuarioAuthService.ROL_ADMIN_SISTEMA;
+        }
+        return isCargoOdontologo(cargo) ? ROLE_ODONTOLOGO : ROLE_MEDICO;
+    }
+
+    private void setSessionAuth(String user, String nombreUsuario, boolean forceChange, boolean esAdmin, String role) {
         ExternalContext externalContext = FacesContext.getCurrentInstance().getExternalContext();
         Map<String, Object> session = externalContext.getSessionMap();
         session.put(KEY_AUTH_USER, user);
         session.put(KEY_AUTH_USER_NAME, nombreUsuario);
         session.put(KEY_FORCE_CHANGE, forceChange);
         session.put(KEY_AUTH_IS_ADMIN, esAdmin);
+        session.put(KEY_AUTH_ROLE, role);
     }
 
     private void setSessionForceChange(boolean forceChange) {

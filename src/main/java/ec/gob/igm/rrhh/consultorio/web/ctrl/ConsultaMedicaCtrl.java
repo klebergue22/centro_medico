@@ -25,6 +25,7 @@ import ec.gob.igm.rrhh.consultorio.web.service.UserContextService;
 import jakarta.annotation.PostConstruct;
 import jakarta.faces.application.FacesMessage;
 import jakarta.faces.component.UIComponent;
+import jakarta.faces.context.ExternalContext;
 import jakarta.faces.context.FacesContext;
 import jakarta.faces.event.AjaxBehaviorEvent;
 import jakarta.enterprise.context.SessionScoped;
@@ -54,6 +55,7 @@ import org.primefaces.event.SelectEvent;
 public class ConsultaMedicaCtrl implements Serializable {
 
     private static final long serialVersionUID = 1L;
+    private static final String AUTH_ROLE_ODONTOLOGO = "ODONTOLOGO";
     private static final ZoneId CERTIFICADO_ZONE = ZoneId.of("America/Guayaquil");
     private static final ZoneId CERTIFICADO_DATE_ZONE = ZoneOffset.UTC;
     private static final String[] NUMEROS_BASE = {"", "uno", "dos", "tres", "cuatro", "cinco", "seis", "siete", "ocho", "nueve",
@@ -1554,6 +1556,19 @@ public class ConsultaMedicaCtrl implements Serializable {
             return;
         }
         signosModel.setTallaM(tallaCm.divide(BigDecimal.valueOf(100), 2, java.math.RoundingMode.HALF_UP));
+    }
+
+    public boolean isOcultarPanelSignosVitales() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        if (context == null) {
+            return false;
+        }
+        ExternalContext externalContext = context.getExternalContext();
+        if (externalContext == null) {
+            return false;
+        }
+        Object role = externalContext.getSessionMap().get("AUTH_ROLE");
+        return AUTH_ROLE_ODONTOLOGO.equals(String.valueOf(role));
     }
 
     public static class RecetaItemForm implements Serializable {
