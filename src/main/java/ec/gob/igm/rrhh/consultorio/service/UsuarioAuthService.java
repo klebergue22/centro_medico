@@ -17,6 +17,7 @@ import java.util.List;
 public class UsuarioAuthService {
 
     public static final int MAX_INTENTOS_LOGIN = 3;
+    public static final String ROL_ADMIN_SISTEMA = "ADMIN_SISTEMA";
 
     @PersistenceContext(unitName = "consultorioPU")
     private EntityManager em;
@@ -79,6 +80,26 @@ public class UsuarioAuthService {
             return byUsername;
         }
         return findByCedula(value);
+    }
+
+    public boolean tieneRolAdminActivo(Long idUsuario) {
+        if (idUsuario == null) {
+            return false;
+        }
+        List<Long> rows = em.createQuery("""
+                        SELECT ur.idUsuarioRol
+                        FROM SegUsuarioRol ur, SegRol r
+                        WHERE ur.idRol = r.idRol
+                          AND ur.idUsuario = :idUsuario
+                          AND ur.activo = 'S'
+                          AND r.activo = 'S'
+                          AND r.codigo = :codigoRol
+                        """, Long.class)
+                .setParameter("idUsuario", idUsuario)
+                .setParameter("codigoRol", ROL_ADMIN_SISTEMA)
+                .setMaxResults(1)
+                .getResultList();
+        return !rows.isEmpty();
     }
 
     public boolean validatePassword(UsuarioAuth usuario, String rawPassword) {
