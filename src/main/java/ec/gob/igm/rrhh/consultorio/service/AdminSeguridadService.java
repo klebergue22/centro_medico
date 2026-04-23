@@ -14,7 +14,6 @@ import java.text.Normalizer;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -25,14 +24,6 @@ public class AdminSeguridadService {
     private static final String ROL_ADMIN_NOMBRE = "Administrador del sistema";
     private static final String CARGO_ADMIN_REQUERIDO = "ANALISTA SOPORTE TECNOLG. GEOINFORMATICAS";
     private static final String CARGO_ADMIN_REQUERIDO_NORMALIZADO = normalizeCargo(CARGO_ADMIN_REQUERIDO);
-
-    private static final List<PermisoSeed> PERMISOS_ADMIN = Arrays.asList(
-            new PermisoSeed("SEG_USUARIOS_ADMINISTRAR", "Administrar usuarios", "SEGURIDAD", "USUARIOS", "ADMINISTRAR"),
-            new PermisoSeed("SEG_ROLES_ADMINISTRAR", "Administrar roles", "SEGURIDAD", "ROLES", "ADMINISTRAR"),
-            new PermisoSeed("SEG_PERMISOS_ADMINISTRAR", "Administrar permisos", "SEGURIDAD", "PERMISOS", "ADMINISTRAR"),
-            new PermisoSeed("SEG_AGENDA_ADMINISTRAR", "Administrar agenda", "AGENDA", "CITAS", "ADMINISTRAR"),
-            new PermisoSeed("SEG_CONFIGURACION_ADMINISTRAR", "Administrar configuraciones", "CONFIGURACION", "SISTEMA", "ADMINISTRAR")
-    );
 
     @PersistenceContext(unitName = "consultorioPU")
     private EntityManager em;
@@ -55,7 +46,7 @@ public class AdminSeguridadService {
         }
 
         SegRol rolAdmin = findOrCreateRolAdmin();
-        List<SegPermiso> permisosAdmin = findOrCreatePermisosAdmin();
+        List<SegPermiso> permisosAdmin = findPermisosAdminExistentes();
         vincularRolPermisos(rolAdmin, permisosAdmin);
         vincularUsuarioRol(usuario, rolAdmin);
 
@@ -125,34 +116,13 @@ public class AdminSeguridadService {
         return rol;
     }
 
-    private List<SegPermiso> findOrCreatePermisosAdmin() {
-        return PERMISOS_ADMIN.stream().map(this::findOrCreatePermiso).toList();
-    }
-
-    private SegPermiso findOrCreatePermiso(PermisoSeed seed) {
-        List<SegPermiso> rows = em.createQuery(
-                        "SELECT p FROM SegPermiso p WHERE p.codigo = :codigo", SegPermiso.class)
-                .setParameter("codigo", seed.codigo)
-                .setMaxResults(1)
+    private List<SegPermiso> findPermisosAdminExistentes() {
+        List<SegPermiso> permisos = em.createQuery("SELECT p FROM SegPermiso p", SegPermiso.class)
                 .getResultList();
-
-        if (!rows.isEmpty()) {
-            SegPermiso permiso = rows.get(0);
-            permiso.setNombre(seed.nombre);
-            permiso.setModulo(seed.modulo);
-            permiso.setRecurso(seed.recurso);
-            permiso.setAccion(seed.accion);
-            return em.merge(permiso);
+        if (permisos.isEmpty()) {
+            throw new IllegalStateException("No existen permisos en SEG_PERMISO. Ejecute primero el script de seguridad.");
         }
-
-        SegPermiso permiso = new SegPermiso();
-        permiso.setCodigo(seed.codigo);
-        permiso.setNombre(seed.nombre);
-        permiso.setModulo(seed.modulo);
-        permiso.setRecurso(seed.recurso);
-        permiso.setAccion(seed.accion);
-        em.persist(permiso);
-        return permiso;
+        return permisos;
     }
 
     private void vincularRolPermisos(SegRol rol, List<SegPermiso> permisos) {
@@ -246,8 +216,5 @@ public class AdminSeguridadService {
         String stripped = Normalizer.normalize(cargo, Normalizer.Form.NFD)
                 .replaceAll("\\p{M}+", "");
         return stripped.replaceAll("\\s+", " ").trim().toUpperCase();
-    }
-
-    private record PermisoSeed(String codigo, String nombre, String modulo, String recurso, String accion) {
     }
 }
