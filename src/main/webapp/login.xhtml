@@ -28,7 +28,7 @@
                 <h:panelGroup layout="block" styleClass="login-help-row">
                     <span class="login-help-chip">Primer ingreso: cédula = usuario/clave</span>
                     <span class="login-help-chip">¿Olvidó clave? use “Restablecer”</span>
-                    <span class="login-help-chip">¿Sin usuario? use “Registrar médico”</span>
+                    <span class="login-help-chip">¿Sin usuario? use “Registrar nuevo”</span>
                     <h:panelGroup id="loginHelpIcon" styleClass="pi pi-info-circle login-help-icon"/>
                 </h:panelGroup>
                 <p:tooltip for="loginHelpIcon" position="top" styleClass="login-tooltip"
@@ -49,14 +49,16 @@
                 </p:panelGrid>
 
                 <div class="login-actions-row">
-                    <p:commandButton value="Registrar nuevo" icon="pi pi-user-plus" type="button"
+                    <p:commandLink value="Restablecer clave"
+                                   onclick="PF('dlgResetClave').show();"
+                                   styleClass="login-reset-link"/>
+                    <div class="login-action-buttons">
+                        <p:commandButton value="Registrar nuevo" type="button"
                                      onclick="PF('dlgRegistroMedico').show();"
                                      styleClass="ui-button-help login-register-btn"/>
-                    <p:commandLink value="Restablecer clave"
-                                     onclick="PF('dlgResetClave').show();"
-                                     styleClass="login-reset-link"/>
-                    <p:commandButton value="Ingresar" icon="pi pi-sign-in"
+                        <p:commandButton value="Ingresar" icon="pi pi-sign-in"
                                      action="#{authCtrl.login}" update="msgs growl loginForm"/>
+                    </div>
                 </div>
             </p:panel>
 
