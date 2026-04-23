@@ -31,7 +31,7 @@ public class Step1VitalSignsManager {
         SignosVitales sv = loadExistingOrCreate(current);
         applyMeasurements(sv, parseBloodPressureOrThrow(paStr), temp, fc, fr, satO2, peso, tallaCm, perimetroAbd);
         stampAuditFields(sv, now, user);
-        return signosService.guardar(sv);
+        return signosService.guardar(sv, user);
     }
 
     private SignosVitales loadExistingOrCreate(SignosVitales current) {

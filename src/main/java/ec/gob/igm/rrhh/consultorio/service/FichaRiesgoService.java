@@ -2,6 +2,7 @@ package ec.gob.igm.rrhh.consultorio.service;
 
 
 
+import jakarta.ejb.EJB;
 import ec.gob.igm.rrhh.consultorio.domain.model.FichaRiesgo;
 import jakarta.ejb.Stateless;
 import jakarta.persistence.EntityManager;
@@ -17,6 +18,8 @@ public class FichaRiesgoService {
 
     @PersistenceContext(unitName = "consultorioPU")
     private EntityManager em;
+    @EJB
+    private ClientIdentifierService clientIdentifierService;
 
     private void assertEm() {
         if (em == null) {
@@ -27,11 +30,16 @@ public class FichaRiesgoService {
     }
 
     public FichaRiesgo guardar(FichaRiesgo fr) {
+        return guardar(fr, null);
+    }
+
+    public FichaRiesgo guardar(FichaRiesgo fr, String usuario) {
         assertEm();
 
         if (fr == null) {
             return null;
         }
+        clientIdentifierService.apply(usuario);
 
         if (fr.getIdFichaRiesgo() == null) {
             em.persist(fr);

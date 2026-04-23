@@ -11,6 +11,7 @@ import ec.gob.igm.rrhh.consultorio.domain.model.FichaRiesgo;
 import ec.gob.igm.rrhh.consultorio.domain.model.FichaRiesgoDet;
 import ec.gob.igm.rrhh.consultorio.service.FichaRiesgoDetService;
 import ec.gob.igm.rrhh.consultorio.service.FichaRiesgoService;
+import ec.gob.igm.rrhh.consultorio.web.audit.CentroMedicoAuditService;
 
 @Stateless
 /**
@@ -26,13 +27,16 @@ public class Step2OrchestratorService implements Serializable {
     private RiskDetailMapper riskDetailMapper;
     @EJB
     private UserContextService userContextService;
+    @EJB
+    private CentroMedicoAuditService auditService;
 
     public FichaRiesgo save(Step2RiskCommand cmd) {
         ensureFichaSavedOrThrow(cmd.ficha());
 
         String user = userContextService.resolveCurrentUser();
         FichaRiesgo riesgo = upsertRiskHeader(cmd, user);
-        replaceRiskDetails(cmd, user);
+        int totalDetalles = replaceRiskDetails(cmd, user);
+        registrarAuditoriaStep2(cmd, riesgo, totalDetalles, user);
 
         return riesgo;
     }
@@ -52,7 +56,7 @@ public class Step2OrchestratorService implements Serializable {
         riesgo.setMedidasPreventivas(riskDetailMapper.construirMedidas(cmd.medidasPreventivas()));
         stampAuditFieldsForRiskHeader(riesgo, cmd.now(), user);
 
-        return fichaRiesgoService.guardar(riesgo);
+        return fichaRiesgoService.guardar(riesgo, user);
     }
 
     private void stampAuditFieldsForRiskHeader(FichaRiesgo fr, Date now, String user) {
@@ -66,15 +70,38 @@ public class Step2OrchestratorService implements Serializable {
         }
     }
 
-    private void replaceRiskDetails(Step2RiskCommand cmd, String user) {
+    private int replaceRiskDetails(Step2RiskCommand cmd, String user) {
         fichaRiesgoDetService.eliminarPorFicha(cmd.ficha().getIdFicha());
-
+        int total = 0;
         for (FichaRiesgoDet det : riskDetailMapper.mapCheckedRiskItems(cmd.ficha(), cmd.riesgos())) {
             fichaRiesgoDetService.guardar(det, user);
+            total++;
         }
         for (FichaRiesgoDet det : riskDetailMapper.mapOtherRiskItems(cmd.ficha(), cmd.otrosRiesgos())) {
             fichaRiesgoDetService.guardar(det, user);
+            total++;
         }
+        return total;
+    }
+
+    private void registrarAuditoriaStep2(Step2RiskCommand cmd, FichaRiesgo riesgo, int totalDetalles, String user) {
+        Long idFicha = cmd.ficha() != null ? cmd.ficha().getIdFicha() : null;
+        auditService.registrar(
+                "GUARDAR_STEP2",
+                "FICHA_RIESGO",
+                "ID_FICHA_RIESGO",
+                "ID_FICHA=" + idFicha + ", ID_FICHA_RIESGO="
+                        + (riesgo != null ? riesgo.getIdFichaRiesgo() : null)
+                        + ", DETALLES_RIESGO=" + totalDetalles,
+                user
+        );
+        auditService.registrar(
+                "UPSERT_DETALLE_RIESGO",
+                "FICHA_RIESGO_DET",
+                "ID_FICHA",
+                "ID_FICHA=" + idFicha + ", TOTAL=" + totalDetalles,
+                user
+        );
     }
 
     public record Step2RiskCommand(
