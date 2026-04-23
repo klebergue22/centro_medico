@@ -5,6 +5,7 @@ import ec.gob.igm.rrhh.consultorio.domain.enums.EstadoCivil;
 import ec.gob.igm.rrhh.consultorio.domain.enums.GrupoSangre;
 import ec.gob.igm.rrhh.consultorio.domain.enums.Sexo;
 import ec.gob.igm.rrhh.consultorio.domain.model.DatEmpleado;
+import ec.gob.igm.rrhh.consultorio.service.AuditoriaConsultorioService;
 import ec.gob.igm.rrhh.consultorio.service.EmpleadoService;
 import ec.gob.igm.rrhh.consultorio.service.FichaOcupacionalService;
 import ec.gob.igm.rrhh.consultorio.service.SeguridadAccesoService;
@@ -41,6 +42,8 @@ public class EmpleadosController implements Serializable {
     private transient UserContextService userContextService;
     @Inject
     private transient SeguridadAccesoService seguridadAccesoService;
+    @Inject
+    private transient AuditoriaConsultorioService auditoriaConsultorioService;
 
     private List<DatEmpleado> lista;
     private DatEmpleado seleccionado;
@@ -212,12 +215,25 @@ public class EmpleadosController implements Serializable {
 
     private void registrarConsultaReporte(String cedula, int totalRegistros) {
         String user = userContextService.resolveCurrentUser();
-        seguridadAccesoService.registrarEvento(
-                null,
-                user,
-                "CONSULTA_REPORTE",
-                true,
-                "Consulta historial por cédula " + cedula + ". Registros=" + totalRegistros
-        );
+        String detalle = "Consulta historial por cédula " + cedula + ". Registros=" + totalRegistros;
+        try {
+            seguridadAccesoService.registrarEvento(
+                    null,
+                    user,
+                    "CONSULTA_REPORTE",
+                    true,
+                    detalle
+            );
+        } catch (RuntimeException e) {
+            auditoriaConsultorioService.registrar(
+                    "EMPLEADOS",
+                    user,
+                    "CONSULTA_REPORTE",
+                    "FICHA_OCUPACIONAL",
+                    "NO_CEDULA",
+                    detalle
+            );
+        }
     }
+
 }
