@@ -271,7 +271,9 @@ public class ConsultaMedicaCtrl implements Serializable {
         persistirSignosVitales();
         String user = userContextService.resolveCurrentUser();
         ConsultaMedica persisted = consultaMedicaService.guardar(consulta, user);
-        consulta = persisted;
+        if (persisted != null) {
+            consulta = persisted;
+        }
         registrarAuditoriaConsultaGuardada(user);
         addMessage(FacesMessage.SEVERITY_INFO, "Consulta guardada", "Se registró la consulta médica.");
     }
@@ -376,6 +378,9 @@ public class ConsultaMedicaCtrl implements Serializable {
     }
 
     private void registrarAuditoriaConsultaGuardada(String user) {
+        if (consulta == null) {
+            return;
+        }
         auditService.registrar(
                 "GUARDAR_CONSULTA_MEDICA",
                 "CONSULTA_MEDICA",
