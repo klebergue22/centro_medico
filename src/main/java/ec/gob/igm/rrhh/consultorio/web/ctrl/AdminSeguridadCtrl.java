@@ -123,7 +123,7 @@ public class AdminSeguridadCtrl implements Serializable {
     public void resetearClaveUsuario(Long idUsuario) {
         try {
             adminSeguridadService.resetearClaveUsuario(idUsuario);
-            addInfo("Clave reseteada. La clave temporal es la cédula/usuario y se exigirá cambio al ingresar.");
+            addInfo("La clave fue reseteada por el administrador. Clave reseteada. La clave temporal es la cédula/usuario y se exigirá cambio al ingresar.");
         } catch (IllegalArgumentException e) {
             addWarn(e.getMessage());
         }
