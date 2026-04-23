@@ -42,6 +42,9 @@ public class SegAuditoriaDet implements Serializable {
     @Column(name = "VALOR_NUEVO")
     private String valorNuevo;
 
+    @Column(name = "IP_ORIGEN", length = 45)
+    private String ipOrigen;
+
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "FECHA_EVENTO", nullable = false)
     private Date fechaEvento;
@@ -66,6 +69,8 @@ public class SegAuditoriaDet implements Serializable {
     public void setValorAnterior(String valorAnterior) { this.valorAnterior = valorAnterior; }
     public String getValorNuevo() { return valorNuevo; }
     public void setValorNuevo(String valorNuevo) { this.valorNuevo = valorNuevo; }
+    public String getIpOrigen() { return ipOrigen; }
+    public void setIpOrigen(String ipOrigen) { this.ipOrigen = ipOrigen; }
     public Date getFechaEvento() { return fechaEvento; }
     public void setFechaEvento(Date fechaEvento) { this.fechaEvento = fechaEvento; }
 }
