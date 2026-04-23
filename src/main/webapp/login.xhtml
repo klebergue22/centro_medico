@@ -48,13 +48,13 @@
 
                 </p:panelGrid>
 
-                <div style="display:flex; justify-content:flex-end; gap:.5rem; margin-top:1rem;">
-                    <p:commandButton value="Registrar médico" icon="pi pi-user-plus" type="button"
+                <div class="login-actions-row">
+                    <p:commandButton value="Registrar nuevo" icon="pi pi-user-plus" type="button"
                                      onclick="PF('dlgRegistroMedico').show();"
-                                     styleClass="ui-button-help"/>
-                    <p:commandButton value="Restablecer clave" icon="pi pi-envelope" type="button"
+                                     styleClass="ui-button-help login-register-btn"/>
+                    <p:commandLink value="Restablecer clave"
                                      onclick="PF('dlgResetClave').show();"
-                                     styleClass="ui-button-secondary"/>
+                                     styleClass="login-reset-link"/>
                     <p:commandButton value="Ingresar" icon="pi pi-sign-in"
                                      action="#{authCtrl.login}" update="msgs growl loginForm"/>
                 </div>
