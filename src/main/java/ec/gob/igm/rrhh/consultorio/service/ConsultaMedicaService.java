@@ -53,14 +53,36 @@ public class ConsultaMedicaService {
     }
 
     public List<ConsultaMedica> buscarPorEmpleado(Integer noPersona) {
+        return buscarPorEmpleado(noPersona, false);
+    }
+
+    public List<ConsultaMedica> buscarPorEmpleado(Integer noPersona, boolean soloOdontologicas) {
         if (noPersona == null) {
             return List.of();
         }
+        String filtroOdontologico = soloOdontologicas
+                ? """
+                  AND (
+                        c.signos IS NULL
+                        OR UPPER(c.usrCreacion) IN (
+                            SELECT UPPER(u.username)
+                            FROM UsuarioAuth u, SegUsuarioRol ur, SegRol r
+                            WHERE ur.idUsuario = u.idUsuario
+                              AND r.idRol = ur.idRol
+                              AND ur.activo = 'S'
+                              AND r.activo = 'S'
+                              AND UPPER(r.codigo) = 'ODONTOLOGO'
+                        )
+                  )
+                  """
+                : "";
+
         List<ConsultaMedica> consultas = em.createQuery("""
                 SELECT DISTINCT c FROM ConsultaMedica c
                 LEFT JOIN FETCH c.diagnosticos
                 LEFT JOIN FETCH c.diagnosticos.cie10
                 WHERE c.empleado.noPersona = :noPersona
+                """ + filtroOdontologico + """
                 ORDER BY c.fechaConsulta DESC
                 """, ConsultaMedica.class)
                 .setParameter("noPersona", noPersona)
