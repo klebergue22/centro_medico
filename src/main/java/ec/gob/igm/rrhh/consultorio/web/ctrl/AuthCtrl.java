@@ -83,10 +83,25 @@ public class AuthCtrl implements Serializable {
             registrarIntentoLoginFallidoAuditoria(cedulaNormalizada, "Usuario no registrado en SEG_USUARIO");
             return null;
         }
+        if (usuarioAuthService.isBloqueado(usuarioAuth)) {
+            addError("Usuario bloqueado por exceder 3 intentos fallidos. Debe cambiar la clave para desbloquear su cuenta.");
+            audit(usuarioAuth.getIdUsuario(), cedulaNormalizada, "INTENTO_FALLIDO", false, "Usuario bloqueado");
+            registrarIntentoLoginFallidoAuditoria(cedulaNormalizada, "Usuario bloqueado");
+            return null;
+        }
         if (!usuarioAuthService.validatePassword(usuarioAuth, clave)) {
-            addError("Usuario o clave inválidos.");
-            audit(usuarioAuth.getIdUsuario(), cedulaNormalizada, "INTENTO_FALLIDO", false, "Clave invalida");
-            registrarIntentoLoginFallidoAuditoria(cedulaNormalizada, "Clave invalida");
+            int intentosRestantes = usuarioAuthService.registrarIntentoFallido(usuarioAuth);
+            if (intentosRestantes == 0) {
+                addError("Usuario bloqueado por exceder 3 intentos fallidos. Debe cambiar la clave para desbloquear su cuenta.");
+                audit(usuarioAuth.getIdUsuario(), cedulaNormalizada, "INTENTO_FALLIDO", false, "Clave invalida. Usuario bloqueado");
+                registrarIntentoLoginFallidoAuditoria(cedulaNormalizada, "Clave invalida. Usuario bloqueado");
+            } else {
+                addError("Usuario o clave inválidos. Le quedan " + intentosRestantes + " intento(s).");
+                audit(usuarioAuth.getIdUsuario(), cedulaNormalizada, "INTENTO_FALLIDO", false,
+                        "Clave invalida. Intentos restantes: " + intentosRestantes);
+                registrarIntentoLoginFallidoAuditoria(cedulaNormalizada,
+                        "Clave invalida. Intentos restantes: " + intentosRestantes);
+            }
             return null;
         }
 
