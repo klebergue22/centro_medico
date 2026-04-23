@@ -11,20 +11,28 @@
     <ui:define name="content">
         <h:form id="loginForm" styleClass="ui-fluid">
             <p:growl id="growl" showDetail="true" life="7000"/>
-            <p:panel header="Acceso al módulo de Centro Médico"
-                     style="max-width:680px; margin:2rem auto; border-radius:12px;">
+            <p:panel header="Ingreso seguro"
+                     styleClass="login-card"
+                     style="max-width:760px; margin:2rem auto; border-radius:12px;">
 
                 <p:messages id="msgs" showSummary="true" showDetail="false" closable="true"/>
 
-                <h:panelGroup layout="block" style="margin-bottom:1rem; color:#3a4b32;">
-                    <h:outputText value="Primer ingreso: utilice su cédula como usuario y también como clave."/>
+                <h:panelGroup layout="block" styleClass="login-brand">
+                    <h:graphicImage library="images" name="LOGO_IGM_FULL_COLOR.png" styleClass="login-brand-logo" alt="IGM"/>
+                    <h:panelGroup layout="block">
+                        <h:outputText value="Sistema Centro Médico" styleClass="login-brand-title"/>
+                        <h:outputText value="Acceso para personal autorizado" styleClass="login-brand-subtitle"/>
+                    </h:panelGroup>
                 </h:panelGroup>
-                <h:panelGroup layout="block" style="margin-bottom:1rem; color:#3a4b32;">
-                    <h:outputText value="¿Olvidó su clave? Ingrese su cédula y su correo institucional para restablecer la clave."/>
+
+                <h:panelGroup layout="block" styleClass="login-help-row">
+                    <span class="login-help-chip">Primer ingreso: cédula = usuario/clave</span>
+                    <span class="login-help-chip">¿Olvidó clave? use “Restablecer”</span>
+                    <span class="login-help-chip">¿Sin usuario? use “Registrar médico”</span>
+                    <i id="loginHelpIcon" class="pi pi-info-circle login-help-icon" aria-hidden="true"></i>
                 </h:panelGroup>
-                <h:panelGroup layout="block" style="margin-bottom:1rem; color:#3a4b32;">
-                    <h:outputText value="¿Es su primera vez y no está registrado? Use el botón Registrar médico para crear su usuario en SEG_USUARIO."/>
-                </h:panelGroup>
+                <p:tooltip for="loginHelpIcon" position="top" styleClass="login-tooltip"
+                           value="Use su cédula de 10 dígitos. Si no recuerda su clave, restablézcala con su correo institucional."/>
 
                 <p:panelGrid columns="3" styleClass="emp-3col ui-fluid"
                              columnClasses="lab,fld,msg" layout="tabular">
@@ -57,7 +65,7 @@
                 <h:panelGrid columns="1" styleClass="ui-fluid" style="gap:.7rem;">
                     <p:inputText id="cedulaResetDlg" value="#{authCtrl.cedulaReset}" maxlength="10"
                                  placeholder="Cédula"/>
-                    <h:outputText value="Ingrese su correo institucional para recibir la clave temporal de reseteo."
+                    <h:outputText value="Ingrese su correo institucional para recibir la clave temporal."
                                   style="font-weight:600; color:#2d3f27;"/>
                     <p:inputText id="correoResetDlg" value="#{authCtrl.correoInstitucionalReset}" maxlength="150"
                                  placeholder="usuario@geograficomilitar.gob.ec"/>
@@ -76,7 +84,7 @@
             <p:dialog id="dlgRegistroMedico" widgetVar="dlgRegistroMedico" header="Registrar médico"
                       modal="true" closable="true" resizable="false" width="520">
                 <h:panelGrid columns="1" styleClass="ui-fluid" style="gap:.7rem;">
-                    <h:outputText value="Ingrese su cédula para registrar el usuario. La clave inicial será la misma cédula."
+                    <h:outputText value="Ingrese su cédula para crear su usuario. Clave inicial: su cédula."
                                   style="font-weight:600; color:#2d3f27;"/>
                     <p:inputText id="cedulaRegistroDlg" value="#{authCtrl.cedulaRegistro}" maxlength="10"
                                  placeholder="0000000000"/>
