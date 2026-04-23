@@ -2,6 +2,7 @@ package ec.gob.igm.rrhh.consultorio.service;
 
 
 import ec.gob.igm.rrhh.consultorio.domain.model.SignosVitales;
+import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -17,6 +18,8 @@ public class SignosVitalesService implements Serializable {
 
     @PersistenceContext(unitName = "consultorioPU")
     private EntityManager em;
+    @EJB
+    private ClientIdentifierService clientIdentifierService;
 
     private void assertEm() {
         if (em == null) {
@@ -27,11 +30,16 @@ public class SignosVitalesService implements Serializable {
     }
 
     public SignosVitales guardar(SignosVitales signos) {
+        return guardar(signos, null);
+    }
+
+    public SignosVitales guardar(SignosVitales signos, String usuario) {
         assertEm();
 
         if (signos == null) {
             return null;
         }
+        clientIdentifierService.apply(usuario);
 
         if (signos.getIdSignos() == null) {
             em.persist(signos);
@@ -53,4 +61,3 @@ public class SignosVitalesService implements Serializable {
         return em.find(SignosVitales.class, id);
     }
 }
-

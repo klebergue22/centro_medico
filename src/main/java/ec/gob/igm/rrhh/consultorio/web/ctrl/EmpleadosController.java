@@ -7,6 +7,8 @@ import ec.gob.igm.rrhh.consultorio.domain.enums.Sexo;
 import ec.gob.igm.rrhh.consultorio.domain.model.DatEmpleado;
 import ec.gob.igm.rrhh.consultorio.service.EmpleadoService;
 import ec.gob.igm.rrhh.consultorio.service.FichaOcupacionalService;
+import ec.gob.igm.rrhh.consultorio.service.SeguridadAccesoService;
+import ec.gob.igm.rrhh.consultorio.web.service.UserContextService;
 import jakarta.annotation.PostConstruct;
 import jakarta.faces.application.FacesMessage;
 import jakarta.faces.component.UIComponent;
@@ -35,6 +37,10 @@ public class EmpleadosController implements Serializable {
 
     @Inject
     private transient FichaOcupacionalService fichaOcupacionalService;
+    @Inject
+    private transient UserContextService userContextService;
+    @Inject
+    private transient SeguridadAccesoService seguridadAccesoService;
 
     private List<DatEmpleado> lista;
     private DatEmpleado seleccionado;
@@ -96,6 +102,7 @@ public class EmpleadosController implements Serializable {
             return Collections.emptyList();
         }
         List<HistorialFichaCertificadoDTO> historial = fichaOcupacionalService.listarHistorialPorCedula(cedula);
+        registrarConsultaReporte(cedula, historial.size());
         historial.forEach(item -> {
             item.setUltimaAccion(Objects.requireNonNullElse(item.getEstado(), "N/D"));
             item.setFechaUltimaAccion(firstNonNull(item.getFechaEmision(), item.getFechaEvaluacion()));
@@ -201,5 +208,16 @@ public class EmpleadosController implements Serializable {
         } catch (IOException e) {
             addWarn("No fue posible redireccionar a la pantalla solicitada.");
         }
+    }
+
+    private void registrarConsultaReporte(String cedula, int totalRegistros) {
+        String user = userContextService.resolveCurrentUser();
+        seguridadAccesoService.registrarEvento(
+                null,
+                user,
+                "CONSULTA_REPORTE",
+                true,
+                "Consulta historial por cédula " + cedula + ". Registros=" + totalRegistros
+        );
     }
 }

@@ -17,9 +17,11 @@ import ec.gob.igm.rrhh.consultorio.service.PersonaAuxService;
 import ec.gob.igm.rrhh.consultorio.service.EmpleadoRhService;
 import ec.gob.igm.rrhh.consultorio.service.MedicalNotificationService;
 import ec.gob.igm.rrhh.consultorio.service.SignosVitalesService;
+import ec.gob.igm.rrhh.consultorio.web.audit.CentroMedicoAuditService;
 import ec.gob.igm.rrhh.consultorio.web.facade.CentroMedicoPdfFacade;
 import ec.gob.igm.rrhh.consultorio.web.pdf.PdfResourceResolver;
 import ec.gob.igm.rrhh.consultorio.web.service.Cie10LookupService;
+import ec.gob.igm.rrhh.consultorio.web.service.UserContextService;
 import jakarta.annotation.PostConstruct;
 import jakarta.faces.application.FacesMessage;
 import jakarta.faces.component.UIComponent;
@@ -84,6 +86,10 @@ public class ConsultaMedicaCtrl implements Serializable {
     private transient SignosVitalesService signosVitalesService;
     @Inject
     private transient MedicalNotificationService medicalNotificationService;
+    @Inject
+    private transient UserContextService userContextService;
+    @Inject
+    private transient CentroMedicoAuditService auditService;
 
     private String cedulaBusqueda;
     private DatEmpleado empleado;
@@ -263,7 +269,10 @@ public class ConsultaMedicaCtrl implements Serializable {
         consulta.setDiagnosticos(limpios);
         consulta.setRecetas(construirRecetasParaPersistencia());
         persistirSignosVitales();
-        consultaMedicaService.guardar(consulta, "WEB");
+        String user = userContextService.resolveCurrentUser();
+        ConsultaMedica persisted = consultaMedicaService.guardar(consulta, user);
+        consulta = persisted;
+        registrarAuditoriaConsultaGuardada(user);
         addMessage(FacesMessage.SEVERITY_INFO, "Consulta guardada", "Se registró la consulta médica.");
     }
 
@@ -362,8 +371,46 @@ public class ConsultaMedicaCtrl implements Serializable {
             return;
         }
         parsearPresionArterial();
-        SignosVitales guardados = signosVitalesService.guardar(signosModel);
+        SignosVitales guardados = signosVitalesService.guardar(signosModel, userContextService.resolveCurrentUser());
         consulta.setSignos(guardados);
+    }
+
+    private void registrarAuditoriaConsultaGuardada(String user) {
+        auditService.registrar(
+                "GUARDAR_CONSULTA_MEDICA",
+                "CONSULTA_MEDICA",
+                "ID_CONSULTA",
+                "ID_CONSULTA=" + consulta.getIdConsulta() + ", ID_SIGNOS="
+                        + (consulta.getSignos() != null ? consulta.getSignos().getIdSignos() : null)
+                        + ", RECETAS=" + (consulta.getRecetas() != null ? consulta.getRecetas().size() : 0),
+                user
+        );
+
+        if (consulta.getRecetas() == null) {
+            return;
+        }
+        for (RecetaMedica receta : consulta.getRecetas()) {
+            auditService.registrar(
+                    "GUARDAR_RECETA",
+                    "RECETA_MEDICA",
+                    "ID_RECETA",
+                    "ID_CONSULTA=" + consulta.getIdConsulta() + ", ID_RECETA="
+                            + (receta != null ? receta.getIdReceta() : null),
+                    user
+            );
+            if (receta == null || receta.getItems() == null) {
+                continue;
+            }
+            for (RecetaItem item : receta.getItems()) {
+                auditService.registrar(
+                        "GUARDAR_RECETA_ITEM",
+                        "RECETA_ITEM",
+                        "ID_ITEM",
+                        "ID_RECETA=" + receta.getIdReceta() + ", ID_ITEM=" + item.getIdItem(),
+                        user
+                );
+            }
+        }
     }
 
     private boolean tieneSignosVitalesIngresados() {

@@ -1,6 +1,7 @@
 package ec.gob.igm.rrhh.consultorio.service;
 
 import ec.gob.igm.rrhh.consultorio.domain.model.SegBitacoraAcceso;
+import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -12,8 +13,11 @@ public class SeguridadAccesoService {
 
     @PersistenceContext(unitName = "consultorioPU")
     private EntityManager em;
+    @EJB
+    private ClientIdentifierService clientIdentifierService;
 
     public void registrarEvento(Long idUsuario, String usernameIntentado, String evento, boolean exitoso, String detalle) {
+        clientIdentifierService.apply(usernameIntentado);
         SegBitacoraAcceso bitacora = new SegBitacoraAcceso();
         bitacora.setIdUsuario(idUsuario);
         bitacora.setUsernameIntentado(usernameIntentado);

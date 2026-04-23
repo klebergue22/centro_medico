@@ -1,6 +1,7 @@
 package ec.gob.igm.rrhh.consultorio.service;
 
 import ec.gob.igm.rrhh.consultorio.domain.model.ConsultaMedica;
+import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -12,6 +13,8 @@ public class ConsultaMedicaService {
 
     @PersistenceContext(unitName = "consultorioPU")
     private EntityManager em;
+    @EJB
+    private ClientIdentifierService clientIdentifierService;
 
     public ConsultaMedica guardar(ConsultaMedica consulta, String usuario) {
         if (consulta == null) {
@@ -20,6 +23,7 @@ public class ConsultaMedicaService {
 
         Date ahora = new Date();
         String usr = (usuario == null || usuario.isBlank()) ? "SISTEMA" : usuario;
+        clientIdentifierService.apply(usr);
 
         if (consulta.getIdConsulta() != null) {
             ConsultaMedica actual = em.find(ConsultaMedica.class, consulta.getIdConsulta());

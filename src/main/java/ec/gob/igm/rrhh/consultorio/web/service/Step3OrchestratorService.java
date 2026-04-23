@@ -22,6 +22,7 @@ import ec.gob.igm.rrhh.consultorio.service.FichaActLaboralService;
 import ec.gob.igm.rrhh.consultorio.service.FichaDiagnosticoService;
 import ec.gob.igm.rrhh.consultorio.service.FichaExamenCompService;
 import ec.gob.igm.rrhh.consultorio.service.FichaOcupacionalService;
+import ec.gob.igm.rrhh.consultorio.web.audit.CentroMedicoAuditService;
 
 @Stateless
 /**
@@ -55,6 +56,8 @@ public class Step3OrchestratorService implements Serializable {
     private FichaDiagnosticoService fichaDiagnosticoService;
     @EJB
     private UserContextService userContextService;
+    @EJB
+    private CentroMedicoAuditService auditService;
 
     public FichaOcupacional saveStep3(Step3SaveCommand cmd) {
         String user = userContextService.resolveCurrentUser();
@@ -329,6 +332,13 @@ public class Step3OrchestratorService implements Serializable {
 
         try {
             fichaDiagnosticoService.guardarDiagnosticosDeFicha(ficha.getIdFicha(), cmd.listaDiag(), cmd.now(), user);
+            auditService.registrar(
+                    "GUARDAR_DIAGNOSTICOS_STEP3",
+                    "FICHA_DIAGNOSTICO",
+                    "ID_FICHA",
+                    "ID_FICHA=" + ficha.getIdFicha() + ", TOTAL=" + cmd.listaDiag().size(),
+                    user
+            );
             LOG.info("STEP3-K-OK (service)");
         } catch (NoSuchMethodError | RuntimeException ex) {
             LOG.info("STEP3-K: Tu service no tiene guardarDiagnosticosDeFicha(...) -> no se guarda K");

@@ -7,6 +7,7 @@ import ec.gob.igm.rrhh.consultorio.domain.model.FichaOcupacional;
 import jakarta.ejb.Stateless;
 import jakarta.ejb.TransactionAttribute;
 import jakarta.ejb.TransactionAttributeType;
+import jakarta.ejb.EJB;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 
@@ -24,6 +25,8 @@ public class FichaDiagnosticoService {
 
     @PersistenceContext(unitName = "consultorioPU")
     private EntityManager em;
+    @EJB
+    private ClientIdentifierService clientIdentifierService;
 
     private void assertEm() {
         if (em == null) {
@@ -85,7 +88,9 @@ public class FichaDiagnosticoService {
             return;
         }
 
-        persistDiagnosticos(idFicha, diagnosticos, resolveFecha(fecha), resolveUsuario(usuario));
+        String usuarioResuelto = resolveUsuario(usuario);
+        clientIdentifierService.apply(usuarioResuelto);
+        persistDiagnosticos(idFicha, diagnosticos, resolveFecha(fecha), usuarioResuelto);
         em.flush();
     }
 
