@@ -47,6 +47,7 @@ public class AuthCtrl implements Serializable {
     private String nuevaClave;
     private String confirmarNuevaClave;
     private String correoInstitucionalReset;
+    private String cedulaReset;
     private String cedulaRegistro;
 
     public String login() {
@@ -141,7 +142,10 @@ public class AuthCtrl implements Serializable {
     }
 
     public void solicitarResetClave() {
-        String cedulaNormalizada = normalizeCedula(cedula);
+        String cedulaNormalizada = normalizeCedula(cedulaReset);
+        if (cedulaNormalizada == null) {
+            cedulaNormalizada = normalizeCedula(cedula);
+        }
         if (!isCedulaValida(cedulaNormalizada)) {
             addError("Para restablecer la clave, ingrese una cédula válida de 10 dígitos.");
             return;
@@ -407,5 +411,13 @@ public class AuthCtrl implements Serializable {
 
     public void setCedulaRegistro(String cedulaRegistro) {
         this.cedulaRegistro = cedulaRegistro;
+    }
+
+    public String getCedulaReset() {
+        return cedulaReset;
+    }
+
+    public void setCedulaReset(String cedulaReset) {
+        this.cedulaReset = cedulaReset;
     }
 }
