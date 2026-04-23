@@ -239,9 +239,12 @@ input.ui-inputfield:focus, textarea.ui-inputfield:focus{
   background:linear-gradient(180deg,#f8fbf4,#eef4e8);
 }
 .login-brand-logo{
-  width:66px;
-  height:66px;
+  width:60px;
+  max-width:60px;
+  height:auto;
   object-fit:contain;
+  flex:0 0 auto;
+  border-radius:6px;
 }
 .login-brand-title{
   display:block;
@@ -275,6 +278,44 @@ input.ui-inputfield:focus, textarea.ui-inputfield:focus{
 }
 .login-tooltip{
   max-width:360px;
+}
+.login-actions-row{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:.65rem;
+  margin-top:1rem;
+  flex-wrap:wrap;
+}
+.login-action-buttons{
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  gap:.55rem;
+  flex-wrap:wrap;
+}
+.login-card .ui-button .ui-button-text{
+  text-transform:none;
+  font-weight:700;
+  letter-spacing:.15px;
+}
+.login-register-btn .ui-button-text{
+  letter-spacing:.1px;
+}
+.login-reset-link{
+  font-weight:600;
+  color:var(--olive-700) !important;
+  text-decoration:underline;
+  padding:.25rem 0;
+  font-size:.92rem;
+}
+.login-reset-link:hover{
+  color:var(--olive-800) !important;
+}
+@media (max-width: 640px){
+  .login-actions-row{
+    justify-content:flex-end;
+  }
 }
 
 .system-logo-icon{

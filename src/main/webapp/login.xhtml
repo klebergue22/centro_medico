@@ -28,7 +28,7 @@
                 <h:panelGroup layout="block" styleClass="login-help-row">
                     <span class="login-help-chip">Primer ingreso: cédula = usuario/clave</span>
                     <span class="login-help-chip">¿Olvidó clave? use “Restablecer”</span>
-                    <span class="login-help-chip">¿Sin usuario? use “Registrar médico”</span>
+                    <span class="login-help-chip">¿Sin usuario? use “Registrar nuevo”</span>
                     <h:panelGroup id="loginHelpIcon" styleClass="pi pi-info-circle login-help-icon"/>
                 </h:panelGroup>
                 <p:tooltip for="loginHelpIcon" position="top" styleClass="login-tooltip"
@@ -48,15 +48,17 @@
 
                 </p:panelGrid>
 
-                <div style="display:flex; justify-content:flex-end; gap:.5rem; margin-top:1rem;">
-                    <p:commandButton value="Registrar médico" icon="pi pi-user-plus" type="button"
+                <div class="login-actions-row">
+                    <p:commandLink value="Restablecer clave"
+                                   onclick="PF('dlgResetClave').show();"
+                                   styleClass="login-reset-link"/>
+                    <div class="login-action-buttons">
+                        <p:commandButton value="Registrar nuevo" type="button"
                                      onclick="PF('dlgRegistroMedico').show();"
-                                     styleClass="ui-button-help"/>
-                    <p:commandButton value="Restablecer clave" icon="pi pi-envelope" type="button"
-                                     onclick="PF('dlgResetClave').show();"
-                                     styleClass="ui-button-secondary"/>
-                    <p:commandButton value="Ingresar" icon="pi pi-sign-in"
+                                     styleClass="ui-button-help login-register-btn"/>
+                        <p:commandButton value="Ingresar" icon="pi pi-sign-in"
                                      action="#{authCtrl.login}" update="msgs growl loginForm"/>
+                    </div>
                 </div>
             </p:panel>
 
