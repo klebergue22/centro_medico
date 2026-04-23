@@ -39,9 +39,12 @@ import ec.gob.igm.rrhh.consultorio.service.FichaOcupacionalService;
 import ec.gob.igm.rrhh.consultorio.service.PersonaAuxService;
 import ec.gob.igm.rrhh.consultorio.service.SignosVitalesService;
 import ec.gob.igm.rrhh.consultorio.testsupport.TestFacesContext;
+import ec.gob.igm.rrhh.consultorio.web.audit.CentroMedicoAuditService;
 import ec.gob.igm.rrhh.consultorio.web.facade.CentroMedicoPdfFacade;
 import ec.gob.igm.rrhh.consultorio.web.pdf.PdfResourceResolver;
 import ec.gob.igm.rrhh.consultorio.web.service.Cie10LookupService;
+import ec.gob.igm.rrhh.consultorio.web.service.UserContextService;
+import ec.gob.igm.rrhh.consultorio.service.MedicalNotificationService;
 import jakarta.faces.application.FacesMessage;
 
 class ConsultaMedicaCtrlFunctionalTest {
@@ -56,6 +59,9 @@ class ConsultaMedicaCtrlFunctionalTest {
     private final Cie10LookupService cie10LookupService = mock(Cie10LookupService.class);
     private final Cie10Service cie10Service = mock(Cie10Service.class);
     private final SignosVitalesService signosVitalesService = mock(SignosVitalesService.class);
+    private final MedicalNotificationService medicalNotificationService = mock(MedicalNotificationService.class);
+    private final UserContextService userContextService = mock(UserContextService.class);
+    private final CentroMedicoAuditService auditService = mock(CentroMedicoAuditService.class);
 
     private ConsultaMedicaCtrl controller;
     private TestFacesContext facesContext;
@@ -74,6 +80,10 @@ class ConsultaMedicaCtrlFunctionalTest {
         inject("cie10LookupService", cie10LookupService);
         inject("cie10Service", cie10Service);
         inject("signosVitalesService", signosVitalesService);
+        inject("medicalNotificationService", medicalNotificationService);
+        inject("userContextService", userContextService);
+        inject("auditService", auditService);
+        when(userContextService.resolveCurrentUser()).thenReturn("WEB");
         controller.init();
         facesContext.clearMessages();
     }
@@ -137,12 +147,12 @@ class ConsultaMedicaCtrlFunctionalTest {
 
         SignosVitales signosGuardados = new SignosVitales();
         signosGuardados.setIdSignos(44L);
-        when(signosVitalesService.guardar(any(SignosVitales.class))).thenReturn(signosGuardados);
+        when(signosVitalesService.guardar(any(SignosVitales.class), eq("WEB"))).thenReturn(signosGuardados);
 
         controller.guardarConsulta();
 
         ArgumentCaptor<SignosVitales> signosCaptor = ArgumentCaptor.forClass(SignosVitales.class);
-        verify(signosVitalesService).guardar(signosCaptor.capture());
+        verify(signosVitalesService).guardar(signosCaptor.capture(), eq("WEB"));
         assertEquals(Integer.valueOf(120), signosCaptor.getValue().getPaSistolica());
         assertEquals(Integer.valueOf(80), signosCaptor.getValue().getPaDiastolica());
 
