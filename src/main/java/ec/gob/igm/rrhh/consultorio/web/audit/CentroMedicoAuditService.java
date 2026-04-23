@@ -2,6 +2,7 @@ package ec.gob.igm.rrhh.consultorio.web.audit;
 
 import ec.gob.igm.rrhh.consultorio.domain.model.AuditoriaConsultorio;
 import ec.gob.igm.rrhh.consultorio.service.AuditoriaConsultorioService;
+import ec.gob.igm.rrhh.consultorio.web.service.UserContextService;
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
 import java.util.Date;
@@ -14,10 +15,12 @@ public class CentroMedicoAuditService {
 
     @EJB
     private AuditoriaConsultorioService auditoriaService;
+    @EJB
+    private UserContextService userContextService;
 
 
     public void registrar(String accion, String tabla, String campo, String observaciones) {
-        registrar(accion, tabla, campo, observaciones, "USR_APP");
+        registrar(accion, tabla, campo, observaciones, userContextService.resolveCurrentUser());
     }
 
     public void registrar(String accion, String tabla, String campo, String observaciones, String usuario) {

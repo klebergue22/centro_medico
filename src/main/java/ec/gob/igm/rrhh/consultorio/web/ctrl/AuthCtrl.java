@@ -5,6 +5,7 @@ import ec.gob.igm.rrhh.consultorio.domain.model.UsuarioAuth;
 import ec.gob.igm.rrhh.consultorio.service.EmpleadoRhService;
 import ec.gob.igm.rrhh.consultorio.service.EmpleadoService;
 import ec.gob.igm.rrhh.consultorio.service.SecurityNotificationService;
+import ec.gob.igm.rrhh.consultorio.service.SeguridadSesionAuditoriaService;
 import ec.gob.igm.rrhh.consultorio.service.UsuarioAuthService;
 import ec.gob.igm.rrhh.consultorio.service.SeguridadAccesoService;
 import jakarta.ejb.EJB;
@@ -41,6 +42,8 @@ public class AuthCtrl implements Serializable {
     private SeguridadAccesoService seguridadAccesoService;
     @EJB
     private SecurityNotificationService securityNotificationService;
+    @EJB
+    private SeguridadSesionAuditoriaService seguridadSesionAuditoriaService;
 
     private String cedula;
     private String clave;
@@ -61,6 +64,7 @@ public class AuthCtrl implements Serializable {
         if (empleado == null) {
             addError("La cédula ingresada no corresponde a un empleado registrado.");
             audit(null, cedulaNormalizada, "INTENTO_FALLIDO", false, "Cedula no registrada en DAT_EMPLEADO");
+            registrarIntentoLoginFallidoAuditoria(cedulaNormalizada, "Cedula no registrada en DAT_EMPLEADO");
             return null;
         }
 
@@ -68,6 +72,7 @@ public class AuthCtrl implements Serializable {
         if (!isCargoAutorizado(cargoVigente)) {
             addError("Acceso denegado: el cargo registrado no corresponde a un perfil médico autorizado.");
             audit(null, cedulaNormalizada, "INTENTO_FALLIDO", false, "Cargo no autorizado");
+            registrarIntentoLoginFallidoAuditoria(cedulaNormalizada, "Cargo no autorizado");
             return null;
         }
 
@@ -75,11 +80,13 @@ public class AuthCtrl implements Serializable {
         if (usuarioAuth == null) {
             addError("Usuario no registrado. Use el botón \"Registrar médico\" para crear su acceso.");
             audit(null, cedulaNormalizada, "INTENTO_FALLIDO", false, "Usuario no registrado en SEG_USUARIO");
+            registrarIntentoLoginFallidoAuditoria(cedulaNormalizada, "Usuario no registrado en SEG_USUARIO");
             return null;
         }
         if (!usuarioAuthService.validatePassword(usuarioAuth, clave)) {
             addError("Usuario o clave inválidos.");
             audit(usuarioAuth.getIdUsuario(), cedulaNormalizada, "INTENTO_FALLIDO", false, "Clave invalida");
+            registrarIntentoLoginFallidoAuditoria(cedulaNormalizada, "Clave invalida");
             return null;
         }
 
@@ -87,6 +94,7 @@ public class AuthCtrl implements Serializable {
 
         boolean forceChange = usuarioAuthService.requiereCambioClave(usuarioAuth);
         audit(usuarioAuth.getIdUsuario(), cedulaNormalizada, "LOGIN", true, "Login exitoso");
+        registrarLoginExitosoAuditoria(usuarioAuth, cedulaNormalizada);
         setSessionAuth(cedulaNormalizada, resolveNombreUsuario(empleado), forceChange);
 
         if (forceChange) {
@@ -94,7 +102,7 @@ public class AuthCtrl implements Serializable {
             return "/change-password.xhtml?faces-redirect=true";
         }
 
-        return "/pages/centroMedico.xhtml?faces-redirect=true";
+        return "/index.xhtml?faces-redirect=true";
     }
 
     public String cambiarClave() {
@@ -105,7 +113,7 @@ public class AuthCtrl implements Serializable {
         }
 
         if (!Boolean.parseBoolean(String.valueOf(getSessionValue(KEY_FORCE_CHANGE)))) {
-            return "/pages/centroMedico.xhtml?faces-redirect=true";
+            return "/index.xhtml?faces-redirect=true";
         }
 
         if (nuevaClave == null || nuevaClave.length() < 8) {
@@ -138,7 +146,7 @@ public class AuthCtrl implements Serializable {
         audit(usuarioAuth.getIdUsuario(), usuario, "CAMBIO_CLAVE", true, "Cambio de clave exitoso");
         setSessionForceChange(false);
         addInfo("Clave actualizada correctamente.");
-        return "/pages/centroMedico.xhtml?faces-redirect=true";
+        return "/index.xhtml?faces-redirect=true";
     }
 
     public void solicitarResetClave() {
@@ -234,8 +242,8 @@ public class AuthCtrl implements Serializable {
             return;
         }
 
-        if (usuarioAuthService.findByUsername(cedulaNormalizada) != null) {
-            addInfo("El usuario ya está registrado. Puede ingresar con su cédula y clave.");
+        if (usuarioAuthService.findByUsernameOrCedula(cedulaNormalizada) != null) {
+            addWarn("El médico ya está registrado. No se permite un doble registro.");
             audit(null, cedulaNormalizada, "REGISTRO_USUARIO", true, "Usuario ya existente");
             return;
         }
@@ -260,6 +268,22 @@ public class AuthCtrl implements Serializable {
             seguridadAccesoService.registrarEvento(idUsuario, usernameIntentado, evento, exitoso, detalle);
         } catch (RuntimeException ignored) {
             // No bloquear autenticación por un fallo de bitácora.
+        }
+    }
+
+    private void registrarLoginExitosoAuditoria(UsuarioAuth usuarioAuth, String cedulaNormalizada) {
+        try {
+            seguridadSesionAuditoriaService.registrarLoginExitoso(usuarioAuth, cedulaNormalizada);
+        } catch (RuntimeException ignored) {
+            // No bloquear login por fallas de auditoría secundaria.
+        }
+    }
+
+    private void registrarIntentoLoginFallidoAuditoria(String cedulaNormalizada, String motivo) {
+        try {
+            seguridadSesionAuditoriaService.registrarIntentoFallido(cedulaNormalizada, motivo);
+        } catch (RuntimeException ignored) {
+            // No bloquear login por fallas de auditoría secundaria.
         }
     }
 

@@ -4,6 +4,7 @@ import ec.gob.igm.rrhh.consultorio.domain.model.DatEmpleado;
 import ec.gob.igm.rrhh.consultorio.domain.model.UsuarioAuth;
 import jakarta.ejb.Stateless;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceException;
 import jakarta.persistence.PersistenceContext;
 
 import java.nio.charset.StandardCharsets;
@@ -20,7 +21,7 @@ public class UsuarioAuthService {
 
     public UsuarioAuth findOrCreateByEmpleado(DatEmpleado empleado) {
         String username = empleado.getNoCedula();
-        UsuarioAuth usuario = findByUsername(username);
+        UsuarioAuth usuario = findByUsernameOrCedula(username);
         if (usuario != null) {
             return usuario;
         }
@@ -39,7 +40,15 @@ public class UsuarioAuthService {
         nuevo.setRequiereCambioClave("S");
         nuevo.setFechaCreacion(new Date());
         nuevo.setUsrCreacion("AUTH_AUTO");
-        em.persist(nuevo);
+        try {
+            em.persist(nuevo);
+        } catch (PersistenceException ex) {
+            UsuarioAuth existente = findByUsernameOrCedula(username);
+            if (existente != null) {
+                return existente;
+            }
+            throw ex;
+        }
         return nuevo;
     }
 
@@ -48,6 +57,26 @@ public class UsuarioAuthService {
             return null;
         }
         return findByUsernameInternal(username.trim());
+    }
+
+    public UsuarioAuth findByCedula(String cedula) {
+        if (cedula == null || cedula.isBlank()) {
+            return null;
+        }
+        List<UsuarioAuth> rows = em.createQuery(
+                        "SELECT u FROM UsuarioAuth u WHERE u.noCedula = :cedula", UsuarioAuth.class)
+                .setParameter("cedula", cedula.trim())
+                .setMaxResults(1)
+                .getResultList();
+        return rows.isEmpty() ? null : rows.get(0);
+    }
+
+    public UsuarioAuth findByUsernameOrCedula(String value) {
+        UsuarioAuth byUsername = findByUsername(value);
+        if (byUsername != null) {
+            return byUsername;
+        }
+        return findByCedula(value);
     }
 
     public boolean validatePassword(UsuarioAuth usuario, String rawPassword) {

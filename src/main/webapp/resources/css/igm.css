@@ -223,6 +223,60 @@ input.ui-inputfield:focus, textarea.ui-inputfield:focus{
   min-width:0;
 }
 
+/* ---------- LOGIN ---------- */
+.login-card .ui-panel-title{
+  font-weight:800;
+  letter-spacing:.4px;
+}
+.login-brand{
+  display:flex;
+  align-items:center;
+  gap:14px;
+  margin:.5rem 0 1rem;
+  padding:.65rem .8rem;
+  border:1px solid rgba(111,145,92,.35);
+  border-radius:10px;
+  background:linear-gradient(180deg,#f8fbf4,#eef4e8);
+}
+.login-brand-logo{
+  width:66px;
+  height:66px;
+  object-fit:contain;
+}
+.login-brand-title{
+  display:block;
+  font-weight:800;
+  color:var(--olive-800);
+}
+.login-brand-subtitle{
+  display:block;
+  color:var(--ink-soft);
+  font-size:.92rem;
+}
+.login-help-row{
+  display:flex;
+  align-items:center;
+  gap:.45rem;
+  flex-wrap:wrap;
+  margin:0 0 .95rem;
+}
+.login-help-chip{
+  padding:.2rem .55rem;
+  border-radius:999px;
+  background:#eef3e8;
+  border:1px solid rgba(111,145,92,.45);
+  color:#334628;
+  font-size:.8rem;
+  font-weight:600;
+}
+.login-help-icon{
+  color:var(--olive-700);
+  font-size:1rem;
+}
+.login-tooltip{
+  max-width:360px;
+}
+
 .system-logo-icon{
   display:inline-flex;
   align-items:center;

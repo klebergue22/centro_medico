@@ -40,7 +40,7 @@ public class AuthFilter implements Filter {
         }
 
         if (!forceChange && isChangePage) {
-            res.sendRedirect(contextPath + "/pages/centroMedico.xhtml");
+            res.sendRedirect(contextPath + "/index.xhtml");
             return;
         }
 

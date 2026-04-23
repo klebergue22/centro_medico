@@ -34,6 +34,9 @@ public class SegSesion implements Serializable {
     @Column(name = "ACTIVA", nullable = false, length = 1)
     private String activa;
 
+    @Column(name = "IP_ORIGEN", length = 45)
+    private String ipOrigen;
+
     public Long getIdSesion() { return idSesion; }
     public void setIdSesion(Long idSesion) { this.idSesion = idSesion; }
     public Long getIdUsuario() { return idUsuario; }
@@ -48,4 +51,6 @@ public class SegSesion implements Serializable {
     public void setFechaExpiracion(Date fechaExpiracion) { this.fechaExpiracion = fechaExpiracion; }
     public String getActiva() { return activa; }
     public void setActiva(String activa) { this.activa = activa; }
+    public String getIpOrigen() { return ipOrigen; }
+    public void setIpOrigen(String ipOrigen) { this.ipOrigen = ipOrigen; }
 }
