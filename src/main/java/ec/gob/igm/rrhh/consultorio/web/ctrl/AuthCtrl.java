@@ -8,6 +8,7 @@ import ec.gob.igm.rrhh.consultorio.service.SecurityNotificationService;
 import ec.gob.igm.rrhh.consultorio.service.SeguridadSesionAuditoriaService;
 import ec.gob.igm.rrhh.consultorio.service.UsuarioAuthService;
 import ec.gob.igm.rrhh.consultorio.service.SeguridadAccesoService;
+import ec.gob.igm.rrhh.consultorio.service.AdminSeguridadService;
 import jakarta.ejb.EJB;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.faces.application.FacesMessage;
@@ -30,6 +31,7 @@ public class AuthCtrl implements Serializable {
     private static final String KEY_AUTH_USER = "AUTH_USER";
     private static final String KEY_AUTH_USER_NAME = "AUTH_USER_NAME";
     private static final String KEY_FORCE_CHANGE = "AUTH_PASSWORD_CHANGE_REQUIRED";
+    private static final String KEY_AUTH_IS_ADMIN = "AUTH_IS_ADMIN";
     private static final String EMAIL_DOMAIN_INSTITUCIONAL = "@geograficomilitar.gob.ec";
 
     @EJB
@@ -44,6 +46,8 @@ public class AuthCtrl implements Serializable {
     private SecurityNotificationService securityNotificationService;
     @EJB
     private SeguridadSesionAuditoriaService seguridadSesionAuditoriaService;
+    @EJB
+    private AdminSeguridadService adminSeguridadService;
 
     private String cedula;
     private String clave;
@@ -69,8 +73,8 @@ public class AuthCtrl implements Serializable {
         }
 
         String cargoVigente = resolveCargoParaLogin(empleado, cedulaNormalizada);
-        if (!isCargoAutorizado(cargoVigente)) {
-            addError("Acceso denegado: el cargo registrado no corresponde a un perfil médico autorizado.");
+        if (!isCargoAutorizado(cargoVigente) && !isCargoAdmin(cargoVigente)) {
+            addError("Acceso denegado: el cargo registrado no corresponde a un perfil autorizado.");
             audit(null, cedulaNormalizada, "INTENTO_FALLIDO", false, "Cargo no autorizado");
             registrarIntentoLoginFallidoAuditoria(cedulaNormalizada, "Cargo no autorizado");
             return null;
@@ -78,7 +82,7 @@ public class AuthCtrl implements Serializable {
 
         UsuarioAuth usuarioAuth = usuarioAuthService.findByUsername(cedulaNormalizada);
         if (usuarioAuth == null) {
-            addError("Usuario no registrado. Use el botón \"Registrar médico\" para crear su acceso.");
+            addError("Usuario no registrado. Use el botón \"Registrar usuario\" para crear su acceso.");
             audit(null, cedulaNormalizada, "INTENTO_FALLIDO", false, "Usuario no registrado en SEG_USUARIO");
             registrarIntentoLoginFallidoAuditoria(cedulaNormalizada, "Usuario no registrado en SEG_USUARIO");
             return null;
@@ -110,7 +114,8 @@ public class AuthCtrl implements Serializable {
         boolean forceChange = usuarioAuthService.requiereCambioClave(usuarioAuth);
         audit(usuarioAuth.getIdUsuario(), cedulaNormalizada, "LOGIN", true, "Login exitoso");
         registrarLoginExitosoAuditoria(usuarioAuth, cedulaNormalizada);
-        setSessionAuth(cedulaNormalizada, resolveNombreUsuario(empleado), forceChange);
+        boolean esAdmin = usuarioAuthService.tieneRolAdminActivo(usuarioAuth.getIdUsuario());
+        setSessionAuth(cedulaNormalizada, resolveNombreUsuario(empleado), forceChange, esAdmin);
 
         if (forceChange) {
             addInfo("Primer ingreso detectado. Debe cambiar su clave para continuar.");
@@ -196,7 +201,7 @@ public class AuthCtrl implements Serializable {
 
         UsuarioAuth usuarioAuth = usuarioAuthService.findByUsername(cedulaNormalizada);
         if (usuarioAuth == null) {
-            addError("Usuario no registrado. Debe registrarse primero en el botón \"Registrar médico\".");
+            addError("Usuario no registrado. Debe registrarse primero en el botón \"Registrar usuario\".");
             audit(null, cedulaNormalizada, "RESET_CLAVE", false, "Usuario no registrado en SEG_USUARIO");
             return;
         }
@@ -244,8 +249,8 @@ public class AuthCtrl implements Serializable {
         }
 
         String cargoVigente = resolveCargoParaLogin(empleado, cedulaNormalizada);
-        if (!isCargoAutorizado(cargoVigente)) {
-            addError("Solo perfiles médicos autorizados pueden registrarse.");
+        if (!isCargoAutorizado(cargoVigente) && !isCargoAdmin(cargoVigente)) {
+            addError("Solo perfiles médicos autorizados o el cargo administrador pueden registrarse.");
             audit(null, cedulaNormalizada, "REGISTRO_USUARIO", false, "Cargo no autorizado");
             return;
         }
@@ -258,8 +263,20 @@ public class AuthCtrl implements Serializable {
         }
 
         if (usuarioAuthService.findByUsernameOrCedula(cedulaNormalizada) != null) {
-            addWarn("El médico ya está registrado. No se permite un doble registro.");
+            addWarn("El usuario ya está registrado. No se permite un doble registro.");
             audit(null, cedulaNormalizada, "REGISTRO_USUARIO", true, "Usuario ya existente");
+            return;
+        }
+
+        if (isCargoAdmin(cargoVigente)) {
+            adminSeguridadService.provisionarAdministrador(
+                    cedulaNormalizada,
+                    resolveNombreUsuario(empleado),
+                    correoInstitucional,
+                    "AUTH_AUTO"
+            );
+            addInfo("Registro exitoso como administrador. Ingrese con usuario (cédula) y clave inicial (su cédula).");
+            audit(null, cedulaNormalizada, "REGISTRO_USUARIO", true, "Administrador registrado en SEG_USUARIO");
             return;
         }
 
@@ -329,6 +346,11 @@ public class AuthCtrl implements Serializable {
                 || normalized.startsWith("DR ");
     }
 
+    private boolean isCargoAdmin(String cargo) {
+        String normalized = normalizeCargo(cargo);
+        return normalized.equals(normalizeCargo(adminSeguridadService.getCargoAdminRequerido()));
+    }
+
     private String normalizeCargo(String cargo) {
         if (cargo == null) {
             return "";
@@ -367,12 +389,13 @@ public class AuthCtrl implements Serializable {
         return normalized.toLowerCase(Locale.ROOT).endsWith(EMAIL_DOMAIN_INSTITUCIONAL);
     }
 
-    private void setSessionAuth(String user, String nombreUsuario, boolean forceChange) {
+    private void setSessionAuth(String user, String nombreUsuario, boolean forceChange, boolean esAdmin) {
         ExternalContext externalContext = FacesContext.getCurrentInstance().getExternalContext();
         Map<String, Object> session = externalContext.getSessionMap();
         session.put(KEY_AUTH_USER, user);
         session.put(KEY_AUTH_USER_NAME, nombreUsuario);
         session.put(KEY_FORCE_CHANGE, forceChange);
+        session.put(KEY_AUTH_IS_ADMIN, esAdmin);
     }
 
     private void setSessionForceChange(boolean forceChange) {

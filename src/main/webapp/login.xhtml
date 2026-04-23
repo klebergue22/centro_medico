@@ -28,7 +28,7 @@
                 <h:panelGroup layout="block" styleClass="login-help-row">
                     <span class="login-help-chip">Primer ingreso: cédula = usuario/clave</span>
                     <span class="login-help-chip">¿Olvidó clave? use “Restablecer”</span>
-                    <span class="login-help-chip">¿Sin usuario? use “Registrar nuevo”</span>
+                    <span class="login-help-chip">¿Sin usuario? use “Registrar usuario”</span>
                     <h:panelGroup id="loginHelpIcon" styleClass="pi pi-info-circle login-help-icon"/>
                 </h:panelGroup>
                 <p:tooltip for="loginHelpIcon" position="top" styleClass="login-tooltip"
@@ -53,7 +53,7 @@
                                    onclick="PF('dlgResetClave').show();"
                                    styleClass="login-reset-link"/>
                     <div class="login-action-buttons">
-                        <p:commandButton value="Registrar nuevo" type="button"
+                        <p:commandButton value="Registrar usuario" type="button"
                                      onclick="PF('dlgRegistroMedico').show();"
                                      styleClass="ui-button-help login-register-btn"/>
                         <p:commandButton value="Ingresar" icon="pi pi-sign-in"
@@ -83,14 +83,14 @@
                 </f:facet>
             </p:dialog>
 
-            <p:dialog id="dlgRegistroMedico" widgetVar="dlgRegistroMedico" header="Registrar médico"
+            <p:dialog id="dlgRegistroMedico" widgetVar="dlgRegistroMedico" header="Registrar usuario"
                       modal="true" closable="true" resizable="false" width="520">
                 <h:panelGrid columns="1" styleClass="ui-fluid" style="gap:.7rem;">
                     <h:outputText value="Ingrese su cédula para crear su usuario. Clave inicial: su cédula."
                                   style="font-weight:600; color:#2d3f27;"/>
                     <p:inputText id="cedulaRegistroDlg" value="#{authCtrl.cedulaRegistro}" maxlength="10"
                                  placeholder="0000000000"/>
-                    <small style="color:#4c5d43;">Solo pueden registrarse perfiles médicos autorizados.</small>
+                    <small style="color:#4c5d43;">Se registran perfiles médicos autorizados y el cargo administrador autorizado.</small>
                 </h:panelGrid>
                 <f:facet name="footer">
                     <p:commandButton value="Registrar" icon="pi pi-check"
