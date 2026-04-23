@@ -16,6 +16,8 @@ import java.util.List;
 @Stateless
 public class UsuarioAuthService {
 
+    public static final int MAX_INTENTOS_LOGIN = 3;
+
     @PersistenceContext(unitName = "consultorioPU")
     private EntityManager em;
 
@@ -86,6 +88,18 @@ public class UsuarioAuthService {
         return usuario.getClaveHash().equals(hash(rawPassword));
     }
 
+    public boolean isBloqueado(UsuarioAuth usuario) {
+        return usuario != null && "S".equalsIgnoreCase(usuario.getBloqueado());
+    }
+
+    public int getIntentosRestantes(UsuarioAuth usuario) {
+        if (usuario == null) {
+            return 0;
+        }
+        int intentosActuales = usuario.getIntentosFallidos() == null ? 0 : usuario.getIntentosFallidos();
+        return Math.max(0, MAX_INTENTOS_LOGIN - intentosActuales);
+    }
+
     public boolean requiereCambioClave(UsuarioAuth usuario) {
         return usuario != null && "S".equalsIgnoreCase(usuario.getRequiereCambioClave());
     }
@@ -98,6 +112,7 @@ public class UsuarioAuthService {
         usuario.setRequiereCambioClave("N");
         usuario.setFechaUltimoCambioClave(new Date());
         usuario.setIntentosFallidos(0);
+        usuario.setBloqueado("N");
         em.merge(usuario);
     }
 
@@ -112,6 +127,7 @@ public class UsuarioAuthService {
         usuario.setRequiereCambioClave("S");
         usuario.setFechaUltimoCambioClave(new Date());
         usuario.setIntentosFallidos(0);
+        usuario.setBloqueado("N");
         em.merge(usuario);
     }
 
@@ -119,7 +135,22 @@ public class UsuarioAuthService {
         if (usuario == null) return;
         usuario.setFechaUltimoLogin(new Date());
         usuario.setIntentosFallidos(0);
+        usuario.setBloqueado("N");
         em.merge(usuario);
+    }
+
+    public int registrarIntentoFallido(UsuarioAuth usuario) {
+        if (usuario == null) {
+            return 0;
+        }
+        int intentosActuales = usuario.getIntentosFallidos() == null ? 0 : usuario.getIntentosFallidos();
+        intentosActuales++;
+        usuario.setIntentosFallidos(intentosActuales);
+        if (intentosActuales >= MAX_INTENTOS_LOGIN) {
+            usuario.setBloqueado("S");
+        }
+        em.merge(usuario);
+        return Math.max(0, MAX_INTENTOS_LOGIN - intentosActuales);
     }
 
     private UsuarioAuth findByUsernameInternal(String username) {
