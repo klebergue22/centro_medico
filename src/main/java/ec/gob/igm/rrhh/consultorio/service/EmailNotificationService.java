@@ -2,7 +2,6 @@ package ec.gob.igm.rrhh.consultorio.service;
 
 import jakarta.ejb.Stateless;
 import jakarta.mail.Authenticator;
-import jakarta.mail.BodyPart;
 import jakarta.mail.Message;
 import jakarta.mail.MessagingException;
 import jakarta.mail.Multipart;
@@ -63,7 +62,7 @@ public class EmailNotificationService {
 
         Multipart multipart = new MimeMultipart();
 
-        BodyPart textPart = new MimeBodyPart();
+        MimeBodyPart textPart = new MimeBodyPart();
         textPart.setText(body, StandardCharsets.UTF_8.name());
         multipart.addBodyPart(textPart);
 
