@@ -28,6 +28,8 @@ public class AdminSeguridadService {
 
     private static final String ROL_ADMIN_CODIGO = "ADMIN_SISTEMA";
     private static final String ROL_ADMIN_NOMBRE = "Administrador del sistema";
+    private static final String ROL_MEDICO_CODIGO = "MEDICO";
+    private static final String ROL_MEDICO_NOMBRE = "Médico";
     private static final String CARGO_ADMIN_REQUERIDO = "ANALISTA SOPORTE TECNOLG. GEOINFORMATICAS";
     private static final String CARGO_ADMIN_REQUERIDO_NORMALIZADO = normalizeCargo(CARGO_ADMIN_REQUERIDO);
 
@@ -220,6 +222,23 @@ public class AdminSeguridadService {
         em.merge(usuario);
     }
 
+    public void asignarRolMedico(Long idUsuario) {
+        if (idUsuario == null) {
+            throw new IllegalArgumentException("No se encontró el usuario.");
+        }
+        UsuarioAuth usuario = em.find(UsuarioAuth.class, idUsuario);
+        if (usuario == null) {
+            throw new IllegalArgumentException("No se encontró el usuario.");
+        }
+        String cedula = !isBlank(usuario.getNoCedula()) ? usuario.getNoCedula() : usuario.getUsername();
+        String cargoVigente = empleadoRhService.buscarCargoVigentePorCedula(cedula);
+        if (!esCargoMedico(cargoVigente)) {
+            throw new IllegalArgumentException("No se puede asignar rol médico: el cargo vigente no corresponde a médico.");
+        }
+        SegRol rolMedico = findOrCreateRolMedico();
+        vincularUsuarioRol(usuario, rolMedico);
+    }
+
     public String getCargoAdminRequerido() {
         return CARGO_ADMIN_REQUERIDO;
     }
@@ -282,6 +301,28 @@ public class AdminSeguridadService {
         SegRol rol = new SegRol();
         rol.setCodigo(ROL_ADMIN_CODIGO);
         rol.setNombre(ROL_ADMIN_NOMBRE);
+        rol.setActivo("S");
+        em.persist(rol);
+        return rol;
+    }
+
+    private SegRol findOrCreateRolMedico() {
+        List<SegRol> rows = em.createQuery(
+                        "SELECT r FROM SegRol r WHERE r.codigo = :codigo", SegRol.class)
+                .setParameter("codigo", ROL_MEDICO_CODIGO)
+                .setMaxResults(1)
+                .getResultList();
+
+        if (!rows.isEmpty()) {
+            SegRol rol = rows.get(0);
+            rol.setActivo("S");
+            rol.setNombre(ROL_MEDICO_NOMBRE);
+            return em.merge(rol);
+        }
+
+        SegRol rol = new SegRol();
+        rol.setCodigo(ROL_MEDICO_CODIGO);
+        rol.setNombre(ROL_MEDICO_NOMBRE);
         rol.setActivo("S");
         em.persist(rol);
         return rol;
@@ -378,6 +419,19 @@ public class AdminSeguridadService {
 
     private boolean isBlank(String value) {
         return value == null || value.trim().isEmpty();
+    }
+
+    private boolean esCargoMedico(String cargo) {
+        String normalized = normalizeCargo(cargo);
+        if (normalized == null || normalized.isBlank()) {
+            return false;
+        }
+        return normalized.contains("MEDCO")
+                || normalized.contains("MEDICO GENERAL")
+                || "MEDICO".equals(normalized)
+                || normalized.startsWith("MEDICO ")
+                || normalized.contains("DOCTOR")
+                || normalized.startsWith("DR ");
     }
 
     private static String normalizeCargo(String cargo) {

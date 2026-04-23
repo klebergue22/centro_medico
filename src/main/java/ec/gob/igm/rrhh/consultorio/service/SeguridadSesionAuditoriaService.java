@@ -28,6 +28,8 @@ public class SeguridadSesionAuditoriaService {
 
         Date ahora = new Date();
         String ipOrigen = resolveClientIp();
+        String navegador = resolveUserAgent();
+        String usuarioAuditoria = resolveUsuarioAuditoria(cedula, usuario);
         Long rolId = buscarRolActivo(usuario.getIdUsuario());
         SegSesion sesion = new SegSesion();
         sesion.setIdUsuario(usuario.getIdUsuario());
@@ -37,6 +39,8 @@ public class SeguridadSesionAuditoriaService {
         sesion.setFechaExpiracion(new Date(ahora.getTime() + 60L * 60L * 1000L));
         sesion.setActiva("S");
         sesion.setIpOrigen(ipOrigen);
+        sesion.setNavegador(navegador);
+        sesion.setUsrCreacion(usuarioAuditoria);
         em.persist(sesion);
         em.flush();
 
@@ -51,21 +55,24 @@ public class SeguridadSesionAuditoriaService {
         auditoriaDet.setValorNuevo("CEDULA=" + safe(cedula)
                 + ", ID_USUARIO=" + usuario.getIdUsuario()
                 + ", ID_ROL=" + safe(rolId)
-                + ", IP_ORIGEN=" + safe(ipOrigen));
-        auditoriaDet.setIpOrigen(ipOrigen);
+                + ", IP_ORIGEN=" + safe(ipOrigen)
+                + ", NAVEGADOR=" + safe(navegador)
+                + ", USR_CREACION=" + safe(usuarioAuditoria));
         auditoriaDet.setFechaEvento(ahora);
         em.persist(auditoriaDet);
 
         AuditoriaConsultorio auditoria = new AuditoriaConsultorio();
         auditoria.setModulo("SEGURIDAD");
-        auditoria.setUsuario(resolveUsuarioAuditoria(cedula, usuario));
+        auditoria.setUsuario(usuarioAuditoria);
         auditoria.setFecha(ahora);
         auditoria.setAccion("LOGIN_OK");
         auditoria.setTablaAfecta("SEG_SESION");
         auditoria.setCampoAfecta("ID_SESION");
         auditoria.setObservaciones("Inicio de sesión exitoso. ID_SESION=" + sesion.getIdSesion()
                 + ", ID_ROL=" + safe(rolId)
-                + ", IP_ORIGEN=" + safe(ipOrigen));
+                + ", IP_ORIGEN=" + safe(ipOrigen)
+                + ", NAVEGADOR=" + safe(navegador)
+                + ", USR_CREACION=" + safe(usuarioAuditoria));
         auditoria.setPkValor(String.valueOf(sesion.getIdSesion()));
         em.persist(auditoria);
     }
@@ -149,5 +156,21 @@ public class SeguridadSesionAuditoriaService {
             return null;
         }
         return value;
+    }
+
+    private String resolveUserAgent() {
+        FacesContext facesContext = FacesContext.getCurrentInstance();
+        if (facesContext == null) {
+            return null;
+        }
+        ExternalContext externalContext = facesContext.getExternalContext();
+        if (externalContext == null) {
+            return null;
+        }
+        String userAgent = externalContext.getRequestHeaderMap().get("User-Agent");
+        if (userAgent == null || userAgent.isBlank()) {
+            return null;
+        }
+        return userAgent.trim();
     }
 }

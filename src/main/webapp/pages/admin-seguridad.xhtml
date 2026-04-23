@@ -91,27 +91,38 @@
 
             <p:panel header="Listado de usuarios" style="margin-top:16px;">
                 <p:dataTable id="tblUsuarios" value="#{adminSeguridadCtrl.usuarios}" var="usr"
+                             widgetVar="wvUsuarios"
                              paginator="true" rows="10" rowKey="#{usr.idUsuario}" reflow="true"
+                             filterDelay="300" filterDisplay="row"
                              emptyMessage="No existen usuarios registrados.">
-                    <p:column headerText="Usuario">
+                    <f:facet name="header">
+                        <div style="display:flex; justify-content:flex-end;">
+                            <span class="ui-input-icon-left">
+                                <i class="pi pi-search"/>
+                                <p:inputText id="globalFilter" placeholder="Buscar en la tabla..."
+                                             onkeyup="PF('wvUsuarios').filter()"/>
+                            </span>
+                        </div>
+                    </f:facet>
+                    <p:column headerText="Usuario" filterBy="#{usr.username}" filterMatchMode="contains">
                         <h:outputText value="#{usr.username}"/>
                     </p:column>
-                    <p:column headerText="Nombre">
+                    <p:column headerText="Nombre" filterBy="#{usr.nombreVisible}" filterMatchMode="contains">
                         <h:outputText value="#{usr.nombreVisible}"/>
                     </p:column>
-                    <p:column headerText="Correo">
+                    <p:column headerText="Correo" filterBy="#{usr.email}" filterMatchMode="contains">
                         <h:outputText value="#{usr.email}"/>
                     </p:column>
-                    <p:column headerText="Roles">
+                    <p:column headerText="Roles" filterBy="#{usr.roles}" filterMatchMode="contains">
                         <h:outputText value="#{empty usr.roles ? 'Sin rol activo' : usr.roles}"/>
                     </p:column>
-                    <p:column headerText="Estado">
+                    <p:column headerText="Estado" filterBy="#{usr.activo eq 'S' ? 'Activo' : 'Inactivo'}" filterMatchMode="exact">
                         <h:outputText value="#{usr.activo eq 'S' ? 'Activo' : 'Inactivo'}"/>
                     </p:column>
-                    <p:column headerText="Bloqueado">
+                    <p:column headerText="Bloqueado" filterBy="#{usr.bloqueado eq 'S' ? 'Sí' : 'No'}" filterMatchMode="exact">
                         <h:outputText value="#{usr.bloqueado eq 'S' ? 'Sí' : 'No'}"/>
                     </p:column>
-                    <p:column headerText="Gestión" style="width:160px;">
+                    <p:column headerText="Gestión" style="width:240px;">
                         <p:commandButton value="Editar"
                                          icon="pi pi-pencil"
                                          actionListener="#{adminSeguridadCtrl.editarUsuario(usr.idUsuario)}"
@@ -124,6 +135,13 @@
                                          update="@form"
                                          styleClass="ui-button-help ui-button-sm"/>
                         <p:spacer width="6"/>
+                        <p:commandButton value="Asignar médico"
+                                         icon="pi pi-user-plus"
+                                         actionListener="#{adminSeguridadCtrl.asignarRolMedico(usr.idUsuario)}"
+                                         update="@form"
+                                         styleClass="ui-button-warning ui-button-sm"
+                                         rendered="#{empty usr.roles or usr.roles eq 'Sin rol activo'}"/>
+                        <p:spacer width="6" rendered="#{empty usr.roles or usr.roles eq 'Sin rol activo'}"/>
                         <p:commandButton value="Activar"
                                          rendered="#{usr.activo ne 'S'}"
                                          icon="pi pi-check"

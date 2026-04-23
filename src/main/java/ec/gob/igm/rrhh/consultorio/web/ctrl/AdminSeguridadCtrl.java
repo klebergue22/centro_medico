@@ -129,6 +129,15 @@ public class AdminSeguridadCtrl implements Serializable {
         }
     }
 
+    public void asignarRolMedico(Long idUsuario) {
+        try {
+            adminSeguridadService.asignarRolMedico(idUsuario);
+            addInfo("Rol médico asignado correctamente.");
+        } catch (IllegalArgumentException e) {
+            addWarn(e.getMessage());
+        }
+    }
+
     public List<SegRol> getRolesActivos() {
         return adminSeguridadService.listarRolesActivos();
     }

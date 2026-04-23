@@ -37,6 +37,12 @@ public class SegSesion implements Serializable {
     @Column(name = "IP_ORIGEN", length = 45)
     private String ipOrigen;
 
+    @Column(name = "NAVEGADOR", length = 300)
+    private String navegador;
+
+    @Column(name = "USR_CREACION", length = 30)
+    private String usrCreacion;
+
     public Long getIdSesion() { return idSesion; }
     public void setIdSesion(Long idSesion) { this.idSesion = idSesion; }
     public Long getIdUsuario() { return idUsuario; }
@@ -53,4 +59,8 @@ public class SegSesion implements Serializable {
     public void setActiva(String activa) { this.activa = activa; }
     public String getIpOrigen() { return ipOrigen; }
     public void setIpOrigen(String ipOrigen) { this.ipOrigen = ipOrigen; }
+    public String getNavegador() { return navegador; }
+    public void setNavegador(String navegador) { this.navegador = navegador; }
+    public String getUsrCreacion() { return usrCreacion; }
+    public void setUsrCreacion(String usrCreacion) { this.usrCreacion = usrCreacion; }
 }
