@@ -22,6 +22,9 @@
                 <h:panelGroup layout="block" style="margin-bottom:1rem; color:#3a4b32;">
                     <h:outputText value="¿Olvidó su clave? Ingrese su cédula y su correo institucional para restablecer la clave."/>
                 </h:panelGroup>
+                <h:panelGroup layout="block" style="margin-bottom:1rem; color:#3a4b32;">
+                    <h:outputText value="¿Es su primera vez y no está registrado? Use el botón Registrar médico para crear su usuario en SEG_USUARIO."/>
+                </h:panelGroup>
 
                 <p:panelGrid columns="3" styleClass="emp-3col ui-fluid"
                              columnClasses="lab,fld,msg" layout="tabular">
@@ -38,6 +41,9 @@
                 </p:panelGrid>
 
                 <div style="display:flex; justify-content:flex-end; gap:.5rem; margin-top:1rem;">
+                    <p:commandButton value="Registrar médico" icon="pi pi-user-plus" type="button"
+                                     onclick="PF('dlgRegistroMedico').show();"
+                                     styleClass="ui-button-help"/>
                     <p:commandButton value="Restablecer clave" icon="pi pi-envelope" type="button"
                                      onclick="PF('dlgResetClave').show();"
                                      styleClass="ui-button-secondary"/>
@@ -49,20 +55,40 @@
             <p:dialog id="dlgResetClave" widgetVar="dlgResetClave" header="Restablecer clave"
                       modal="true" closable="true" resizable="false" width="520">
                 <h:panelGrid columns="1" styleClass="ui-fluid" style="gap:.7rem;">
+                    <p:inputText id="cedulaResetDlg" value="#{authCtrl.cedulaReset}" maxlength="10"
+                                 placeholder="Cédula"/>
                     <h:outputText value="Ingrese su correo institucional para recibir la clave temporal de reseteo."
                                   style="font-weight:600; color:#2d3f27;"/>
                     <p:inputText id="correoResetDlg" value="#{authCtrl.correoInstitucionalReset}" maxlength="150"
-                                 required="true" requiredMessage="Ingrese el correo institucional"
                                  placeholder="usuario@geograficomilitar.gob.ec"/>
                     <small style="color:#4c5d43;">Solo se aceptan correos con dominio @geograficomilitar.gob.ec.</small>
                 </h:panelGrid>
                 <f:facet name="footer">
                     <p:commandButton value="Enviar clave temporal" icon="pi pi-send"
                                      actionListener="#{authCtrl.solicitarResetClave}"
-                                     process="cedula correoResetDlg" update="msgs growl loginForm"
+                                     process="@this cedulaResetDlg correoResetDlg" update="msgs growl loginForm"
                                      oncomplete="if (!args.validationFailed) PF('dlgResetClave').hide();"/>
                     <p:commandButton value="Cancelar" type="button" icon="pi pi-times"
                                      onclick="PF('dlgResetClave').hide();" styleClass="ui-button-secondary"/>
+                </f:facet>
+            </p:dialog>
+
+            <p:dialog id="dlgRegistroMedico" widgetVar="dlgRegistroMedico" header="Registrar médico"
+                      modal="true" closable="true" resizable="false" width="520">
+                <h:panelGrid columns="1" styleClass="ui-fluid" style="gap:.7rem;">
+                    <h:outputText value="Ingrese su cédula para registrar el usuario. La clave inicial será la misma cédula."
+                                  style="font-weight:600; color:#2d3f27;"/>
+                    <p:inputText id="cedulaRegistroDlg" value="#{authCtrl.cedulaRegistro}" maxlength="10"
+                                 placeholder="0000000000"/>
+                    <small style="color:#4c5d43;">Solo pueden registrarse perfiles médicos autorizados.</small>
+                </h:panelGrid>
+                <f:facet name="footer">
+                    <p:commandButton value="Registrar" icon="pi pi-check"
+                                     actionListener="#{authCtrl.registrarMedico}"
+                                     process="@this cedulaRegistroDlg" update="msgs growl loginForm"
+                                     oncomplete="if (!args.validationFailed) PF('dlgRegistroMedico').hide();"/>
+                    <p:commandButton value="Cancelar" type="button" icon="pi pi-times"
+                                     onclick="PF('dlgRegistroMedico').hide();" styleClass="ui-button-secondary"/>
                 </f:facet>
             </p:dialog>
         </h:form>
