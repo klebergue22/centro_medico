@@ -4,6 +4,7 @@ import ec.gob.igm.rrhh.consultorio.domain.model.DatEmpleado;
 import ec.gob.igm.rrhh.consultorio.domain.model.UsuarioAuth;
 import ec.gob.igm.rrhh.consultorio.service.EmpleadoRhService;
 import ec.gob.igm.rrhh.consultorio.service.EmpleadoService;
+import ec.gob.igm.rrhh.consultorio.service.SecurityNotificationService;
 import ec.gob.igm.rrhh.consultorio.service.UsuarioAuthService;
 import ec.gob.igm.rrhh.consultorio.service.SeguridadAccesoService;
 import jakarta.ejb.EJB;
@@ -28,6 +29,7 @@ public class AuthCtrl implements Serializable {
     private static final String KEY_AUTH_USER = "AUTH_USER";
     private static final String KEY_AUTH_USER_NAME = "AUTH_USER_NAME";
     private static final String KEY_FORCE_CHANGE = "AUTH_PASSWORD_CHANGE_REQUIRED";
+    private static final String EMAIL_DOMAIN_INSTITUCIONAL = "@geograficomilitar.gob.ec";
 
     @EJB
     private EmpleadoService empleadoService;
@@ -37,11 +39,14 @@ public class AuthCtrl implements Serializable {
     private UsuarioAuthService usuarioAuthService;
     @EJB
     private SeguridadAccesoService seguridadAccesoService;
+    @EJB
+    private SecurityNotificationService securityNotificationService;
 
     private String cedula;
     private String clave;
     private String nuevaClave;
     private String confirmarNuevaClave;
+    private String correoInstitucionalReset;
 
     public String login() {
         String cedulaNormalizada = normalizeCedula(cedula);
@@ -125,6 +130,49 @@ public class AuthCtrl implements Serializable {
         return "/pages/centroMedico.xhtml?faces-redirect=true";
     }
 
+    public void solicitarResetClave() {
+        String cedulaNormalizada = normalizeCedula(cedula);
+        if (!isCedulaValida(cedulaNormalizada)) {
+            addError("Para restablecer la clave, ingrese una cédula válida de 10 dígitos.");
+            return;
+        }
+
+        DatEmpleado empleado = getEmpleadoValido(cedulaNormalizada);
+        if (empleado == null) {
+            addError("No se encontró un empleado registrado con esa cédula.");
+            audit(null, cedulaNormalizada, "RESET_CLAVE", false, "Cedula no registrada");
+            return;
+        }
+
+        String correoIngresado = normalize(correoInstitucionalReset);
+        if (correoIngresado == null) {
+            addError("Para restablecer la clave, ingrese el correo institucional.");
+            audit(null, cedulaNormalizada, "RESET_CLAVE", false, "Correo institucional no ingresado");
+            return;
+        }
+
+        if (!isCorreoInstitucionalValido(correoIngresado)) {
+            addError("El correo debe terminar en " + EMAIL_DOMAIN_INSTITUCIONAL + ".");
+            audit(null, cedulaNormalizada, "RESET_CLAVE", false, "Correo no institucional");
+            return;
+        }
+
+        UsuarioAuth usuarioAuth = usuarioAuthService.findOrCreateByEmpleado(empleado);
+        String claveTemporal = securityNotificationService.generarClaveTemporal();
+        try {
+            securityNotificationService.enviarNotificacionResetClave(correoIngresado,
+                    resolveNombreUsuario(empleado), cedulaNormalizada, claveTemporal);
+            usuarioAuthService.actualizarClaveTemporal(usuarioAuth, claveTemporal);
+        } catch (Exception e) {
+            addError("No se pudo completar el restablecimiento de clave. Intente nuevamente.");
+            audit(usuarioAuth.getIdUsuario(), cedulaNormalizada, "RESET_CLAVE", false, "Error enviando correo");
+            return;
+        }
+
+        addInfo("Correo enviado: se notificó al usuario (" + correoIngresado + ") y al administrador.");
+        audit(usuarioAuth.getIdUsuario(), cedulaNormalizada, "RESET_CLAVE", true, "Reset enviado por correo");
+    }
+
     public void logout() throws IOException {
         ExternalContext externalContext = FacesContext.getCurrentInstance().getExternalContext();
         String username = getSessionStringValue(KEY_AUTH_USER);
@@ -200,6 +248,14 @@ public class AuthCtrl implements Serializable {
         return onlyDigits.isEmpty() ? null : onlyDigits;
     }
 
+    private boolean isCorreoInstitucionalValido(String correo) {
+        String normalized = normalize(correo);
+        if (normalized == null) {
+            return false;
+        }
+        return normalized.toLowerCase(Locale.ROOT).endsWith(EMAIL_DOMAIN_INSTITUCIONAL);
+    }
+
     private void setSessionAuth(String user, String nombreUsuario, boolean forceChange) {
         ExternalContext externalContext = FacesContext.getCurrentInstance().getExternalContext();
         Map<String, Object> session = externalContext.getSessionMap();
@@ -267,5 +323,13 @@ public class AuthCtrl implements Serializable {
 
     public void setConfirmarNuevaClave(String confirmarNuevaClave) {
         this.confirmarNuevaClave = confirmarNuevaClave;
+    }
+
+    public String getCorreoInstitucionalReset() {
+        return correoInstitucionalReset;
+    }
+
+    public void setCorreoInstitucionalReset(String correoInstitucionalReset) {
+        this.correoInstitucionalReset = correoInstitucionalReset;
     }
 }

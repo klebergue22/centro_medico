@@ -38,25 +38,39 @@
                 </div>
             </p:dialog>
 
-            <div class="topbar">
-                <p:menubar styleClass="navbar-militar">
-                    <p:menuitem value="Inicio" icon="pi pi-home" outcome="/index.xhtml"/>
-                    <p:submenu label="Módulos" icon="pi pi-sitemap">
-                        <p:menuitem value="Consulta de certificados y fichas ocupacionales" icon="pi pi-search" outcome="/pages/empleados.xhtml"/>
-                        <p:menuitem value="Consulta médica y receta" icon="pi pi-file-edit" outcome="/pages/consultaMedica.xhtml"/>
-                        <p:menuitem value="Recetas" icon="pi pi-briefcase" outcome="/pages/contrataciones.xhtml"/>
-                        <p:menuitem value="Salud Ocupacional" icon="pi pi-plus-circle" outcome="/pages/centroMedico.xhtml"/>
-                    </p:submenu>
-                </p:menubar>
-                <h:panelGroup rendered="#{not empty sessionScope.AUTH_USER}" layout="block" styleClass="session-user-box">
-                    <h:outputText value="Usuario: #{sessionScope.AUTH_USER_NAME}" styleClass="session-user-name"/>
-                    <h:outputText value="(#{sessionScope.AUTH_USER})" styleClass="session-user-id"/>
-                    <h:form>
-                        <p:commandButton value="Salir" icon="pi pi-sign-out" actionListener="#{authCtrl.logout}" ajax="false" styleClass="session-logout"/>
-                    </h:form>
-                </h:panelGroup>
-                <span class="brand">RRHH · Salud</span>
-            </div>
+            <h:panelGroup rendered="#{not empty sessionScope.AUTH_USER}" layout="block">
+                <div class="topbar">
+                    <div class="system-header">
+                        <div class="system-title-wrap">
+                            <i class="pi pi-heart-fill system-logo-icon"></i>
+                            <div class="system-title-group">
+                                <span class="system-title">Sistema Centro Médico</span>
+                                <span class="system-subtitle">Gestión clínica y ocupacional</span>
+                            </div>
+                        </div>
+                        <h:panelGroup layout="block" styleClass="session-user-box">
+                            <span class="session-user-label">
+                                <i class="pi pi-user"></i>
+                                Usuario conectado
+                            </span>
+                            <h:outputText value="#{sessionScope.AUTH_USER_NAME}" styleClass="session-user-name"/>
+                            <h:outputText value="ID: #{sessionScope.AUTH_USER}" styleClass="session-user-id"/>
+                            <h:form>
+                                <p:commandButton value="Salir" icon="pi pi-sign-out" actionListener="#{authCtrl.logout}" ajax="false" styleClass="session-logout"/>
+                            </h:form>
+                        </h:panelGroup>
+                    </div>
+                    <p:menubar styleClass="navbar-militar">
+                        <p:menuitem value="Inicio" icon="pi pi-home" outcome="/index.xhtml"/>
+                        <p:submenu label="Módulos" icon="pi pi-sitemap">
+                            <p:menuitem value="Consulta de certificados y fichas ocupacionales" icon="pi pi-search" outcome="/pages/empleados.xhtml"/>
+                            <p:menuitem value="Consulta médica y receta" icon="pi pi-file-edit" outcome="/pages/consultaMedica.xhtml"/>
+                            <p:menuitem value="Recetas" icon="pi pi-briefcase" outcome="/pages/contrataciones.xhtml"/>
+                            <p:menuitem value="Salud Ocupacional" icon="pi pi-plus-circle" outcome="/pages/centroMedico.xhtml"/>
+                        </p:submenu>
+                    </p:menubar>
+                </div>
+            </h:panelGroup>
 
             <div class="page-container">
                 <ui:insert name="content"/>
