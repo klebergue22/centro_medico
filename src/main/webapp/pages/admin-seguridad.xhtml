@@ -126,18 +126,21 @@
                         <p:commandButton value="Editar"
                                          icon="pi pi-pencil"
                                          actionListener="#{adminSeguridadCtrl.editarUsuario(usr.idUsuario)}"
+                                         process="@this"
                                          update="@form"
                                          styleClass="ui-button-info ui-button-sm"/>
                         <p:spacer width="6"/>
                         <p:commandButton value="Reset clave"
                                          icon="pi pi-refresh"
                                          actionListener="#{adminSeguridadCtrl.resetearClaveUsuario(usr.idUsuario)}"
+                                         process="@this"
                                          update="@form"
                                          styleClass="ui-button-help ui-button-sm"/>
                         <p:spacer width="6"/>
                         <p:commandButton value="Asignar médico"
                                          icon="pi pi-user-plus"
                                          actionListener="#{adminSeguridadCtrl.asignarRolMedico(usr.idUsuario)}"
+                                         process="@this"
                                          update="@form"
                                          styleClass="ui-button-warning ui-button-sm"
                                          rendered="#{empty usr.roles or usr.roles eq 'Sin rol activo'}"/>
@@ -146,6 +149,7 @@
                                          rendered="#{usr.activo ne 'S'}"
                                          icon="pi pi-check"
                                          actionListener="#{adminSeguridadCtrl.cambiarEstadoUsuario(usr.idUsuario, true)}"
+                                         process="@this"
                                          update="@form"
                                          styleClass="ui-button-success ui-button-sm"/>
                         <p:spacer width="6" rendered="#{usr.activo ne 'S'}"/>
@@ -153,6 +157,7 @@
                                          rendered="#{usr.activo eq 'S'}"
                                          icon="pi pi-ban"
                                          actionListener="#{adminSeguridadCtrl.cambiarEstadoUsuario(usr.idUsuario, false)}"
+                                         process="@this"
                                          update="@form"
                                          styleClass="ui-button-danger ui-button-sm"/>
                     </p:column>
