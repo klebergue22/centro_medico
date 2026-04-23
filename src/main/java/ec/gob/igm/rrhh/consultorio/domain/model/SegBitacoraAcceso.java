@@ -32,6 +32,15 @@ public class SegBitacoraAcceso implements Serializable {
     @Column(name = "DETALLE", length = 1000)
     private String detalle;
 
+    @Column(name = "IP_ORIGEN", length = 45)
+    private String ipOrigen;
+
+    @Column(name = "NAVEGADOR", length = 300)
+    private String navegador;
+
+    @Column(name = "USR_CREACION", length = 30)
+    private String usrCreacion;
+
     public Long getIdBitacora() { return idBitacora; }
     public void setIdBitacora(Long idBitacora) { this.idBitacora = idBitacora; }
     public Long getIdUsuario() { return idUsuario; }
@@ -46,4 +55,10 @@ public class SegBitacoraAcceso implements Serializable {
     public void setFechaEvento(Date fechaEvento) { this.fechaEvento = fechaEvento; }
     public String getDetalle() { return detalle; }
     public void setDetalle(String detalle) { this.detalle = detalle; }
+    public String getIpOrigen() { return ipOrigen; }
+    public void setIpOrigen(String ipOrigen) { this.ipOrigen = ipOrigen; }
+    public String getNavegador() { return navegador; }
+    public void setNavegador(String navegador) { this.navegador = navegador; }
+    public String getUsrCreacion() { return usrCreacion; }
+    public void setUsrCreacion(String usrCreacion) { this.usrCreacion = usrCreacion; }
 }
