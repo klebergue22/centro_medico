@@ -66,6 +66,8 @@
                             <p:menuitem value="Consulta de certificados y fichas ocupacionales" icon="pi pi-search" outcome="/pages/empleados.xhtml"/>
                             <p:menuitem value="Consulta médica y receta" icon="pi pi-file-edit" outcome="/pages/consultaMedica.xhtml"/>
                             <p:menuitem value="Salud Ocupacional" icon="pi pi-plus-circle" outcome="/pages/centroMedico.xhtml"/>
+                            <p:menuitem value="Administración de seguridad" icon="pi pi-shield" outcome="/pages/admin-seguridad.xhtml"
+                                        rendered="#{sessionScope.AUTH_IS_ADMIN eq true}"/>
                         </p:submenu>
                     </p:menubar>
                 </div>

@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                template="/templates/template.xhtml">
+
+    <ui:define name="title">Administración de seguridad</ui:define>
+    <ui:define name="metadata">
+        <f:metadata>
+            <f:viewAction action="#{adminSeguridadCtrl.verificarAccesoAdmin}" onPostback="false"/>
+        </f:metadata>
+    </ui:define>
+
+    <ui:define name="content">
+        <h:form id="formAdminSeguridad">
+            <p:growl id="msgs" showDetail="true" life="5000"/>
+
+            <p:panel header="Administración de usuarios y accesos" style="margin-top:10px;">
+                <h:panelGroup layout="block" styleClass="ui-fluid">
+                    <p class="muted" style="margin-top:0;">
+                        Crea/actualiza un usuario administrador con gestión de usuarios, roles,
+                        permisos, agenda y configuraciones.
+                    </p>
+                    <p class="muted" style="margin-top:0;">
+                        Requisito: el cargo vigente en RRHH debe ser
+                        <b>#{adminSeguridadCtrl.cargoRequeridoAdmin}</b>.
+                    </p>
+
+                    <div class="p-field" style="margin-bottom:12px;">
+                        <p:outputLabel for="usuario" value="Cédula / Usuario"/>
+                        <p:inputText id="usuario" value="#{adminSeguridadCtrl.username}" required="true"
+                                     requiredMessage="Ingrese la cédula/usuario."/>
+                    </div>
+
+                    <div class="p-field" style="margin-bottom:12px;">
+                        <p:outputLabel for="nombre" value="Nombre visible"/>
+                        <p:inputText id="nombre" value="#{adminSeguridadCtrl.nombreVisible}"/>
+                    </div>
+
+                    <div class="p-field" style="margin-bottom:14px;">
+                        <p:outputLabel for="correo" value="Correo institucional"/>
+                        <p:inputText id="correo" value="#{adminSeguridadCtrl.email}"/>
+                    </div>
+
+                    <p:commandButton value="Provisionar administrador"
+                                     icon="pi pi-shield"
+                                     actionListener="#{adminSeguridadCtrl.provisionarAdministrador}"
+                                     update="@form"/>
+                </h:panelGroup>
+            </p:panel>
+        </h:form>
+    </ui:define>
+
+</ui:composition>
