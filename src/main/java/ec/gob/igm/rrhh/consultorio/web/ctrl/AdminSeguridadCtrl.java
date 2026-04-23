@@ -27,6 +27,7 @@ public class AdminSeguridadCtrl implements Serializable {
     private String nombreVisible;
     private String email;
     private Long idRolSeleccionado;
+    private Long idUsuarioEdicion;
 
     public void verificarAccesoAdmin() throws IOException {
         Object esAdmin = FacesContext.getCurrentInstance()
@@ -105,6 +106,29 @@ public class AdminSeguridadCtrl implements Serializable {
         return adminSeguridadService.listarUsuariosGestion();
     }
 
+    public void editarUsuario(Long idUsuario) {
+        UsuarioAuth usuario = adminSeguridadService.findUsuarioPorId(idUsuario);
+        if (usuario == null) {
+            addWarn("No se encontró el usuario seleccionado.");
+            return;
+        }
+        idUsuarioEdicion = usuario.getIdUsuario();
+        username = usuario.getUsername();
+        nombreVisible = usuario.getNombreVisible();
+        email = usuario.getEmail();
+        idRolSeleccionado = adminSeguridadService.obtenerRolActivoPrincipal(idUsuario);
+        addInfo("Usuario cargado para edición: " + usuario.getUsername());
+    }
+
+    public void resetearClaveUsuario(Long idUsuario) {
+        try {
+            adminSeguridadService.resetearClaveUsuario(idUsuario);
+            addInfo("Clave reseteada. La clave temporal es la cédula/usuario y se exigirá cambio al ingresar.");
+        } catch (IllegalArgumentException e) {
+            addWarn(e.getMessage());
+        }
+    }
+
     public List<SegRol> getRolesActivos() {
         return adminSeguridadService.listarRolesActivos();
     }
@@ -149,6 +173,10 @@ public class AdminSeguridadCtrl implements Serializable {
         this.idRolSeleccionado = idRolSeleccionado;
     }
 
+    public Long getIdUsuarioEdicion() {
+        return idUsuarioEdicion;
+    }
+
     private void addInfo(String summary) {
         FacesContext.getCurrentInstance().addMessage(null,
                 new FacesMessage(FacesMessage.SEVERITY_INFO, summary, null));
@@ -164,6 +192,7 @@ public class AdminSeguridadCtrl implements Serializable {
     }
 
     private void limpiarFormularioUsuario() {
+        idUsuarioEdicion = null;
         username = null;
         nombreVisible = null;
         email = null;

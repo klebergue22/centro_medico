@@ -176,6 +176,50 @@ public class AdminSeguridadService {
         em.merge(usuario);
     }
 
+    public UsuarioAuth findUsuarioPorId(Long idUsuario) {
+        if (idUsuario == null) {
+            return null;
+        }
+        return em.find(UsuarioAuth.class, idUsuario);
+    }
+
+    public Long obtenerRolActivoPrincipal(Long idUsuario) {
+        if (idUsuario == null) {
+            return null;
+        }
+        List<Long> rows = em.createQuery("""
+                        SELECT ur.idRol
+                        FROM SegUsuarioRol ur
+                        WHERE ur.idUsuario = :idUsuario
+                          AND ur.activo = 'S'
+                        ORDER BY ur.idUsuarioRol DESC
+                        """, Long.class)
+                .setParameter("idUsuario", idUsuario)
+                .setMaxResults(1)
+                .getResultList();
+        return rows.isEmpty() ? null : rows.get(0);
+    }
+
+    public void resetearClaveUsuario(Long idUsuario) {
+        if (idUsuario == null) {
+            throw new IllegalArgumentException("No se encontró el usuario.");
+        }
+        UsuarioAuth usuario = em.find(UsuarioAuth.class, idUsuario);
+        if (usuario == null) {
+            throw new IllegalArgumentException("No se encontró el usuario.");
+        }
+        String baseClave = !isBlank(usuario.getNoCedula()) ? usuario.getNoCedula() : usuario.getUsername();
+        if (isBlank(baseClave)) {
+            throw new IllegalArgumentException("El usuario no tiene identificador para resetear la clave.");
+        }
+        usuario.setClaveHash(hash(baseClave.trim()));
+        usuario.setRequiereCambioClave("S");
+        usuario.setFechaUltimoCambioClave(new Date());
+        usuario.setIntentosFallidos(0);
+        usuario.setBloqueado("N");
+        em.merge(usuario);
+    }
+
     public String getCargoAdminRequerido() {
         return CARGO_ADMIN_REQUERIDO;
     }

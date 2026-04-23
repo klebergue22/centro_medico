@@ -23,6 +23,11 @@
                         Gestión integral de usuarios: listado de accesos, creación/actualización,
                         asignación de roles y visualización de permisos.
                     </p>
+                    <h:panelGroup layout="block" rendered="#{not empty adminSeguridadCtrl.idUsuarioEdicion}">
+                        <p class="muted" style="margin-top:0;">
+                            Editando usuario ID: <b>#{adminSeguridadCtrl.idUsuarioEdicion}</b>
+                        </p>
+                    </h:panelGroup>
                     <p class="muted" style="margin-top:0;">
                         Requisito para provisionar administrador: el cargo vigente en RRHH debe ser
                         <b>#{adminSeguridadCtrl.cargoRequeridoAdmin}</b>.
@@ -107,12 +112,25 @@
                         <h:outputText value="#{usr.bloqueado eq 'S' ? 'Sí' : 'No'}"/>
                     </p:column>
                     <p:column headerText="Gestión" style="width:160px;">
+                        <p:commandButton value="Editar"
+                                         icon="pi pi-pencil"
+                                         actionListener="#{adminSeguridadCtrl.editarUsuario(usr.idUsuario)}"
+                                         update="@form"
+                                         styleClass="ui-button-info ui-button-sm"/>
+                        <p:spacer width="6"/>
+                        <p:commandButton value="Reset clave"
+                                         icon="pi pi-refresh"
+                                         actionListener="#{adminSeguridadCtrl.resetearClaveUsuario(usr.idUsuario)}"
+                                         update="@form"
+                                         styleClass="ui-button-help ui-button-sm"/>
+                        <p:spacer width="6"/>
                         <p:commandButton value="Activar"
                                          rendered="#{usr.activo ne 'S'}"
                                          icon="pi pi-check"
                                          actionListener="#{adminSeguridadCtrl.cambiarEstadoUsuario(usr.idUsuario, true)}"
                                          update="@form"
                                          styleClass="ui-button-success ui-button-sm"/>
+                        <p:spacer width="6" rendered="#{usr.activo ne 'S'}"/>
                         <p:commandButton value="Desactivar"
                                          rendered="#{usr.activo eq 'S'}"
                                          icon="pi pi-ban"
