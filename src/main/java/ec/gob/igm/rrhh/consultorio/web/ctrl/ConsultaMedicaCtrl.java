@@ -665,14 +665,12 @@ public class ConsultaMedicaCtrl implements Serializable {
                 return;
             }
 
-            if (isUsuarioOdontologo()) {
-                medicalNotificationService.enviarNotificacionAtencionOdontologica(
-                        correoInstitucional,
-                        getNombrePaciente(),
-                        fechaAtencion);
-                addMessage(FacesMessage.SEVERITY_INFO, "Correo enviado",
-                        "Se notificó la atención odontológica a " + correoInstitucional + ".");
-            }
+            medicalNotificationService.enviarRecetaMedicaAtencion(
+                    correoInstitucional,
+                    getNombrePaciente(),
+                    fechaAtencion);
+            addMessage(FacesMessage.SEVERITY_INFO, "Correo enviado",
+                    "Se notificó la atención realizada a " + correoInstitucional + ".");
         } catch (Exception ex) {
             addMessage(FacesMessage.SEVERITY_WARN, "Correo no enviado",
                     "No se pudo enviar la notificación al correo institucional.");

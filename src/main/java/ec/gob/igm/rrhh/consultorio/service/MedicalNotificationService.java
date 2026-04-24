@@ -26,12 +26,21 @@ public class MedicalNotificationService {
             throw new MessagingException("No existe correo institucional para enviar la receta.");
         }
         String fechaTexto = formatFecha(fechaAtencion);
-        String subject = "Receta medica atencion " + fechaTexto;
-        String body = "Se generó la receta médica de atención con fecha " + fechaTexto + ".\n\n"
-                + "Paciente: " + valueOrDefault(nombrePaciente, "N/D") + "\n"
-                + "Correo institucional destino: " + destinatario + "\n\n"
-                + "Este correo fue generado automáticamente por el Sistema Centro Médico.";
-        if (recetaPdf != null && recetaPdf.length > 0) {
+        boolean conRecetaAdjunta = recetaPdf != null && recetaPdf.length > 0;
+        String subject = conRecetaAdjunta
+                ? "Receta medica atencion " + fechaTexto
+                : "Atención médica registrada " + fechaTexto;
+        String body = conRecetaAdjunta
+                ? "Se generó la receta médica de atención con fecha " + fechaTexto + ".\n\n"
+                    + "Paciente: " + valueOrDefault(nombrePaciente, "N/D") + "\n"
+                    + "Correo institucional destino: " + destinatario + "\n\n"
+                    + "Este correo fue generado automáticamente por el Sistema Centro Médico."
+                : "Se registró una atención médica con fecha " + fechaTexto + ".\n\n"
+                    + "Paciente: " + valueOrDefault(nombrePaciente, "N/D") + "\n"
+                    + "Correo institucional destino: " + destinatario + "\n\n"
+                    + "No se adjunta receta para esta atención.\n\n"
+                    + "Este correo fue generado automáticamente por el Sistema Centro Médico.";
+        if (conRecetaAdjunta) {
             String nombreAdjunto = MailConfigResolver.normalize(recetaPdfNombre);
             if (nombreAdjunto == null) {
                 nombreAdjunto = "receta-medica-" + fechaTexto.replace("/", "-") + ".pdf";
@@ -43,22 +52,6 @@ public class MedicalNotificationService {
         emailNotificationService.send(destinatario, subject, body);
     }
 
-
-    public void enviarNotificacionAtencionOdontologica(String correoInstitucional, String nombrePaciente, Date fechaAtencion)
-            throws MessagingException {
-        String destinatario = MailConfigResolver.normalize(correoInstitucional);
-        if (destinatario == null) {
-            throw new MessagingException("No existe correo institucional para notificar la atención odontológica.");
-        }
-        String fechaTexto = formatFecha(fechaAtencion);
-        String subject = "Atención odontológica registrada " + fechaTexto;
-        String body = "Se registró una atención odontológica con fecha " + fechaTexto + ".\n\n"
-                + "Paciente: " + valueOrDefault(nombrePaciente, "N/D") + "\n"
-                + "Correo institucional destino: " + destinatario + "\n\n"
-                + "No se generó receta médica para esta atención.\n\n"
-                + "Este correo fue generado automáticamente por el Sistema Centro Médico.";
-        emailNotificationService.send(destinatario, subject, body);
-    }
 
     public void enviarNotificacionCitaAgendada(String correoInstitucional, String nombrePaciente, Date fechaCita)
             throws MessagingException {
