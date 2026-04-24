@@ -105,6 +105,41 @@ public class SeguridadSesionAuditoriaService {
         em.persist(auditoria);
     }
 
+    public void registrarLogout(String username, String motivoCierre) {
+        if (username == null || username.isBlank()) {
+            return;
+        }
+
+        List<SegSesion> sesiones = em.createQuery("""
+                SELECT s
+                FROM SegSesion s
+                WHERE s.idUsuario = (
+                    SELECT u.idUsuario
+                    FROM UsuarioAuth u
+                    WHERE u.username = :username
+                )
+                  AND s.activa = 'S'
+                ORDER BY s.idSesion DESC
+                """, SegSesion.class)
+            .setParameter("username", username.trim())
+            .setMaxResults(1)
+            .getResultList();
+
+        if (sesiones.isEmpty()) {
+            return;
+        }
+
+        Date ahora = new Date();
+        SegSesion sesion = sesiones.get(0);
+        sesion.setFechaLogout(ahora);
+        sesion.setFechaUltimaAct(ahora);
+        sesion.setActiva("N");
+        sesion.setMotivoCierre(motivoCierre);
+        sesion.setFActualizacion(ahora);
+        sesion.setUsrActualizacion(username.trim());
+        em.merge(sesion);
+    }
+
     private Long buscarRolActivo(Long idUsuario) {
         if (idUsuario == null) {
             return null;

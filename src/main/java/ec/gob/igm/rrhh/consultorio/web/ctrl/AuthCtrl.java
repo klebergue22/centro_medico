@@ -301,6 +301,7 @@ public class AuthCtrl implements Serializable {
     public void logout() throws IOException {
         ExternalContext externalContext = FacesContext.getCurrentInstance().getExternalContext();
         String username = getSessionStringValue(KEY_AUTH_USER);
+        registrarLogoutAuditoria(username, "Cierre de sesion manual");
         audit(null, username, "LOGOUT", true, "Cierre de sesion manual");
         externalContext.invalidateSession();
         externalContext.redirect(externalContext.getRequestContextPath() + "/login.xhtml");
@@ -329,6 +330,14 @@ public class AuthCtrl implements Serializable {
             seguridadSesionAuditoriaService.registrarIntentoFallido(cedulaNormalizada, motivo);
         } catch (RuntimeException ignored) {
             // No bloquear login por fallas de auditoría secundaria.
+        }
+    }
+
+    private void registrarLogoutAuditoria(String username, String motivoCierre) {
+        try {
+            seguridadSesionAuditoriaService.registrarLogout(username, motivoCierre);
+        } catch (RuntimeException ignored) {
+            // No bloquear logout por fallas de auditoría secundaria.
         }
     }
 
