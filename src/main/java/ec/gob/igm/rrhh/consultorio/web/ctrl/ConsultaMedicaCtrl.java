@@ -40,7 +40,6 @@ import java.time.Period;
 import java.time.temporal.ChronoUnit;
 import java.time.format.TextStyle;
 import java.time.ZoneId;
-import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
@@ -57,7 +56,6 @@ public class ConsultaMedicaCtrl implements Serializable {
     private static final long serialVersionUID = 1L;
     private static final String AUTH_ROLE_ODONTOLOGO = "ODONTOLOGO";
     private static final ZoneId CERTIFICADO_ZONE = ZoneId.of("America/Guayaquil");
-    private static final ZoneId CERTIFICADO_DATE_ZONE = ZoneOffset.UTC;
     private static final String[] NUMEROS_BASE = {"", "uno", "dos", "tres", "cuatro", "cinco", "seis", "siete", "ocho", "nueve",
             "diez", "once", "doce", "trece", "catorce", "quince", "dieciséis", "diecisiete", "dieciocho",
             "diecinueve", "veinte", "veintiuno", "veintidós", "veintitrés", "veinticuatro", "veinticinco",
@@ -629,13 +627,10 @@ public class ConsultaMedicaCtrl implements Serializable {
     }
 
     private void enviarRecetaPdfACorreoInstitucional() {
-        if (consulta == null || consulta.getRecetas() == null || consulta.getRecetas().isEmpty()) {
-            return;
-        }
         DatEmpleado empleadoActual = resolveEmpleadoParaConsulta();
         if (empleadoActual == null) {
             addMessage(FacesMessage.SEVERITY_WARN, "Correo no enviado",
-                    "No se encontró el registro DAT_EMPLEADO para enviar la receta.");
+                    "No se encontró el registro DAT_EMPLEADO para notificar la atención.");
             return;
         }
         String correoInstitucional = normalizeEmail(empleadoActual.getEmailInstitucional());
@@ -644,27 +639,39 @@ public class ConsultaMedicaCtrl implements Serializable {
                     "El paciente no tiene EMAIL_INSTITUCIONAL registrado en DAT_EMPLEADO.");
             return;
         }
-        String html = construirHtmlReceta();
-        tokenPdf = centroMedicoPdfFacade.generarDesdeHtml(html, "CONS_");
-        byte[] recetaPdf = centroMedicoPdfFacade.obtenerPdf(tokenPdf);
-        if (recetaPdf == null || recetaPdf.length == 0) {
-            addMessage(FacesMessage.SEVERITY_WARN, "Correo no enviado",
-                    "No se pudo adjuntar el PDF de la receta.");
-            return;
-        }
-        Date fechaAtencion = consulta.getFechaConsulta() != null ? consulta.getFechaConsulta() : new Date();
+
+        Date fechaAtencion = consulta != null && consulta.getFechaConsulta() != null ? consulta.getFechaConsulta() : new Date();
+        boolean tieneRecetas = consulta != null && consulta.getRecetas() != null && !consulta.getRecetas().isEmpty();
         try {
+            if (tieneRecetas) {
+                String html = construirHtmlReceta();
+                tokenPdf = centroMedicoPdfFacade.generarDesdeHtml(html, "CONS_");
+                byte[] recetaPdf = centroMedicoPdfFacade.obtenerPdf(tokenPdf);
+                if (recetaPdf == null || recetaPdf.length == 0) {
+                    addMessage(FacesMessage.SEVERITY_WARN, "Correo no enviado",
+                            "No se pudo adjuntar el PDF de la receta.");
+                    return;
+                }
+                medicalNotificationService.enviarRecetaMedicaAtencion(
+                        correoInstitucional,
+                        getNombrePaciente(),
+                        fechaAtencion,
+                        recetaPdf,
+                        buildRecetaPdfFileName(fechaAtencion));
+                addMessage(FacesMessage.SEVERITY_INFO, "Correo enviado",
+                        "La receta fue enviada con PDF adjunto a " + correoInstitucional + ".");
+                return;
+            }
+
             medicalNotificationService.enviarRecetaMedicaAtencion(
                     correoInstitucional,
                     getNombrePaciente(),
-                    fechaAtencion,
-                    recetaPdf,
-                    buildRecetaPdfFileName(fechaAtencion));
+                    fechaAtencion);
             addMessage(FacesMessage.SEVERITY_INFO, "Correo enviado",
-                    "La receta fue enviada con PDF adjunto a " + correoInstitucional + ".");
+                    "Se notificó la atención realizada a " + correoInstitucional + ".");
         } catch (Exception ex) {
             addMessage(FacesMessage.SEVERITY_WARN, "Correo no enviado",
-                    "No se pudo enviar la receta al correo institucional.");
+                    "No se pudo enviar la notificación al correo institucional.");
         }
     }
 
@@ -1009,7 +1016,7 @@ public class ConsultaMedicaCtrl implements Serializable {
     }
 
     private LocalDate toCertLocalDate(Date date) {
-        return Instant.ofEpochMilli(date.getTime()).atZone(CERTIFICADO_DATE_ZONE).toLocalDate();
+        return Instant.ofEpochMilli(date.getTime()).atZone(CERTIFICADO_ZONE).toLocalDate();
     }
 
     private void sincronizarFechasCertificado() {
@@ -1083,7 +1090,7 @@ public class ConsultaMedicaCtrl implements Serializable {
         }
         LocalDate local = toCertLocalDate(base);
         LocalDate ajustada = local.plusDays(dias);
-        return Date.from(ajustada.atStartOfDay(CERTIFICADO_DATE_ZONE).toInstant());
+        return Date.from(ajustada.atStartOfDay(CERTIFICADO_ZONE).toInstant());
     }
 
     private Date truncateTime(Date fecha) {
@@ -1091,7 +1098,7 @@ public class ConsultaMedicaCtrl implements Serializable {
             return null;
         }
         LocalDate local = toCertLocalDate(fecha);
-        return Date.from(local.atStartOfDay(CERTIFICADO_DATE_ZONE).toInstant());
+        return Date.from(local.atStartOfDay(CERTIFICADO_ZONE).toInstant());
     }
 
     private boolean validarCamposObligatoriosCertificado() {
