@@ -472,7 +472,7 @@ public class ConsultaMedicaCtrl implements Serializable {
             if (fila == null || isBlank(fila.getMedicamento())) continue;
             RecetaItem item = new RecetaItem();
             item.setMedicamento(fila.getMedicamento().trim());
-            item.setDosis(null);
+            item.setDosis(normalizarTexto(fila.getCantidad()));
             item.setFrecuencia(null);
             item.setVia(normalizarTexto(fila.getVia()));
             item.setDuracionDias(fila.getDuracionDias());
@@ -807,14 +807,15 @@ public class ConsultaMedicaCtrl implements Serializable {
     private void appendRecetaMedicamentos(StringBuilder sb) {
         sb.append("<div class='titulo'>Antecedentes Patológicos Personales:</div>")
                 .append("<div class='row'>").append(escape(resolveAlergiasTexto())).append("</div>")
-                .append("<table><colgroup><col style='width:28%'/><col style='width:14%'/><col style='width:8%'/>")
-                .append("<col style='width:50%'/></colgroup><thead><tr><th>Medicamento</th><th>Vía</th><th>Días</th><th>Indicaciones</th></tr></thead><tbody>");
+                .append("<table><colgroup><col style='width:24%'/><col style='width:12%'/><col style='width:12%'/><col style='width:8%'/>")
+                .append("<col style='width:44%'/></colgroup><thead><tr><th>Medicamento</th><th>Vía</th><th>Cantidad</th><th>Días</th><th>Indicaciones</th></tr></thead><tbody>");
         for (RecetaItemForm item : recetas) {
             if (item == null || isBlank(item.getMedicamento())) {
                 continue;
             }
             sb.append("<tr><td>").append(escape(item.getMedicamento())).append("</td><td>")
                     .append(escape(item.getVia())).append("</td><td>")
+                    .append(escape(item.getCantidad())).append("</td><td>")
                     .append(item.getDuracionDias() == null ? "" : item.getDuracionDias()).append("</td><td>")
                     .append(escape(item.getIndicaciones())).append("</td></tr>");
         }
@@ -1391,6 +1392,9 @@ public class ConsultaMedicaCtrl implements Serializable {
                 if (!isBlank(item.getVia())) {
                     texto.append(" (").append(item.getVia().trim()).append(")");
                 }
+                if (!isBlank(item.getDosis())) {
+                    texto.append(" ").append(item.getDosis().trim());
+                }
                 if (item.getDuracionDias() != null) {
                     texto.append(" ").append(item.getDuracionDias()).append(" día(s)");
                 }
@@ -1562,6 +1566,7 @@ public class ConsultaMedicaCtrl implements Serializable {
         private String medicamento;
         private String diagnostico;
         private String via;
+        private String cantidad;
         private Integer duracionDias;
         private String indicaciones;
 
@@ -1571,6 +1576,8 @@ public class ConsultaMedicaCtrl implements Serializable {
         public void setDiagnostico(String diagnostico) { this.diagnostico = diagnostico; }
         public String getVia() { return via; }
         public void setVia(String via) { this.via = via; }
+        public String getCantidad() { return cantidad; }
+        public void setCantidad(String cantidad) { this.cantidad = cantidad; }
         public Integer getDuracionDias() { return duracionDias; }
         public void setDuracionDias(Integer duracionDias) { this.duracionDias = duracionDias; }
         public String getIndicaciones() { return indicaciones; }
