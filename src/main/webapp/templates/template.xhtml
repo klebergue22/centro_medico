@@ -66,21 +66,21 @@
                             <p:menuitem value="Consulta odontológica y receta"
                                         icon="pi pi-file-edit"
                                         outcome="/pages/consultaOdontologica.xhtml"
-                                        rendered="#{sessionScope.AUTH_ROLE eq 'ODONTOLOGO'}"/>
+                                        rendered="#{sessionScope.AUTH_ROLE eq 'ODONTOLOGO' or sessionScope.AUTH_IS_ADMIN eq true}"/>
                             <p:menuitem value="Consulta de certificados y fichas ocupacionales"
                                         icon="pi pi-search"
                                         outcome="/pages/empleados.xhtml"
-                                        rendered="#{sessionScope.AUTH_ROLE ne 'ODONTOLOGO'}"/>
+                                        rendered="#{sessionScope.AUTH_ROLE ne 'ODONTOLOGO' or sessionScope.AUTH_IS_ADMIN eq true}"/>
                             <p:menuitem value="Consulta médica y receta"
                                         icon="pi pi-file-edit"
                                         outcome="/pages/consultaMedica.xhtml"
-                                        rendered="#{sessionScope.AUTH_ROLE ne 'ODONTOLOGO'}"/>
+                                        rendered="#{sessionScope.AUTH_ROLE ne 'ODONTOLOGO' or sessionScope.AUTH_IS_ADMIN eq true}"/>
                             <p:menuitem value="Salud Ocupacional"
                                         icon="pi pi-plus-circle"
                                         outcome="/pages/centroMedico.xhtml"
-                                        rendered="#{sessionScope.AUTH_ROLE ne 'ODONTOLOGO'}"/>
+                                        rendered="#{sessionScope.AUTH_ROLE ne 'ODONTOLOGO' or sessionScope.AUTH_IS_ADMIN eq true}"/>
                             <p:menuitem value="Administración de seguridad" icon="pi pi-shield" outcome="/pages/admin-seguridad.xhtml"
-                                        rendered="#{sessionScope.AUTH_IS_ADMIN eq true and sessionScope.AUTH_ROLE ne 'ODONTOLOGO'}"/>
+                                        rendered="#{sessionScope.AUTH_IS_ADMIN eq true}"/>
                         </p:submenu>
                     </p:menubar>
                 </div>
