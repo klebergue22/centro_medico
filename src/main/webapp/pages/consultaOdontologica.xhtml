@@ -88,7 +88,7 @@
                             <p:column headerText="Enfermedad actual" style="min-width:220px;">
                                 <h:outputText value="#{c.enfermedadActual}"/>
                             </p:column>
-                            <p:column headerText="Examen físico" style="min-width:220px;">
+                            <p:column headerText="Examen odontológico" style="min-width:220px;">
                                 <h:outputText value="#{c.examenFisico}"/>
                             </p:column>
                             <p:column headerText="Receta">
@@ -106,7 +106,7 @@
                     <p:inputTextarea value="#{consultaMedicaCtrl.consulta.motivoConsulta}" rows="2" autoResize="true" styleClass="consulta-textarea"/>
                     <h:outputText value="Enfermedad actual:"/>
                     <p:inputTextarea value="#{consultaMedicaCtrl.consulta.enfermedadActual}" rows="4" autoResize="true" styleClass="consulta-textarea"/>
-                    <h:outputText value="Examen físico:"/>
+                    <h:outputText value="Examen odontológico:"/>
                     <p:inputTextarea value="#{consultaMedicaCtrl.consulta.examenFisico}" rows="4" autoResize="true" styleClass="consulta-textarea"/>
                 </h:panelGrid>
             </p:panel>
@@ -174,7 +174,7 @@
 
             <p:panel header="Datos del médico" style="margin-top:10px;">
                 <h:panelGrid columns="2" cellpadding="6" styleClass="ui-fluid textarea-grid" columnClasses="22%,78%">
-                    <h:outputText value="Médico:"/>
+                    <h:outputText value="Odontólogo:"/>
                     <p:inputText value="#{consultaMedicaCtrl.consulta.medicoNombre}"/>
                     <h:outputText value="MSP (código médico):"/>
                     <p:inputText value="#{consultaMedicaCtrl.consulta.medicoCodigo}"/>
