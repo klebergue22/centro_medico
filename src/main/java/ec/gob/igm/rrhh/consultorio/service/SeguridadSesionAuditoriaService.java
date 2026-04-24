@@ -58,7 +58,13 @@ public class SeguridadSesionAuditoriaService {
                 + ", IP_ORIGEN=" + safe(ipOrigen)
                 + ", NAVEGADOR=" + safe(navegador)
                 + ", USR_CREACION=" + safe(usuarioAuditoria));
+        auditoriaDet.setIpOrigen(ipOrigen);
+        auditoriaDet.setObservacion("Inicio de sesión exitoso. ID_SESION=" + sesion.getIdSesion()
+                + ", ID_ROL=" + safe(rolId)
+                + ", NAVEGADOR=" + safe(navegador));
         auditoriaDet.setFechaEvento(ahora);
+        auditoriaDet.setFCreacion(ahora);
+        auditoriaDet.setUsrCreacion(usuarioAuditoria);
         em.persist(auditoriaDet);
 
         AuditoriaConsultorio auditoria = new AuditoriaConsultorio();

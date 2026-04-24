@@ -45,9 +45,19 @@ public class SegAuditoriaDet implements Serializable {
     @Column(name = "IP_ORIGEN", length = 45)
     private String ipOrigen;
 
+    @Column(name = "OBSERVACION", length = 1000)
+    private String observacion;
+
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "FECHA_EVENTO", nullable = false)
     private Date fechaEvento;
+
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "F_CREACION")
+    private Date fCreacion;
+
+    @Column(name = "USR_CREACION", length = 30)
+    private String usrCreacion;
 
     public Long getIdAuditoria() { return idAuditoria; }
     public void setIdAuditoria(Long idAuditoria) { this.idAuditoria = idAuditoria; }
@@ -71,6 +81,12 @@ public class SegAuditoriaDet implements Serializable {
     public void setValorNuevo(String valorNuevo) { this.valorNuevo = valorNuevo; }
     public String getIpOrigen() { return ipOrigen; }
     public void setIpOrigen(String ipOrigen) { this.ipOrigen = ipOrigen; }
+    public String getObservacion() { return observacion; }
+    public void setObservacion(String observacion) { this.observacion = observacion; }
     public Date getFechaEvento() { return fechaEvento; }
     public void setFechaEvento(Date fechaEvento) { this.fechaEvento = fechaEvento; }
+    public Date getFCreacion() { return fCreacion; }
+    public void setFCreacion(Date fCreacion) { this.fCreacion = fCreacion; }
+    public String getUsrCreacion() { return usrCreacion; }
+    public void setUsrCreacion(String usrCreacion) { this.usrCreacion = usrCreacion; }
 }
