@@ -116,6 +116,7 @@
                 <p:dataTable id="recTbl" var="rec" value="#{consultaMedicaCtrl.recetas}" lazy="false" rowIndexVar="idx" style="margin-top:8px;">
                     <p:column headerText="Medicamento"><p:inputText value="#{rec.medicamento}" style="width:100%"/></p:column>
                     <p:column headerText="Vía"><p:inputText value="#{rec.via}" style="width:100%"/></p:column>
+                    <p:column headerText="Cantidad"><p:inputText value="#{rec.cantidad}" style="width:100%"/></p:column>
                     <p:column headerText="Duración (días)"><p:inputNumber value="#{rec.duracionDias}" decimalPlaces="0"/></p:column>
                     <p:column headerText="Indicaciones"><p:inputTextarea value="#{rec.indicaciones}" autoResize="true" rows="2" styleClass="consulta-textarea"/></p:column>
                     <p:column headerText="Acción" style="width:80px;">
