@@ -79,6 +79,9 @@
                                     <f:convertDateTime pattern="dd/MM/yyyy"/>
                                 </h:outputText>
                             </p:column>
+                            <p:column headerText="Médico">
+                                <h:outputText value="#{empty c.medicoNombre ? 'No registrado' : c.medicoNombre}"/>
+                            </p:column>
                             <p:column headerText="Diagnóstico">
                                 <h:outputText value="#{consultaMedicaCtrl.obtenerDiagnosticosConsulta(c)}"/>
                             </p:column>
