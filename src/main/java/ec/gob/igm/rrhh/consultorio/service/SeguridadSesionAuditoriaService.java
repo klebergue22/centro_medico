@@ -29,6 +29,8 @@ public class SeguridadSesionAuditoriaService {
         Date ahora = new Date();
         String ipOrigen = resolveClientIp();
         String navegador = resolveUserAgent();
+        String sistemaOperativo = resolveSistemaOperativo(navegador);
+        String esMovil = resolveEsMovil(navegador);
         String usuarioAuditoria = resolveUsuarioAuditoria(cedula, usuario);
         Long rolId = buscarRolActivo(usuario.getIdUsuario());
         SegSesion sesion = new SegSesion();
@@ -40,6 +42,9 @@ public class SeguridadSesionAuditoriaService {
         sesion.setActiva("S");
         sesion.setIpOrigen(ipOrigen);
         sesion.setNavegador(navegador);
+        sesion.setSistemaOperativo(sistemaOperativo);
+        sesion.setEsMovil(esMovil);
+        sesion.setFCreacion(ahora);
         sesion.setUsrCreacion(usuarioAuditoria);
         em.persist(sesion);
         em.flush();
@@ -57,6 +62,8 @@ public class SeguridadSesionAuditoriaService {
                 + ", ID_ROL=" + safe(rolId)
                 + ", IP_ORIGEN=" + safe(ipOrigen)
                 + ", NAVEGADOR=" + safe(navegador)
+                + ", SISTEMA_OPERATIVO=" + safe(sistemaOperativo)
+                + ", ES_MOVIL=" + safe(esMovil)
                 + ", USR_CREACION=" + safe(usuarioAuditoria));
         auditoriaDet.setIpOrigen(ipOrigen);
         auditoriaDet.setObservacion("Inicio de sesión exitoso. ID_SESION=" + sesion.getIdSesion()
@@ -78,6 +85,8 @@ public class SeguridadSesionAuditoriaService {
                 + ", ID_ROL=" + safe(rolId)
                 + ", IP_ORIGEN=" + safe(ipOrigen)
                 + ", NAVEGADOR=" + safe(navegador)
+                + ", SISTEMA_OPERATIVO=" + safe(sistemaOperativo)
+                + ", ES_MOVIL=" + safe(esMovil)
                 + ", USR_CREACION=" + safe(usuarioAuditoria));
         auditoria.setPkValor(String.valueOf(sesion.getIdSesion()));
         em.persist(auditoria);
@@ -94,6 +103,41 @@ public class SeguridadSesionAuditoriaService {
         auditoria.setObservaciones(safe(motivo) + ", IP_ORIGEN=" + safe(resolveClientIp()));
         auditoria.setPkValor(safe(cedula));
         em.persist(auditoria);
+    }
+
+    public void registrarLogout(String username, String motivoCierre) {
+        if (username == null || username.isBlank()) {
+            return;
+        }
+
+        List<SegSesion> sesiones = em.createQuery("""
+                SELECT s
+                FROM SegSesion s
+                WHERE s.idUsuario = (
+                    SELECT u.idUsuario
+                    FROM UsuarioAuth u
+                    WHERE u.username = :username
+                )
+                  AND s.activa = 'S'
+                ORDER BY s.idSesion DESC
+                """, SegSesion.class)
+            .setParameter("username", username.trim())
+            .setMaxResults(1)
+            .getResultList();
+
+        if (sesiones.isEmpty()) {
+            return;
+        }
+
+        Date ahora = new Date();
+        SegSesion sesion = sesiones.get(0);
+        sesion.setFechaLogout(ahora);
+        sesion.setFechaUltimaAct(ahora);
+        sesion.setActiva("N");
+        sesion.setMotivoCierre(motivoCierre);
+        sesion.setFActualizacion(ahora);
+        sesion.setUsrActualizacion(username.trim());
+        em.merge(sesion);
     }
 
     private Long buscarRolActivo(Long idUsuario) {
@@ -178,5 +222,40 @@ public class SeguridadSesionAuditoriaService {
             return null;
         }
         return userAgent.trim();
+    }
+
+    private String resolveSistemaOperativo(String userAgent) {
+        if (userAgent == null || userAgent.isBlank()) {
+            return null;
+        }
+        String agent = userAgent.toLowerCase();
+        if (agent.contains("windows")) {
+            return "Windows";
+        }
+        if (agent.contains("android")) {
+            return "Android";
+        }
+        if (agent.contains("iphone") || agent.contains("ipad") || agent.contains("ios")) {
+            return "iOS";
+        }
+        if (agent.contains("mac os") || agent.contains("macintosh")) {
+            return "macOS";
+        }
+        if (agent.contains("linux")) {
+            return "Linux";
+        }
+        return "OTRO";
+    }
+
+    private String resolveEsMovil(String userAgent) {
+        if (userAgent == null || userAgent.isBlank()) {
+            return "N";
+        }
+        String agent = userAgent.toLowerCase();
+        return (agent.contains("mobile")
+                || agent.contains("android")
+                || agent.contains("iphone")
+                || agent.contains("ipad"))
+                ? "S" : "N";
     }
 }
