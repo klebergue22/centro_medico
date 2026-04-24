@@ -40,7 +40,6 @@ import java.time.Period;
 import java.time.temporal.ChronoUnit;
 import java.time.format.TextStyle;
 import java.time.ZoneId;
-import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
@@ -57,7 +56,6 @@ public class ConsultaMedicaCtrl implements Serializable {
     private static final long serialVersionUID = 1L;
     private static final String AUTH_ROLE_ODONTOLOGO = "ODONTOLOGO";
     private static final ZoneId CERTIFICADO_ZONE = ZoneId.of("America/Guayaquil");
-    private static final ZoneId CERTIFICADO_DATE_ZONE = ZoneOffset.UTC;
     private static final String[] NUMEROS_BASE = {"", "uno", "dos", "tres", "cuatro", "cinco", "seis", "siete", "ocho", "nueve",
             "diez", "once", "doce", "trece", "catorce", "quince", "dieciséis", "diecisiete", "dieciocho",
             "diecinueve", "veinte", "veintiuno", "veintidós", "veintitrés", "veinticuatro", "veinticinco",
@@ -1018,7 +1016,7 @@ public class ConsultaMedicaCtrl implements Serializable {
     }
 
     private LocalDate toCertLocalDate(Date date) {
-        return Instant.ofEpochMilli(date.getTime()).atZone(CERTIFICADO_DATE_ZONE).toLocalDate();
+        return Instant.ofEpochMilli(date.getTime()).atZone(CERTIFICADO_ZONE).toLocalDate();
     }
 
     private void sincronizarFechasCertificado() {
@@ -1092,7 +1090,7 @@ public class ConsultaMedicaCtrl implements Serializable {
         }
         LocalDate local = toCertLocalDate(base);
         LocalDate ajustada = local.plusDays(dias);
-        return Date.from(ajustada.atStartOfDay(CERTIFICADO_DATE_ZONE).toInstant());
+        return Date.from(ajustada.atStartOfDay(CERTIFICADO_ZONE).toInstant());
     }
 
     private Date truncateTime(Date fecha) {
@@ -1100,7 +1098,7 @@ public class ConsultaMedicaCtrl implements Serializable {
             return null;
         }
         LocalDate local = toCertLocalDate(fecha);
-        return Date.from(local.atStartOfDay(CERTIFICADO_DATE_ZONE).toInstant());
+        return Date.from(local.atStartOfDay(CERTIFICADO_ZONE).toInstant());
     }
 
     private boolean validarCamposObligatoriosCertificado() {
