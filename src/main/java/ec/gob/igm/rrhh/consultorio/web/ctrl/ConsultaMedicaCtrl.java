@@ -55,6 +55,7 @@ public class ConsultaMedicaCtrl implements Serializable {
 
     private static final long serialVersionUID = 1L;
     private static final String AUTH_ROLE_ODONTOLOGO = "ODONTOLOGO";
+    private static final String AUTH_ROLE_MEDICO = "MEDICO";
     private static final ZoneId CERTIFICADO_ZONE = ZoneId.of("America/Guayaquil");
     private static final String[] NUMEROS_BASE = {"", "uno", "dos", "tres", "cuatro", "cinco", "seis", "siete", "ocho", "nueve",
             "diez", "once", "doce", "trece", "catorce", "quince", "dieciséis", "diecisiete", "dieciocho",
@@ -220,9 +221,15 @@ public class ConsultaMedicaCtrl implements Serializable {
             consultasAnteriores = new ArrayList<>();
             return;
         }
-        consultasAnteriores = isUsuarioOdontologo()
-                ? consultaMedicaService.buscarPorEmpleado(empleado.getNoPersona(), true)
-                : consultaMedicaService.buscarPorEmpleado(empleado.getNoPersona());
+        if (isUsuarioOdontologo()) {
+            consultasAnteriores = consultaMedicaService.buscarPorEmpleado(empleado.getNoPersona(), true);
+            return;
+        }
+        if (isUsuarioMedico()) {
+            consultasAnteriores = consultaMedicaService.buscarPorEmpleadoSoloMedicas(empleado.getNoPersona());
+            return;
+        }
+        consultasAnteriores = consultaMedicaService.buscarPorEmpleado(empleado.getNoPersona());
     }
 
     public void agregarDiagnostico() {
@@ -1550,16 +1557,24 @@ public class ConsultaMedicaCtrl implements Serializable {
     }
 
     private boolean isUsuarioOdontologo() {
+        return AUTH_ROLE_ODONTOLOGO.equals(resolveAuthRole());
+    }
+
+    private boolean isUsuarioMedico() {
+        return AUTH_ROLE_MEDICO.equals(resolveAuthRole());
+    }
+
+    private String resolveAuthRole() {
         FacesContext context = FacesContext.getCurrentInstance();
         if (context == null) {
-            return false;
+            return "";
         }
         ExternalContext externalContext = context.getExternalContext();
         if (externalContext == null) {
-            return false;
+            return "";
         }
         Object role = externalContext.getSessionMap().get("AUTH_ROLE");
-        return AUTH_ROLE_ODONTOLOGO.equals(String.valueOf(role));
+        return String.valueOf(role);
     }
 
     public static class RecetaItemForm implements Serializable {

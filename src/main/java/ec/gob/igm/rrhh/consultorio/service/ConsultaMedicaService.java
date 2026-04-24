@@ -53,18 +53,51 @@ public class ConsultaMedicaService {
     }
 
     public List<ConsultaMedica> buscarPorEmpleado(Integer noPersona) {
-        return buscarPorEmpleado(noPersona, false);
+        return buscarPorEmpleado(noPersona, false, false);
     }
 
     public List<ConsultaMedica> buscarPorEmpleado(Integer noPersona, boolean soloOdontologicas) {
+        return buscarPorEmpleado(noPersona, soloOdontologicas, false);
+    }
+
+    public List<ConsultaMedica> buscarPorEmpleadoSoloMedicas(Integer noPersona) {
+        return buscarPorEmpleado(noPersona, false, true);
+    }
+
+    public List<ConsultaMedica> buscarPorEmpleado(Integer noPersona, boolean soloOdontologicas, boolean soloMedicas) {
         if (noPersona == null) {
             return List.of();
         }
+
+        if (soloOdontologicas && soloMedicas) {
+            throw new IllegalArgumentException("No se puede filtrar simultáneamente consultas odontológicas y médicas.");
+        }
+
+        String filtroRolOdontologo = """
+                UPPER(c.usrCreacion) IN (
+                    SELECT UPPER(u.username)
+                    FROM UsuarioAuth u, SegUsuarioRol ur, SegRol r
+                    WHERE ur.idUsuario = u.idUsuario
+                      AND r.idRol = ur.idRol
+                      AND ur.activo = 'S'
+                      AND r.activo = 'S'
+                      AND UPPER(r.codigo) = 'ODONTOLOGO'
+                )
+                """;
+
         String filtroOdontologico = soloOdontologicas
                 ? """
                   AND (
                         c.signos IS NULL
-                        OR UPPER(c.usrCreacion) IN (
+                        OR """ + filtroRolOdontologo + """
+                  )
+                  """
+                : "";
+        String filtroMedico = soloMedicas
+                ? """
+                  AND (
+                        c.signos IS NOT NULL
+                        AND COALESCE(UPPER(c.usrCreacion), '') NOT IN (
                             SELECT UPPER(u.username)
                             FROM UsuarioAuth u, SegUsuarioRol ur, SegRol r
                             WHERE ur.idUsuario = u.idUsuario
@@ -82,7 +115,7 @@ public class ConsultaMedicaService {
                 LEFT JOIN FETCH c.diagnosticos
                 LEFT JOIN FETCH c.diagnosticos.cie10
                 WHERE c.empleado.noPersona = :noPersona
-                """ + filtroOdontologico + """
+                """ + filtroOdontologico + filtroMedico + """
                 ORDER BY c.fechaConsulta DESC
                 """, ConsultaMedica.class)
                 .setParameter("noPersona", noPersona)
