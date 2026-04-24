@@ -718,11 +718,6 @@ public class ConsultaMedicaCtrl implements Serializable {
             addMessage(FacesMessage.SEVERITY_ERROR, "Rango inválido", "La fecha fin no puede ser menor a la fecha inicio.");
             return;
         }
-        Date hoy = truncateTime(new Date());
-        if (!truncateTime(certFechaFin).after(hoy)) {
-            addMessage(FacesMessage.SEVERITY_ERROR, "Rango inválido", "La fecha fin debe ser mayor a la fecha actual.");
-            return;
-        }
         if (!validarCamposObligatoriosCertificado()) {
             return;
         }
@@ -1020,50 +1015,25 @@ public class ConsultaMedicaCtrl implements Serializable {
     }
 
     private void sincronizarFechasCertificado() {
-        Date hoy = truncateTime(new Date());
-        Date minimoFin = sumarDias(hoy, 1);
         if (certFechaInicio != null && certFechaFin != null && certFechaFin.before(certFechaInicio)) {
             certFechaFin = certFechaInicio;
             return;
         }
         if (certFechaFin == null) {
-            certFechaFin = certFechaInicio != null ? certFechaInicio : minimoFin;
-            return;
-        }
-        if (!truncateTime(certFechaFin).after(hoy)) {
-            certFechaFin = minimoFin;
-            if (certFechaInicio != null && certFechaFin.before(certFechaInicio)) {
-                certFechaFin = certFechaInicio;
-            }
+            certFechaFin = certFechaInicio != null ? certFechaInicio : truncateTime(new Date());
         }
     }
 
     public void onFechaInicioSelect() {
-        Date hoy = truncateTime(new Date());
-        Date minimoFin = sumarDias(hoy, 1);
         if (certFechaInicio != null && certFechaFin != null && certFechaFin.before(certFechaInicio)) {
             certFechaFin = certFechaInicio;
         }
         if (certFechaFin == null) {
-            certFechaFin = certFechaInicio != null ? certFechaInicio : minimoFin;
-        }
-        if (certFechaFin != null && !truncateTime(certFechaFin).after(hoy)) {
-            certFechaFin = minimoFin;
-            if (certFechaInicio != null && certFechaFin.before(certFechaInicio)) {
-                certFechaFin = certFechaInicio;
-            }
-            addMessage(FacesMessage.SEVERITY_WARN, "Fecha fin ajustada",
-                    "La fecha fin debe ser mayor a la fecha actual.");
+            certFechaFin = certFechaInicio != null ? certFechaInicio : truncateTime(new Date());
         }
     }
 
     public void onFechaFinSelect() {
-        Date hoy = truncateTime(new Date());
-        if (certFechaFin != null && !truncateTime(certFechaFin).after(hoy)) {
-            certFechaFin = sumarDias(hoy, 1);
-            addMessage(FacesMessage.SEVERITY_WARN, "Fecha fin ajustada",
-                    "La fecha fin debe ser mayor a la fecha actual.");
-        }
         if (certFechaInicio != null && certFechaFin != null && certFechaFin.before(certFechaInicio)) {
             certFechaFin = certFechaInicio;
             addMessage(FacesMessage.SEVERITY_WARN, "Fecha fin ajustada",
