@@ -92,16 +92,17 @@ public class CitaCommandServiceImpl implements CitaCommandService {
             return List.of();
         }
 
+        var graph = em.createEntityGraph(CitCita.class);
+        graph.addAttributeNodes("slot", "profesional", "especialidad");
+
         return em.createQuery("""
                 SELECT c
                 FROM CitCita c
-                JOIN FETCH c.slot
-                JOIN FETCH c.profesional
-                JOIN FETCH c.especialidad
                 WHERE c.usuarioPaciente.idUsuario = :idUsuario
                 ORDER BY c.fechaInicio DESC
                 """, CitCita.class)
                 .setParameter("idUsuario", idUsuarioPaciente)
+                .setHint("jakarta.persistence.fetchgraph", graph)
                 .getResultList();
     }
 
