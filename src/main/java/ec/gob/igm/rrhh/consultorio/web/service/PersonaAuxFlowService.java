@@ -41,6 +41,7 @@ public class PersonaAuxFlowService implements Serializable {
 
         validarCamposObligatorios(personaAuxActual);
         normalizarDatos(personaAuxActual);
+        personaAuxActual = reutilizarPersonaAuxExistentePorCedula(personaAuxActual);
         PersonaAux personaGuardada = persistirConAuditoria(personaAuxActual);
 
         return SavePersonaAuxResult.of(personaGuardada);
@@ -126,6 +127,30 @@ public class PersonaAuxFlowService implements Serializable {
             personaAux.setUsrActualizacion(USUARIO_SISTEMA);
         }
         return personaAuxService.guardar(personaAux);
+    }
+
+    private PersonaAux reutilizarPersonaAuxExistentePorCedula(PersonaAux personaAux) {
+        if (personaAux == null || personaAux.getIdPersonaAux() != null) {
+            return personaAux;
+        }
+
+        String cedula = SnUtils.trimToNull(personaAux.getCedula());
+        if (cedula == null) {
+            return personaAux;
+        }
+
+        PersonaAux existente = personaAuxService.findByCedula(cedula);
+        if (existente == null) {
+            return personaAux;
+        }
+
+        existente.setApellido1(personaAux.getApellido1());
+        existente.setApellido2(personaAux.getApellido2());
+        existente.setNombre1(personaAux.getNombre1());
+        existente.setNombre2(personaAux.getNombre2());
+        existente.setSexo(personaAux.getSexo());
+        existente.setFechaNac(personaAux.getFechaNac());
+        return existente;
     }
 
     public static class PersonaAuxValidationException extends RuntimeException {
