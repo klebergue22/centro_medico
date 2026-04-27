@@ -20,10 +20,21 @@ public class CitaCatalogoServiceImpl implements CitaCatalogoService {
 
     @Override
     public List<CitEspecialidad> listarEspecialidadesActivas() {
+        List<CitEspecialidad> activas = em.createQuery("""
+                SELECT e
+                FROM CitEspecialidad e
+                WHERE UPPER(TRIM(COALESCE(e.activo, 'S'))) = 'S'
+                ORDER BY e.nombre
+                """, CitEspecialidad.class)
+                .getResultList();
+
+        if (!activas.isEmpty()) {
+            return activas;
+        }
+
         return em.createQuery("""
                 SELECT e
                 FROM CitEspecialidad e
-                WHERE e.activo = 'S'
                 ORDER BY e.nombre
                 """, CitEspecialidad.class)
                 .getResultList();
@@ -35,11 +46,24 @@ public class CitaCatalogoServiceImpl implements CitaCatalogoService {
             return List.of();
         }
 
+        List<CitProfesional> activos = em.createQuery("""
+                SELECT p
+                FROM CitProfesional p
+                WHERE UPPER(TRIM(COALESCE(p.activo, 'S'))) = 'S'
+                  AND p.especialidad.idEspecialidad = :idEspecialidad
+                ORDER BY p.nombreProfesional
+                """, CitProfesional.class)
+                .setParameter("idEspecialidad", idEspecialidad)
+                .getResultList();
+
+        if (!activos.isEmpty()) {
+            return activos;
+        }
+
         return em.createQuery("""
                 SELECT p
                 FROM CitProfesional p
-                WHERE p.activo = 'S'
-                  AND p.especialidad.idEspecialidad = :idEspecialidad
+                WHERE p.especialidad.idEspecialidad = :idEspecialidad
                 ORDER BY p.nombreProfesional
                 """, CitProfesional.class)
                 .setParameter("idEspecialidad", idEspecialidad)
