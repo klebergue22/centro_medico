@@ -38,6 +38,13 @@
                     <p:inputText value="#{citaMedicaCtrl.telefonoPaciente}"/>
                 </h:panelGrid>
 
+                <h:panelGroup rendered="#{not empty citaMedicaCtrl.pacienteEncontrado and citaMedicaCtrl.pacienteEncontrado.requiereCrearFicha}">
+                    <p:message severity="warn" detail="El paciente no tiene ficha activa. Cree una ficha inicial para habilitar el agendamiento."/>
+                    <p:commandButton value="Crear ficha inicial" icon="pi pi-file-edit"
+                                     actionListener="#{citaMedicaCtrl.crearFichaPaciente}"
+                                     update="pacientePanel growl" style="margin-top:8px;"/>
+                </h:panelGroup>
+
                 <h:panelGroup rendered="#{empty citaMedicaCtrl.pacienteEncontrado}">
                     <h:outputText value="Busque un paciente para continuar."/>
                 </h:panelGroup>

@@ -52,9 +52,6 @@ public class AuthCtrl implements Serializable {
     private SeguridadSesionAuditoriaService seguridadSesionAuditoriaService;
     @EJB
     private AdminSeguridadService adminSeguridadService;
-    @EJB
-    private RolePermissionService rolePermissionService;
-
     private String cedula;
     private String clave;
     private String nuevaClave;
@@ -442,7 +439,7 @@ public class AuthCtrl implements Serializable {
         if (cargoVigente != null) {
             return resolveRole(cargoVigente, false);
         }
-        return "PACIENTE";
+        return "MEDICO";
     }
 
     private UsuarioAuth aprovisionarUsuarioPorCedula(String cedulaNormalizada, DatEmpleado empleado) {
@@ -450,10 +447,7 @@ public class AuthCtrl implements Serializable {
             if (empleado != null) {
                 return usuarioAuthService.findOrCreateByEmpleado(empleado);
             }
-            UsuarioAuth usuarioExterno = usuarioAuthService.findOrCreateExternoPorCedula(cedulaNormalizada);
-            rolePermissionService.crearORestaurarRolPaciente();
-            rolePermissionService.asignarRolPaciente(usuarioExterno.getIdUsuario());
-            return usuarioExterno;
+            return usuarioAuthService.findOrCreateExternoPorCedula(cedulaNormalizada);
         } catch (RuntimeException e) {
             addError("No se pudo aprovisionar el usuario con la cédula ingresada.");
             audit(null, cedulaNormalizada, "INTENTO_FALLIDO", false, "Error aprovisionando usuario por cédula");

@@ -241,22 +241,6 @@ public class AdminSeguridadService {
         vincularUsuarioRol(usuario, rolMedico);
     }
 
-    public void asignarRolPaciente(Long idUsuario) {
-        if (idUsuario == null) {
-            throw new IllegalArgumentException("No se encontró el usuario.");
-        }
-        UsuarioAuth usuario = em.find(UsuarioAuth.class, idUsuario);
-        if (usuario == null) {
-            throw new IllegalArgumentException("No se encontró el usuario.");
-        }
-        SegRol rolPaciente = findOrCreateRolPaciente();
-        vincularUsuarioRol(usuario, rolPaciente);
-    }
-
-    public SegRol crearORestaurarRolPaciente() {
-        return findOrCreateRolPaciente();
-    }
-
     public List<PermisoRolGestionItem> listarPermisosParaGestionRol(Long idRol) {
         List<SegPermiso> permisos = em.createQuery("""
                 SELECT p

@@ -1,7 +1,5 @@
 package ec.gob.igm.rrhh.consultorio.service.security;
 
-import ec.gob.igm.rrhh.consultorio.domain.model.SegRol;
-
 import java.util.List;
 import java.util.Set;
 
@@ -9,10 +7,6 @@ import java.util.Set;
  * Contrato dedicado a la administración de roles/permisos (SRP).
  */
 public interface RolePermissionService {
-
-    SegRol crearORestaurarRolPaciente();
-
-    void asignarRolPaciente(Long idUsuario);
 
     List<PermisoRolGestionItem> listarPermisosParaGestionRol(Long idRol);
 

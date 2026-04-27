@@ -19,15 +19,15 @@
 
             <p:panel header="Administración de roles y permisos" style="margin-top:10px;">
                 <p style="margin-top:0;" class="muted">
-                    Desde esta pantalla puede crear/restaurar el rol <b>PACIENTE</b> y habilitar/deshabilitar
-                    acceso a páginas según rol (visto / no visto).
+                    Desde esta pantalla puede habilitar/deshabilitar acceso a páginas según rol
+                    (visto / no visto).
+                </p>
+                <p style="margin-top:0;" class="muted">
+                    Roles operativos definidos: <b>MEDICO</b>, <b>ODONTOLOGO</b>, <b>ADMINISTRADOR</b>,
+                    <b>ESTADISTICA</b>, <b>DTIC</b> y <b>ADMIN_SISTEMA</b>.
                 </p>
 
                 <div style="display:flex; gap:8px; margin-bottom:12px;">
-                    <p:commandButton value="Crear/Restaurar rol PACIENTE"
-                                     icon="pi pi-user-plus"
-                                     actionListener="#{adminSeguridadCtrl.crearRolPaciente}"
-                                     update="@form"/>
                     <p:button value="Volver a usuarios" icon="pi pi-arrow-left" outcome="/pages/admin-seguridad.xhtml"
                               styleClass="ui-button-secondary"/>
                 </div>

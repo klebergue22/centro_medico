@@ -151,9 +151,11 @@ public class UsuarioAuthService {
                           AND r.activo = 'S'
                         ORDER BY CASE r.codigo
                             WHEN 'ADMIN_SISTEMA' THEN 1
-                            WHEN 'ODONTOLOGO' THEN 2
+                            WHEN 'ADMINISTRADOR' THEN 2
                             WHEN 'MEDICO' THEN 3
-                            WHEN 'PACIENTE' THEN 4
+                            WHEN 'ODONTOLOGO' THEN 4
+                            WHEN 'ESTADISTICA' THEN 5
+                            WHEN 'DTIC' THEN 6
                             ELSE 9 END
                         """, String.class)
                 .setParameter("idUsuario", idUsuario)

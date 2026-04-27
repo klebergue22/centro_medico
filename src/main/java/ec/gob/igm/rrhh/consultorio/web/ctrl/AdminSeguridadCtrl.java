@@ -1,7 +1,6 @@
 package ec.gob.igm.rrhh.consultorio.web.ctrl;
 
 import ec.gob.igm.rrhh.consultorio.domain.model.SegPermiso;
-import ec.gob.igm.rrhh.consultorio.domain.model.SegRol;
 import ec.gob.igm.rrhh.consultorio.domain.model.UsuarioAuth;
 import ec.gob.igm.rrhh.consultorio.service.AdminSeguridadService;
 import ec.gob.igm.rrhh.consultorio.service.security.RolePermissionService;
@@ -140,24 +139,6 @@ public class AdminSeguridadCtrl implements Serializable {
         try {
             adminSeguridadService.asignarRolMedico(idUsuario);
             addInfo("Rol médico asignado correctamente.");
-        } catch (IllegalArgumentException e) {
-            addWarn(e.getMessage());
-        }
-    }
-
-    public void asignarRolPaciente(Long idUsuario) {
-        try {
-            rolePermissionService.asignarRolPaciente(idUsuario);
-            addInfo("Rol paciente asignado correctamente.");
-        } catch (IllegalArgumentException e) {
-            addWarn(e.getMessage());
-        }
-    }
-
-    public void crearRolPaciente() {
-        try {
-            SegRol rol = rolePermissionService.crearORestaurarRolPaciente();
-            addInfo("Rol paciente disponible: " + rol.getNombre() + " (" + rol.getCodigo() + ").");
         } catch (IllegalArgumentException e) {
             addWarn(e.getMessage());
         }

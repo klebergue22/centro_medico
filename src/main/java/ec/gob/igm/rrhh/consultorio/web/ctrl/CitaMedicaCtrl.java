@@ -8,6 +8,7 @@ import ec.gob.igm.rrhh.consultorio.domain.model.CitSlotAgenda;
 import ec.gob.igm.rrhh.consultorio.domain.model.UsuarioAuth;
 import ec.gob.igm.rrhh.consultorio.service.citas.CitaCatalogoService;
 import ec.gob.igm.rrhh.consultorio.service.citas.CitaCommandService;
+import ec.gob.igm.rrhh.consultorio.service.citas.CitaFichaService;
 import ec.gob.igm.rrhh.consultorio.service.citas.CitaPacienteLookupService;
 import ec.gob.igm.rrhh.consultorio.service.UsuarioAuthService;
 import ec.gob.igm.rrhh.consultorio.web.audit.CentroMedicoAuditService;
@@ -38,6 +39,8 @@ public class CitaMedicaCtrl implements Serializable {
 
     @Inject
     private CitaCommandService citaCommandService;
+    @Inject
+    private CitaFichaService citaFichaService;
 
     @Inject
     private CentroMedicoAuditService auditService;
@@ -81,12 +84,40 @@ public class CitaMedicaCtrl implements Serializable {
         try {
             pacienteEncontrado = citaPacienteLookupService.buscarPorCedula(cedulaBusqueda);
             if (pacienteEncontrado.isRequiereCrearFicha()) {
-                addWarn("Paciente sin ficha activa", "Debe crear/activar ficha antes de agendar cita.");
+                addWarn("Paciente sin ficha activa", "Puede crear una ficha inicial desde esta pantalla para continuar.");
             } else {
                 addInfo("Paciente encontrado", pacienteEncontrado.getNombreCompleto());
             }
         } catch (Exception e) {
             addError("No se pudo buscar paciente", e.getMessage());
+        }
+    }
+
+    public void crearFichaPaciente() {
+        if (pacienteEncontrado == null) {
+            addWarn("Paciente requerido", "Busque un paciente antes de crear la ficha.");
+            return;
+        }
+
+        try {
+            Long idFicha = citaFichaService.asegurarFichaActiva(
+                    pacienteEncontrado,
+                    userContextService.resolveCurrentUser()
+            );
+
+            pacienteEncontrado = CitaPacienteDTO.encontradoConFicha(
+                    pacienteEncontrado.getCedula(),
+                    pacienteEncontrado.getNoPersona(),
+                    pacienteEncontrado.getIdPersonaAux(),
+                    idFicha,
+                    pacienteEncontrado.getNombreCompleto()
+            );
+
+            auditService.registrar("INSERT", "FICHA_OCUPACIONAL", "ID_FICHA",
+                    "Ficha inicial creada desde citas para CEDULA=" + pacienteEncontrado.getCedula() + ", ID_FICHA=" + idFicha);
+            addInfo("Ficha creada", "Se creó una ficha inicial para poder agendar la cita.");
+        } catch (Exception e) {
+            addError("No se pudo crear ficha", e.getMessage());
         }
     }
 
@@ -187,13 +218,29 @@ public class CitaMedicaCtrl implements Serializable {
             addWarn("Paciente requerido", "Busque y seleccione un paciente primero.");
             return false;
         }
-        if (pacienteEncontrado.isRequiereCrearFicha()) {
-            addWarn("Ficha requerida", "No se puede agendar sin ficha activa.");
-            return false;
-        }
         if (idSlotSel == null) {
             addWarn("Horario requerido", "Seleccione un slot disponible.");
             return false;
+        }
+
+        if (pacienteEncontrado.isRequiereCrearFicha() || pacienteEncontrado.getIdFichaActiva() == null) {
+            try {
+                Long idFicha = citaFichaService.asegurarFichaActiva(
+                        pacienteEncontrado,
+                        userContextService.resolveCurrentUser()
+                );
+                pacienteEncontrado = CitaPacienteDTO.encontradoConFicha(
+                        pacienteEncontrado.getCedula(),
+                        pacienteEncontrado.getNoPersona(),
+                        pacienteEncontrado.getIdPersonaAux(),
+                        idFicha,
+                        pacienteEncontrado.getNombreCompleto()
+                );
+                addInfo("Ficha generada", "Se generó la ficha inicial del paciente para continuar.");
+            } catch (Exception e) {
+                addWarn("Ficha requerida", "No se pudo generar la ficha inicial: " + e.getMessage());
+                return false;
+            }
         }
         return true;
     }
