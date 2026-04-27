@@ -33,9 +33,9 @@ public class CitaHorarioAdminServiceImpl implements CitaHorarioAdminService {
         List<CitProfesional> activos = em.createQuery("""
                 SELECT p
                 FROM CitProfesional p
-                LEFT JOIN FETCH p.usuario u
+                LEFT JOIN FETCH p.usuario
                 WHERE UPPER(TRIM(COALESCE(p.activo, 'S'))) = 'S'
-                ORDER BY p.nombreProfesional, u.nombreVisible, p.idProfesional
+                ORDER BY p.nombreProfesional, p.usuario.nombreVisible, p.idProfesional
                 """, CitProfesional.class).getResultList();
 
         if (!activos.isEmpty()) {
@@ -45,8 +45,8 @@ public class CitaHorarioAdminServiceImpl implements CitaHorarioAdminService {
         List<CitProfesional> todos = em.createQuery("""
                 SELECT p
                 FROM CitProfesional p
-                LEFT JOIN FETCH p.usuario u
-                ORDER BY p.nombreProfesional, u.nombreVisible, p.idProfesional
+                LEFT JOIN FETCH p.usuario
+                ORDER BY p.nombreProfesional, p.usuario.nombreVisible, p.idProfesional
                 """, CitProfesional.class).getResultList();
 
         return completarNombreVisible(todos);
