@@ -9,6 +9,7 @@ import ec.gob.igm.rrhh.consultorio.service.SeguridadSesionAuditoriaService;
 import ec.gob.igm.rrhh.consultorio.service.UsuarioAuthService;
 import ec.gob.igm.rrhh.consultorio.service.SeguridadAccesoService;
 import ec.gob.igm.rrhh.consultorio.service.AdminSeguridadService;
+import ec.gob.igm.rrhh.consultorio.service.security.RolePermissionService;
 import jakarta.ejb.EJB;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.faces.application.FacesMessage;

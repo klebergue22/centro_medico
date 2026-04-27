@@ -148,6 +148,13 @@
                                          update="@form"
                                          styleClass="ui-button-warning ui-button-sm"
                                          rendered="#{empty usr.roles or usr.roles eq 'Sin rol activo'}"/>
+                        <p:spacer width="6"/>
+                        <p:commandButton value="Asignar paciente"
+                                         icon="pi pi-id-card"
+                                         actionListener="#{adminSeguridadCtrl.asignarRolPaciente(usr.idUsuario)}"
+                                         process="@this"
+                                         update="@form"
+                                         styleClass="ui-button-secondary ui-button-sm"/>
                         <p:spacer width="6" rendered="#{empty usr.roles or usr.roles eq 'Sin rol activo'}"/>
                         <p:commandButton value="Activar"
                                          rendered="#{usr.activo ne 'S'}"

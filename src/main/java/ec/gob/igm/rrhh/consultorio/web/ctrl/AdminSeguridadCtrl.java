@@ -1,7 +1,6 @@
 package ec.gob.igm.rrhh.consultorio.web.ctrl;
 
 import ec.gob.igm.rrhh.consultorio.domain.model.SegPermiso;
-import ec.gob.igm.rrhh.consultorio.domain.model.SegRol;
 import ec.gob.igm.rrhh.consultorio.domain.model.UsuarioAuth;
 import ec.gob.igm.rrhh.consultorio.service.AdminSeguridadService;
 import ec.gob.igm.rrhh.consultorio.service.security.RolePermissionService;
