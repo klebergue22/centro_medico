@@ -55,6 +55,42 @@ public class UsuarioAuthService {
         return nuevo;
     }
 
+    public UsuarioAuth findOrCreateExternoPorCedula(String cedula) {
+        if (cedula == null || cedula.isBlank()) {
+            throw new IllegalArgumentException("La cédula es obligatoria.");
+        }
+
+        String username = cedula.trim();
+        UsuarioAuth usuario = findByUsernameOrCedula(username);
+        if (usuario != null) {
+            return usuario;
+        }
+
+        UsuarioAuth nuevo = new UsuarioAuth();
+        nuevo.setUsername(username);
+        nuevo.setNoCedula(username);
+        nuevo.setNombreVisible("PACIENTE " + username);
+        nuevo.setEmail(null);
+        nuevo.setClaveHash(hash(username));
+        nuevo.setAlgoritmoHash("SHA-256");
+        nuevo.setActivo("S");
+        nuevo.setBloqueado("N");
+        nuevo.setIntentosFallidos(0);
+        nuevo.setRequiereCambioClave("S");
+        nuevo.setFechaCreacion(new Date());
+        nuevo.setUsrCreacion("AUTH_AUTO_EXT");
+        try {
+            em.persist(nuevo);
+        } catch (PersistenceException ex) {
+            UsuarioAuth existente = findByUsernameOrCedula(username);
+            if (existente != null) {
+                return existente;
+            }
+            throw ex;
+        }
+        return nuevo;
+    }
+
     public UsuarioAuth findByUsername(String username) {
         if (username == null || username.isBlank()) {
             return null;
@@ -100,6 +136,32 @@ public class UsuarioAuthService {
                 .setMaxResults(1)
                 .getResultList();
         return !rows.isEmpty();
+    }
+
+    public String obtenerRolPrincipalActivo(Long idUsuario) {
+        if (idUsuario == null) {
+            return null;
+        }
+        List<String> roles = em.createQuery("""
+                        SELECT r.codigo
+                        FROM SegUsuarioRol ur, SegRol r
+                        WHERE ur.idRol = r.idRol
+                          AND ur.idUsuario = :idUsuario
+                          AND ur.activo = 'S'
+                          AND r.activo = 'S'
+                        ORDER BY CASE r.codigo
+                            WHEN 'ADMIN_SISTEMA' THEN 1
+                            WHEN 'ADMINISTRADOR' THEN 2
+                            WHEN 'MEDICO' THEN 3
+                            WHEN 'ODONTOLOGO' THEN 4
+                            WHEN 'ESTADISTICA' THEN 5
+                            WHEN 'DTIC' THEN 6
+                            ELSE 9 END
+                        """, String.class)
+                .setParameter("idUsuario", idUsuario)
+                .setMaxResults(1)
+                .getResultList();
+        return roles.isEmpty() ? null : roles.get(0);
     }
 
     public boolean validatePassword(UsuarioAuth usuario, String rawPassword) {
