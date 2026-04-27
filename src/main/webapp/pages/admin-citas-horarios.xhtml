@@ -51,11 +51,20 @@
 
             <p:panel header="Generación de slots para agendamiento" style="margin-top:12px;">
                 <h:panelGrid columns="2" styleClass="ui-fluid" columnClasses="30%,70%" cellpadding="6">
-                    <h:outputText value="Fecha:"/>
+                    <h:outputText value="Fecha base:"/>
                     <p:calendar value="#{citaHorarioAdminCtrl.fechaGeneracion}" pattern="dd/MM/yyyy" showOn="button"/>
+
+                    <h:outputText value="Periodicidad:"/>
+                    <p:selectOneMenu value="#{citaHorarioAdminCtrl.periodicidadSel}">
+                        <f:selectItem itemLabel="Semanal" itemValue="SEMANAL"/>
+                        <f:selectItem itemLabel="Mensual" itemValue="MENSUAL"/>
+                    </p:selectOneMenu>
+
+                    <h:outputText value="Número de ciclos:"/>
+                    <p:spinner value="#{citaHorarioAdminCtrl.ciclosGeneracion}" min="1" max="12"/>
                 </h:panelGrid>
 
-                <p:commandButton value="Generar slots del día" icon="pi pi-calendar-plus"
+                <p:commandButton value="Generar slots" icon="pi pi-calendar-plus"
                                  actionListener="#{citaHorarioAdminCtrl.generarSlots}"
                                  update="@form" style="margin-top:8px;"/>
             </p:panel>

@@ -32,6 +32,8 @@ public class CitaHorarioAdminCtrl implements Serializable {
     private Integer diaSemanaSel;
     private Integer duracionMinSel = 20;
     private Date fechaGeneracion = new Date();
+    private String periodicidadSel = "SEMANAL";
+    private Integer ciclosGeneracion = 1;
 
     private List<CitProfesional> profesionales;
 
@@ -57,9 +59,11 @@ public class CitaHorarioAdminCtrl implements Serializable {
     public void generarSlots() {
         try {
             LocalDate fecha = fechaGeneracion.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-            int creados = citaHorarioAdminService.generarSlotsParaFecha(
+            int creados = citaHorarioAdminService.generarSlotsPeriodicos(
                     idProfesionalSel,
                     fecha,
+                    periodicidadSel,
+                    ciclosGeneracion,
                     userContextService.resolveCurrentUser()
             );
             addInfo("Slots generados: " + creados + ".");
@@ -110,6 +114,23 @@ public class CitaHorarioAdminCtrl implements Serializable {
         this.fechaGeneracion = fechaGeneracion;
     }
 
+
+
+    public String getPeriodicidadSel() {
+        return periodicidadSel;
+    }
+
+    public void setPeriodicidadSel(String periodicidadSel) {
+        this.periodicidadSel = periodicidadSel;
+    }
+
+    public Integer getCiclosGeneracion() {
+        return ciclosGeneracion;
+    }
+
+    public void setCiclosGeneracion(Integer ciclosGeneracion) {
+        this.ciclosGeneracion = ciclosGeneracion;
+    }
     public List<CitProfesional> getProfesionales() {
         return profesionales;
     }

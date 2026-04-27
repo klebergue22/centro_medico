@@ -13,4 +13,6 @@ public interface CitaHorarioAdminService {
     CitHorarioProfesional guardarHorarioBase(Long idProfesional, Integer diaSemana, Integer duracionMin, String usuarioSesion);
 
     int generarSlotsParaFecha(Long idProfesional, LocalDate fecha, String usuarioSesion);
+
+    int generarSlotsPeriodicos(Long idProfesional, LocalDate fechaBase, String periodicidad, Integer ciclos, String usuarioSesion);
 }
