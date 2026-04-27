@@ -1,0 +1,64 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                template="/templates/template.xhtml">
+
+    <ui:define name="title">Mis citas médicas</ui:define>
+
+    <ui:define name="content">
+        <h:form id="misCitasForm">
+            <p:growl id="growl" showDetail="true" life="4500"/>
+
+            <p:panel header="Mis citas" style="margin-top:10px;">
+                <p:commandButton value="Refrescar" icon="pi pi-refresh"
+                                 actionListener="#{citaMedicaCtrl.recargarMisCitas}"
+                                 update="tblCitas growl"/>
+
+                <p:dataTable id="tblCitas" var="c" value="#{citaMedicaCtrl.misCitas}" style="margin-top:10px;">
+                    <p:column headerText="Seleccionar" style="width:7rem;">
+                        <p:commandButton value="Tomar" process="@this" update="panelAcciones">
+                            <f:setPropertyActionListener target="#{citaMedicaCtrl.idCitaSel}" value="#{c.idCita}"/>
+                        </p:commandButton>
+                    </p:column>
+                    <p:column headerText="Fecha">
+                        <h:outputText value="#{c.fechaInicio}">
+                            <f:convertDateTime pattern="dd/MM/yyyy HH:mm"/>
+                        </h:outputText>
+                    </p:column>
+                    <p:column headerText="Especialidad">
+                        <h:outputText value="#{c.especialidad.nombre}"/>
+                    </p:column>
+                    <p:column headerText="Profesional">
+                        <h:outputText value="#{c.profesional.nombreProfesional}"/>
+                    </p:column>
+                    <p:column headerText="Estado">
+                        <h:outputText value="#{c.estado}"/>
+                    </p:column>
+                </p:dataTable>
+            </p:panel>
+
+            <p:panel id="panelAcciones" header="Acciones" style="margin-top:10px;">
+                <h:panelGrid columns="2" cellpadding="6" styleClass="ui-fluid" columnClasses="20%,80%">
+                    <h:outputText value="ID cita seleccionada:"/>
+                    <h:outputText value="#{empty citaMedicaCtrl.idCitaSel ? 'N/A' : citaMedicaCtrl.idCitaSel}"/>
+
+                    <h:outputText value="Motivo cancelación:"/>
+                    <p:inputTextarea value="#{citaMedicaCtrl.motivoCancelacion}" rows="2"/>
+
+                    <h:outputText value="Nuevo slot (reprogramar):"/>
+                    <p:inputText value="#{citaMedicaCtrl.idNuevoSlotSel}"/>
+
+                    <h:outputText value="Observación reprogramación:"/>
+                    <p:inputTextarea value="#{citaMedicaCtrl.observacionReprogramacion}" rows="2"/>
+                </h:panelGrid>
+
+                <p:commandButton value="Cancelar cita" icon="pi pi-times" styleClass="ui-button-danger"
+                                 actionListener="#{citaMedicaCtrl.cancelarCita}" update="@form"/>
+                <p:commandButton value="Reprogramar cita" icon="pi pi-calendar-plus" style="margin-left:8px;"
+                                 actionListener="#{citaMedicaCtrl.reprogramarCita}" update="@form"/>
+            </p:panel>
+        </h:form>
+    </ui:define>
+</ui:composition>
