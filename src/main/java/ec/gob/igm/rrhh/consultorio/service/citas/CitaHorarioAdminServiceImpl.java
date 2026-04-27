@@ -86,6 +86,30 @@ public class CitaHorarioAdminServiceImpl implements CitaHorarioAdminService {
         return em.merge(horario);
     }
 
+
+    @Override
+    public int generarSlotsPeriodicos(Long idProfesional, LocalDate fechaBase, String periodicidad, Integer ciclos, String usuarioSesion) {
+        if (idProfesional == null || fechaBase == null) {
+            throw new IllegalArgumentException("Profesional y fecha base son obligatorios.");
+        }
+        if (ciclos == null || ciclos < 1) {
+            throw new IllegalArgumentException("El número de ciclos debe ser mayor o igual a 1.");
+        }
+
+        String modo = periodicidad == null ? "SEMANAL" : periodicidad.trim().toUpperCase();
+        if (!"SEMANAL".equals(modo) && !"MENSUAL".equals(modo)) {
+            throw new IllegalArgumentException("La periodicidad debe ser SEMANAL o MENSUAL.");
+        }
+
+        int total = 0;
+        LocalDate fecha = fechaBase;
+        for (int i = 0; i < ciclos; i++) {
+            total += generarSlotsParaFecha(idProfesional, fecha, usuarioSesion);
+            fecha = siguienteFecha(fecha, modo);
+        }
+        return total;
+    }
+
     @Override
     public int generarSlotsParaFecha(Long idProfesional, LocalDate fecha, String usuarioSesion) {
         if (idProfesional == null || fecha == null) {
@@ -129,6 +153,14 @@ public class CitaHorarioAdminServiceImpl implements CitaHorarioAdminService {
             creados++;
         }
         return creados;
+    }
+
+
+    private LocalDate siguienteFecha(LocalDate fechaBase, String periodicidad) {
+        if ("MENSUAL".equals(periodicidad)) {
+            return fechaBase.plusMonths(1);
+        }
+        return fechaBase.plusWeeks(1);
     }
 
     private void limpiarSlotsOdontologiaNoTomados(Long idProfesional, LocalDate fecha) {
