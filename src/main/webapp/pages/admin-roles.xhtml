@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                template="/templates/template.xhtml">
+
+    <ui:define name="title">Gestión de roles y permisos</ui:define>
+    <ui:define name="metadata">
+        <f:metadata>
+            <f:viewAction action="#{adminSeguridadCtrl.verificarAccesoAdmin}" onPostback="false"/>
+        </f:metadata>
+    </ui:define>
+
+    <ui:define name="content">
+        <h:form id="formRolesPermisos">
+            <p:growl id="msgs" showDetail="true" life="5000"/>
+
+            <p:panel header="Administración de roles y permisos" style="margin-top:10px;">
+                <p style="margin-top:0;" class="muted">
+                    Desde esta pantalla puede habilitar/deshabilitar acceso a páginas según rol
+                    (visto / no visto).
+                </p>
+                <p style="margin-top:0;" class="muted">
+                    Roles operativos definidos: <b>MEDICO</b>, <b>ODONTOLOGO</b>, <b>ADMINISTRADOR</b>,
+                    <b>ESTADISTICA</b>, <b>DTIC</b> y <b>ADMIN_SISTEMA</b>.
+                </p>
+
+                <div style="display:flex; gap:8px; margin-bottom:12px;">
+                    <p:button value="Volver a usuarios" icon="pi pi-arrow-left" outcome="/pages/admin-seguridad.xhtml"
+                              styleClass="ui-button-secondary"/>
+                </div>
+
+                <div class="p-field" style="margin-bottom:14px; max-width:540px;">
+                    <p:outputLabel for="rolGestion" value="Rol a administrar"/>
+                    <p:selectOneMenu id="rolGestion" value="#{adminSeguridadCtrl.idRolGestionPermisos}" required="true"
+                                     requiredMessage="Seleccione un rol.">
+                        <f:selectItem itemLabel="Seleccione..." itemValue="#{null}" noSelectionOption="true"/>
+                        <f:selectItems value="#{adminSeguridadCtrl.rolesActivos}" var="rol"
+                                       itemValue="#{rol.idRol}" itemLabel="#{rol.nombre} (#{rol.codigo})"/>
+                        <p:ajax listener="#{adminSeguridadCtrl.cargarPermisosRolGestion}" update="tblPermisos chkPanel"/>
+                    </p:selectOneMenu>
+                </div>
+
+                <h:panelGroup id="chkPanel" layout="block" rendered="#{not empty adminSeguridadCtrl.idRolGestionPermisos}">
+                    <p:selectManyCheckbox value="#{adminSeguridadCtrl.permisosSeleccionados}" layout="pageDirection"
+                                          style="margin-bottom:10px;">
+                        <f:selectItems value="#{adminSeguridadCtrl.permisosGestionRol}" var="pRol"
+                                       itemLabel="[#{pRol.modulo}] #{pRol.nombre} (#{pRol.codigo})"
+                                       itemValue="#{pRol.idPermiso}"/>
+                    </p:selectManyCheckbox>
+
+                    <p:commandButton value="Guardar permisos del rol"
+                                     icon="pi pi-save"
+                                     actionListener="#{adminSeguridadCtrl.guardarPermisosRol}"
+                                     update="@form"/>
+                </h:panelGroup>
+
+                <p:dataTable id="tblPermisos" value="#{adminSeguridadCtrl.permisosGestionRol}" var="permiso"
+                             rows="10" paginator="#{not empty adminSeguridadCtrl.permisosGestionRol}"
+                             emptyMessage="Seleccione un rol para visualizar permisos." style="margin-top:12px;">
+                    <p:column headerText="Código">
+                        <h:outputText value="#{permiso.codigo}"/>
+                    </p:column>
+                    <p:column headerText="Módulo">
+                        <h:outputText value="#{permiso.modulo}"/>
+                    </p:column>
+                    <p:column headerText="Permiso">
+                        <h:outputText value="#{permiso.nombre}"/>
+                    </p:column>
+                    <p:column headerText="Visible" style="width:90px; text-align:center;">
+                        <h:outputText value="#{permiso.habilitado ? '✔' : '✘'}"/>
+                    </p:column>
+                </p:dataTable>
+            </p:panel>
+        </h:form>
+    </ui:define>
+</ui:composition>

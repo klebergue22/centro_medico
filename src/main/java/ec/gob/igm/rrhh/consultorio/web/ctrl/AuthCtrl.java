@@ -51,7 +51,6 @@ public class AuthCtrl implements Serializable {
     private SeguridadSesionAuditoriaService seguridadSesionAuditoriaService;
     @EJB
     private AdminSeguridadService adminSeguridadService;
-
     private String cedula;
     private String clave;
     private String nuevaClave;
@@ -68,28 +67,17 @@ public class AuthCtrl implements Serializable {
         }
 
         DatEmpleado empleado = getEmpleadoValido(cedulaNormalizada);
-        if (empleado == null) {
-            addError("La cédula ingresada no corresponde a un empleado registrado.");
-            audit(null, cedulaNormalizada, "INTENTO_FALLIDO", false, "Cedula no registrada en DAT_EMPLEADO");
-            registrarIntentoLoginFallidoAuditoria(cedulaNormalizada, "Cedula no registrada en DAT_EMPLEADO");
-            return null;
-        }
-
-        String cargoVigente = resolveCargoParaLogin(empleado, cedulaNormalizada);
-        if (!isCargoAutorizado(cargoVigente) && !isCargoAdmin(cargoVigente)) {
-            addError("Acceso denegado: el cargo registrado no corresponde a un perfil autorizado.");
-            audit(null, cedulaNormalizada, "INTENTO_FALLIDO", false, "Cargo no autorizado");
-            registrarIntentoLoginFallidoAuditoria(cedulaNormalizada, "Cargo no autorizado");
-            return null;
-        }
+        String cargoVigente = (empleado != null) ? resolveCargoParaLogin(empleado, cedulaNormalizada) : null;
 
         UsuarioAuth usuarioAuth = usuarioAuthService.findByUsername(cedulaNormalizada);
         if (usuarioAuth == null) {
-            addError("Usuario no registrado. Use el botón \"Registrar usuario\" para crear su acceso.");
-            audit(null, cedulaNormalizada, "INTENTO_FALLIDO", false, "Usuario no registrado en SEG_USUARIO");
-            registrarIntentoLoginFallidoAuditoria(cedulaNormalizada, "Usuario no registrado en SEG_USUARIO");
-            return null;
+            try {
+                usuarioAuth = aprovisionarUsuarioPorCedula(cedulaNormalizada, empleado);
+            } catch (RuntimeException e) {
+                return null;
+            }
         }
+
         if (usuarioAuthService.isBloqueado(usuarioAuth)) {
             addError("Usuario bloqueado por exceder 3 intentos fallidos. Debe cambiar la clave para desbloquear su cuenta.");
             audit(usuarioAuth.getIdUsuario(), cedulaNormalizada, "INTENTO_FALLIDO", false, "Usuario bloqueado");
@@ -118,7 +106,9 @@ public class AuthCtrl implements Serializable {
         audit(usuarioAuth.getIdUsuario(), cedulaNormalizada, "LOGIN", true, "Login exitoso");
         registrarLoginExitosoAuditoria(usuarioAuth, cedulaNormalizada);
         boolean esAdmin = usuarioAuthService.tieneRolAdminActivo(usuarioAuth.getIdUsuario());
-        setSessionAuth(cedulaNormalizada, resolveNombreUsuario(empleado), forceChange, esAdmin, resolveRole(cargoVigente, esAdmin));
+        String roleSesion = resolveRole(usuarioAuth, cargoVigente, esAdmin);
+        String nombreSesion = resolveNombreUsuarioSesion(usuarioAuth, empleado);
+        setSessionAuth(cedulaNormalizada, nombreSesion, forceChange, esAdmin, roleSesion);
 
         if (forceChange) {
             addInfo("Primer ingreso detectado. Debe cambiar su clave para continuar.");
@@ -358,6 +348,17 @@ public class AuthCtrl implements Serializable {
         return nombre != null ? nombre : empleado.getNoCedula();
     }
 
+    private String resolveNombreUsuarioSesion(UsuarioAuth usuarioAuth, DatEmpleado empleado) {
+        if (empleado != null) {
+            return resolveNombreUsuario(empleado);
+        }
+        String nombreVisible = normalize(usuarioAuth.getNombreVisible());
+        if (nombreVisible != null) {
+            return nombreVisible;
+        }
+        return usuarioAuth.getUsername();
+    }
+
     private boolean isCargoAutorizado(String cargo) {
         String normalized = normalizeCargo(cargo);
         return normalized.contains("MEDCO")
@@ -424,6 +425,34 @@ public class AuthCtrl implements Serializable {
             return UsuarioAuthService.ROL_ADMIN_SISTEMA;
         }
         return isCargoOdontologo(cargo) ? ROLE_ODONTOLOGO : ROLE_MEDICO;
+    }
+
+    private String resolveRole(UsuarioAuth usuarioAuth, String cargoVigente, boolean esAdmin) {
+        if (esAdmin) {
+            return UsuarioAuthService.ROL_ADMIN_SISTEMA;
+        }
+        String roleBySecurity = usuarioAuthService.obtenerRolPrincipalActivo(usuarioAuth.getIdUsuario());
+        if (roleBySecurity != null) {
+            return roleBySecurity;
+        }
+        if (cargoVigente != null) {
+            return resolveRole(cargoVigente, false);
+        }
+        return "MEDICO";
+    }
+
+    private UsuarioAuth aprovisionarUsuarioPorCedula(String cedulaNormalizada, DatEmpleado empleado) {
+        try {
+            if (empleado != null) {
+                return usuarioAuthService.findOrCreateByEmpleado(empleado);
+            }
+            return usuarioAuthService.findOrCreateExternoPorCedula(cedulaNormalizada);
+        } catch (RuntimeException e) {
+            addError("No se pudo aprovisionar el usuario con la cédula ingresada.");
+            audit(null, cedulaNormalizada, "INTENTO_FALLIDO", false, "Error aprovisionando usuario por cédula");
+            registrarIntentoLoginFallidoAuditoria(cedulaNormalizada, "Error aprovisionando usuario por cédula");
+            throw e;
+        }
     }
 
     private void setSessionAuth(String user, String nombreUsuario, boolean forceChange, boolean esAdmin, String role) {
