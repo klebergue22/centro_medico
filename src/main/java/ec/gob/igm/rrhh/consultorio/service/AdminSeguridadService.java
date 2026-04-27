@@ -30,6 +30,8 @@ public class AdminSeguridadService {
     private static final String ROL_ADMIN_NOMBRE = "Administrador del sistema";
     private static final String ROL_MEDICO_CODIGO = "MEDICO";
     private static final String ROL_MEDICO_NOMBRE = "Médico";
+    private static final String ROL_PACIENTE_CODIGO = "PACIENTE";
+    private static final String ROL_PACIENTE_NOMBRE = "Paciente";
     private static final String CARGO_ADMIN_REQUERIDO = "ANALISTA SOPORTE TECNOLG. GEOINFORMATICAS";
     private static final String CARGO_ADMIN_REQUERIDO_NORMALIZADO = normalizeCargo(CARGO_ADMIN_REQUERIDO);
 
@@ -407,6 +409,28 @@ public class AdminSeguridadService {
         SegRol rol = new SegRol();
         rol.setCodigo(ROL_MEDICO_CODIGO);
         rol.setNombre(ROL_MEDICO_NOMBRE);
+        rol.setActivo("S");
+        em.persist(rol);
+        return rol;
+    }
+
+    private SegRol findOrCreateRolPaciente() {
+        List<SegRol> rows = em.createQuery(
+                        "SELECT r FROM SegRol r WHERE r.codigo = :codigo", SegRol.class)
+                .setParameter("codigo", ROL_PACIENTE_CODIGO)
+                .setMaxResults(1)
+                .getResultList();
+
+        if (!rows.isEmpty()) {
+            SegRol rol = rows.get(0);
+            rol.setActivo("S");
+            rol.setNombre(ROL_PACIENTE_NOMBRE);
+            return em.merge(rol);
+        }
+
+        SegRol rol = new SegRol();
+        rol.setCodigo(ROL_PACIENTE_CODIGO);
+        rol.setNombre(ROL_PACIENTE_NOMBRE);
         rol.setActivo("S");
         em.persist(rol);
         return rol;
