@@ -1,5 +1,6 @@
 package ec.gob.igm.rrhh.consultorio.web.ctrl;
 
+import ec.gob.igm.rrhh.consultorio.domain.model.CitEspecialidad;
 import ec.gob.igm.rrhh.consultorio.domain.model.CitProfesional;
 import ec.gob.igm.rrhh.consultorio.service.citas.CitaHorarioAdminService;
 import ec.gob.igm.rrhh.consultorio.web.service.UserContextService;
@@ -36,10 +37,31 @@ public class CitaHorarioAdminCtrl implements Serializable {
     private Integer ciclosGeneracion = 1;
 
     private List<CitProfesional> profesionales;
+    private List<CitProfesional> profesionalesGestion;
+    private List<CitEspecialidad> especialidades;
+
+    private Long idProfesionalEdit;
+    private String nombreProfesionalEdit;
+    private String codigoProfesionalEdit;
+    private String emailProfesionalEdit;
+    private Long idEspecialidadEdit;
+    private String activoEdit = "S";
 
     @PostConstruct
     public void init() {
         profesionales = citaHorarioAdminService.listarProfesionalesActivos();
+        profesionalesGestion = citaHorarioAdminService.listarProfesionalesGestion();
+        especialidades = citaHorarioAdminService.listarEspecialidadesActivas();
+        if (profesionales == null || profesionales.isEmpty()) {
+            boolean enviado = citaHorarioAdminService.notificarAdministradorSinProfesionales(
+                    userContextService.resolveCurrentUser()
+            );
+            if (enviado) {
+                addWarn("No hay profesionales activos. Se notificó por correo al administrador.");
+            } else {
+                addWarn("No hay profesionales activos. No se pudo notificar por correo al administrador.");
+            }
+        }
     }
 
     public void guardarHorario() {
@@ -70,6 +92,75 @@ public class CitaHorarioAdminCtrl implements Serializable {
         } catch (Exception e) {
             addWarn(e.getMessage());
         }
+    }
+
+    public void prepararNuevoProfesional() {
+        idProfesionalEdit = null;
+        nombreProfesionalEdit = null;
+        codigoProfesionalEdit = null;
+        emailProfesionalEdit = null;
+        idEspecialidadEdit = null;
+        activoEdit = "S";
+    }
+
+    public void seleccionarProfesional(CitProfesional profesional) {
+        if (profesional == null) {
+            return;
+        }
+        idProfesionalEdit = profesional.getIdProfesional();
+        nombreProfesionalEdit = profesional.getNombreProfesional();
+        codigoProfesionalEdit = profesional.getCodigoProfesional();
+        emailProfesionalEdit = profesional.getEmail();
+        idEspecialidadEdit = profesional.getEspecialidad() != null ? profesional.getEspecialidad().getIdEspecialidad() : null;
+        activoEdit = profesional.getActivo();
+    }
+
+    public void guardarProfesional() {
+        try {
+            String usuario = userContextService.resolveCurrentUser();
+            if (idProfesionalEdit == null) {
+                citaHorarioAdminService.crearProfesional(
+                        nombreProfesionalEdit,
+                        codigoProfesionalEdit,
+                        emailProfesionalEdit,
+                        idEspecialidadEdit,
+                        activoEdit,
+                        usuario
+                );
+                addInfo("Profesional registrado correctamente.");
+            } else {
+                citaHorarioAdminService.actualizarProfesional(
+                        idProfesionalEdit,
+                        nombreProfesionalEdit,
+                        codigoProfesionalEdit,
+                        emailProfesionalEdit,
+                        idEspecialidadEdit,
+                        activoEdit,
+                        usuario
+                );
+                addInfo("Profesional actualizado correctamente.");
+            }
+            refrescarCatalogos();
+            prepararNuevoProfesional();
+        } catch (Exception e) {
+            addWarn(e.getMessage());
+        }
+    }
+
+    public void eliminarProfesional() {
+        try {
+            citaHorarioAdminService.eliminarProfesional(idProfesionalEdit, userContextService.resolveCurrentUser());
+            addInfo("Profesional desactivado correctamente.");
+            refrescarCatalogos();
+            prepararNuevoProfesional();
+        } catch (Exception e) {
+            addWarn(e.getMessage());
+        }
+    }
+
+    private void refrescarCatalogos() {
+        profesionales = citaHorarioAdminService.listarProfesionalesActivos();
+        profesionalesGestion = citaHorarioAdminService.listarProfesionalesGestion();
     }
 
     private void addInfo(String summary) {
@@ -133,5 +224,61 @@ public class CitaHorarioAdminCtrl implements Serializable {
     }
     public List<CitProfesional> getProfesionales() {
         return profesionales;
+    }
+
+    public List<CitProfesional> getProfesionalesGestion() {
+        return profesionalesGestion;
+    }
+
+    public List<CitEspecialidad> getEspecialidades() {
+        return especialidades;
+    }
+
+    public Long getIdProfesionalEdit() {
+        return idProfesionalEdit;
+    }
+
+    public void setIdProfesionalEdit(Long idProfesionalEdit) {
+        this.idProfesionalEdit = idProfesionalEdit;
+    }
+
+    public String getNombreProfesionalEdit() {
+        return nombreProfesionalEdit;
+    }
+
+    public void setNombreProfesionalEdit(String nombreProfesionalEdit) {
+        this.nombreProfesionalEdit = nombreProfesionalEdit;
+    }
+
+    public String getCodigoProfesionalEdit() {
+        return codigoProfesionalEdit;
+    }
+
+    public void setCodigoProfesionalEdit(String codigoProfesionalEdit) {
+        this.codigoProfesionalEdit = codigoProfesionalEdit;
+    }
+
+    public String getEmailProfesionalEdit() {
+        return emailProfesionalEdit;
+    }
+
+    public void setEmailProfesionalEdit(String emailProfesionalEdit) {
+        this.emailProfesionalEdit = emailProfesionalEdit;
+    }
+
+    public Long getIdEspecialidadEdit() {
+        return idEspecialidadEdit;
+    }
+
+    public void setIdEspecialidadEdit(Long idEspecialidadEdit) {
+        this.idEspecialidadEdit = idEspecialidadEdit;
+    }
+
+    public String getActivoEdit() {
+        return activoEdit;
+    }
+
+    public void setActivoEdit(String activoEdit) {
+        this.activoEdit = activoEdit;
     }
 }
