@@ -30,6 +30,8 @@ public class AdminSeguridadService {
     private static final String ROL_ADMIN_NOMBRE = "Administrador del sistema";
     private static final String ROL_MEDICO_CODIGO = "MEDICO";
     private static final String ROL_MEDICO_NOMBRE = "Médico";
+    private static final String ROL_PACIENTE_CODIGO = "PACIENTE";
+    private static final String ROL_PACIENTE_NOMBRE = "Paciente";
     private static final String CARGO_ADMIN_REQUERIDO = "ANALISTA SOPORTE TECNOLG. GEOINFORMATICAS";
     private static final String CARGO_ADMIN_REQUERIDO_NORMALIZADO = normalizeCargo(CARGO_ADMIN_REQUERIDO);
 
@@ -239,6 +241,106 @@ public class AdminSeguridadService {
         vincularUsuarioRol(usuario, rolMedico);
     }
 
+    public void asignarRolPaciente(Long idUsuario) {
+        if (idUsuario == null) {
+            throw new IllegalArgumentException("No se encontró el usuario.");
+        }
+        UsuarioAuth usuario = em.find(UsuarioAuth.class, idUsuario);
+        if (usuario == null) {
+            throw new IllegalArgumentException("No se encontró el usuario.");
+        }
+        SegRol rolPaciente = findOrCreateRolPaciente();
+        vincularUsuarioRol(usuario, rolPaciente);
+    }
+
+    public SegRol crearORestaurarRolPaciente() {
+        return findOrCreateRolPaciente();
+    }
+
+    public List<PermisoRolGestionItem> listarPermisosParaGestionRol(Long idRol) {
+        List<SegPermiso> permisos = em.createQuery("""
+                SELECT p
+                FROM SegPermiso p
+                ORDER BY p.modulo, p.nombre
+                """, SegPermiso.class).getResultList();
+
+        if (idRol == null || permisos.isEmpty()) {
+            return permisos.stream()
+                    .map(p -> new PermisoRolGestionItem(
+                            p.getIdPermiso(),
+                            p.getCodigo(),
+                            p.getModulo(),
+                            p.getNombre(),
+                            false
+                    ))
+                    .toList();
+        }
+
+        Set<Long> permisosActivosRol = em.createQuery("""
+                SELECT rp.idPermiso
+                FROM SegRolPermiso rp
+                WHERE rp.idRol = :idRol
+                  AND rp.activo = 'S'
+                """, Long.class)
+                .setParameter("idRol", idRol)
+                .getResultList()
+                .stream()
+                .collect(Collectors.toSet());
+
+        return permisos.stream()
+                .map(p -> new PermisoRolGestionItem(
+                        p.getIdPermiso(),
+                        p.getCodigo(),
+                        p.getModulo(),
+                        p.getNombre(),
+                        permisosActivosRol.contains(p.getIdPermiso())
+                ))
+                .toList();
+    }
+
+    public void actualizarPermisosRol(Long idRol, Set<Long> permisosHabilitados) {
+        if (idRol == null) {
+            throw new IllegalArgumentException("Seleccione un rol.");
+        }
+
+        SegRol rol = em.find(SegRol.class, idRol);
+        if (rol == null) {
+            throw new IllegalArgumentException("No se encontró el rol seleccionado.");
+        }
+
+        Set<Long> habilitados = (permisosHabilitados == null) ? Set.of() : permisosHabilitados;
+
+        List<SegPermiso> permisos = em.createQuery("SELECT p FROM SegPermiso p", SegPermiso.class).getResultList();
+        for (SegPermiso permiso : permisos) {
+            List<SegRolPermiso> links = em.createQuery("""
+                            SELECT rp
+                            FROM SegRolPermiso rp
+                            WHERE rp.idRol = :idRol
+                              AND rp.idPermiso = :idPermiso
+                            """, SegRolPermiso.class)
+                    .setParameter("idRol", idRol)
+                    .setParameter("idPermiso", permiso.getIdPermiso())
+                    .setMaxResults(1)
+                    .getResultList();
+
+            boolean debeEstarActivo = habilitados.contains(permiso.getIdPermiso());
+            if (links.isEmpty()) {
+                if (!debeEstarActivo) {
+                    continue;
+                }
+                SegRolPermiso nuevo = new SegRolPermiso();
+                nuevo.setIdRol(idRol);
+                nuevo.setIdPermiso(permiso.getIdPermiso());
+                nuevo.setActivo("S");
+                em.persist(nuevo);
+            } else {
+                SegRolPermiso link = links.get(0);
+                link.setActivo(debeEstarActivo ? "S" : "N");
+                em.merge(link);
+            }
+        }
+    }
+
     public String getCargoAdminRequerido() {
         return CARGO_ADMIN_REQUERIDO;
     }
@@ -323,6 +425,28 @@ public class AdminSeguridadService {
         SegRol rol = new SegRol();
         rol.setCodigo(ROL_MEDICO_CODIGO);
         rol.setNombre(ROL_MEDICO_NOMBRE);
+        rol.setActivo("S");
+        em.persist(rol);
+        return rol;
+    }
+
+    private SegRol findOrCreateRolPaciente() {
+        List<SegRol> rows = em.createQuery(
+                        "SELECT r FROM SegRol r WHERE r.codigo = :codigo", SegRol.class)
+                .setParameter("codigo", ROL_PACIENTE_CODIGO)
+                .setMaxResults(1)
+                .getResultList();
+
+        if (!rows.isEmpty()) {
+            SegRol rol = rows.get(0);
+            rol.setActivo("S");
+            rol.setNombre(ROL_PACIENTE_NOMBRE);
+            return em.merge(rol);
+        }
+
+        SegRol rol = new SegRol();
+        rol.setCodigo(ROL_PACIENTE_CODIGO);
+        rol.setNombre(ROL_PACIENTE_NOMBRE);
         rol.setActivo("S");
         em.persist(rol);
         return rol;
@@ -489,6 +613,42 @@ public class AdminSeguridadService {
 
         public String getRoles() {
             return roles;
+        }
+    }
+
+    public static class PermisoRolGestionItem {
+        private final Long idPermiso;
+        private final String codigo;
+        private final String modulo;
+        private final String nombre;
+        private final boolean habilitado;
+
+        public PermisoRolGestionItem(Long idPermiso, String codigo, String modulo, String nombre, boolean habilitado) {
+            this.idPermiso = idPermiso;
+            this.codigo = codigo;
+            this.modulo = modulo;
+            this.nombre = nombre;
+            this.habilitado = habilitado;
+        }
+
+        public Long getIdPermiso() {
+            return idPermiso;
+        }
+
+        public String getCodigo() {
+            return codigo;
+        }
+
+        public String getModulo() {
+            return modulo;
+        }
+
+        public String getNombre() {
+            return nombre;
+        }
+
+        public boolean isHabilitado() {
+            return habilitado;
         }
     }
 }

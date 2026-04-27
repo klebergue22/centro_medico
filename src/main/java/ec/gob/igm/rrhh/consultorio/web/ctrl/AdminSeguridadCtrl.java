@@ -4,6 +4,7 @@ import ec.gob.igm.rrhh.consultorio.domain.model.SegPermiso;
 import ec.gob.igm.rrhh.consultorio.domain.model.SegRol;
 import ec.gob.igm.rrhh.consultorio.domain.model.UsuarioAuth;
 import ec.gob.igm.rrhh.consultorio.service.AdminSeguridadService;
+import ec.gob.igm.rrhh.consultorio.service.security.RolePermissionService;
 import jakarta.faces.application.FacesMessage;
 import jakarta.faces.context.FacesContext;
 import jakarta.faces.view.ViewScoped;
@@ -11,8 +12,10 @@ import jakarta.inject.Inject;
 import jakarta.inject.Named;
 
 import java.io.IOException;
+import java.util.HashSet;
 import java.io.Serializable;
 import java.util.List;
+import java.util.Set;
 
 @Named("adminSeguridadCtrl")
 @ViewScoped
@@ -22,11 +25,15 @@ public class AdminSeguridadCtrl implements Serializable {
 
     @Inject
     private transient AdminSeguridadService adminSeguridadService;
+    @Inject
+    private transient RolePermissionService rolePermissionService;
 
     private String username;
     private String nombreVisible;
     private String email;
     private Long idRolSeleccionado;
+    private Long idRolGestionPermisos;
+    private Set<Long> permisosSeleccionados = new HashSet<>();
     private Long idUsuarioEdicion;
 
     public void verificarAccesoAdmin() throws IOException {
@@ -138,12 +145,53 @@ public class AdminSeguridadCtrl implements Serializable {
         }
     }
 
+    public void asignarRolPaciente(Long idUsuario) {
+        try {
+            rolePermissionService.asignarRolPaciente(idUsuario);
+            addInfo("Rol paciente asignado correctamente.");
+        } catch (IllegalArgumentException e) {
+            addWarn(e.getMessage());
+        }
+    }
+
+    public void crearRolPaciente() {
+        try {
+            SegRol rol = rolePermissionService.crearORestaurarRolPaciente();
+            addInfo("Rol paciente disponible: " + rol.getNombre() + " (" + rol.getCodigo() + ").");
+        } catch (IllegalArgumentException e) {
+            addWarn(e.getMessage());
+        }
+    }
+
+    public void cargarPermisosRolGestion() {
+        permisosSeleccionados = new HashSet<>();
+        List<RolePermissionService.PermisoRolGestionItem> permisos = getPermisosGestionRol();
+        for (RolePermissionService.PermisoRolGestionItem permiso : permisos) {
+            if (permiso.isHabilitado()) {
+                permisosSeleccionados.add(permiso.getIdPermiso());
+            }
+        }
+    }
+
+    public void guardarPermisosRol() {
+        try {
+            rolePermissionService.actualizarPermisosRol(idRolGestionPermisos, permisosSeleccionados);
+            addInfo("Permisos del rol actualizados correctamente.");
+        } catch (IllegalArgumentException e) {
+            addWarn(e.getMessage());
+        }
+    }
+
     public List<SegRol> getRolesActivos() {
         return adminSeguridadService.listarRolesActivos();
     }
 
     public List<SegPermiso> getPermisosRolSeleccionado() {
         return adminSeguridadService.listarPermisosPorRol(idRolSeleccionado);
+    }
+
+    public List<RolePermissionService.PermisoRolGestionItem> getPermisosGestionRol() {
+        return rolePermissionService.listarPermisosParaGestionRol(idRolGestionPermisos);
     }
 
     public String getCargoRequeridoAdmin() {
@@ -184,6 +232,22 @@ public class AdminSeguridadCtrl implements Serializable {
 
     public Long getIdUsuarioEdicion() {
         return idUsuarioEdicion;
+    }
+
+    public Long getIdRolGestionPermisos() {
+        return idRolGestionPermisos;
+    }
+
+    public void setIdRolGestionPermisos(Long idRolGestionPermisos) {
+        this.idRolGestionPermisos = idRolGestionPermisos;
+    }
+
+    public Set<Long> getPermisosSeleccionados() {
+        return permisosSeleccionados;
+    }
+
+    public void setPermisosSeleccionados(Set<Long> permisosSeleccionados) {
+        this.permisosSeleccionados = (permisosSeleccionados == null) ? new HashSet<>() : permisosSeleccionados;
     }
 
     private void addInfo(String summary) {
