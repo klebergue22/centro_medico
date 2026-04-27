@@ -1,0 +1,105 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                template="/templates/template.xhtml">
+
+    <ui:define name="title">Agendamiento de citas</ui:define>
+
+    <ui:define name="content">
+        <h:form id="citasForm">
+            <p:growl id="growl" showDetail="true" life="4500"/>
+
+            <p:panel header="Agendar cita médica / odontológica" style="margin-top:10px;">
+                <h:panelGrid columns="4" cellpadding="6" styleClass="ui-fluid" columnClasses="15%,35%,15%,35%">
+                    <h:outputText value="Cédula paciente:"/>
+                    <h:panelGroup>
+                        <p:inputText value="#{citaMedicaCtrl.cedulaBusqueda}" maxlength="10"/>
+                        <p:commandButton value="Buscar" icon="pi pi-search" style="margin-top:6px;"
+                                         actionListener="#{citaMedicaCtrl.buscarPaciente}" update="pacientePanel growl"/>
+                    </h:panelGroup>
+
+                    <h:outputText value="Fecha agenda:"/>
+                    <p:calendar value="#{citaMedicaCtrl.fechaAgenda}" pattern="dd/MM/yyyy" showOn="button"/>
+                </h:panelGrid>
+            </p:panel>
+
+            <p:panel id="pacientePanel" header="Paciente" style="margin-top:10px;">
+                <h:panelGrid columns="2" cellpadding="6" styleClass="ui-fluid" columnClasses="20%,80%"
+                             rendered="#{not empty citaMedicaCtrl.pacienteEncontrado}">
+                    <h:outputText value="Nombre:"/>
+                    <h:outputText value="#{citaMedicaCtrl.pacienteEncontrado.nombreCompleto}"/>
+                    <h:outputText value="Ficha activa:"/>
+                    <h:outputText value="#{empty citaMedicaCtrl.pacienteEncontrado.idFichaActiva ? 'NO' : citaMedicaCtrl.pacienteEncontrado.idFichaActiva}"/>
+                    <h:outputText value="Correo:"/>
+                    <p:inputText value="#{citaMedicaCtrl.correoPaciente}"/>
+                    <h:outputText value="Teléfono:"/>
+                    <p:inputText value="#{citaMedicaCtrl.telefonoPaciente}"/>
+                </h:panelGrid>
+
+                <h:panelGroup rendered="#{empty citaMedicaCtrl.pacienteEncontrado}">
+                    <h:outputText value="Busque un paciente para continuar."/>
+                </h:panelGroup>
+            </p:panel>
+
+            <p:panel header="Disponibilidad" style="margin-top:10px;">
+                <h:panelGrid columns="4" cellpadding="6" styleClass="ui-fluid" columnClasses="15%,35%,15%,35%">
+                    <h:outputText value="Especialidad:"/>
+                    <p:selectOneMenu value="#{citaMedicaCtrl.idEspecialidadSel}">
+                        <f:selectItem itemLabel="Seleccione" itemValue="#{null}" noSelectionOption="true"/>
+                        <f:selectItems value="#{citaMedicaCtrl.especialidades}" var="esp"
+                                       itemLabel="#{esp.nombre}" itemValue="#{esp.idEspecialidad}"/>
+                        <p:ajax listener="#{citaMedicaCtrl.onEspecialidadChange}" update="profesional slotsTbl"/>
+                    </p:selectOneMenu>
+
+                    <h:outputText value="Profesional:"/>
+                    <p:selectOneMenu id="profesional" value="#{citaMedicaCtrl.idProfesionalSel}">
+                        <f:selectItem itemLabel="Seleccione" itemValue="#{null}" noSelectionOption="true"/>
+                        <f:selectItems value="#{citaMedicaCtrl.profesionales}" var="pro"
+                                       itemLabel="#{pro.nombreProfesional}" itemValue="#{pro.idProfesional}"/>
+                    </p:selectOneMenu>
+                </h:panelGrid>
+
+                <p:commandButton value="Buscar horarios" icon="pi pi-calendar"
+                                 actionListener="#{citaMedicaCtrl.buscarSlotsDisponibles}"
+                                 update="slotsTbl growl" style="margin-top:8px;"/>
+
+                <p:dataTable id="slotsTbl" value="#{citaMedicaCtrl.slotsDisponibles}" var="s" style="margin-top:10px;">
+                    <p:column headerText="Seleccionar" style="width:7rem;">
+                        <p:commandButton value="Usar" process="@this" update="growl">
+                            <f:setPropertyActionListener target="#{citaMedicaCtrl.idSlotSel}" value="#{s.idSlot}"/>
+                        </p:commandButton>
+                    </p:column>
+                    <p:column headerText="Profesional">
+                        <h:outputText value="#{s.profesional.nombreProfesional}"/>
+                    </p:column>
+                    <p:column headerText="Especialidad">
+                        <h:outputText value="#{s.especialidad.nombre}"/>
+                    </p:column>
+                    <p:column headerText="Inicio">
+                        <h:outputText value="#{s.fechaInicio}">
+                            <f:convertDateTime pattern="dd/MM/yyyy HH:mm"/>
+                        </h:outputText>
+                    </p:column>
+                    <p:column headerText="Fin">
+                        <h:outputText value="#{s.fechaFin}">
+                            <f:convertDateTime pattern="HH:mm"/>
+                        </h:outputText>
+                    </p:column>
+                </p:dataTable>
+            </p:panel>
+
+            <p:panel header="Confirmación" style="margin-top:10px;">
+                <h:panelGrid columns="2" cellpadding="6" styleClass="ui-fluid" columnClasses="15%,85%">
+                    <h:outputText value="Motivo:"/>
+                    <p:inputTextarea value="#{citaMedicaCtrl.motivoAtencion}" rows="3"/>
+                </h:panelGrid>
+
+                <p:commandButton value="Agendar cita" icon="pi pi-check"
+                                 actionListener="#{citaMedicaCtrl.agendarCita}"
+                                 update="@form" style="margin-top:8px;"/>
+            </p:panel>
+        </h:form>
+    </ui:define>
+</ui:composition>

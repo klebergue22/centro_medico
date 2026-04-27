@@ -79,7 +79,15 @@
                                         icon="pi pi-plus-circle"
                                         outcome="/pages/centroMedico.xhtml"
                                         rendered="#{sessionScope.AUTH_ROLE ne 'ODONTOLOGO' or sessionScope.AUTH_IS_ADMIN eq true}"/>
+                            <p:menuitem value="Agendamiento de citas"
+                                        icon="pi pi-calendar-plus"
+                                        outcome="/pages/citasMedicas.xhtml"/>
+                            <p:menuitem value="Mis citas"
+                                        icon="pi pi-calendar"
+                                        outcome="/pages/citasMisTurnos.xhtml"/>
                             <p:menuitem value="Administración de seguridad" icon="pi pi-shield" outcome="/pages/admin-seguridad.xhtml"
+                                        rendered="#{sessionScope.AUTH_IS_ADMIN eq true}"/>
+                            <p:menuitem value="Roles y permisos" icon="pi pi-lock" outcome="/pages/admin-roles.xhtml"
                                         rendered="#{sessionScope.AUTH_IS_ADMIN eq true}"/>
                         </p:submenu>
                     </p:menubar>
