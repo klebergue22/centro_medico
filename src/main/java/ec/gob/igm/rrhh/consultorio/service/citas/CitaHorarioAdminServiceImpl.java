@@ -29,10 +29,20 @@ public class CitaHorarioAdminServiceImpl implements CitaHorarioAdminService {
 
     @Override
     public List<CitProfesional> listarProfesionalesActivos() {
+        List<CitProfesional> activos = em.createQuery("""
+                SELECT p
+                FROM CitProfesional p
+                WHERE UPPER(TRIM(COALESCE(p.activo, 'S'))) = 'S'
+                ORDER BY p.nombreProfesional
+                """, CitProfesional.class).getResultList();
+
+        if (!activos.isEmpty()) {
+            return activos;
+        }
+
         return em.createQuery("""
                 SELECT p
                 FROM CitProfesional p
-                WHERE p.activo = 'S'
                 ORDER BY p.nombreProfesional
                 """, CitProfesional.class).getResultList();
     }
