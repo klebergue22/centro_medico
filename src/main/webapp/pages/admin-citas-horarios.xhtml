@@ -40,7 +40,9 @@
                     </p:selectOneMenu>
                 </h:panelGrid>
 
-                <p:message severity="info" detail="Jornada aplicada: 08:00 a 16:00. Almuerzo: 12:30 a 13:30."/>
+                <h:panelGroup layout="block" styleClass="ui-message ui-message-info" style="margin-top:8px; padding:8px;">
+                    <span class="ui-message-info-detail">Jornada aplicada: 08:00 a 16:00. Almuerzo: 12:30 a 13:30.</span>
+                </h:panelGroup>
 
                 <p:commandButton value="Guardar horario" icon="pi pi-save"
                                  actionListener="#{citaHorarioAdminCtrl.guardarHorario}"
