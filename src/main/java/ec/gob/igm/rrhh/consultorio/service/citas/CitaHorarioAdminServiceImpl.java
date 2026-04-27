@@ -29,20 +29,10 @@ public class CitaHorarioAdminServiceImpl implements CitaHorarioAdminService {
 
     @Override
     public List<CitProfesional> listarProfesionalesActivos() {
-        List<CitProfesional> activos = em.createQuery("""
-                SELECT p
-                FROM CitProfesional p
-                WHERE UPPER(TRIM(COALESCE(p.activo, 'S'))) = 'S'
-                ORDER BY p.nombreProfesional
-                """, CitProfesional.class).getResultList();
-
-        if (!activos.isEmpty()) {
-            return activos;
-        }
-
         return em.createQuery("""
                 SELECT p
                 FROM CitProfesional p
+                WHERE p.activo = 'S'
                 ORDER BY p.nombreProfesional
                 """, CitProfesional.class).getResultList();
     }
@@ -109,6 +99,7 @@ public class CitaHorarioAdminServiceImpl implements CitaHorarioAdminService {
                 .orElseThrow(() -> new IllegalArgumentException("No existe horario activo para el profesional en el día seleccionado."));
 
         validarDuracion(horario.getDuracionSlotMin());
+        limpiarSlotsOdontologiaNoTomados(idProfesional, fecha);
 
         List<LocalDateTime> inicios = construirInicios(horario.getDuracionSlotMin(), fecha);
         int creados = 0;
@@ -128,6 +119,41 @@ public class CitaHorarioAdminServiceImpl implements CitaHorarioAdminService {
             creados++;
         }
         return creados;
+    }
+
+    private void limpiarSlotsOdontologiaNoTomados(Long idProfesional, LocalDate fecha) {
+        if (!esOdontologia(idProfesional)) {
+            return;
+        }
+
+        Date desde = toDate(fecha.atStartOfDay());
+        Date hasta = toDate(fecha.plusDays(1).atStartOfDay());
+
+        em.createQuery("""
+                DELETE FROM CitSlotAgenda s
+                WHERE s.profesional.idProfesional = :idProfesional
+                  AND s.fechaInicio >= :desde
+                  AND s.fechaInicio < :hasta
+                  AND s.estado = 'DISPONIBLE'
+                """)
+                .setParameter("idProfesional", idProfesional)
+                .setParameter("desde", desde)
+                .setParameter("hasta", hasta)
+                .executeUpdate();
+    }
+
+    private boolean esOdontologia(Long idProfesional) {
+        String codigo = em.createQuery("""
+                SELECT p.especialidad.codigo
+                FROM CitProfesional p
+                WHERE p.idProfesional = :idProfesional
+                """, String.class)
+                .setParameter("idProfesional", idProfesional)
+                .setMaxResults(1)
+                .getResultStream()
+                .findFirst()
+                .orElse(null);
+        return codigo != null && "ODONTO".equalsIgnoreCase(codigo.trim());
     }
 
     private void validarEntrada(Long idProfesional, Integer diaSemana, Integer duracionMin) {

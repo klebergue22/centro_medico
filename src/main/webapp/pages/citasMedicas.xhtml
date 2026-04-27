@@ -39,7 +39,9 @@
                 </h:panelGrid>
 
                 <h:panelGroup rendered="#{not empty citaMedicaCtrl.pacienteEncontrado and citaMedicaCtrl.pacienteEncontrado.requiereCrearFicha}">
-                    <p:message severity="warn" detail="El paciente no tiene ficha activa. Cree una ficha inicial para habilitar el agendamiento."/>
+                    <h:panelGroup layout="block" styleClass="ui-message ui-message-warn" style="margin-top:6px; padding:8px;">
+                        <span class="ui-message-warn-detail">El paciente no tiene ficha activa. Cree una ficha inicial para habilitar el agendamiento.</span>
+                    </h:panelGroup>
                     <p:commandButton value="Crear ficha inicial" icon="pi pi-file-edit"
                                      actionListener="#{citaMedicaCtrl.crearFichaPaciente}"
                                      update="pacientePanel growl" style="margin-top:8px;"/>
@@ -61,12 +63,17 @@
                     </p:selectOneMenu>
 
                     <h:outputText value="Profesional:"/>
-                    <p:selectOneMenu id="profesional" value="#{citaMedicaCtrl.idProfesionalSel}">
+                    <p:selectOneMenu id="profesional" value="#{citaMedicaCtrl.idProfesionalSel}"
+                                     disabled="#{not citaMedicaCtrl.seleccionManualProfesionalHabilitada}">
                         <f:selectItem itemLabel="Seleccione" itemValue="#{null}" noSelectionOption="true"/>
                         <f:selectItems value="#{citaMedicaCtrl.profesionales}" var="pro"
                                        itemLabel="#{pro.nombreProfesional}" itemValue="#{pro.idProfesional}"/>
                     </p:selectOneMenu>
                 </h:panelGrid>
+
+                <h:panelGroup rendered="#{not citaMedicaCtrl.seleccionManualProfesionalHabilitada}">
+                    <small>Para medicina general el médico se asigna automáticamente según carga horaria.</small>
+                </h:panelGroup>
 
                 <p:commandButton value="Buscar horarios" icon="pi pi-calendar"
                                  actionListener="#{citaMedicaCtrl.buscarSlotsDisponibles}"

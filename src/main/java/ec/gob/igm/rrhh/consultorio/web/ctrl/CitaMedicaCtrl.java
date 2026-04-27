@@ -10,6 +10,7 @@ import ec.gob.igm.rrhh.consultorio.service.citas.CitaCatalogoService;
 import ec.gob.igm.rrhh.consultorio.service.citas.CitaCommandService;
 import ec.gob.igm.rrhh.consultorio.service.citas.CitaFichaService;
 import ec.gob.igm.rrhh.consultorio.service.citas.CitaPacienteLookupService;
+import ec.gob.igm.rrhh.consultorio.service.SeguridadAccesoService;
 import ec.gob.igm.rrhh.consultorio.service.UsuarioAuthService;
 import ec.gob.igm.rrhh.consultorio.web.audit.CentroMedicoAuditService;
 import ec.gob.igm.rrhh.consultorio.web.service.UserContextService;
@@ -24,6 +25,7 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Named("citaMedicaCtrl")
 @ViewScoped
@@ -49,6 +51,8 @@ public class CitaMedicaCtrl implements Serializable {
     private UserContextService userContextService;
     @Inject
     private UsuarioAuthService usuarioAuthService;
+    @Inject
+    private SeguridadAccesoService seguridadAccesoService;
 
     private String cedulaBusqueda;
     private CitaPacienteDTO pacienteEncontrado;
@@ -115,8 +119,11 @@ public class CitaMedicaCtrl implements Serializable {
 
             auditService.registrar("INSERT", "FICHA_OCUPACIONAL", "ID_FICHA",
                     "Ficha inicial creada desde citas para CEDULA=" + pacienteEncontrado.getCedula() + ", ID_FICHA=" + idFicha);
+            registrarSeguridadEvento("CITA_FICHA_CREAR", true,
+                    "Creación ficha inicial desde agendamiento. CEDULA=" + pacienteEncontrado.getCedula(), resolveUsuarioIdSesionSeguro());
             addInfo("Ficha creada", "Se creó una ficha inicial para poder agendar la cita.");
         } catch (Exception e) {
+            registrarSeguridadEvento("CITA_FICHA_CREAR", false, "Error creando ficha inicial: " + e.getMessage(), resolveUsuarioIdSesionSeguro());
             addError("No se pudo crear ficha", e.getMessage());
         }
     }
@@ -130,6 +137,11 @@ public class CitaMedicaCtrl implements Serializable {
 
     public void buscarSlotsDisponibles() {
         slotsDisponibles = citaCatalogoService.listarSlotsDisponibles(idEspecialidadSel, idProfesionalSel, fechaAgenda);
+        if (idProfesionalSel == null && !slotsDisponibles.isEmpty() && !esEspecialidadOdontologiaSeleccionada()) {
+            idProfesionalSel = slotsDisponibles.get(0).getProfesional().getIdProfesional();
+            addInfo("Médico asignado automáticamente",
+                    "Se asignó el profesional con menor carga horaria para equilibrar la agenda.");
+        }
         if (slotsDisponibles.isEmpty()) {
             addWarn("Sin horarios", "No existen slots disponibles para el filtro seleccionado.");
         }
@@ -156,11 +168,14 @@ public class CitaMedicaCtrl implements Serializable {
 
             auditService.registrar("INSERT", "CIT_CITA", "ID_CITA",
                     "Cita agendada ID=" + cita.getIdCita() + ", CEDULA=" + pacienteEncontrado.getCedula());
+            registrarSeguridadEvento("CITA_AGENDAR", true,
+                    "Cita agendada ID=" + cita.getIdCita() + ", CEDULA=" + pacienteEncontrado.getCedula(), idUsuario);
 
             addInfo("Cita agendada", "La cita fue creada correctamente.");
             limpiarFormularioAgendamiento();
             recargarMisCitas();
         } catch (Exception e) {
+            registrarSeguridadEvento("CITA_AGENDAR", false, "Error al agendar: " + e.getMessage(), resolveUsuarioIdSesionSeguro());
             addError("No se pudo agendar", e.getMessage());
         }
     }
@@ -174,10 +189,12 @@ public class CitaMedicaCtrl implements Serializable {
         try {
             CitCita cita = citaCommandService.cancelar(idCitaSel, motivoCancelacion, userContextService.resolveCurrentUser());
             auditService.registrar("UPDATE", "CIT_CITA", "ESTADO", "Cita cancelada ID=" + cita.getIdCita());
+            registrarSeguridadEvento("CITA_CANCELAR", true, "Cita cancelada ID=" + cita.getIdCita(), resolveUsuarioIdSesionSeguro());
             addInfo("Cita cancelada", "Se canceló correctamente la cita.");
             motivoCancelacion = null;
             recargarMisCitas();
         } catch (Exception e) {
+            registrarSeguridadEvento("CITA_CANCELAR", false, "Error al cancelar cita: " + e.getMessage(), resolveUsuarioIdSesionSeguro());
             addError("No se pudo cancelar", e.getMessage());
         }
     }
@@ -192,10 +209,12 @@ public class CitaMedicaCtrl implements Serializable {
             CitCita cita = citaCommandService.reprogramar(idCitaSel, idNuevoSlotSel, observacionReprogramacion,
                     userContextService.resolveCurrentUser());
             auditService.registrar("UPDATE", "CIT_CITA", "ID_SLOT", "Cita reprogramada ID=" + cita.getIdCita());
+            registrarSeguridadEvento("CITA_REPROGRAMAR", true, "Cita reprogramada ID=" + cita.getIdCita(), resolveUsuarioIdSesionSeguro());
             addInfo("Cita reprogramada", "La cita fue reagendada correctamente.");
             observacionReprogramacion = null;
             recargarMisCitas();
         } catch (Exception e) {
+            registrarSeguridadEvento("CITA_REPROGRAMAR", false, "Error al reprogramar cita: " + e.getMessage(), resolveUsuarioIdSesionSeguro());
             addError("No se pudo reprogramar", e.getMessage());
         }
     }
@@ -266,6 +285,39 @@ public class CitaMedicaCtrl implements Serializable {
         return usuario.getIdUsuario();
     }
 
+    private Long resolveUsuarioIdSesionSeguro() {
+        try {
+            return resolveUsuarioIdSesion();
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    private void registrarSeguridadEvento(String evento, boolean exitoso, String detalle, Long idUsuario) {
+        try {
+            seguridadAccesoService.registrarEvento(
+                    idUsuario,
+                    userContextService.resolveCurrentUser(),
+                    evento,
+                    exitoso,
+                    detalle
+            );
+        } catch (Exception ignored) {
+            // No bloquear el flujo funcional por errores de bitácora de seguridad.
+        }
+    }
+
+    private boolean esEspecialidadOdontologiaSeleccionada() {
+        if (idEspecialidadSel == null || especialidades == null) {
+            return false;
+        }
+        return especialidades.stream()
+                .filter(e -> idEspecialidadSel.equals(e.getIdEspecialidad()))
+                .findFirst()
+                .map(e -> Optional.ofNullable(e.getCodigo()).orElse("").equalsIgnoreCase("ODONTO"))
+                .orElse(false);
+    }
+
     private void addInfo(String summary, String detail) {
         FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, summary, detail));
     }
@@ -307,4 +359,7 @@ public class CitaMedicaCtrl implements Serializable {
     public List<CitProfesional> getProfesionales() { return profesionales; }
     public List<CitSlotAgenda> getSlotsDisponibles() { return slotsDisponibles; }
     public List<CitCita> getMisCitas() { return misCitas; }
+    public boolean isSeleccionManualProfesionalHabilitada() {
+        return esEspecialidadOdontologiaSeleccionada();
+    }
 }
