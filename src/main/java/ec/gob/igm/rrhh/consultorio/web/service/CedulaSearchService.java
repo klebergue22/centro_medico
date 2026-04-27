@@ -49,6 +49,11 @@ public class CedulaSearchService implements Serializable {
             return buildFoundPersonaAuxResult(cedula, fichaSafe, personaAuxEncontrada);
         }
 
+        PersonaAux personaAuxRegistrada = personaAuxService.findByCedula(cedula);
+        if (personaAuxRegistrada != null) {
+            return buildFoundPersonaAuxResult(cedula, fichaSafe, personaAuxRegistrada);
+        }
+
         return buildManualResult(cedula, fichaSafe, personaAuxSafe);
     }
 
