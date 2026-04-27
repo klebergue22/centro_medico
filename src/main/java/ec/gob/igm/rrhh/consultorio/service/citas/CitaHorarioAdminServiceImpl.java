@@ -1,10 +1,15 @@
 package ec.gob.igm.rrhh.consultorio.service.citas;
 
 import ec.gob.igm.rrhh.consultorio.domain.model.CitHorarioProfesional;
+import ec.gob.igm.rrhh.consultorio.domain.model.CitEspecialidad;
 import ec.gob.igm.rrhh.consultorio.domain.model.CitProfesional;
 import ec.gob.igm.rrhh.consultorio.domain.model.CitSlotAgenda;
 import ec.gob.igm.rrhh.consultorio.domain.model.UsuarioAuth;
+import ec.gob.igm.rrhh.consultorio.service.EmailNotificationService;
+import ec.gob.igm.rrhh.consultorio.service.MailConfigResolver;
+import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
+import jakarta.mail.MessagingException;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 
@@ -24,6 +29,10 @@ public class CitaHorarioAdminServiceImpl implements CitaHorarioAdminService {
     private static final int MINUTOS_FIN_JORNADA = 16 * 60;
     private static final int MINUTOS_INICIO_ALMUERZO = (12 * 60) + 30;
     private static final int MINUTOS_FIN_ALMUERZO = (13 * 60) + 30;
+    private static final String DEFAULT_ADMIN_EMAIL = "kleber.guerra@geograficomilitar.gob.ec";
+
+    @EJB
+    private EmailNotificationService emailNotificationService;
 
     @PersistenceContext(unitName = "consultorioPU")
     private EntityManager em;
@@ -35,7 +44,7 @@ public class CitaHorarioAdminServiceImpl implements CitaHorarioAdminService {
                 FROM CitProfesional p
                 LEFT JOIN FETCH p.usuario
                 WHERE UPPER(TRIM(COALESCE(p.activo, 'S'))) = 'S'
-                ORDER BY p.nombreProfesional, p.usuario.nombreVisible, p.idProfesional
+                ORDER BY p.nombreProfesional, COALESCE(p.usuario.nombreVisible, ''), p.idProfesional
                 """, CitProfesional.class).getResultList();
 
         if (!activos.isEmpty()) {
@@ -46,11 +55,92 @@ public class CitaHorarioAdminServiceImpl implements CitaHorarioAdminService {
                 SELECT p
                 FROM CitProfesional p
                 LEFT JOIN FETCH p.usuario
-                ORDER BY p.nombreProfesional, p.usuario.nombreVisible, p.idProfesional
+                ORDER BY p.nombreProfesional, COALESCE(p.usuario.nombreVisible, ''), p.idProfesional
                 """, CitProfesional.class).getResultList();
 
         return completarNombreVisible(todos);
     }
+
+    @Override
+    public List<CitProfesional> listarProfesionalesGestion() {
+        return em.createQuery("""
+                SELECT p
+                FROM CitProfesional p
+                LEFT JOIN FETCH p.especialidad
+                ORDER BY p.nombreProfesional, p.idProfesional
+                """, CitProfesional.class).getResultList();
+    }
+
+    @Override
+    public List<CitEspecialidad> listarEspecialidadesActivas() {
+        return em.createQuery("""
+                SELECT e
+                FROM CitEspecialidad e
+                WHERE UPPER(TRIM(COALESCE(e.activo, 'S'))) = 'S'
+                ORDER BY e.nombre
+                """, CitEspecialidad.class).getResultList();
+    }
+
+    @Override
+    public CitProfesional crearProfesional(String nombreProfesional, String codigoProfesional, String email,
+                                           Long idEspecialidad, String activo, String usuarioSesion) {
+        CitProfesional profesional = new CitProfesional();
+        profesional.setUsrCreacion(usuarioSesion);
+        aplicarDatosProfesional(profesional, nombreProfesional, codigoProfesional, email, idEspecialidad, activo);
+        em.persist(profesional);
+        return profesional;
+    }
+
+    @Override
+    public CitProfesional actualizarProfesional(Long idProfesional, String nombreProfesional, String codigoProfesional,
+                                                String email, Long idEspecialidad, String activo, String usuarioSesion) {
+        if (idProfesional == null) {
+            throw new IllegalArgumentException("Debe seleccionar un profesional para editar.");
+        }
+        CitProfesional profesional = em.find(CitProfesional.class, idProfesional);
+        if (profesional == null) {
+            throw new IllegalArgumentException("No existe el profesional seleccionado.");
+        }
+        profesional.setUsrActualizacion(usuarioSesion);
+        aplicarDatosProfesional(profesional, nombreProfesional, codigoProfesional, email, idEspecialidad, activo);
+        return em.merge(profesional);
+    }
+
+    @Override
+    public void eliminarProfesional(Long idProfesional, String usuarioSesion) {
+        if (idProfesional == null) {
+            throw new IllegalArgumentException("Debe seleccionar un profesional para eliminar.");
+        }
+        CitProfesional profesional = em.find(CitProfesional.class, idProfesional);
+        if (profesional == null) {
+            throw new IllegalArgumentException("No existe el profesional seleccionado.");
+        }
+        profesional.setActivo("N");
+        profesional.setUsrActualizacion(usuarioSesion);
+        em.merge(profesional);
+    }
+
+    @Override
+    public boolean notificarAdministradorSinProfesionales(String usuarioSesion) {
+        String adminEmail = MailConfigResolver.resolve("consultorio.mail.admin",
+                "CONSULTORIO_MAIL_ADMIN", DEFAULT_ADMIN_EMAIL);
+        String destinatario = MailConfigResolver.normalize(adminEmail);
+        if (destinatario == null) {
+            return false;
+        }
+        String asunto = "Alerta: no existen profesionales configurados";
+        String cuerpo = "Se detectó que no existen profesionales activos en CONSULTORIO.CIT_PROFESIONAL.\n\n"
+                + "Usuario que detectó la alerta: " + (usuarioSesion == null ? "sistema" : usuarioSesion) + "\n"
+                + "Fecha: " + new Date() + "\n\n"
+                + "Acción requerida: ingresar al módulo de administración de citas y registrar profesionales.";
+        try {
+            emailNotificationService.send(destinatario, asunto, cuerpo);
+            return true;
+        } catch (MessagingException e) {
+            return false;
+        }
+    }
+
     private List<CitProfesional> completarNombreVisible(List<CitProfesional> profesionales) {
         for (CitProfesional profesional : profesionales) {
             if (profesional == null) {
@@ -229,6 +319,43 @@ public class CitaHorarioAdminServiceImpl implements CitaHorarioAdminService {
             throw new IllegalArgumentException("El día de la semana debe estar entre 1 y 7.");
         }
         validarDuracion(duracionMin);
+    }
+
+    private void aplicarDatosProfesional(CitProfesional profesional, String nombreProfesional, String codigoProfesional,
+                                         String email, Long idEspecialidad, String activo) {
+        String nombre = normalizarTexto(nombreProfesional);
+        if (nombre == null) {
+            throw new IllegalArgumentException("El nombre del profesional es obligatorio.");
+        }
+        if (idEspecialidad == null) {
+            throw new IllegalArgumentException("La especialidad es obligatoria.");
+        }
+        CitEspecialidad especialidad = em.find(CitEspecialidad.class, idEspecialidad);
+        if (especialidad == null) {
+            throw new IllegalArgumentException("La especialidad seleccionada no existe.");
+        }
+
+        profesional.setNombreProfesional(nombre);
+        profesional.setCodigoProfesional(normalizarTexto(codigoProfesional));
+        profesional.setEmail(normalizarEmail(email));
+        profesional.setEspecialidad(especialidad);
+        profesional.setActivo("N".equalsIgnoreCase(normalizarTexto(activo)) ? "N" : "S");
+    }
+
+    private String normalizarTexto(String valor) {
+        if (valor == null) {
+            return null;
+        }
+        String limpio = valor.trim();
+        return limpio.isEmpty() ? null : limpio;
+    }
+
+    private String normalizarEmail(String valor) {
+        String limpio = normalizarTexto(valor);
+        if (limpio == null) {
+            return null;
+        }
+        return limpio.toLowerCase();
     }
 
     private void validarDuracion(Integer duracionMin) {
