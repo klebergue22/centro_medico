@@ -3,6 +3,7 @@ package ec.gob.igm.rrhh.consultorio.service.citas;
 import ec.gob.igm.rrhh.consultorio.domain.model.CitHorarioProfesional;
 import ec.gob.igm.rrhh.consultorio.domain.model.CitProfesional;
 import ec.gob.igm.rrhh.consultorio.domain.model.CitSlotAgenda;
+import ec.gob.igm.rrhh.consultorio.domain.model.UsuarioAuth;
 import jakarta.ejb.Stateless;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -32,20 +33,42 @@ public class CitaHorarioAdminServiceImpl implements CitaHorarioAdminService {
         List<CitProfesional> activos = em.createQuery("""
                 SELECT p
                 FROM CitProfesional p
+                LEFT JOIN FETCH p.usuario u
                 WHERE UPPER(TRIM(COALESCE(p.activo, 'S'))) = 'S'
-                ORDER BY p.nombreProfesional
+                ORDER BY p.nombreProfesional, u.nombreVisible, p.idProfesional
                 """, CitProfesional.class).getResultList();
 
         if (!activos.isEmpty()) {
-            return activos;
+            return completarNombreVisible(activos);
         }
 
-        return em.createQuery("""
+        List<CitProfesional> todos = em.createQuery("""
                 SELECT p
                 FROM CitProfesional p
-                ORDER BY p.nombreProfesional
+                LEFT JOIN FETCH p.usuario u
+                ORDER BY p.nombreProfesional, u.nombreVisible, p.idProfesional
                 """, CitProfesional.class).getResultList();
+
+        return completarNombreVisible(todos);
     }
+    private List<CitProfesional> completarNombreVisible(List<CitProfesional> profesionales) {
+        for (CitProfesional profesional : profesionales) {
+            if (profesional == null) {
+                continue;
+            }
+            String nombre = profesional.getNombreProfesional();
+            if (nombre != null && !nombre.isBlank()) {
+                continue;
+            }
+            UsuarioAuth usuario = profesional.getUsuario();
+            if (usuario != null && usuario.getNombreVisible() != null && !usuario.getNombreVisible().isBlank()) {
+                profesional.setNombreProfesional(usuario.getNombreVisible().trim());
+            }
+        }
+        return profesionales;
+    }
+
+
 
     @Override
     public CitHorarioProfesional guardarHorarioBase(Long idProfesional, Integer diaSemana, Integer duracionMin, String usuarioSesion) {
