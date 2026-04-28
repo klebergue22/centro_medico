@@ -1,11 +1,11 @@
 package ec.gob.igm.rrhh.consultorio.service;
 
-final class MailConfigResolver {
+public final class MailConfigResolver {
 
     private MailConfigResolver() {
     }
 
-    static String resolve(String systemProperty, String envVar, String defaultValue) {
+    public static String resolve(String systemProperty, String envVar, String defaultValue) {
         String fromSystem = normalize(System.getProperty(systemProperty));
         if (fromSystem != null) {
             return fromSystem;
@@ -17,7 +17,7 @@ final class MailConfigResolver {
         return defaultValue;
     }
 
-    static String normalize(String value) {
+    public static String normalize(String value) {
         if (value == null) {
             return null;
         }
