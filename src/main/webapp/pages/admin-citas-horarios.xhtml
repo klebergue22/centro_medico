@@ -128,7 +128,12 @@
                     </p:selectOneMenu>
 
                     <h:outputText value="Número de ciclos:"/>
-                    <p:spinner value="#{citaHorarioAdminCtrl.ciclosGeneracion}" min="1" max="12"/>
+                    <h:panelGroup>
+                        <p:spinner value="#{citaHorarioAdminCtrl.ciclosGeneracion}" min="1" max="12"/>
+                        <small style="display:block; margin-top:4px; color:#5d6d7e;">
+                            Semanal: ciclos = semanas. Mensual: ciclos = meses.
+                        </small>
+                    </h:panelGroup>
                 </h:panelGrid>
 
                 <p:commandButton value="Generar slots" icon="pi pi-calendar-plus"
