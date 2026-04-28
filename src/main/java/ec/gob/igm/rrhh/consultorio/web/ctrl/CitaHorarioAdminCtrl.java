@@ -2,6 +2,7 @@ package ec.gob.igm.rrhh.consultorio.web.ctrl;
 
 import ec.gob.igm.rrhh.consultorio.domain.model.CitEspecialidad;
 import ec.gob.igm.rrhh.consultorio.domain.model.CitProfesional;
+import ec.gob.igm.rrhh.consultorio.domain.model.UsuarioAuth;
 import ec.gob.igm.rrhh.consultorio.service.citas.CitaHorarioAdminService;
 import ec.gob.igm.rrhh.consultorio.web.service.UserContextService;
 import jakarta.annotation.PostConstruct;
@@ -38,9 +39,12 @@ public class CitaHorarioAdminCtrl implements Serializable {
 
     private List<CitProfesional> profesionales;
     private List<CitProfesional> profesionalesGestion;
+    private List<UsuarioAuth> usuariosProfesionales;
     private List<CitEspecialidad> especialidades;
 
     private Long idProfesionalEdit;
+    private Long idUsuarioEdit;
+    private boolean ingresoManualProfesional;
     private String nombreProfesionalEdit;
     private String codigoProfesionalEdit;
     private String emailProfesionalEdit;
@@ -51,6 +55,7 @@ public class CitaHorarioAdminCtrl implements Serializable {
     public void init() {
         profesionales = citaHorarioAdminService.listarProfesionalesActivos();
         profesionalesGestion = citaHorarioAdminService.listarProfesionalesGestion();
+        usuariosProfesionales = citaHorarioAdminService.listarUsuariosProfesionales();
         especialidades = citaHorarioAdminService.listarEspecialidadesActivas();
         if (profesionales == null || profesionales.isEmpty()) {
             boolean enviado = citaHorarioAdminService.notificarAdministradorSinProfesionales(
@@ -96,6 +101,8 @@ public class CitaHorarioAdminCtrl implements Serializable {
 
     public void prepararNuevoProfesional() {
         idProfesionalEdit = null;
+        idUsuarioEdit = null;
+        ingresoManualProfesional = false;
         nombreProfesionalEdit = null;
         codigoProfesionalEdit = null;
         emailProfesionalEdit = null;
@@ -108,6 +115,8 @@ public class CitaHorarioAdminCtrl implements Serializable {
             return;
         }
         idProfesionalEdit = profesional.getIdProfesional();
+        idUsuarioEdit = profesional.getUsuario() != null ? profesional.getUsuario().getIdUsuario() : null;
+        ingresoManualProfesional = idUsuarioEdit == null;
         nombreProfesionalEdit = profesional.getNombreProfesional();
         codigoProfesionalEdit = profesional.getCodigoProfesional();
         emailProfesionalEdit = profesional.getEmail();
@@ -115,11 +124,39 @@ public class CitaHorarioAdminCtrl implements Serializable {
         activoEdit = profesional.getActivo();
     }
 
+    public void onUsuarioProfesionalChange() {
+        if (idUsuarioEdit == null || usuariosProfesionales == null) {
+            if (!ingresoManualProfesional) {
+                nombreProfesionalEdit = null;
+                emailProfesionalEdit = null;
+            }
+            return;
+        }
+        for (UsuarioAuth usuario : usuariosProfesionales) {
+            if (usuario != null && idUsuarioEdit.equals(usuario.getIdUsuario())) {
+                nombreProfesionalEdit = usuario.getNombreVisible();
+                emailProfesionalEdit = usuario.getEmail();
+                break;
+            }
+        }
+    }
+
+    public void onIngresoManualChange() {
+        if (ingresoManualProfesional) {
+            idUsuarioEdit = null;
+            nombreProfesionalEdit = null;
+            emailProfesionalEdit = null;
+            return;
+        }
+        onUsuarioProfesionalChange();
+    }
+
     public void guardarProfesional() {
         try {
             String usuario = userContextService.resolveCurrentUser();
             if (idProfesionalEdit == null) {
                 citaHorarioAdminService.crearProfesional(
+                        idUsuarioEdit,
                         nombreProfesionalEdit,
                         codigoProfesionalEdit,
                         emailProfesionalEdit,
@@ -131,6 +168,7 @@ public class CitaHorarioAdminCtrl implements Serializable {
             } else {
                 citaHorarioAdminService.actualizarProfesional(
                         idProfesionalEdit,
+                        idUsuarioEdit,
                         nombreProfesionalEdit,
                         codigoProfesionalEdit,
                         emailProfesionalEdit,
@@ -161,6 +199,7 @@ public class CitaHorarioAdminCtrl implements Serializable {
     private void refrescarCatalogos() {
         profesionales = citaHorarioAdminService.listarProfesionalesActivos();
         profesionalesGestion = citaHorarioAdminService.listarProfesionalesGestion();
+        usuariosProfesionales = citaHorarioAdminService.listarUsuariosProfesionales();
     }
 
     private void addInfo(String summary) {
@@ -252,6 +291,26 @@ public class CitaHorarioAdminCtrl implements Serializable {
 
     public String getCodigoProfesionalEdit() {
         return codigoProfesionalEdit;
+    }
+
+    public List<UsuarioAuth> getUsuariosProfesionales() {
+        return usuariosProfesionales;
+    }
+
+    public Long getIdUsuarioEdit() {
+        return idUsuarioEdit;
+    }
+
+    public void setIdUsuarioEdit(Long idUsuarioEdit) {
+        this.idUsuarioEdit = idUsuarioEdit;
+    }
+
+    public boolean isIngresoManualProfesional() {
+        return ingresoManualProfesional;
+    }
+
+    public void setIngresoManualProfesional(boolean ingresoManualProfesional) {
+        this.ingresoManualProfesional = ingresoManualProfesional;
     }
 
     public void setCodigoProfesionalEdit(String codigoProfesionalEdit) {
