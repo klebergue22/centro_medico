@@ -32,11 +32,11 @@ public class CitaHorarioAdminCtrl implements Serializable {
     private UserContextService userContextService;
 
     private Long idProfesionalSel;
-    private List<Integer> diasSemanaSel = new ArrayList<>();
-    private Integer duracionMinSel = 30;
+    private List<Long> diasSemanaSel = new ArrayList<>();
+    private Long duracionMinSel = 30L;
     private Date fechaGeneracion = new Date();
     private String periodicidadSel = "SEMANAL";
-    private Integer ciclosGeneracion = 1;
+    private Long ciclosGeneracion = 1L;
 
     private List<CitProfesional> profesionales;
     private List<CitProfesional> profesionalesGestion;
@@ -75,11 +75,11 @@ public class CitaHorarioAdminCtrl implements Serializable {
             if (diasSemanaSel == null || diasSemanaSel.isEmpty()) {
                 throw new IllegalArgumentException("Debe seleccionar al menos un día de lunes a viernes.");
             }
-            for (Integer diaSemana : diasSemanaSel) {
+            for (Long diaSemana : diasSemanaSel) {
                 citaHorarioAdminService.guardarHorarioBase(
                         idProfesionalSel,
-                        diaSemana,
-                        duracionMinSel,
+                        diaSemana == null ? null : diaSemana.intValue(),
+                        duracionMinSel == null ? null : duracionMinSel.intValue(),
                         userContextService.resolveCurrentUser()
                 );
             }
@@ -96,10 +96,16 @@ public class CitaHorarioAdminCtrl implements Serializable {
                     idProfesionalSel,
                     fecha,
                     periodicidadSel,
-                    ciclosGeneracion,
+                    ciclosGeneracion == null ? null : ciclosGeneracion.intValue(),
                     userContextService.resolveCurrentUser()
             );
             addInfo("Slots generados: " + creados + ".");
+        } catch (IllegalArgumentException e) {
+            String detalle = e.getMessage();
+            if (detalle != null && detalle.contains("No existe horario activo")) {
+                detalle = detalle + " Verifique que la fecha base pertenezca a un día configurado y guardado en horario base.";
+            }
+            addWarn(detalle);
         } catch (Exception e) {
             addWarn(e.getMessage());
         }
@@ -226,19 +232,19 @@ public class CitaHorarioAdminCtrl implements Serializable {
         this.idProfesionalSel = idProfesionalSel;
     }
 
-    public List<Integer> getDiasSemanaSel() {
+    public List<Long> getDiasSemanaSel() {
         return diasSemanaSel;
     }
 
-    public void setDiasSemanaSel(List<Integer> diasSemanaSel) {
+    public void setDiasSemanaSel(List<Long> diasSemanaSel) {
         this.diasSemanaSel = diasSemanaSel;
     }
 
-    public Integer getDuracionMinSel() {
+    public Long getDuracionMinSel() {
         return duracionMinSel;
     }
 
-    public void setDuracionMinSel(Integer duracionMinSel) {
+    public void setDuracionMinSel(Long duracionMinSel) {
         this.duracionMinSel = duracionMinSel;
     }
 
@@ -260,11 +266,11 @@ public class CitaHorarioAdminCtrl implements Serializable {
         this.periodicidadSel = periodicidadSel;
     }
 
-    public Integer getCiclosGeneracion() {
+    public Long getCiclosGeneracion() {
         return ciclosGeneracion;
     }
 
-    public void setCiclosGeneracion(Integer ciclosGeneracion) {
+    public void setCiclosGeneracion(Long ciclosGeneracion) {
         this.ciclosGeneracion = ciclosGeneracion;
     }
     public List<CitProfesional> getProfesionales() {
