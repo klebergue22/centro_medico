@@ -14,13 +14,33 @@
             <p:panel header="Gestión de profesionales" style="margin-bottom:12px;">
                 <h:panelGrid columns="2" styleClass="ui-fluid" columnClasses="30%,70%" cellpadding="6">
                     <h:outputText value="Nombre profesional:"/>
-                    <p:inputText value="#{citaHorarioAdminCtrl.nombreProfesionalEdit}" required="true"/>
+                    <p:selectOneMenu id="usuarioProfesional" value="#{citaHorarioAdminCtrl.idUsuarioEdit}"
+                                     required="#{not citaHorarioAdminCtrl.ingresoManualProfesional}"
+                                     disabled="#{citaHorarioAdminCtrl.ingresoManualProfesional}">
+                        <f:selectItem itemLabel="Seleccione" itemValue="#{null}" noSelectionOption="true"/>
+                        <f:selectItems value="#{citaHorarioAdminCtrl.usuariosProfesionales}" var="u"
+                                       itemValue="#{u.idUsuario}" itemLabel="#{u.nombreVisible}"/>
+                        <p:ajax listener="#{citaHorarioAdminCtrl.onUsuarioProfesionalChange}"
+                                update="nombreProfesional correoProfesional"/>
+                    </p:selectOneMenu>
+
+                    <h:outputText value="No está en lista:"/>
+                    <p:selectBooleanCheckbox value="#{citaHorarioAdminCtrl.ingresoManualProfesional}">
+                        <p:ajax listener="#{citaHorarioAdminCtrl.onIngresoManualChange}"
+                                update="usuarioProfesional nombreProfesional correoProfesional"/>
+                    </p:selectBooleanCheckbox>
+
+                    <h:outputText value="Nombre visible:"/>
+                    <p:inputText id="nombreProfesional" value="#{citaHorarioAdminCtrl.nombreProfesionalEdit}"
+                                 required="#{citaHorarioAdminCtrl.ingresoManualProfesional}"
+                                 readonly="#{not citaHorarioAdminCtrl.ingresoManualProfesional}"/>
 
                     <h:outputText value="Código profesional:"/>
                     <p:inputText value="#{citaHorarioAdminCtrl.codigoProfesionalEdit}"/>
 
                     <h:outputText value="Correo:"/>
-                    <p:inputText value="#{citaHorarioAdminCtrl.emailProfesionalEdit}"/>
+                    <p:inputText id="correoProfesional" value="#{citaHorarioAdminCtrl.emailProfesionalEdit}"
+                                 readonly="#{not citaHorarioAdminCtrl.ingresoManualProfesional}"/>
 
                     <h:outputText value="Especialidad:"/>
                     <p:selectOneMenu value="#{citaHorarioAdminCtrl.idEspecialidadEdit}">

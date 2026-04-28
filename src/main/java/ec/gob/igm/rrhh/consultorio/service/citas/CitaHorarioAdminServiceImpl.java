@@ -67,8 +67,22 @@ public class CitaHorarioAdminServiceImpl implements CitaHorarioAdminService {
                 SELECT p
                 FROM CitProfesional p
                 LEFT JOIN FETCH p.especialidad
+                LEFT JOIN FETCH p.usuario
                 ORDER BY p.nombreProfesional, p.idProfesional
                 """, CitProfesional.class).getResultList();
+    }
+
+    @Override
+    public List<UsuarioAuth> listarUsuariosProfesionales() {
+        return em.createQuery("""
+                SELECT DISTINCT u
+                FROM UsuarioAuth u, SegUsuarioRol ur
+                WHERE ur.idUsuario = u.idUsuario
+                  AND UPPER(TRIM(COALESCE(u.activo, 'S'))) = 'S'
+                  AND UPPER(TRIM(COALESCE(ur.activo, 'S'))) = 'S'
+                  AND ur.idRol IN (1, 5)
+                ORDER BY u.nombreVisible
+                """, UsuarioAuth.class).getResultList();
     }
 
     @Override
@@ -82,17 +96,17 @@ public class CitaHorarioAdminServiceImpl implements CitaHorarioAdminService {
     }
 
     @Override
-    public CitProfesional crearProfesional(String nombreProfesional, String codigoProfesional, String email,
+    public CitProfesional crearProfesional(Long idUsuario, String nombreProfesional, String codigoProfesional, String email,
                                            Long idEspecialidad, String activo, String usuarioSesion) {
         CitProfesional profesional = new CitProfesional();
         profesional.setUsrCreacion(usuarioSesion);
-        aplicarDatosProfesional(profesional, nombreProfesional, codigoProfesional, email, idEspecialidad, activo);
+        aplicarDatosProfesional(profesional, idUsuario, nombreProfesional, codigoProfesional, email, idEspecialidad, activo);
         em.persist(profesional);
         return profesional;
     }
 
     @Override
-    public CitProfesional actualizarProfesional(Long idProfesional, String nombreProfesional, String codigoProfesional,
+    public CitProfesional actualizarProfesional(Long idProfesional, Long idUsuario, String nombreProfesional, String codigoProfesional,
                                                 String email, Long idEspecialidad, String activo, String usuarioSesion) {
         if (idProfesional == null) {
             throw new IllegalArgumentException("Debe seleccionar un profesional para editar.");
@@ -102,7 +116,7 @@ public class CitaHorarioAdminServiceImpl implements CitaHorarioAdminService {
             throw new IllegalArgumentException("No existe el profesional seleccionado.");
         }
         profesional.setUsrActualizacion(usuarioSesion);
-        aplicarDatosProfesional(profesional, nombreProfesional, codigoProfesional, email, idEspecialidad, activo);
+        aplicarDatosProfesional(profesional, idUsuario, nombreProfesional, codigoProfesional, email, idEspecialidad, activo);
         return em.merge(profesional);
     }
 
@@ -321,12 +335,25 @@ public class CitaHorarioAdminServiceImpl implements CitaHorarioAdminService {
         validarDuracion(duracionMin);
     }
 
-    private void aplicarDatosProfesional(CitProfesional profesional, String nombreProfesional, String codigoProfesional,
+    private void aplicarDatosProfesional(CitProfesional profesional, Long idUsuario, String nombreProfesional, String codigoProfesional,
                                          String email, Long idEspecialidad, String activo) {
-        String nombre = normalizarTexto(nombreProfesional);
+        UsuarioAuth usuario = null;
+        if (idUsuario != null) {
+            usuario = em.find(UsuarioAuth.class, idUsuario);
+            if (usuario == null) {
+                throw new IllegalArgumentException("El usuario seleccionado no existe.");
+            }
+            profesional.setUsuario(usuario);
+            profesional.setNoPersona(usuario.getNoPersona());
+        } else {
+            profesional.setUsuario(null);
+        }
+
+        String nombre = usuario != null ? normalizarTexto(usuario.getNombreVisible()) : normalizarTexto(nombreProfesional);
         if (nombre == null) {
             throw new IllegalArgumentException("El nombre del profesional es obligatorio.");
         }
+        String emailNormalizado = usuario != null ? normalizarEmail(usuario.getEmail()) : normalizarEmail(email);
         if (idEspecialidad == null) {
             throw new IllegalArgumentException("La especialidad es obligatoria.");
         }
@@ -337,7 +364,7 @@ public class CitaHorarioAdminServiceImpl implements CitaHorarioAdminService {
 
         profesional.setNombreProfesional(nombre);
         profesional.setCodigoProfesional(normalizarTexto(codigoProfesional));
-        profesional.setEmail(normalizarEmail(email));
+        profesional.setEmail(emailNormalizado);
         profesional.setEspecialidad(especialidad);
         profesional.setActivo("N".equalsIgnoreCase(normalizarTexto(activo)) ? "N" : "S");
     }
