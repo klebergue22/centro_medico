@@ -93,16 +93,16 @@
 
                     <h:outputText value="Días de atención:"/>
                     <p:selectManyCheckbox value="#{citaHorarioAdminCtrl.diasSemanaSel}" layout="grid" columns="3">
-                        <f:selectItem itemLabel="Lunes" itemValue="1"/>
-                        <f:selectItem itemLabel="Martes" itemValue="2"/>
-                        <f:selectItem itemLabel="Miércoles" itemValue="3"/>
-                        <f:selectItem itemLabel="Jueves" itemValue="4"/>
-                        <f:selectItem itemLabel="Viernes" itemValue="5"/>
+                        <f:selectItem itemLabel="Lunes" itemValue="#{1}"/>
+                        <f:selectItem itemLabel="Martes" itemValue="#{2}"/>
+                        <f:selectItem itemLabel="Miércoles" itemValue="#{3}"/>
+                        <f:selectItem itemLabel="Jueves" itemValue="#{4}"/>
+                        <f:selectItem itemLabel="Viernes" itemValue="#{5}"/>
                     </p:selectManyCheckbox>
 
                     <h:outputText value="Duración atención:"/>
                     <p:selectOneMenu value="#{citaHorarioAdminCtrl.duracionMinSel}">
-                        <f:selectItem itemLabel="30 minutos" itemValue="30"/>
+                        <f:selectItem itemLabel="30 minutos" itemValue="#{30}"/>
                     </p:selectOneMenu>
                 </h:panelGrid>
 
