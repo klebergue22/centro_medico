@@ -83,7 +83,7 @@
             </p:panel>
 
             <p:panel header="Horario base del profesional (Admin)">
-                <h:panelGrid columns="2" styleClass="ui-fluid" columnClasses="30%,70%" cellpadding="6">
+                <h:panelGrid id="horarioBaseGrid" columns="2" styleClass="ui-fluid" columnClasses="30%,70%" cellpadding="6">
                     <h:outputText value="Profesional:"/>
                     <p:selectOneMenu value="#{citaHorarioAdminCtrl.idProfesionalSel}">
                         <f:selectItem itemLabel="Seleccione" itemValue="#{null}" noSelectionOption="true"/>
@@ -91,22 +91,17 @@
                                        itemValue="#{pro.idProfesional}" itemLabel="#{pro.nombreProfesional}"/>
                     </p:selectOneMenu>
 
-                    <h:outputText value="Día semana:"/>
-                    <p:selectOneMenu value="#{citaHorarioAdminCtrl.diaSemanaSel}">
-                        <f:selectItem itemLabel="Seleccione" itemValue="#{null}" noSelectionOption="true"/>
-                        <f:selectItem itemLabel="1 - Lunes" itemValue="1"/>
-                        <f:selectItem itemLabel="2 - Martes" itemValue="2"/>
-                        <f:selectItem itemLabel="3 - Miércoles" itemValue="3"/>
-                        <f:selectItem itemLabel="4 - Jueves" itemValue="4"/>
-                        <f:selectItem itemLabel="5 - Viernes" itemValue="5"/>
-                        <f:selectItem itemLabel="6 - Sábado" itemValue="6"/>
-                        <f:selectItem itemLabel="7 - Domingo" itemValue="7"/>
-                    </p:selectOneMenu>
+                    <h:outputText value="Días de atención:"/>
+                    <p:selectManyCheckbox value="#{citaHorarioAdminCtrl.diasSemanaSel}" layout="grid" columns="3">
+                        <f:selectItem itemLabel="Lunes" itemValue="1"/>
+                        <f:selectItem itemLabel="Martes" itemValue="2"/>
+                        <f:selectItem itemLabel="Miércoles" itemValue="3"/>
+                        <f:selectItem itemLabel="Jueves" itemValue="4"/>
+                        <f:selectItem itemLabel="Viernes" itemValue="5"/>
+                    </p:selectManyCheckbox>
 
                     <h:outputText value="Duración atención:"/>
                     <p:selectOneMenu value="#{citaHorarioAdminCtrl.duracionMinSel}">
-                        <f:selectItem itemLabel="20 minutos" itemValue="20"/>
-                        <f:selectItem itemLabel="25 minutos" itemValue="25"/>
                         <f:selectItem itemLabel="30 minutos" itemValue="30"/>
                     </p:selectOneMenu>
                 </h:panelGrid>
@@ -117,11 +112,12 @@
 
                 <p:commandButton value="Guardar horario" icon="pi pi-save"
                                  actionListener="#{citaHorarioAdminCtrl.guardarHorario}"
+                                 process="@this horarioBaseGrid"
                                  update="@form" style="margin-top:8px;"/>
             </p:panel>
 
             <p:panel header="Generación de slots para agendamiento" style="margin-top:12px;">
-                <h:panelGrid columns="2" styleClass="ui-fluid" columnClasses="30%,70%" cellpadding="6">
+                <h:panelGrid id="slotGeneracionGrid" columns="2" styleClass="ui-fluid" columnClasses="30%,70%" cellpadding="6">
                     <h:outputText value="Fecha base:"/>
                     <p:calendar value="#{citaHorarioAdminCtrl.fechaGeneracion}" pattern="dd/MM/yyyy" showOn="button"/>
 
@@ -137,6 +133,7 @@
 
                 <p:commandButton value="Generar slots" icon="pi pi-calendar-plus"
                                  actionListener="#{citaHorarioAdminCtrl.generarSlots}"
+                                 process="@this slotGeneracionGrid"
                                  update="@form" style="margin-top:8px;"/>
             </p:panel>
         </h:form>

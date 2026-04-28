@@ -15,6 +15,7 @@ import jakarta.inject.Named;
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -31,8 +32,8 @@ public class CitaHorarioAdminCtrl implements Serializable {
     private UserContextService userContextService;
 
     private Long idProfesionalSel;
-    private Integer diaSemanaSel;
-    private Integer duracionMinSel = 20;
+    private List<Integer> diasSemanaSel = new ArrayList<>();
+    private Integer duracionMinSel = 30;
     private Date fechaGeneracion = new Date();
     private String periodicidadSel = "SEMANAL";
     private Integer ciclosGeneracion = 1;
@@ -71,13 +72,18 @@ public class CitaHorarioAdminCtrl implements Serializable {
 
     public void guardarHorario() {
         try {
-            citaHorarioAdminService.guardarHorarioBase(
-                    idProfesionalSel,
-                    diaSemanaSel,
-                    duracionMinSel,
-                    userContextService.resolveCurrentUser()
-            );
-            addInfo("Horario guardado correctamente.");
+            if (diasSemanaSel == null || diasSemanaSel.isEmpty()) {
+                throw new IllegalArgumentException("Debe seleccionar al menos un día de lunes a viernes.");
+            }
+            for (Integer diaSemana : diasSemanaSel) {
+                citaHorarioAdminService.guardarHorarioBase(
+                        idProfesionalSel,
+                        diaSemana,
+                        duracionMinSel,
+                        userContextService.resolveCurrentUser()
+                );
+            }
+            addInfo("Horario guardado correctamente para " + diasSemanaSel.size() + " día(s).");
         } catch (Exception e) {
             addWarn(e.getMessage());
         }
@@ -220,12 +226,12 @@ public class CitaHorarioAdminCtrl implements Serializable {
         this.idProfesionalSel = idProfesionalSel;
     }
 
-    public Integer getDiaSemanaSel() {
-        return diaSemanaSel;
+    public List<Integer> getDiasSemanaSel() {
+        return diasSemanaSel;
     }
 
-    public void setDiaSemanaSel(Integer diaSemanaSel) {
-        this.diaSemanaSel = diaSemanaSel;
+    public void setDiasSemanaSel(List<Integer> diasSemanaSel) {
+        this.diasSemanaSel = diasSemanaSel;
     }
 
     public Integer getDuracionMinSel() {
