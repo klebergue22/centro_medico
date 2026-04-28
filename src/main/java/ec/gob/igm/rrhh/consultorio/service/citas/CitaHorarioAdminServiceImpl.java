@@ -329,8 +329,8 @@ public class CitaHorarioAdminServiceImpl implements CitaHorarioAdminService {
         if (idProfesional == null) {
             throw new IllegalArgumentException("Debe seleccionar un profesional.");
         }
-        if (diaSemana == null || diaSemana < 1 || diaSemana > 7) {
-            throw new IllegalArgumentException("El día de la semana debe estar entre 1 y 7.");
+        if (diaSemana == null || diaSemana < 1 || diaSemana > 5) {
+            throw new IllegalArgumentException("El día de la semana debe estar entre lunes y viernes.");
         }
         validarDuracion(duracionMin);
     }
@@ -386,8 +386,8 @@ public class CitaHorarioAdminServiceImpl implements CitaHorarioAdminService {
     }
 
     private void validarDuracion(Integer duracionMin) {
-        if (duracionMin == null || duracionMin < 20 || duracionMin > 30) {
-            throw new IllegalArgumentException("La duración por atención debe estar entre 20 y 30 minutos.");
+        if (duracionMin == null || duracionMin != 30) {
+            throw new IllegalArgumentException("La duración por atención debe ser de 30 minutos.");
         }
     }
 
