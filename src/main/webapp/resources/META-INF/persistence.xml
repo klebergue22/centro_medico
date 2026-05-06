@@ -9,7 +9,8 @@
     <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
 
 
-    <jta-data-source>jdbc/rrhhDS</jta-data-source>
+
+    <jta-data-source>java:/jdbc/consultorioDS</jta-data-source>
 
         <class>ec.gob.prueba.prueba_maven.modelo.DatEmpleado</class>
         <class>ec.gob.prueba.prueba_maven.modelo.Contratacion</class>
