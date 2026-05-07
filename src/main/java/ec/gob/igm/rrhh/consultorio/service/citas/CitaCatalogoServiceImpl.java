@@ -44,7 +44,26 @@ public class CitaCatalogoServiceImpl implements CitaCatalogoService {
     @Override
     public List<CitProfesional> listarProfesionalesActivos(Long idEspecialidad) {
         if (idEspecialidad == null) {
-            return List.of();
+            List<CitProfesional> activos = em.createQuery("""
+                SELECT p
+                FROM CitProfesional p
+                LEFT JOIN FETCH p.especialidad
+                WHERE UPPER(TRIM(COALESCE(p.activo, 'S'))) = 'S'
+                ORDER BY p.nombreProfesional
+                """, CitProfesional.class)
+                    .getResultList();
+
+            if (!activos.isEmpty()) {
+                return activos;
+            }
+
+            return em.createQuery("""
+                SELECT p
+                FROM CitProfesional p
+                LEFT JOIN FETCH p.especialidad
+                ORDER BY p.nombreProfesional
+                """, CitProfesional.class)
+                    .getResultList();
         }
 
         List<CitProfesional> activos = em.createQuery("""

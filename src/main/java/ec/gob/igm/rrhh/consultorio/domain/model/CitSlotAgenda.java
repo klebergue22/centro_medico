@@ -72,28 +72,99 @@ public class CitSlotAgenda implements Serializable {
         fechaActualizacion = new Date();
     }
 
-    public Long getIdSlot() { return idSlot; }
-    public void setIdSlot(Long idSlot) { this.idSlot = idSlot; }
-    public CitHorarioProfesional getHorario() { return horario; }
-    public void setHorario(CitHorarioProfesional horario) { this.horario = horario; }
-    public CitProfesional getProfesional() { return profesional; }
-    public void setProfesional(CitProfesional profesional) { this.profesional = profesional; }
-    public CitEspecialidad getEspecialidad() { return especialidad; }
-    public void setEspecialidad(CitEspecialidad especialidad) { this.especialidad = especialidad; }
-    public Date getFechaInicio() { return fechaInicio; }
-    public void setFechaInicio(Date fechaInicio) { this.fechaInicio = fechaInicio; }
-    public Date getFechaFin() { return fechaFin; }
-    public void setFechaFin(Date fechaFin) { this.fechaFin = fechaFin; }
-    public String getEstado() { return estado; }
-    public void setEstado(String estado) { this.estado = estado; }
-    public String getObservacion() { return observacion; }
-    public void setObservacion(String observacion) { this.observacion = observacion; }
-    public Date getFechaCreacion() { return fechaCreacion; }
-    public void setFechaCreacion(Date fechaCreacion) { this.fechaCreacion = fechaCreacion; }
-    public String getUsrCreacion() { return usrCreacion; }
-    public void setUsrCreacion(String usrCreacion) { this.usrCreacion = usrCreacion; }
-    public Date getFechaActualizacion() { return fechaActualizacion; }
-    public void setFechaActualizacion(Date fechaActualizacion) { this.fechaActualizacion = fechaActualizacion; }
-    public String getUsrActualizacion() { return usrActualizacion; }
-    public void setUsrActualizacion(String usrActualizacion) { this.usrActualizacion = usrActualizacion; }
+    public Long getIdSlot() {
+        return idSlot;
+    }
+
+    public void setIdSlot(Long idSlot) {
+        this.idSlot = idSlot;
+    }
+
+    public CitHorarioProfesional getHorario() {
+        return horario;
+    }
+
+    public void setHorario(CitHorarioProfesional horario) {
+        this.horario = horario;
+    }
+
+    public CitProfesional getProfesional() {
+        return profesional;
+    }
+
+    public void setProfesional(CitProfesional profesional) {
+        this.profesional = profesional;
+    }
+
+    public CitEspecialidad getEspecialidad() {
+        return especialidad;
+    }
+
+    public void setEspecialidad(CitEspecialidad especialidad) {
+        this.especialidad = especialidad;
+    }
+
+    public Date getFechaInicio() {
+        return fechaInicio;
+    }
+
+    public void setFechaInicio(Date fechaInicio) {
+        this.fechaInicio = fechaInicio;
+    }
+
+    public Date getFechaFin() {
+        return fechaFin;
+    }
+
+    public void setFechaFin(Date fechaFin) {
+        this.fechaFin = fechaFin;
+    }
+
+    public String getEstado() {
+        return estado;
+    }
+
+    public void setEstado(String estado) {
+        this.estado = estado;
+    }
+
+    public String getObservacion() {
+        return observacion;
+    }
+
+    public void setObservacion(String observacion) {
+        this.observacion = observacion;
+    }
+
+    public Date getFechaCreacion() {
+        return fechaCreacion;
+    }
+
+    public void setFechaCreacion(Date fechaCreacion) {
+        this.fechaCreacion = fechaCreacion;
+    }
+
+    public String getUsrCreacion() {
+        return usrCreacion;
+    }
+
+    public void setUsrCreacion(String usrCreacion) {
+        this.usrCreacion = usrCreacion;
+    }
+
+    public Date getFechaActualizacion() {
+        return fechaActualizacion;
+    }
+
+    public void setFechaActualizacion(Date fechaActualizacion) {
+        this.fechaActualizacion = fechaActualizacion;
+    }
+
+    public String getUsrActualizacion() {
+        return usrActualizacion;
+    }
+
+    public void setUsrActualizacion(String usrActualizacion) {
+        this.usrActualizacion = usrActualizacion;
+    }
 }

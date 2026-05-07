@@ -34,6 +34,10 @@ public class CitaCommandServiceImpl implements CitaCommandService {
         cita.setSlot(slot);
         cita.setFicha(em.getReference(FichaOcupacional.class, idFicha));
         cita.setUsuarioPaciente(em.getReference(UsuarioAuth.class, idUsuarioPaciente));
+        cita.setEspecialidad(slot.getEspecialidad());
+        cita.setProfesional(slot.getProfesional());
+        cita.setFechaInicio(slot.getFechaInicio());
+        cita.setFechaFin(slot.getFechaFin());
         cita.setNoPersona(noPersona);
         if (idPersonaAux != null) {
             cita.setPersonaAux(em.getReference(PersonaAux.class, idPersonaAux));
@@ -48,6 +52,9 @@ public class CitaCommandServiceImpl implements CitaCommandService {
         cita.setUsrCreacion(usuarioSesion);
 
         em.persist(cita);
+        slot.setEstado("OCUPADO");
+        slot.setUsrActualizacion(usuarioSesion);
+        em.merge(slot);
         em.flush();
         crearNotificacionProfesional(cita, "CITA_GENERADA", usuarioSesion);
         return cita;
@@ -63,6 +70,7 @@ public class CitaCommandServiceImpl implements CitaCommandService {
         cita.setEstado("CANCELADA");
         cita.setMotivoCancelacion(motivoCancelacion);
         cita.setUsrActualizacion(usuarioSesion);
+        liberarSlot(cita.getSlot(), usuarioSesion);
         CitCita actualizada = em.merge(cita);
         em.flush();
         crearNotificacionProfesional(actualizada, "CITA_CANCELADA", usuarioSesion);
@@ -80,10 +88,20 @@ public class CitaCommandServiceImpl implements CitaCommandService {
             throw new IllegalArgumentException("Debe seleccionar un nuevo horario.");
         }
 
-        cita.setSlot(validarSlotDisponibleYDuracion(idNuevoSlot));
+        CitSlotAgenda slotAnterior = cita.getSlot();
+        CitSlotAgenda nuevoSlot = validarSlotDisponibleYDuracion(idNuevoSlot);
+        liberarSlot(slotAnterior, usuarioSesion);
+        cita.setSlot(nuevoSlot);
+        cita.setProfesional(nuevoSlot.getProfesional());
+        cita.setEspecialidad(nuevoSlot.getEspecialidad());
+        cita.setFechaInicio(nuevoSlot.getFechaInicio());
+        cita.setFechaFin(nuevoSlot.getFechaFin());
         cita.setEstado("REPROGRAMADA");
         cita.setObservacion(observacion);
         cita.setUsrActualizacion(usuarioSesion);
+        nuevoSlot.setEstado("OCUPADO");
+        nuevoSlot.setUsrActualizacion(usuarioSesion);
+        em.merge(nuevoSlot);
         CitCita actualizada = em.merge(cita);
         em.flush();
         crearNotificacionProfesional(actualizada, "CITA_REPROGRAMADA", usuarioSesion);
@@ -244,6 +262,19 @@ public class CitaCommandServiceImpl implements CitaCommandService {
             throw new IllegalArgumentException("La atención debe durar entre 20 y 30 minutos.");
         }
         return slot;
+    }
+
+    private void liberarSlot(CitSlotAgenda slot, String usuarioSesion) {
+        if (slot == null || slot.getIdSlot() == null) {
+            return;
+        }
+        CitSlotAgenda managed = em.find(CitSlotAgenda.class, slot.getIdSlot());
+        if (managed == null) {
+            return;
+        }
+        managed.setEstado("DISPONIBLE");
+        managed.setUsrActualizacion(usuarioSesion);
+        em.merge(managed);
     }
 
     private void crearNotificacionProfesional(CitCita cita, String evento, String usuarioSesion) {

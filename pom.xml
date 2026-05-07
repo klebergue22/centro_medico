@@ -92,14 +92,16 @@
         </dependency>
         <dependency>
             <groupId>org.hibernate.orm</groupId>
-            <artifactId>hibernate-community-dialects</artifactId>
+            <artifactId>hibernate-core</artifactId>
             <version>6.6.31.Final</version>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>
             <groupId>jakarta.faces</groupId>
             <artifactId>jakarta.faces-api</artifactId>
             <version>4.0.1</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>jakarta.enterprise</groupId>
