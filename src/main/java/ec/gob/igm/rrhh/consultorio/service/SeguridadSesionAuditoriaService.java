@@ -110,19 +110,23 @@ public class SeguridadSesionAuditoriaService {
             return;
         }
 
-        List<SegSesion> sesiones = em.createQuery("""
-                SELECT s
-                FROM SegSesion s
-                WHERE s.idUsuario = (
-                    SELECT u.idUsuario
-                    FROM UsuarioAuth u
-                    WHERE u.username = :username
+        @SuppressWarnings("unchecked")
+        List<SegSesion> sesiones = em.createNativeQuery("""
+                SELECT *
+                FROM (
+                    SELECT s.*
+                    FROM CONSULTORIO.SEG_SESION s
+                    WHERE s.ID_USUARIO = (
+                        SELECT u.ID_USUARIO
+                        FROM CONSULTORIO.SEG_USUARIO u
+                        WHERE u.USERNAME = :username
+                    )
+                      AND s.ACTIVA = 'S'
+                    ORDER BY s.ID_SESION DESC
                 )
-                  AND s.activa = 'S'
-                ORDER BY s.idSesion DESC
+                WHERE ROWNUM = 1
                 """, SegSesion.class)
             .setParameter("username", username.trim())
-            .setMaxResults(1)
             .getResultList();
 
         if (sesiones.isEmpty()) {
@@ -144,17 +148,21 @@ public class SeguridadSesionAuditoriaService {
         if (idUsuario == null) {
             return null;
         }
-        List<Long> roles = em.createQuery("""
-                SELECT ur.idRol
-                FROM SegUsuarioRol ur
-                WHERE ur.idUsuario = :idUsuario
-                  AND ur.activo = 'S'
-                ORDER BY ur.idUsuarioRol DESC
-                """, Long.class)
+        @SuppressWarnings("unchecked")
+        List<Number> roles = em.createNativeQuery("""
+                SELECT ID_ROL
+                FROM (
+                    SELECT ur.ID_ROL
+                    FROM CONSULTORIO.SEG_USUARIO_ROL ur
+                    WHERE ur.ID_USUARIO = :idUsuario
+                      AND ur.ACTIVO = 'S'
+                    ORDER BY ur.ID_USUARIO_ROL DESC
+                )
+                WHERE ROWNUM = 1
+                """)
             .setParameter("idUsuario", idUsuario)
-            .setMaxResults(1)
             .getResultList();
-        return roles.isEmpty() ? null : roles.get(0);
+        return roles.isEmpty() ? null : roles.get(0).longValue();
     }
 
     private String resolveUsuarioAuditoria(String cedula, UsuarioAuth usuario) {

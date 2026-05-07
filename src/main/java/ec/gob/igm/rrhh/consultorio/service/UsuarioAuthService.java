@@ -102,10 +102,11 @@ public class UsuarioAuthService {
         if (cedula == null || cedula.isBlank()) {
             return null;
         }
-        List<UsuarioAuth> rows = em.createQuery(
-                        "SELECT u FROM UsuarioAuth u WHERE u.noCedula = :cedula", UsuarioAuth.class)
+        @SuppressWarnings("unchecked")
+        List<UsuarioAuth> rows = em.createNativeQuery(
+                        "SELECT * FROM CONSULTORIO.SEG_USUARIO WHERE NO_CEDULA = :cedula AND ROWNUM = 1",
+                        UsuarioAuth.class)
                 .setParameter("cedula", cedula.trim())
-                .setMaxResults(1)
                 .getResultList();
         return rows.isEmpty() ? null : rows.get(0);
     }
@@ -122,18 +123,19 @@ public class UsuarioAuthService {
         if (idUsuario == null) {
             return false;
         }
-        List<Long> rows = em.createQuery("""
-                        SELECT ur.idUsuarioRol
-                        FROM SegUsuarioRol ur, SegRol r
-                        WHERE ur.idRol = r.idRol
-                          AND ur.idUsuario = :idUsuario
-                          AND ur.activo = 'S'
-                          AND r.activo = 'S'
-                          AND r.codigo = :codigoRol
-                        """, Long.class)
+        @SuppressWarnings("unchecked")
+        List<Number> rows = em.createNativeQuery("""
+                        SELECT ur.ID_USUARIO_ROL
+                        FROM CONSULTORIO.SEG_USUARIO_ROL ur, CONSULTORIO.SEG_ROL r
+                        WHERE ur.ID_ROL = r.ID_ROL
+                          AND ur.ID_USUARIO = :idUsuario
+                          AND ur.ACTIVO = 'S'
+                          AND r.ACTIVO = 'S'
+                          AND r.CODIGO = :codigoRol
+                          AND ROWNUM = 1
+                        """)
                 .setParameter("idUsuario", idUsuario)
                 .setParameter("codigoRol", ROL_ADMIN_SISTEMA)
-                .setMaxResults(1)
                 .getResultList();
         return !rows.isEmpty();
     }
@@ -142,24 +144,28 @@ public class UsuarioAuthService {
         if (idUsuario == null) {
             return null;
         }
-        List<String> roles = em.createQuery("""
-                        SELECT r.codigo
-                        FROM SegUsuarioRol ur, SegRol r
-                        WHERE ur.idRol = r.idRol
-                          AND ur.idUsuario = :idUsuario
-                          AND ur.activo = 'S'
-                          AND r.activo = 'S'
-                        ORDER BY CASE r.codigo
-                            WHEN 'ADMIN_SISTEMA' THEN 1
-                            WHEN 'ADMINISTRADOR' THEN 2
-                            WHEN 'MEDICO' THEN 3
-                            WHEN 'ODONTOLOGO' THEN 4
-                            WHEN 'ESTADISTICA' THEN 5
-                            WHEN 'DTIC' THEN 6
-                            ELSE 9 END
-                        """, String.class)
+        @SuppressWarnings("unchecked")
+        List<String> roles = em.createNativeQuery("""
+                        SELECT CODIGO
+                        FROM (
+                            SELECT r.CODIGO
+                            FROM CONSULTORIO.SEG_USUARIO_ROL ur, CONSULTORIO.SEG_ROL r
+                            WHERE ur.ID_ROL = r.ID_ROL
+                              AND ur.ID_USUARIO = :idUsuario
+                              AND ur.ACTIVO = 'S'
+                              AND r.ACTIVO = 'S'
+                            ORDER BY CASE r.CODIGO
+                                WHEN 'ADMIN_SISTEMA' THEN 1
+                                WHEN 'ADMINISTRADOR' THEN 2
+                                WHEN 'MEDICO' THEN 3
+                                WHEN 'ODONTOLOGO' THEN 4
+                                WHEN 'ESTADISTICA' THEN 5
+                                WHEN 'DTIC' THEN 6
+                                ELSE 9 END
+                        )
+                        WHERE ROWNUM = 1
+                        """)
                 .setParameter("idUsuario", idUsuario)
-                .setMaxResults(1)
                 .getResultList();
         return roles.isEmpty() ? null : roles.get(0);
     }
@@ -237,10 +243,11 @@ public class UsuarioAuthService {
     }
 
     private UsuarioAuth findByUsernameInternal(String username) {
-        List<UsuarioAuth> rows = em.createQuery(
-                        "SELECT u FROM UsuarioAuth u WHERE u.username = :username", UsuarioAuth.class)
+        @SuppressWarnings("unchecked")
+        List<UsuarioAuth> rows = em.createNativeQuery(
+                        "SELECT * FROM CONSULTORIO.SEG_USUARIO WHERE USERNAME = :username AND ROWNUM = 1",
+                        UsuarioAuth.class)
                 .setParameter("username", username)
-                .setMaxResults(1)
                 .getResultList();
         return rows.isEmpty() ? null : rows.get(0);
     }
