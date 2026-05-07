@@ -6,61 +6,24 @@
                                  https://jakarta.ee/xml/ns/persistence/persistence_3_0.xsd">
 
     <persistence-unit name="consultorioPU" transaction-type="JTA">
-
-
         <jta-data-source>java:/jdbc/consultorioDS</jta-data-source>
-
-
-
         <properties>
-
-
-
-
             <property name="jakarta.persistence.schema-generation.database.action"
                       value="none"/>
-
-
-
-
             <property name="hibernate.dialect"
-                      value="ec.gob.igm.rrhh.consultorio.infra.persistence.OracleLegacyDialect"/>
-
-
-
-
+                      value="org.hibernate.dialect.OracleDialect"/>
             <property name="hibernate.transaction.jta.platform"
                       value="org.hibernate.engine.transaction.jta.platform.internal.JBossAppServerJtaPlatform"/>
-
-
-
-
             <property name="hibernate.boot.allow_jdbc_metadata_access"
                       value="true"/>
-
             <property name="hibernate.jdbc.lob.non_contextual_creation"
                       value="true"/>
-
-
-
-
             <property name="hibernate.jdbc.batch_size" value="25"/>
             <property name="hibernate.order_inserts" value="true"/>
             <property name="hibernate.order_updates" value="true"/>
-
-
-
-
             <property name="hibernate.show_sql" value="true"/>
             <property name="hibernate.format_sql" value="true"/>
-
-
-
-
             <property name="hibernate.generate_statistics" value="false"/>
-           
-
         </properties>
     </persistence-unit>
-
 </persistence>

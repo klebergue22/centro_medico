@@ -99,11 +99,11 @@ public class EmpleadoService {
         String c = cedula.trim();
         if (c.isEmpty()) return null;
 
-        List<DatEmpleado> lista = em.createQuery(
-                        "SELECT e FROM DatEmpleado e WHERE e.noCedula = :ced",
+        @SuppressWarnings("unchecked")
+        List<DatEmpleado> lista = em.createNativeQuery(
+                        "SELECT * FROM RH.T_DAT_EMPLEADO WHERE NO_CEDULA = :ced AND ROWNUM = 1",
                         DatEmpleado.class)
                 .setParameter("ced", c)
-                .setMaxResults(1)
                 .getResultList();
 
         return lista.isEmpty() ? null : lista.get(0);
